@@ -6,6 +6,8 @@
 // 'Chat' is only used as a type, so using 'import type' is more accurate.
 import type {Chat} from '@google/genai';
 import {useEffect, useState, useMemo, useCallback} from 'react';
+import { Capacitor } from '@capacitor/core';
+import { ScreenOrientation } from '@capacitor/screen-orientation';
 
 import { playSound } from '../core/soundManager';
 import { POINTS } from '../core/constants';
@@ -81,6 +83,22 @@ export function App() {
       setMenuBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/landscape${bgIndex}.png`);
   }, [T]);
   
+  useEffect(() => {
+    const lockOrientation = async () => {
+      if (Capacitor.isNativePlatform()) {
+        try {
+          // Lock to portrait
+          await ScreenOrientation.lock({ orientation: 'portrait-primary' });
+        } catch (error) {
+          // Can be ignored in browser
+          console.info('Screen orientation lock not supported in this environment.');
+        }
+      }
+    };
+
+    lockOrientation();
+  }, []);
+
   const updateChatSession = useCallback((waifu: Waifu, history: ChatMessage[], emotionalState: GameEmotionalState, lang: Language) => {
     const systemInstruction = waifu.systemInstructions[lang][emotionalState];
     const apiHistory = [...history];

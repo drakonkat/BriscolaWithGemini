@@ -8,19 +8,20 @@
     "build": "vite build",
     "preview": "vite preview",
     "assets": "capacitor-assets generate --iconPath resources/icon.png --splashPath resources/splash.png",
-    "android": "npm run build && npx cap add android && npx cap sync android && npx cap open android",
+    "android": "npm run build && npx cap sync android && npx cap open android",
     "android:apk": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug && cd .."
   },
   "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/screen-orientation": "^6.0.0",
     "@google/genai": "^0.7.0",
     "react": "^19.0.0-rc.0",
     "react-dom": "^19.0.0-rc.0"
   },
   "devDependencies": {
-    "@capacitor/android": "^6.0.0",
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^6.0.0",
-    "@capacitor/core": "^6.0.0",
     "@types/node": "^20.12.12",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
