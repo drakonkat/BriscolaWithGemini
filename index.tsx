@@ -8,7 +8,7 @@ import ReactDOM from 'react-dom/client';
 
 // --- GAME CONFIGURATION ---
 
-const SUITS = ['Bastoni', 'Coppe', 'Spade', 'Denari'];
+const SUITS = ['Bastoni', 'Coppe', 'Spade', 'denara'];
 const VALUES = ['Asso', '3', 'Re', 'Cavallo', 'Fante', '7', '6', '5', '4', '2'];
 const POINTS: { [key: string]: number } = {
   'Asso': 11, '3': 10, 'Re': 4, 'Cavallo': 3, 'Fante': 2,
@@ -18,10 +18,11 @@ const RANK: { [key: string]: number } = {
   'Asso': 10, '3': 9, 'Re': 8, 'Cavallo': 7, 'Fante': 6,
   '7': 5, '6': 4, '5': 3, '4': 2, '2': 1,
 };
+const WAIFU_NAMES = ['Yuki', 'Aiko', 'Sakura', 'Hana', 'Mio', 'Rin', 'Emi', 'Asuna', 'Rei', 'Kasumi'];
 
 // --- TYPES ---
 
-type Suit = 'Bastoni' | 'Coppe' | 'Spade' | 'Denari';
+type Suit = 'Bastoni' | 'Coppe' | 'Spade' | 'denara';
 type Value = 'Asso' | '3' | 'Re' | 'Cavallo' | 'Fante' | '7' | '6' | '5' | '4' | '2';
 type Card = { suit: Suit; value: Value };
 type Player = 'human' | 'ai';
@@ -58,7 +59,42 @@ const valueToFileNumber: { [key in Value]: number } = {
 const getCardImagePath = (card: Card): string => {
   const suit = card.suit.toLowerCase();
   const number = valueToFileNumber[card.value];
-  return `./assets/${suit}${number}.png`;
+  return `https://s3.tebi.io/waifubriscola/classic/${suit}${number}.png`;
+};
+
+// --- WAIFU MESSAGES ---
+const getWaifuMessage = (points: number): string => {
+  if (points === 0) {
+    const messages = [
+      "Hehe, mi hai dato un 'liscio', senpai? Che timidone...",
+      "Tutto qui? Speravo in qualcosa di più eccitante, baka!",
+      "Oh, un regalo? Peccato non valga nulla... ma il pensiero è carino.",
+    ];
+    return messages[Math.floor(Math.random() * messages.length)];
+  }
+  if (points <= 5) {
+     const messages = [
+      "Mmm, solo questo? Non essere tirchio, senpai... So che puoi dare di più~",
+      "Un piccolo assaggio... mi stai solo stuzzicando, vero?",
+      "Carino... ma la prossima volta voglio un carico più grande.",
+    ];
+    return messages[Math.floor(Math.random() * messages.length)];
+  }
+  if (points <= 11) {
+    const messages = [
+      "Aah, così si fa! Un bel bottino... mi fai arrossire!",
+      "Mmm, non male senpai... Sento un brivido lungo la schiena.",
+      "Preso! Sapevo che mi avresti dato una bella soddisfazione.",
+    ];
+    return messages[Math.floor(Math.random() * messages.length)];
+  }
+  // High points
+  const messages = [
+    "KYAAA! Così tanti tutti insieme?! Il mio cuore batte forte... Sei incredibile, senpai!",
+    "Wow! Che presa! Mi hai lasciata senza fiato...",
+    "Fantastico! Con tutti questi punti, mi sento davvero... piena.",
+  ];
+  return messages[Math.floor(Math.random() * messages.length)];
 };
 
 
@@ -137,7 +173,7 @@ Based on this state, which card from your hand is the best to play now?
 
 const CardView = ({ card, isFaceDown, onClick, isPlayable }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean }) => {
   if (isFaceDown) {
-    // Render the card back. Assuming an image `assets/back.png` exists.
+    // Render the card back.
     return <div className="card card-back" aria-label="Carta coperta"></div>;
   }
 
@@ -173,10 +209,16 @@ function BriscolaGame() {
   const [trickStarter, setTrickStarter] = useState<Player>('human');
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [message, setMessage] = useState('Benvenuto! Inizia una nuova partita.');
+  const [aiName, setAiName] = useState('');
+  const [aiMessageBubble, setAiMessageBubble] = useState('');
+  const [isBubbleVisible, setIsBubbleVisible] = useState(false);
 
   const briscolaSuit = useMemo(() => briscolaCard?.suit, [briscolaCard]);
 
   const startGame = () => {
+    const newName = WAIFU_NAMES[Math.floor(Math.random() * WAIFU_NAMES.length)];
+    setAiName(newName);
+
     const newDeck = shuffleDeck(createDeck());
     const newBriscola = newDeck[newDeck.length - 1];
     
@@ -192,17 +234,14 @@ function BriscolaGame() {
     const starter: Player = Math.random() < 0.5 ? 'human' : 'ai';
     setTurn(starter);
     setTrickStarter(starter);
-    setMessage(starter === 'human' ? 'Tocca a te iniziare.' : 'Inizia l\'IA.');
+    setMessage(starter === 'human' ? 'Tocca a te iniziare.' : `Inizia ${newName}.`);
+    setIsBubbleVisible(false);
   };
 
   const getTrickWinner = useCallback((playedCards: Card[], starter: Player, briscola: Suit): Player => {
     const card1 = playedCards[0]; // lead card
     const card2 = playedCards[1]; // follow card
-    
-    // FIX: Refactored logic to be more readable and to fix a TypeScript error
-    // where the returned player type was inferred as 'string' instead of 'Player'.
     const follower: Player = starter === 'human' ? 'ai' : 'human';
-
     const card1IsBriscola = card1.suit === briscola;
     const card2IsBriscola = card2.suit === briscola;
 
@@ -211,12 +250,10 @@ function BriscolaGame() {
     if (card1IsBriscola && card2IsBriscola) {
       return RANK[card1.value] > RANK[card2.value] ? starter : follower;
     }
-
     if (card1.suit === card2.suit) {
         return RANK[card1.value] > RANK[card2.value] ? starter : follower;
-    } else {
-        return starter;
     }
+    return starter;
   }, []);
 
   const handlePlayCard = (card: Card) => {
@@ -227,7 +264,7 @@ function BriscolaGame() {
     
     if (trickStarter === 'human') {
       setTurn('ai');
-      setMessage('L\'IA sta pensando...');
+      setMessage(`${aiName} sta pensando...`);
     }
   };
   
@@ -242,13 +279,13 @@ function BriscolaGame() {
 
         if (trickStarter === 'ai') {
           setTurn('human');
-          setMessage('L\'IA ha giocato. Tocca a te.');
+          setMessage(`${aiName} ha giocato. Tocca a te.`);
         }
         setIsAiThinking(false);
       }, 1200);
       return () => clearTimeout(timer);
     }
-  }, [turn, aiHand, cardsOnTable, briscolaSuit, phase, trickStarter]);
+  }, [turn, aiHand, cardsOnTable, briscolaSuit, phase, trickStarter, aiName]);
 
   useEffect(() => {
     if (cardsOnTable.length === 2 && phase === 'playing') {
@@ -256,12 +293,18 @@ function BriscolaGame() {
         const winner = getTrickWinner(cardsOnTable, trickStarter, briscolaSuit!);
         const points = POINTS[cardsOnTable[0].value] + POINTS[cardsOnTable[1].value];
         
+        let trickMessage = '';
         if (winner === 'human') {
           setHumanScore(s => s + points);
+          trickMessage = `Hai vinto il turno (+${points} punti).`;
         } else {
           setAiScore(s => s + points);
+          const waifuMsg = getWaifuMessage(points);
+          setAiMessageBubble(waifuMsg);
+          setIsBubbleVisible(true);
+          setTimeout(() => setIsBubbleVisible(false), 4000); 
+          trickMessage = `${aiName} ha vinto il turno (+${points} punti).`;
         }
-        setMessage(`${winner === 'human' ? 'Hai vinto' : 'L\'IA ha vinto'} il turno (+${points} punti).`);
         
         let newDeck = [...deck];
         let newHumanHand = [...humanHand];
@@ -298,7 +341,7 @@ function BriscolaGame() {
         setCardsOnTable([]);
         setTurn(winner);
         setTrickStarter(winner);
-        setMessage(prev => `${prev} ${winner === 'human' ? 'Tocca a te.' : 'Tocca all\'IA.'}`)
+        setMessage(`${trickMessage} ${winner === 'human' ? 'Tocca a te.' : `Tocca a ${aiName}.`}`)
 
         if (newHumanHand.length === 0 && newAiHand.length === 0) {
             setPhase('gameOver');
@@ -307,12 +350,12 @@ function BriscolaGame() {
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [cardsOnTable, phase, getTrickWinner, trickStarter, briscolaSuit, deck, humanHand, aiHand, briscolaCard]);
+  }, [cardsOnTable, phase, getTrickWinner, trickStarter, briscolaSuit, deck, humanHand, aiHand, briscolaCard, aiName]);
 
   if (phase === 'menu') {
     return (
       <div className="menu">
-        <h1>Briscola AI</h1>
+        <h1>Briscola AI Waifu</h1>
         <p>Sfida un'avversaria controllata da Gemini AI.</p>
         <button onClick={startGame}>Inizia Partita</button>
         <div className="rules">
@@ -331,7 +374,7 @@ function BriscolaGame() {
     );
   }
 
-  const finalMessage = humanScore > 60 ? 'Hai Vinto!' : (aiScore > 60 ? 'Ha Vinto l\'IA!' : (humanScore === 60 ? 'Pareggio!' : `Tu: ${humanScore} - IA: ${aiScore}`));
+  const finalMessage = humanScore > 60 ? 'Hai Vinto!' : (aiScore > 60 ? `Ha Vinto ${aiName}!` : (humanScore === 60 ? 'Pareggio!' : `Tu: ${humanScore} - ${aiName}: ${aiScore}`));
 
   return (
     <main className="game-board">
@@ -340,7 +383,7 @@ function BriscolaGame() {
           <div className="game-over-modal">
             <h2>Partita Terminata</h2>
             <p>Punteggio Finale:</p>
-            <p>Tu: {humanScore} - IA: {aiScore}</p>
+            <p>Tu: {humanScore} - {aiName}: {aiScore}</p>
             <h3>{finalMessage}</h3>
             <button onClick={startGame}>Gioca Ancora</button>
           </div>
@@ -348,7 +391,8 @@ function BriscolaGame() {
       )}
 
       <div className="player-area ai-area">
-        <div className="score">IA: {aiScore}</div>
+        {isBubbleVisible && <div className="speech-bubble">{aiMessageBubble}</div>}
+        <div className="score">{aiName}: {aiScore}</div>
         <div className="hand">
             {aiHand.map((_, index) => <CardView key={index} card={{suit:'Spade', value:'2'}} isFaceDown />)}
         </div>
