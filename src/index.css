@@ -45,34 +45,84 @@ body {
   height: 100%;
   text-align: center;
   padding: 1rem;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
 }
+.menu-content {
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 2rem;
+  border-radius: 15px;
+  max-width: 95%;
+  width: 1200px;
+  z-index: 2;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.menu-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: blur(5px) brightness(0.6);
+  transform: scale(1.1);
+  z-index: -1;
+}
+
+.menu-title-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
 .menu h1 {
   font-size: clamp(2.5rem, 10vw, 4rem);
 }
+
+.rules-button {
+    background: none;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.7);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+.rules-button:hover, .rules-button:focus {
+    background-color: var(--primary-accent);
+    color: white;
+    border-color: var(--primary-accent);
+    transform: scale(1.1);
+    outline: none;
+}
+.rules-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+
 .menu p {
   font-size: clamp(1rem, 4vw, 1.2rem);
   margin: 1rem 0 1.5rem;
-  max-width: 500px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
-.menu button {
-  font-size: 1.5rem;
-  padding: 0.8rem 2.5rem;
-  border-radius: 8px;
-  border: none;
-  background-color: var(--primary-accent);
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.menu button:hover, .menu button:focus {
-  background-color: var(--primary-accent-hover);
-  outline: 2px solid #6fbf72;
-}
-
 .language-selector {
-  margin-bottom: 2rem;
+  margin-top: 2rem;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
 }
 
@@ -91,47 +141,75 @@ body {
   cursor: pointer;
 }
 
-.rules {
-  margin-top: 3rem;
-  padding: 1.5rem;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-  max-width: 400px;
-  width: 90%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.waifu-selection {
+  margin-top: 2rem;
 }
-
-.rules h2 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+.waifu-selection h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
   color: var(--primary-accent);
-  text-align: center;
 }
 
-.rules ul {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 1rem;
-}
-
-.rules li {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
+.waifu-selector-container {
   display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.waifu-card, .random-waifu-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 1rem;
+  width: 220px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: space-between;
 }
-
-.rules li strong {
-  color: #a0d8a2;
+.waifu-card:hover, .random-waifu-card:hover {
+  transform: translateY(-10px);
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
-.rules .win-condition {
-  font-style: italic;
-  font-size: 1rem;
+.waifu-card img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  margin-bottom: 1rem;
+  border: 3px solid var(--primary-accent);
+}
+
+.waifu-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.waifu-card p {
+  font-size: 0.9rem;
   color: #ccc;
-  text-align: center;
-  margin-top: 1.5rem;
+  margin: 0;
 }
+.random-waifu-card {
+  justify-content: center;
+}
+.random-waifu-card svg {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+  color: var(--primary-accent);
+}
+.random-waifu-card h3 {
+  font-size: 1.4rem;
+}
+
 
 .app-container {
   display: flex;
@@ -238,10 +316,11 @@ body {
   z-index: 10;
 }
 
-.card-back {
-  background-color: #1a1a2e; /* Fallback color */
-  border: 3px solid #e0e0e0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15), 0 5px 15px rgba(0,0,0,0.1);
+.card-back img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .deck-pile {
@@ -355,20 +434,22 @@ body {
   z-index: 100;
 }
 
-.game-over-modal {
+.game-over-modal, .rules-modal {
   background-color: var(--ui-bg);
   padding: 2rem 3rem;
   border-radius: 12px;
   text-align: center;
   border: 1px solid #444;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  max-width: 90%;
+  width: 500px;
 }
-.game-over-modal h2 {
+.game-over-modal h2, .rules-modal h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
   color: var(--primary-accent);
 }
-.game-over-modal p {
+.game-over-modal p, .rules-modal p {
   font-size: 1.2rem;
   margin-bottom: 0.5rem;
 }
@@ -377,7 +458,7 @@ body {
   margin: 1.5rem 0;
   color: #a0d8a2;
 }
-.game-over-modal button {
+.game-over-modal button, .rules-modal button {
   font-size: 1.2rem;
   padding: 0.7rem 2rem;
   border-radius: 8px;
@@ -386,10 +467,44 @@ body {
   color: white;
   cursor: pointer;
   transition: background-color 0.2s;
+  margin-top: 1.5rem;
 }
-.game-over-modal button:hover, .game-over-modal button:focus {
+.game-over-modal button:hover, .game-over-modal button:focus,
+.rules-modal button:hover, .rules-modal button:focus {
   background-color: var(--primary-accent-hover);
 }
+
+/* Rules Modal Specifics */
+.rules-modal {
+    text-align: left;
+}
+.rules-modal p {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+.rules-points-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 1.5rem;
+}
+.rules-point-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #444;
+}
+.rules-point-item span:first-child {
+    font-weight: bold;
+}
+.rules-modal .modal-actions {
+    text-align: center;
+}
+
 
 .game-over-modal .donation-link {
   display: inline-block;
@@ -662,6 +777,14 @@ body {
       background-color: var(--primary-accent-hover);
       transform: scale(1.05);
   }
+
+  .waifu-card, .random-waifu-card {
+      width: 180px;
+  }
+  .waifu-card img {
+      width: 100px;
+      height: 100px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -705,6 +828,21 @@ body {
       width: 56px;
       height: 56px;
   }
+
+  .menu-content {
+      padding: 1.5rem 1rem;
+  }
+  .waifu-card, .random-waifu-card {
+      width: 150px;
+      padding: 0.75rem;
+  }
+  .waifu-card img {
+      width: 80px;
+      height: 80px;
+  }
+  .waifu-card h3, .random-waifu-card h3 {
+      font-size: 1.2rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -743,5 +881,22 @@ body {
   .chat-fab {
       bottom: 1rem;
       right: 1rem;
+  }
+
+  .waifu-selector-container {
+      gap: 1rem;
+  }
+  .waifu-card, .random-waifu-card {
+      width: 130px;
+  }
+  .waifu-card img {
+      width: 70px;
+      height: 70px;
+  }
+  .rules-modal {
+      padding: 1.5rem 1rem;
+  }
+  .rules-points-list {
+      grid-template-columns: 1fr;
   }
 }

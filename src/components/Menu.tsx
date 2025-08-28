@@ -3,40 +3,43 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { translations } from '../core/translations';
-import type { Language } from '../core/types';
+import type { Language, Waifu } from '../core/types';
+import { WaifuSelector } from './WaifuSelector';
 
 interface MenuProps {
     language: Language;
+    backgroundUrl: string;
     onLanguageChange: (lang: Language) => void;
-    onStartGame: () => void;
+    onWaifuSelected: (waifu: Waifu | null) => void;
+    onShowRules: () => void;
 }
 
-export const Menu = ({ language, onLanguageChange, onStartGame }: MenuProps) => {
+export const Menu = ({ language, backgroundUrl, onLanguageChange, onWaifuSelected, onShowRules }: MenuProps) => {
     const T = translations[language];
 
     return (
         <div className="menu">
-            <h1>{T.title}</h1>
-            <p>{T.subtitle}</p>
-            <div className="language-selector">
-                <label htmlFor="language-select">{T.language}:</label>
-                <select id="language-select" value={language} onChange={(e) => onLanguageChange(e.target.value as Language)}>
-                    <option value="it">Italiano</option>
-                    <option value="en">English</option>
-                </select>
-            </div>
-            <button onClick={onStartGame}>{T.startGame}</button>
-            <div className="rules">
-                <h2>{T.rulesTitle}</h2>
-                <ul>
-                    <li><strong>{T.values[0]}:</strong> {T.scorePoints(11)}</li>
-                    <li><strong>{T.values[1]}:</strong> {T.scorePoints(10)}</li>
-                    <li><strong>{T.values[2]}:</strong> {T.scorePoints(4)}</li>
-                    <li><strong>{T.values[3]}:</strong> {T.scorePoints(3)}</li>
-                    <li><strong>{T.values[4]}:</strong> {T.scorePoints(2)}</li>
-                    <li><strong>{T.otherCards}:</strong> {T.scorePoints(0)}</li>
-                </ul>
-                <p className="win-condition">{T.winCondition}</p>
+            <img src={backgroundUrl} alt="Game background" className="menu-background" />
+            <div className="menu-content">
+                <div className="menu-title-container">
+                    <h1>{T.title}</h1>
+                    <button className="rules-button" onClick={onShowRules} aria-label={T.rulesTitle}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                        </svg>
+                    </button>
+                </div>
+                <p>{T.subtitle}</p>
+                
+                <WaifuSelector language={language} onWaifuSelected={onWaifuSelected} />
+
+                <div className="language-selector">
+                    <label htmlFor="language-select">{T.language}:</label>
+                    <select id="language-select" value={language} onChange={(e) => onLanguageChange(e.target.value as Language)}>
+                        <option value="it">Italiano</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
             </div>
         </div>
     );

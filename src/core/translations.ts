@@ -15,6 +15,10 @@ export const translations = {
     winCondition: "Il mazzo ha un totale di 120 punti. Il primo giocatore a totalizzare più di 60 punti vince la partita.",
     otherCards: "Altre carte",
     scorePoints: (points: number) => `${points} punti`,
+    chooseOpponent: "Scegli la tua avversaria",
+    randomOpponent: "Avversaria Casuale",
+    waifuAvatarAlt: (name: string) => `Avatar di ${name}`,
+    close: "Chiudi",
     // Game
     welcomeMessage: "Benvenuto! Inizia una nuova partita.",
     yourTurn: "Tocca a te iniziare.",
@@ -99,6 +103,10 @@ La risposta deve essere in italiano.
     winCondition: "The deck has a total of 120 points. The first player to score more than 60 points wins the game.",
     otherCards: "Other cards",
     scorePoints: (points: number) => `${points} points`,
+    chooseOpponent: "Choose your opponent",
+    randomOpponent: "Random Opponent",
+    waifuAvatarAlt: (name: string) => `Avatar of ${name}`,
+    close: "Close",
     // Game
     welcomeMessage: "Welcome! Start a new game.",
     yourTurn: "It's your turn to start.",

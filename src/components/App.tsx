@@ -23,6 +23,7 @@ import { GameBoard } from './GameBoard';
 import { GameOverModal } from './GameOverModal';
 import { ChatPanel } from './ChatPanel';
 import { QuotaExceededModal } from './QuotaExceededModal';
+import { RulesModal } from './RulesModal';
 
 const SCORE_THRESHOLD = 15; // Point difference to trigger personality change
 type GameMode = 'online' | 'fallback';
@@ -53,8 +54,10 @@ export function App() {
   const [isAiChatting, setIsAiChatting] = useState(false);
   const [hasChattedThisTurn, setHasChattedThisTurn] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [aiEmotionalState, setAiEmotionalState] = useState<GameEmotionalState>('neutral');
   const [backgroundUrl, setBackgroundUrl] = useState('');
+  const [menuBackgroundUrl, setMenuBackgroundUrl] = useState('');
   
   // Gestione modalità di gioco e quota API
   const [isQuotaExceeded, setIsQuotaExceeded] = useState(false);
@@ -69,6 +72,8 @@ export function App() {
 
   useEffect(() => {
       setMessage(T.welcomeMessage);
+      const bgIndex = Math.floor(Math.random() * 3) + 1;
+      setMenuBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/landscape${bgIndex}.png`);
   }, [T]);
   
   const updateChatSession = useCallback((waifu: Waifu, history: ChatMessage[], emotionalState: GameEmotionalState, lang: Language) => {
@@ -116,14 +121,14 @@ export function App() {
     setChatSession(newChat);
   }, []);
 
-  const startGame = useCallback(() => {
+  const startGame = useCallback((selectedWaifu: Waifu | null) => {
     const bgIndex = Math.floor(Math.random() * 3) + 1;
     const isDesktop = window.innerWidth > 1024;
     const backgroundPrefix = isDesktop ? 'landscape' : 'background';
     setBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/${backgroundPrefix}${bgIndex}.png`);
     
     playSound('game-start');
-    const newWaifu = WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
+    const newWaifu = selectedWaifu ?? WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
     setCurrentWaifu(newWaifu);
 
     const emotionalState = 'neutral';
@@ -385,11 +390,20 @@ export function App() {
 
   if (phase === 'menu' || !currentWaifu) {
     return (
-      <Menu
-        language={language}
-        onLanguageChange={setLanguage}
-        onStartGame={startGame}
-      />
+        <>
+            <Menu
+                language={language}
+                backgroundUrl={menuBackgroundUrl}
+                onLanguageChange={setLanguage}
+                onWaifuSelected={startGame}
+                onShowRules={() => setIsRulesModalOpen(true)}
+            />
+            <RulesModal
+                isOpen={isRulesModalOpen}
+                onClose={() => setIsRulesModalOpen(false)}
+                language={language}
+            />
+        </>
     );
   }
 
@@ -419,7 +433,7 @@ export function App() {
                 humanScore={humanScore}
                 aiScore={aiScore}
                 aiName={aiName}
-                onPlayAgain={startGame}
+                onPlayAgain={() => startGame(currentWaifu)}
                 language={language}
             />
         )}
