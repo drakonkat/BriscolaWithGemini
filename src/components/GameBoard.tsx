@@ -17,7 +17,7 @@ interface GameBoardProps {
     briscolaCard: Card | null;
     cardsOnTable: Card[];
     message: string;
-    isAiThinking: boolean;
+    isProcessing: boolean;
     turn: Player;
     onPlayCard: (card: Card) => void;
     language: Language;
@@ -33,7 +33,7 @@ export const GameBoard = ({
     briscolaCard,
     cardsOnTable,
     message,
-    isAiThinking,
+    isProcessing,
     turn,
     onPlayCard,
     language
@@ -58,7 +58,7 @@ export const GameBoard = ({
                 </div>
                 <div className="played-cards">
                     {cardsOnTable.map((card) => <CardView key={getCardId(card, language)} card={card} lang={language} />)}
-                    {isAiThinking && <div className="spinner" aria-label="L'IA sta pensando"></div>}
+                    {isProcessing && <div className="spinner" aria-label="L'IA sta pensando"></div>}
                 </div>
                 <div className="message-log" aria-live="polite">{message}</div>
             </div>
@@ -70,7 +70,7 @@ export const GameBoard = ({
                         <CardView
                             key={getCardId(card, language)}
                             card={card}
-                            isPlayable={turn === 'human' && !isAiThinking}
+                            isPlayable={turn === 'human' && !isProcessing}
                             onClick={() => onPlayCard(card)}
                             lang={language}
                         />

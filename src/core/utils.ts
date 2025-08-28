@@ -19,15 +19,3 @@ export const getCardImagePath = (card: Card): string => {
   const number = valueToFileNumber[card.value];
   return `https://s3.tebi.io/waifubriscola/classic/${suit}${number}.png`;
 };
-
-export const getWaifuMessage = (points: number, lang: Language): string => {
-  const messages = translations[lang].waifuMessages;
-  let category: 'zero' | 'low' | 'medium' | 'high';
-  if (points === 0) category = 'zero';
-  else if (points <= 5) category = 'low';
-  else if (points <= 11) category = 'medium';
-  else category = 'high';
-  
-  const selectedMessages = messages[category];
-  return selectedMessages[Math.floor(Math.random() * selectedMessages.length)];
-};

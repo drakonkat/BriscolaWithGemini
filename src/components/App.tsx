@@ -5,11 +5,12 @@
 import {Chat} from '@google/genai';
 import {useEffect, useState, useMemo, useCallback} from 'react';
 
+import { playSound } from '../core/soundManager';
 import { POINTS } from '../core/constants';
 import { translations } from '../core/translations';
 import { createDeck, shuffleDeck, getTrickWinner } from '../core/gameLogic';
-import { getWaifuMessage, getCardId } from '../core/utils';
-import { ai, getAIMove } from '../core/gemini';
+import { getCardId } from '../core/utils';
+import { ai, getAIMove, getAIWaifuTrickMessage } from '../core/gemini';
 import { WAIFUS } from '../core/waifus';
 import type { GamePhase, Language, Card, Player, ChatMessage, Waifu, GameEmotionalState } from '../core/types';
 
@@ -32,7 +33,7 @@ export function App() {
   const [humanScore, setHumanScore] = useState(0);
   const [aiScore, setAiScore] = useState(0);
   const [trickStarter, setTrickStarter] = useState<Player>('human');
-  const [isAiThinking, setIsAiThinking] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false); // Master lock for AI moves and trick resolution
   const [message, setMessage] = useState('');
   const [currentWaifu, setCurrentWaifu] = useState<Waifu | null>(null);
   
@@ -98,6 +99,7 @@ export function App() {
   }, []);
 
   const startGame = useCallback(() => {
+    playSound('game-start');
     const newWaifu = WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
     setCurrentWaifu(newWaifu);
     setAiEmotionalState('neutral');
@@ -157,7 +159,6 @@ export function App() {
     }
   }, [aiEmotionalState, chatHistory, chatSession, currentWaifu, language, updateChatSession]);
 
-  // Fix: Explicitly type chat message objects and use functional updates to prevent race conditions.
   const handleSendChatMessage = async (userMessage: string) => {
       if (!chatSession) return;
   
@@ -170,6 +171,7 @@ export function App() {
         const response = await chatSession.sendMessage({ message: userMessage });
         const aiMessage: ChatMessage = { sender: 'ai', text: response.text };
         setChatHistory(prev => [...prev, aiMessage]);
+        playSound('chat-notify');
       } catch (error) {
         console.error("Error sending chat message:", error);
         const fallbackMessage: ChatMessage = { sender: 'ai', text: T.chatFallback };
@@ -180,24 +182,33 @@ export function App() {
     };
 
   const handlePlayCard = (card: Card) => {
-    if (turn !== 'human' || isAiThinking || cardsOnTable.length === 2) return;
+    if (turn !== 'human' || isProcessing) return;
     
+    playSound('card-place');
     setHumanHand(prev => prev.filter(c => getCardId(c, language) !== getCardId(card, language)));
     setCardsOnTable(prev => [...prev, card]);
     
     if (trickStarter === 'human') {
       setTurn('ai');
-      setMessage(T.aiThinking(aiName));
     }
   };
   
   useEffect(() => {
-    if (turn === 'ai' && phase === 'playing' && cardsOnTable.length < 2 && aiHand.length > 0) {
-      setIsAiThinking(true);
-      const timer = setTimeout(async () => {
-        if (!briscolaSuit) return;
+    if (turn === 'ai' && !isProcessing && phase === 'playing' && cardsOnTable.length < 2 && aiHand.length > 0) {
+      const performAiMove = async () => {
+        setIsProcessing(true);
+        setMessage(T.aiThinking(aiName));
+        
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        
+        if (!briscolaSuit) {
+            setIsProcessing(false);
+            return;
+        }
+        
         const aiCardToPlay = await getAIMove(aiHand, briscolaSuit, cardsOnTable, language);
         
+        playSound('card-place');
         setAiHand(prev => prev.filter(c => getCardId(c, language) !== getCardId(aiCardToPlay, language)));
         setCardsOnTable(prev => [...prev, aiCardToPlay]);
 
@@ -205,30 +216,53 @@ export function App() {
           setTurn('human');
           setHasChattedThisTurn(false);
           setMessage(T.aiPlayedYourTurn(aiName));
+          setIsProcessing(false);
         }
-        setIsAiThinking(false);
-      }, 1200);
-      return () => clearTimeout(timer);
+      };
+      performAiMove();
     }
-  }, [turn, aiHand, cardsOnTable, briscolaSuit, phase, trickStarter, aiName, language, T]);
+  }, [turn, isProcessing, phase, cardsOnTable, aiHand, briscolaSuit, trickStarter, aiName, language, T]);
 
   useEffect(() => {
-    if (cardsOnTable.length === 2 && phase === 'playing') {
-      const timer = setTimeout(() => {
-        if(!briscolaSuit) return;
+    const resolveTrick = async () => {
+        setIsProcessing(true);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        if(!briscolaSuit || !currentWaifu) {
+            setIsProcessing(false);
+            return;
+        }
         const winner = getTrickWinner(cardsOnTable, trickStarter, briscolaSuit);
         const points = POINTS[cardsOnTable[0].value] + POINTS[cardsOnTable[1].value];
         
         let trickMessage = '';
+        let finalHumanScore = humanScore;
+        let finalAiScore = aiScore;
+
         if (winner === 'human') {
-          setHumanScore(s => s + points);
+          finalHumanScore += points;
+          setHumanScore(finalHumanScore);
           setHasChattedThisTurn(false);
           trickMessage = T.youWonTrick(points);
+          playSound('trick-win');
         } else {
-          setAiScore(s => s + points);
-          const waifuMsg = getWaifuMessage(points, language);
+          finalAiScore += points;
+          setAiScore(finalAiScore);
+
+          const humanPlayedCard = trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1];
+          const aiPlayedCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
+
+          const waifuMsg = await getAIWaifuTrickMessage(
+            currentWaifu,
+            aiEmotionalState,
+            humanPlayedCard,
+            aiPlayedCard,
+            points,
+            language
+          );
           setChatHistory(prev => [...prev, {sender: 'ai', text: waifuMsg}]);
           trickMessage = T.aiWonTrick(aiName, points);
+          playSound('trick-lose');
         }
         
         let newDeck = [...deck];
@@ -269,13 +303,24 @@ export function App() {
         setMessage(`${trickMessage} ${winner === 'human' ? T.yourTurnMessage : T.aiTurnMessage(aiName)}`)
 
         if (newHumanHand.length === 0 && newAiHand.length === 0) {
+            if (finalHumanScore > 60) {
+              playSound('game-win');
+            } else if (finalAiScore > 60) {
+              playSound('game-lose');
+            } else {
+              playSound('trick-win'); // Neutral-positive sound for a tie
+            }
             setPhase('gameOver');
         }
+        setIsProcessing(false);
+    };
 
-      }, 2000);
-      return () => clearTimeout(timer);
+    if (cardsOnTable.length === 2 && phase === 'playing') {
+      resolveTrick();
     }
-  }, [cardsOnTable, phase, trickStarter, briscolaSuit, deck, humanHand, aiHand, briscolaCard, aiName, language, T]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cardsOnTable, phase]);
+
 
   if (phase === 'menu' || !currentWaifu) {
     return (
@@ -299,7 +344,7 @@ export function App() {
             briscolaCard={briscolaCard}
             cardsOnTable={cardsOnTable}
             message={message}
-            isAiThinking={isAiThinking}
+            isProcessing={isProcessing}
             turn={turn}
             onPlayCard={handlePlayCard}
             language={language}

@@ -64,29 +64,17 @@ Analizza la carta dell'umano e la tua mano.
 In base a questa situazione, quale carta dalla tua mano è la migliore da giocare ora?
 `,
     aiMoveSchemaDescription: (aiHandIds: string[]) => `La carta da giocare dalla tua mano. Deve essere una di: ${aiHandIds.join(', ')}`,
-    // Waifu Trick Messages
-    waifuMessages: {
-      zero: [
-        "Hehe, mi hai dato un 'liscio', senpai? Che timidone...",
-        "Tutto qui? Speravo in qualcosa di più eccitante, baka!",
-        "Oh, un regalo? Peccato non valga nulla... ma il pensiero è carino.",
-      ],
-      low: [
-        "Mmm, solo questo? Non essere tirchio, senpai... So che puoi dare di più~",
-        "Un piccolo assaggio... mi stai solo stuzzicando, vero?",
-        "Carino... ma la prossima volta voglio un carico più grande.",
-      ],
-      medium: [
-        "Aah, così si fa! Un bel bottino... mi fai arrossire!",
-        "Mmm, non male senpai... Sento un brivido lungo la schiena.",
-        "Preso! Sapevo che mi avresti dato una bella soddisfazione.",
-      ],
-      high: [
-        "KYAAA! Così tanti tutti insieme?! Il mio cuore batte forte... Sei incredibile, senpai!",
-        "Wow! Che presa! Mi hai lasciata senza fiato...",
-        "Fantastico! Con tutti questi punti, mi sento davvero... piena.",
-      ]
-    }
+    waifuTrickWinPrompt: (waifuName: string, personality: string, humanCardId: string, aiCardId: string, points: number) => `
+Sei ${waifuName}. La tua personalità attuale è: "${personality}".
+Hai appena vinto un turno a Briscola contro senpai.
+- Senpai ha giocato: ${humanCardId}.
+- Tu hai giocato: ${aiCardId}, e hai vinto il turno.
+- Hai vinto ${points} punti.
+
+Basandoti sulla tua personalità e sui punti che hai vinto, genera una risposta breve e caratteristica per senpai (1-2 frasi).
+Sii maliziosa, un po' stuzzicante e leggermente allusiva, specialmente se i punti sono alti. Sii creativa e unica.
+La risposta deve essere in italiano.
+`,
   },
   en: {
     // Menu
@@ -147,28 +135,16 @@ Analyze the human's card and your hand.
 Based on this state, which card from your hand is the best to play now?
 `,
     aiMoveSchemaDescription: (aiHandIds: string[]) => `The card to play from your hand. It must be one of: ${aiHandIds.join(', ')}`,
-    // Waifu Trick Messages
-    waifuMessages: {
-      zero: [
-        "Hehe, you gave me a 'liscio', senpai? Such a shy boy...",
-        "Is that all? I was hoping for something more exciting, baka!",
-        "Oh, a gift? Too bad it's worthless... but the thought is nice.",
-      ],
-      low: [
-        "Mmm, just this? Don't be stingy, senpai... I know you can give more~",
-        "A little taste... you're just teasing me, aren't you?",
-        "Cute... but next time I want a bigger load.",
-      ],
-      medium: [
-        "Aah, that's how it's done! A nice haul... you're making me blush!",
-        "Mmm, not bad senpai... I feel a shiver down my spine.",
-        "Got it! I knew you'd give me some good satisfaction.",
-      ],
-      high: [
-        "KYAAA! So many all at once?! My heart is pounding... You're incredible, senpai!",
-        "Wow! What a catch! You left me breathless...",
-        "Fantastic! With all these points, I feel really... full.",
-      ]
-    }
+    waifuTrickWinPrompt: (waifuName: string, personality: string, humanCardId: string, aiCardId: string, points: number) => `
+You are ${waifuName}. Your current personality is: "${personality}".
+You just won a trick in a game of Briscola against senpai.
+- Senpai played: ${humanCardId}.
+- You played: ${aiCardId}, and won the trick.
+- You won ${points} points.
+
+Based on your personality and the points you won, generate a short, in-character response to senpai (1-2 sentences).
+Make it flirty, a bit teasing, and slightly suggestive, especially if the points are high. Be creative and unique.
+The response must be in English.
+`,
   }
 };

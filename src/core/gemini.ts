@@ -6,7 +6,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { translations } from './translations';
 import { getCardId } from './utils';
 import { SUITS_IT } from './constants';
-import type { Card, Language, Suit } from './types';
+import type { Card, GameEmotionalState, Language, Suit, Waifu } from './types';
 
 export const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
 
@@ -62,5 +62,42 @@ export const getAIMove = async (
       console.error("Error getting AI move:", error);
       // Fallback in case of API error
       return aiHand[Math.floor(Math.random() * aiHand.length)];
+  }
+};
+
+export const getAIWaifuTrickMessage = async (
+  waifu: Waifu,
+  emotionalState: GameEmotionalState,
+  humanCard: Card,
+  aiCard: Card,
+  points: number,
+  lang: Language
+): Promise<string> => {
+  const T = translations[lang];
+  const humanCardId = getCardId(humanCard, lang);
+  const aiCardId = getCardId(aiCard, lang);
+  const personality = waifu.systemInstructions[lang][emotionalState];
+
+  const prompt = T.waifuTrickWinPrompt(
+      waifu.name,
+      personality,
+      humanCardId,
+      aiCardId,
+      points
+  );
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        temperature: 0.9,
+        topP: 1,
+      }
+    });
+    return response.text.trim();
+  } catch (error) {
+    console.error("Error generating waifu trick message:", error);
+    return T.chatFallback;
   }
 };
