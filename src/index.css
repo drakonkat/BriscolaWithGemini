@@ -243,9 +243,9 @@ body {
   height: 100%;
   object-fit: cover;
   object-position: center;
-  filter: blur(8px) brightness(0.7);
   transform: scale(1.1); /* Per nascondere i bordi sfocati */
   z-index: 0;
+  transition: filter 0.5s ease-out; /* Add transition for smooth blur change */
 }
 
 .player-area {

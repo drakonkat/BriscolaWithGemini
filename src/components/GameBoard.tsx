@@ -47,9 +47,25 @@ export const GameBoard = ({
 
     const T = translations[language];
 
+    // Calcola il livello di sfocatura in base al punteggio più alto
+    const maxScore = Math.max(humanScore, aiScore);
+    const winningScore = 60;
+    const maxBlur = 25; // px
+    // La sfocatura diminuisce linearmente da maxBlur a 0 man mano che maxScore si avvicina a winningScore
+    const blurValue = Math.max(0, maxBlur * (1 - Math.min(maxScore, winningScore) / winningScore));
+
+    const backgroundStyle = {
+        filter: `blur(${blurValue}px) brightness(0.7)`
+    };
+
     return (
         <main className="game-board">
-            <img src={backgroundUrl} alt={T.gameBoardBackground} className="game-board-background" />
+            <img 
+                src={backgroundUrl} 
+                alt={T.gameBoardBackground} 
+                className="game-board-background"
+                style={backgroundStyle}
+            />
             
             <button className="back-button" onClick={onGoToMenu} aria-label={T.backToMenu}>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
