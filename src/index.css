@@ -181,7 +181,7 @@ body {
 
 .hand {
   display: flex;
-  gap: -40px;
+  gap: 1rem;
   justify-content: center;
   min-height: 150px;
   perspective: 1000px;
@@ -606,7 +606,7 @@ body {
     padding: 0.5rem;
   }
   .hand {
-    gap: -50px;
+    gap: 0.5rem;
   }
   .card {
     width: 70px;
@@ -642,7 +642,7 @@ body {
     min-height: 120px;
   }
   .hand {
-    gap: -40px;
+    gap: 0.5rem;
     min-height: 105px;
   }
   .card {
