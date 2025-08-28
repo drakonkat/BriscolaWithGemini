@@ -1,0 +1,85 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+*/
+import { useEffect, useState, useRef } from 'react';
+import { translations } from '../core/translations';
+import type { ChatMessage, Language } from '../core/types';
+
+export const ChatPanel = ({ history, aiName, onSendMessage, isChatting, isPlayerTurn, hasChattedThisTurn, onModalClose, lang }: { history: ChatMessage[], aiName: string, onSendMessage: (msg: string) => void, isChatting: boolean, isPlayerTurn: boolean, hasChattedThisTurn: boolean, onModalClose?: () => void, lang: Language }) => {
+  const [message, setMessage] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const MAX_MESSAGE_LENGTH = 150;
+  const T = translations[lang];
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(scrollToBottom, [history]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (message.trim() && !isDisabled) {
+      onSendMessage(message.trim());
+      setMessage('');
+    }
+  };
+
+  const isDisabled = !isPlayerTurn || isChatting || hasChattedThisTurn;
+  
+  const getPlaceholder = () => {
+    if (hasChattedThisTurn) return T.chatPlaceholderChatted;
+    if (!isPlayerTurn) return T.chatPlaceholderNotYourTurn;
+    return T.chatPlaceholder;
+  };
+
+  return (
+    <aside className="chat-panel">
+      <header className="chat-header">
+        <h2>{T.chatWith(aiName)}</h2>
+        <button className="chat-modal-close" onClick={onModalClose} aria-label={T.closeChat}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+        </button>
+      </header>
+      <div className="chat-messages">
+        {history.map((msg, index) => (
+          <div key={index} className={`message-container ${msg.sender === 'human' ? 'human' : 'ai'}`}>
+            <div className="message">{msg.text}</div>
+          </div>
+        ))}
+        {isChatting && history[history.length - 1]?.sender === 'human' && (
+            <div className="message-container ai">
+                <div className="message typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+      <form onSubmit={handleSubmit} className="chat-input-form">
+        <div className="chat-input-wrapper">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={getPlaceholder()}
+            disabled={isDisabled}
+            maxLength={MAX_MESSAGE_LENGTH}
+            aria-label={T.chatPlaceholder}
+          />
+          <div className={`char-counter ${message.length > MAX_MESSAGE_LENGTH - 20 ? 'limit-near' : ''}`}>
+            {message.length} / {MAX_MESSAGE_LENGTH}
+          </div>
+        </div>
+        <button type="submit" disabled={isDisabled} aria-label={isChatting ? T.sendMessageInProgress : T.sendMessage}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </form>
+    </aside>
+  );
+};

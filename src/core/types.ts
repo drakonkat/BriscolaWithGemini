@@ -1,0 +1,15 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+*/
+import type { Waifu as WaifuType } from './waifus';
+
+export type Suit = 'Bastoni' | 'Coppe' | 'Spade' | 'denara';
+export type Value = 'Asso' | '3' | 'Re' | 'Cavallo' | 'Fante' | '7' | '6' | '5' | '4' | '2';
+export type Card = { suit: Suit; value: Value };
+export type Player = 'human' | 'ai';
+export type GamePhase = 'menu' | 'playing' | 'gameOver';
+export type ChatMessage = { sender: 'human' | 'ai'; text: string; };
+export type Language = 'it' | 'en';
+export type Waifu = WaifuType;
+export type GameEmotionalState = 'winning' | 'losing' | 'neutral';
