@@ -1,10 +1,17 @@
 :root {
-  --table-bg: #0a6b21;
+  --table-bg-dark: #0a6b21;
+  --table-bg-light: #10a034;
   --card-bg: #fdfaf4;
   --card-border: #ccc;
   --font-color: #ffffff;
   --red-suit: #d92d2d;
   --black-suit: #222222;
+  --ui-bg: #2c2c2c;
+  --waifu-bubble: #e1f5fe;
+  --human-bubble: #dcedc8;
+  --border-color: #855a3c;
+  --primary-accent: #4CAF50;
+  --primary-accent-hover: #45a049;
 }
 
 * {
@@ -20,13 +27,14 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  height: 100vh;
   overflow: hidden;
 }
 
 #root {
   width: 100%;
   height: 100vh;
+  max-height: 100vh;
 }
 
 .menu {
@@ -43,7 +51,7 @@ body {
 }
 .menu p {
   font-size: clamp(1rem, 4vw, 1.2rem);
-  margin: 1rem 0 2rem;
+  margin: 1rem 0 1.5rem;
   max-width: 500px;
 }
 .menu button {
@@ -51,14 +59,36 @@ body {
   padding: 0.8rem 2.5rem;
   border-radius: 8px;
   border: none;
-  background-color: #4CAF50;
+  background-color: var(--primary-accent);
   color: white;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 .menu button:hover, .menu button:focus {
-  background-color: #45a049;
+  background-color: var(--primary-accent-hover);
   outline: 2px solid #6fbf72;
+}
+
+.language-selector {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.language-selector label {
+  font-size: 1.1rem;
+  color: #ccc;
+}
+
+.language-selector select {
+  font-size: 1rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  background-color: #333;
+  color: white;
+  border: 1px solid #555;
+  cursor: pointer;
 }
 
 .rules {
@@ -74,7 +104,7 @@ body {
 .rules h2 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: #4CAF50;
+  color: var(--primary-accent);
   text-align: center;
 }
 
@@ -103,16 +133,27 @@ body {
   margin-top: 1.5rem;
 }
 
-.game-board {
+.app-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   width: 100%;
   height: 100%;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: auto;
-  background: radial-gradient(circle, #0e842c 0%, var(--table-bg) 100%);
-  border: 10px solid #543212;
-  border-radius: 20px;
+  position: relative;
+}
+
+.game-board {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: radial-gradient(circle, var(--table-bg-light) 0%, var(--table-bg-dark) 100%);
+  border: 10px solid var(--border-color);
+  border-right-width: 5px;
+  border-radius: 20px 0 0 20px;
+  position: relative;
+  overflow: hidden;
 }
 
 .player-area {
@@ -182,11 +223,11 @@ body {
 }
 
 .card-back {
-  background-color: #0d2e6b; /* Fallback color */
-  background-image: url('https://s3.tebi.io/waifubriscola/classic/back.png');
+  background-color: #1a1a2e; /* Fallback color */
+  background-image: url('https://i.pinimg.com/736x/8f/37/5b/8f375b42023778a7c6451a37c54101e4.jpg');
   background-size: cover;
   background-position: center;
-  border: 3px solid white;
+  border: 3px solid #e0e0e0;
   box-shadow: 0 2px 4px rgba(0,0,0,0.15), 0 5px 15px rgba(0,0,0,0.1);
 }
 
@@ -262,7 +303,7 @@ body {
 }
 
 .game-over-overlay {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -275,7 +316,7 @@ body {
 }
 
 .game-over-modal {
-  background-color: #2c2c2c;
+  background-color: var(--ui-bg);
   padding: 2rem 3rem;
   border-radius: 12px;
   text-align: center;
@@ -285,7 +326,7 @@ body {
 .game-over-modal h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
-  color: #4CAF50;
+  color: var(--primary-accent);
 }
 .game-over-modal p {
   font-size: 1.2rem;
@@ -301,64 +342,265 @@ body {
   padding: 0.7rem 2rem;
   border-radius: 8px;
   border: none;
-  background-color: #4CAF50;
+  background-color: var(--primary-accent);
   color: white;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 .game-over-modal button:hover, .game-over-modal button:focus {
-  background-color: #45a049;
+  background-color: var(--primary-accent-hover);
 }
 
-/* --- Speech Bubble --- */
-.speech-bubble {
-  position: absolute;
-  top: 60px;
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 200px;
-  max-width: 90%;
+/* --- Chat Panel --- */
+.chat-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   background-color: var(--card-bg);
-  color: var(--black-suit);
-  padding: 0.8rem 1rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-style: italic;
-  font-weight: 500;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  z-index: 50;
-  animation: fadeInBubble 0.3s ease-out;
+  border: 10px solid var(--border-color);
+  border-left-width: 5px;
+  border-radius: 0 20px 20px 0;
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 1rem;
+  background-color: #333;
+  color: var(--font-color);
   text-align: center;
+  border-bottom: 2px solid #444;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 
-.speech-bubble::after {
-  content: '';
+.chat-header h2 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.chat-modal-close {
+  display: none; /* Hidden on desktop */
   position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 10px;
-  border-style: solid;
-  border-color: var(--card-bg) transparent transparent transparent;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+.chat-modal-close svg {
+    display: block;
 }
 
-@keyframes fadeInBubble {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+.chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message-container {
+  display: flex;
+  max-width: 85%;
+}
+
+.message-container.human {
+  align-self: flex-end;
+  justify-content: flex-end;
+}
+
+.message-container.ai {
+  align-self: flex-start;
+  justify-content: flex-start;
+}
+
+.message {
+  padding: 0.6rem 1rem;
+  border-radius: 18px;
+  color: var(--black-suit);
+  line-height: 1.4;
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+.message-container.ai .message {
+  background-color: var(--waifu-bubble);
+  border-bottom-left-radius: 4px;
+}
+
+.message-container.human .message {
+  background-color: var(--human-bubble);
+  border-bottom-right-radius: 4px;
+}
+
+.typing-indicator span {
+    height: 8px;
+    width: 8px;
+    background-color: #888;
+    border-radius: 50%;
+    display: inline-block;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+.typing-indicator span:nth-of-type(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-of-type(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
+}
+
+.chat-input-form {
+  display: flex;
+  padding: 0.75rem;
+  padding-bottom: 1.75rem;
+  border-top: 2px solid #ddd;
+  background-color: #f0f0f0;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.chat-input-wrapper {
+  position: relative;
+  flex-grow: 1;
+}
+
+.chat-input-form input {
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.chat-input-form input:focus {
+  border-color: var(--primary-accent);
+}
+
+.chat-input-form button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 0.5rem 0 0.5rem;
+  color: var(--primary-accent);
+  transition: color 0.2s;
+  align-self: center;
+}
+
+.chat-input-form button:hover, .chat-input-form button:focus {
+  color: var(--primary-accent-hover);
+}
+.chat-input-form button:disabled {
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.char-counter {
+  position: absolute;
+  bottom: -1.2rem;
+  right: 0.5rem;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.char-counter.limit-near {
+  color: var(--red-suit);
+  font-weight: bold;
+}
+
+.chat-fab {
+    display: none; /* Hidden on desktop */
 }
 
 /* --- Responsive Design --- */
+@media (max-width: 1024px) {
+  body {
+    overflow: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+  .app-container {
+    flex-direction: column;
+    height: 100vh; /* Make sure it can be a reference for the game board */
+    max-height: none;
+  }
+  .game-board {
+    flex: 1; /* Take all available space */
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    border: none;
+  }
+  .chat-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    border-radius: 0;
+    border: none;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+  }
+  .app-container.chat-open-mobile .chat-panel {
+      transform: translateX(0);
+  }
+  .app-container.chat-open-mobile::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 999;
+  }
+  
+  .chat-modal-close {
+      display: block;
+  }
+
+  .chat-fab {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 60px;
+    height: 60px;
+    background-color: var(--primary-accent);
+    color: white;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    cursor: pointer;
+    z-index: 998;
+    transition: background-color 0.2s, transform 0.2s;
+  }
+  .chat-fab:hover {
+      background-color: var(--primary-accent-hover);
+      transform: scale(1.05);
+  }
+}
+
 @media (max-width: 768px) {
   .game-board {
-    border: none;
-    border-radius: 0;
+    border-width: 5px;
+    border-right-width: 5px;
+    border-bottom-width: 2px;
   }
+
   .player-area {
     min-height: 150px;
     padding: 0.5rem;
@@ -386,10 +628,12 @@ body {
     font-size: 0.9rem;
     min-height: 30px;
   }
-  .speech-bubble {
-    font-size: 0.9rem;
-    padding: 0.6rem 0.8rem;
-    top: 50px;
+
+  .chat-fab {
+      bottom: 1.5rem;
+      right: 1.5rem;
+      width: 56px;
+      height: 56px;
   }
 }
 
@@ -433,5 +677,10 @@ body {
   }
   .deck-count {
     bottom: -20px;
+  }
+
+  .chat-fab {
+      bottom: 1rem;
+      right: 1rem;
   }
 }
