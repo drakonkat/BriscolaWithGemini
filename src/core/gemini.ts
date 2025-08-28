@@ -45,6 +45,7 @@ export const getAIMove = async (
           },
           required: ["cardToPlay"]
         },
+        thinkingConfig: { thinkingBudget: 0 },
       },
     });
 

@@ -102,21 +102,15 @@ export function App() {
     playSound('game-start');
     const newWaifu = WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
     setCurrentWaifu(newWaifu);
-    setAiEmotionalState('neutral');
-    
-    const initialHistory: ChatMessage[] = [];
-    setChatHistory(initialHistory);
 
-    const systemInstruction = newWaifu.systemInstructions[language]['initial'];
-    const newChat = ai.chats.create({
-      model: 'gemini-2.5-flash',
-      config: { systemInstruction },
-    });
-    setChatSession(newChat);
+    const emotionalState = 'neutral';
+    setAiEmotionalState(emotionalState);
     
-    newChat.sendMessage({ message: newWaifu.initialChatMessage[language] }).then(response => {
-        setChatHistory([{ sender: 'ai', text: response.text }]);
-    });
+    // Directly set the initial message and initialize the chat session
+    const initialAiMessage: ChatMessage = { sender: 'ai', text: newWaifu.initialChatMessage[language] };
+    const initialHistory: ChatMessage[] = [initialAiMessage];
+    setChatHistory(initialHistory);
+    updateChatSession(newWaifu, initialHistory, emotionalState, language);
 
     const newDeck = shuffleDeck(createDeck());
     const newBriscola = newDeck[newDeck.length - 1];
@@ -135,7 +129,7 @@ export function App() {
     setTrickStarter(starter);
     setHasChattedThisTurn(false);
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
-  }, [language, T]);
+  }, [language, T, updateChatSession]);
   
   // Update AI emotional state based on score
   useEffect(() => {
@@ -198,8 +192,6 @@ export function App() {
       const performAiMove = async () => {
         setIsProcessing(true);
         setMessage(T.aiThinking(aiName));
-        
-        await new Promise(resolve => setTimeout(resolve, 1200));
         
         if (!briscolaSuit) {
             setIsProcessing(false);
@@ -371,7 +363,7 @@ export function App() {
             lang={language}
         />
         <button className="chat-fab" onClick={() => setIsChatModalOpen(true)} aria-label="Apri chat">
-            <svg xmlns="http://www.w.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
                 <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
             </svg>
         </button>
