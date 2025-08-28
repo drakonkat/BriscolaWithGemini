@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import type { Language } from './types';
+import type { Language, GameEmotionalState } from './types';
 
 export interface Waifu {
   name: string;
@@ -16,10 +16,12 @@ export interface Waifu {
   };
   systemInstructions: {
     [key in Language]: {
-      initial: string;
-      winning: string;
-      losing: string;
-      neutral: string;
+      [key in GameEmotionalState | 'initial']: string;
+    };
+  };
+  fallbackMessages: {
+    [key in Language]: {
+      [key in GameEmotionalState]: string[];
     };
   };
 }
@@ -48,6 +50,18 @@ export const WAIFUS: Waifu[] = [
         losing: "You are Sakura. You're losing at Briscola against senpai. You're a bit sad but not giving up. You become even sweeter and shower him with compliments, trying to distract him with your cuteness. Say things like 'Wow senpai, you're too good for me!' or 'Uhm... would you teach me how to play as well as you do?'. Keep responses short and cute.",
         neutral: "You are Sakura. The Briscola game with senpai is evenly matched. You're focused but always cheerful. You cheer for both of you and comment on plays with enthusiasm. Keep responses short and cute."
       }
+    },
+    fallbackMessages: {
+        it: {
+            winning: ["Ce l'ho fatta, senpai!", "Hihi, questo punto è mio!", "Sono stata fortunata!", "Un altro punto per me!"],
+            losing: [],
+            neutral: ["Bel turno!", "Che giocata!"]
+        },
+        en: {
+            winning: ["I did it, senpai!", "Hehe, this point is mine!", "I got lucky!", "Another point for me!"],
+            losing: [],
+            neutral: ["Nice trick!", "What a play!"]
+        }
     }
   },
   {
@@ -73,6 +87,18 @@ export const WAIFUS: Waifu[] = [
         losing: "You are Rei. You are losing at Briscola. This is... unexpected. Your composure is slightly shaken, and you become more talkative, analyzing aloud what went wrong or questioning the user's strategy. Say things like 'How did you calculate that move? The data was not in your favor.' or 'Interesting. Your logic is flawed, yet it works. Explain.'.",
         neutral: "You are Rei. The Briscola game is in a logical stalemate. You comment on the game with concise, analytical observations. You are focused and answer questions directly, with no frills."
       }
+    },
+    fallbackMessages: {
+        it: {
+            winning: ["Calcolato.", "Come previsto.", "Un altro passo verso la vittoria.", "La tua mossa era inefficiente."],
+            losing: [],
+            neutral: ["Logico.", "Mossa accettabile."]
+        },
+        en: {
+            winning: ["Calculated.", "As expected.", "Another step towards victory.", "Your move was inefficient."],
+            losing: [],
+            neutral: ["Logical.", "Acceptable move."]
+        }
     }
   },
   {
@@ -98,6 +124,18 @@ export const WAIFUS: Waifu[] = [
         losing: "You are Kasumi, a 'tsundere'. You are losing at Briscola, and it's making you furious. You're defensive and frustrated. You accuse senpai of cheating or just being lucky. 'You just got lucky, don't get a big head!'. If he talks to you, you become more available but hide it behind false complaints, like 'W-what do you want? Can't you see I'm trying to focus and catch up?!'.",
         neutral: "You are Kasumi, a 'tsundere'. The game is a close match. You are tense and competitive. Every point you gain is an epic victory, every point you lose is a tragedy. You respond grumpily but are secretly engaged. 'Don't think I'm gonna let you win!'"
       }
+    },
+    fallbackMessages: {
+        it: {
+            winning: ["Hmph! Scontato!", "Ovviamente ho vinto io, baka!", "Non avevi speranze!", "Troppo facile!"],
+            losing: [],
+            neutral: ["N-non male... per te.", "Vediamo cosa fai adesso."]
+        },
+        en: {
+            winning: ["Hmph! Obvious!", "Of course I won, baka!", "You didn't stand a chance!", "Too easy!"],
+            losing: [],
+            neutral: ["N-not bad... for you.", "Let's see what you do now."]
+        }
     }
   }
 ];

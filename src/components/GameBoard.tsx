@@ -21,6 +21,7 @@ interface GameBoardProps {
     isAiThinkingMove: boolean; // Nuovo prop
     turn: Player;
     onPlayCard: (card: Card) => void;
+    onGoToMenu: () => void;
     language: Language;
     backgroundUrl: string;
 }
@@ -39,6 +40,7 @@ export const GameBoard = ({
     isAiThinkingMove,
     turn,
     onPlayCard,
+    onGoToMenu,
     language,
     backgroundUrl
 }: GameBoardProps) => {
@@ -48,6 +50,13 @@ export const GameBoard = ({
     return (
         <main className="game-board">
             <img src={backgroundUrl} alt={T.gameBoardBackground} className="game-board-background" />
+            
+            <button className="back-button" onClick={onGoToMenu} aria-label={T.backToMenu}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </button>
+            
             <div className="message-log" aria-live="polite">{message}</div>
 
             <div className="player-area ai-area">

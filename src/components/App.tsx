@@ -2,7 +2,9 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import {Chat} from '@google/genai';
+// FIX: The 'Suit' type is not exported from '@google/genai'. It has been removed from this import.
+// 'Chat' is only used as a type, so using 'import type' is more accurate.
+import type {Chat} from '@google/genai';
 import {useEffect, useState, useMemo, useCallback} from 'react';
 
 import { playSound } from '../core/soundManager';
@@ -10,16 +12,20 @@ import { POINTS } from '../core/constants';
 import { translations } from '../core/translations';
 import { createDeck, shuffleDeck, getTrickWinner } from '../core/gameLogic';
 import { getCardId } from '../core/utils';
-import { ai, getAIMove, getAIWaifuTrickMessage } from '../core/gemini';
+import { QuotaExceededError, ai, getAIMove, getAIWaifuTrickMessage } from '../core/gemini';
+import { getLocalAIMove, getFallbackWaifuMessage } from '../core/localAI';
 import { WAIFUS } from '../core/waifus';
-import type { GamePhase, Language, Card, Player, ChatMessage, Waifu, GameEmotionalState } from '../core/types';
+// FIX: The 'Suit' type is now correctly imported from the local types definition file.
+import type { GamePhase, Language, Card, Player, ChatMessage, Waifu, GameEmotionalState, Suit } from '../core/types';
 
 import { Menu } from './Menu';
 import { GameBoard } from './GameBoard';
 import { GameOverModal } from './GameOverModal';
 import { ChatPanel } from './ChatPanel';
+import { QuotaExceededModal } from './QuotaExceededModal';
 
 const SCORE_THRESHOLD = 15; // Point difference to trigger personality change
+type GameMode = 'online' | 'fallback';
 
 export function App() {
   const [phase, setPhase] = useState<GamePhase>('menu');
@@ -28,6 +34,7 @@ export function App() {
   const [humanHand, setHumanHand] = useState<Card[]>([]);
   const [aiHand, setAiHand] = useState<Card[]>([]);
   const [briscolaCard, setBriscolaCard] = useState<Card | null>(null);
+  const [briscolaSuit, setBriscolaSuit] = useState<Suit | null>(null);
   const [cardsOnTable, setCardsOnTable] = useState<Card[]>([]);
   const [turn, setTurn] = useState<Player>('human');
   const [humanScore, setHumanScore] = useState(0);
@@ -48,6 +55,11 @@ export function App() {
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [aiEmotionalState, setAiEmotionalState] = useState<GameEmotionalState>('neutral');
   const [backgroundUrl, setBackgroundUrl] = useState('');
+  
+  // Gestione modalità di gioco e quota API
+  const [isQuotaExceeded, setIsQuotaExceeded] = useState(false);
+  const [gameMode, setGameMode] = useState<GameMode>('online');
+
 
   // Stato derivato per disabilitare l'input dell'utente
   const isProcessing = isAiThinkingMove || isResolvingTrick;
@@ -58,8 +70,6 @@ export function App() {
   useEffect(() => {
       setMessage(T.welcomeMessage);
   }, [T]);
-
-  const briscolaSuit = useMemo(() => briscolaCard?.suit, [briscolaCard]);
   
   const updateChatSession = useCallback((waifu: Waifu, history: ChatMessage[], emotionalState: GameEmotionalState, lang: Language) => {
     const systemInstruction = waifu.systemInstructions[lang][emotionalState];
@@ -132,6 +142,7 @@ export function App() {
     setAiHand(newDeck.slice(3, 6));
     setDeck(newDeck.slice(6, -1));
     setBriscolaCard(newBriscola);
+    setBriscolaSuit(newBriscola.suit);
     
     setPhase('playing');
     setHumanScore(0);
@@ -141,8 +152,14 @@ export function App() {
     setTurn(starter);
     setTrickStarter(starter);
     setHasChattedThisTurn(false);
+    setIsQuotaExceeded(false);
+    setGameMode('online');
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
   }, [language, T, updateChatSession]);
+  
+  const handleGoToMenu = () => {
+    setPhase('menu');
+  };
   
   // Update AI emotional state based on score
   useEffect(() => {
@@ -161,13 +178,13 @@ export function App() {
 
   // Re-create chat session when emotional state changes
   useEffect(() => {
-    if (currentWaifu && phase === 'playing' && chatSession) {
+    if (currentWaifu && phase === 'playing' && chatSession && gameMode === 'online') {
       updateChatSession(currentWaifu, chatHistory, aiEmotionalState, language);
     }
-  }, [aiEmotionalState, chatHistory, chatSession, currentWaifu, language, updateChatSession]);
+  }, [aiEmotionalState, chatHistory, chatSession, currentWaifu, language, updateChatSession, gameMode]);
 
   const handleSendChatMessage = async (userMessage: string) => {
-      if (!chatSession) return;
+      if (isQuotaExceeded || !chatSession || gameMode === 'fallback') return;
   
       const humanMessage: ChatMessage = { sender: 'human', text: userMessage };
       setChatHistory(prev => [...prev, humanMessage]);
@@ -179,10 +196,14 @@ export function App() {
         const aiMessage: ChatMessage = { sender: 'ai', text: response.text };
         setChatHistory(prev => [...prev, aiMessage]);
         playSound('chat-notify');
-      } catch (error) {
-        console.error("Error sending chat message:", error);
-        const fallbackMessage: ChatMessage = { sender: 'ai', text: T.chatFallback };
-        setChatHistory(prev => [...prev, fallbackMessage]);
+      } catch (error: any) {
+        if (error.toString().includes('RESOURCE_EXHAUSTED')) {
+            setIsQuotaExceeded(true);
+        } else {
+            console.error("Error sending chat message:", error);
+            const fallbackMessage: ChatMessage = { sender: 'ai', text: T.chatFallback };
+            setChatHistory(prev => [...prev, fallbackMessage]);
+        }
       } finally {
         setIsAiChatting(false);
       }
@@ -211,22 +232,37 @@ export function App() {
             return;
         }
         
-        const aiCardToPlay = await getAIMove(aiHand, briscolaSuit, cardsOnTable, language);
-        
-        playSound('card-place');
-        setAiHand(prev => prev.filter(c => getCardId(c, language) !== getCardId(aiCardToPlay, language)));
-        setCardsOnTable(prev => [...prev, aiCardToPlay]);
+        try {
+            const aiCardToPlay = gameMode === 'online'
+                ? await getAIMove(aiHand, briscolaSuit, cardsOnTable, language)
+                : await new Promise<Card>(resolve => setTimeout(() => resolve(getLocalAIMove(aiHand, briscolaSuit, cardsOnTable)), 750));
 
-        if (trickStarter === 'ai') {
-          setTurn('human');
-          setHasChattedThisTurn(false);
-          setMessage(T.aiPlayedYourTurn(aiName));
+            playSound('card-place');
+            setAiHand(prev => prev.filter(c => getCardId(c, language) !== getCardId(aiCardToPlay, language)));
+            setCardsOnTable(prev => [...prev, aiCardToPlay]);
+
+            if (trickStarter === 'ai') {
+              setTurn('human');
+              setHasChattedThisTurn(false);
+              setMessage(T.aiPlayedYourTurn(aiName));
+            }
+        } catch (error) {
+            if (error instanceof QuotaExceededError) {
+                setIsQuotaExceeded(true);
+            } else {
+                console.error("Error during AI move, AI will not play a card.", error);
+            }
+        } finally {
+            setIsAiThinkingMove(false);
         }
-        setIsAiThinkingMove(false);
       };
-      performAiMove();
+
+      if (!isQuotaExceeded) {
+          performAiMove();
+      }
     }
-  }, [turn, isProcessing, phase, cardsOnTable, aiHand, briscolaSuit, trickStarter, aiName, language, T]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [turn, isProcessing, phase, cardsOnTable, aiHand, gameMode]);
 
   useEffect(() => {
     const resolveTrick = async () => {
@@ -257,17 +293,32 @@ export function App() {
           const humanPlayedCard = trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1];
           const aiPlayedCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
           
-          setIsAiGeneratingMessage(true);
-          const waifuMsg = await getAIWaifuTrickMessage(
-            currentWaifu,
-            aiEmotionalState,
-            humanPlayedCard,
-            aiPlayedCard,
-            points,
-            language
-          );
-          setIsAiGeneratingMessage(false);
-          setChatHistory(prev => [...prev, {sender: 'ai', text: waifuMsg}]);
+          if (gameMode === 'fallback') {
+            const fallbackMsg = getFallbackWaifuMessage(currentWaifu, aiEmotionalState, language);
+            setChatHistory(prev => [...prev, {sender: 'ai', text: fallbackMsg}]);
+          } else {
+            setIsAiGeneratingMessage(true);
+            try {
+              const waifuMsg = await getAIWaifuTrickMessage(
+                currentWaifu,
+                aiEmotionalState,
+                humanPlayedCard,
+                aiPlayedCard,
+                points,
+                language
+              );
+              setChatHistory(prev => [...prev, {sender: 'ai', text: waifuMsg}]);
+            } catch (error) {
+              if (error instanceof QuotaExceededError) {
+                  setIsQuotaExceeded(true);
+              } else {
+                  console.error("Error generating waifu message:", error);
+              }
+            } finally {
+              setIsAiGeneratingMessage(false);
+            }
+          }
+
           trickMessage = T.aiWonTrick(aiName, points);
           playSound('trick-lose');
         }
@@ -325,8 +376,11 @@ export function App() {
     if (cardsOnTable.length === 2 && phase === 'playing') {
       resolveTrick();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cardsOnTable, phase]);
+  }, [
+    T, aiEmotionalState, aiHand, aiName, briscolaCard, briscolaSuit, cardsOnTable,
+    currentWaifu, deck, gameMode, humanHand, humanScore, aiScore, language,
+    phase, trickStarter
+  ]);
 
 
   if (phase === 'menu' || !currentWaifu) {
@@ -355,6 +409,7 @@ export function App() {
             isAiThinkingMove={isAiThinkingMove}
             turn={turn}
             onPlayCard={handlePlayCard}
+            onGoToMenu={handleGoToMenu}
             language={language}
             backgroundUrl={backgroundUrl}
         />
@@ -368,6 +423,17 @@ export function App() {
                 language={language}
             />
         )}
+        
+        {isQuotaExceeded && (
+            <QuotaExceededModal
+                language={language}
+                onContinue={() => {
+                    setGameMode('fallback');
+                    setIsQuotaExceeded(false);
+                    setMessage(T.offlineModeActive);
+                }}
+            />
+        )}
 
         <ChatPanel 
             history={chatHistory} 
@@ -379,6 +445,7 @@ export function App() {
             hasChattedThisTurn={hasChattedThisTurn}
             onModalClose={() => setIsChatModalOpen(false)}
             lang={language}
+            gameMode={gameMode}
         />
         <button className="chat-fab" onClick={() => setIsChatModalOpen(true)} aria-label="Apri chat">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">

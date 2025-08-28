@@ -213,7 +213,7 @@ body {
 }
 
 .card {
-  width: 100px;
+  width: 84px; /* Aspect ratio 9:16 (1080x1920) */
   height: 150px;
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.1);
@@ -240,9 +240,6 @@ body {
 
 .card-back {
   background-color: #1a1a2e; /* Fallback color */
-  background-image: url('https://i.pinimg.com/736x/8f/37/5b/8f375b42023778a7c6451a37c54101e4.jpg');
-  background-size: cover;
-  background-position: center;
   border: 3px solid #e0e0e0;
   box-shadow: 0 2px 4px rgba(0,0,0,0.15), 0 5px 15px rgba(0,0,0,0.1);
 }
@@ -302,6 +299,32 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 10;
+}
+
+.back-button {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 20;
+  transition: background-color 0.2s;
+}
+.back-button:hover, .back-button:focus {
+  background: rgba(0, 0, 0, 0.6);
+  outline: 2px solid var(--primary-accent);
+}
+.back-button svg {
+    width: 24px;
+    height: 24px;
 }
 
 .spinner {
@@ -367,6 +390,36 @@ body {
 .game-over-modal button:hover, .game-over-modal button:focus {
   background-color: var(--primary-accent-hover);
 }
+
+.game-over-modal .donation-link {
+  display: inline-block;
+  margin: 1rem 0;
+  padding: 0.7rem 2rem;
+  border-radius: 8px;
+  background-color: var(--primary-accent);
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+.game-over-modal .donation-link:hover, .game-over-modal .donation-link:focus {
+  background-color: var(--primary-accent-hover);
+}
+.game-over-modal .quota-info {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #ccc;
+  font-style: italic;
+}
+
+.game-over-modal .modal-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
 
 /* --- Chat Panel --- */
 .chat-panel {
@@ -626,7 +679,7 @@ body {
     gap: 8px;
   }
   .card {
-    width: 70px;
+    width: 59px; /* Aspect ratio 9:16 (1080x1920) */
     height: 105px;
   }
   .deck-pile {
@@ -663,7 +716,7 @@ body {
     min-height: 105px;
   }
   .card {
-    width: 60px;
+    width: 51px; /* Aspect ratio 9:16 (1080x1920) */
     height: 90px;
     border-radius: 5px;
   }

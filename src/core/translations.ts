@@ -27,6 +27,9 @@ export const translations = {
     aiTurnMessage: (name: string) => `Tocca a ${name}.`,
     scoreYou: "Tu",
     gameBoardBackground: "Sfondo del tavolo da gioco",
+    offlineModeActive: "Limite API raggiunto. Si continua con l'IA locale.",
+    backToMenu: "Torna al Menu",
+    cardBack: "Retro della carta",
     // Game Over
     gameOverTitle: "Partita Terminata",
     finalScore: "Punteggio Finale:",
@@ -40,6 +43,7 @@ export const translations = {
     chatPlaceholder: "Scrivi un messaggio...",
     chatPlaceholderChatted: "Hai già chattato in questo turno.",
     chatPlaceholderNotYourTurn: "Attendi il tuo turno per chattare.",
+    chatPlaceholderOffline: "La chat è disabilitata in modalità offline.",
     sendMessage: "Invia messaggio",
     sendMessageInProgress: "Invio in corso",
     chatFallback: "Scusa, senpai, mi sento un po' confusa...",
@@ -76,6 +80,14 @@ Basandoti sulla tua personalità e sui punti che hai vinto, genera una risposta 
 Sii maliziosa, un po' stuzzicante e leggermente allusiva, specialmente se i punti sono alti. Sii creativa e unica.
 La risposta deve essere in italiano.
 `,
+    // Quota Exceeded
+    quotaExceeded: {
+        title: "Quota API Esaurita",
+        message: "Purtroppo abbiamo raggiunto il limite di richieste giornaliere all'IA. Puoi continuare a giocare contro un'IA più semplice.",
+        donationText: "Supporta il Progetto",
+        continueGame: "Continua a Giocare",
+        quotaInfo: "Le quote si resettano ogni giorno. Grazie per la tua pazienza!",
+    },
   },
   en: {
     // Menu
@@ -99,6 +111,9 @@ La risposta deve essere in italiano.
     aiTurnMessage: (name: string) => `${name}'s turn.`,
     scoreYou: "You",
     gameBoardBackground: "Game board background",
+    offlineModeActive: "API limit reached. Continuing with local AI.",
+    backToMenu: "Back to Menu",
+    cardBack: "Card back",
     // Game Over
     gameOverTitle: "Game Over",
     finalScore: "Final Score:",
@@ -112,6 +127,7 @@ La risposta deve essere in italiano.
     chatPlaceholder: "Write a message...",
     chatPlaceholderChatted: "You've already chatted this turn.",
     chatPlaceholderNotYourTurn: "Wait for your turn to chat.",
+    chatPlaceholderOffline: "Chat is disabled in offline mode.",
     sendMessage: "Send message",
     sendMessageInProgress: "Sending...",
     chatFallback: "Sorry, senpai, I'm a bit confused right now...",
@@ -148,5 +164,13 @@ Based on your personality and the points you won, generate a short, in-character
 Make it flirty, a bit teasing, and slightly suggestive, especially if the points are high. Be creative and unique.
 The response must be in English.
 `,
+    // Quota Exceeded
+    quotaExceeded: {
+        title: "API Quota Exceeded",
+        message: "Unfortunately, we've hit our daily AI request limit. You can continue playing against a simpler AI.",
+        donationText: "Support the Project",
+        continueGame: "Continue Playing",
+        quotaInfo: "Quotas reset daily. Thanks for your patience!",
+    },
   }
 };

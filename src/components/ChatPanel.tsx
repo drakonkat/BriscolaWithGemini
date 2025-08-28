@@ -6,7 +6,9 @@ import { useEffect, useState, useRef } from 'react';
 import { translations } from '../core/translations';
 import type { ChatMessage, Language } from '../core/types';
 
-export const ChatPanel = ({ history, aiName, onSendMessage, isChatting, isAiGeneratingMessage, isPlayerTurn, hasChattedThisTurn, onModalClose, lang }: { history: ChatMessage[], aiName: string, onSendMessage: (msg: string) => void, isChatting: boolean, isAiGeneratingMessage: boolean, isPlayerTurn: boolean, hasChattedThisTurn: boolean, onModalClose?: () => void, lang: Language }) => {
+type GameMode = 'online' | 'fallback';
+
+export const ChatPanel = ({ history, aiName, onSendMessage, isChatting, isAiGeneratingMessage, isPlayerTurn, hasChattedThisTurn, onModalClose, lang, gameMode }: { history: ChatMessage[], aiName: string, onSendMessage: (msg: string) => void, isChatting: boolean, isAiGeneratingMessage: boolean, isPlayerTurn: boolean, hasChattedThisTurn: boolean, onModalClose?: () => void, lang: Language, gameMode: GameMode }) => {
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const MAX_MESSAGE_LENGTH = 150;
@@ -26,9 +28,10 @@ export const ChatPanel = ({ history, aiName, onSendMessage, isChatting, isAiGene
     }
   };
 
-  const isDisabled = !isPlayerTurn || isChatting || hasChattedThisTurn;
+  const isDisabled = !isPlayerTurn || isChatting || hasChattedThisTurn || gameMode === 'fallback';
   
   const getPlaceholder = () => {
+    if (gameMode === 'fallback') return T.chatPlaceholderOffline;
     if (hasChattedThisTurn) return T.chatPlaceholderChatted;
     if (!isPlayerTurn) return T.chatPlaceholderNotYourTurn;
     return T.chatPlaceholder;
