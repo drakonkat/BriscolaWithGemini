@@ -34,6 +34,8 @@ const translations = {
     language: "Lingua",
     rulesTitle: "Regole del Punteggio",
     winCondition: "Il mazzo ha un totale di 120 punti. Il primo giocatore a totalizzare più di 60 punti vince la partita.",
+    otherCards: "Altre carte",
+    scorePoints: (points: number) => `${points} punti`,
     // Game
     welcomeMessage: "Benvenuto! Inizia una nuova partita.",
     yourTurn: "Tocca a te iniziare.",
@@ -117,6 +119,8 @@ In base a questa situazione, quale carta dalla tua mano è la migliore da giocar
     language: "Language",
     rulesTitle: "Scoring Rules",
     winCondition: "The deck has a total of 120 points. The first player to score more than 60 points wins the game.",
+    otherCards: "Other cards",
+    scorePoints: (points: number) => `${points} points`,
     // Game
     welcomeMessage: "Welcome! Start a new game.",
     yourTurn: "It's your turn to start.",
@@ -636,12 +640,12 @@ function BriscolaGame() {
         <div className="rules">
           <h2>{T.rulesTitle}</h2>
           <ul>
-            <li><strong>{T.values[0]}:</strong> 11 punti</li>
-            <li><strong>{T.values[1]}:</strong> 10 punti</li>
-            <li><strong>{T.values[2]}:</strong> 4 punti</li>
-            <li><strong>{T.values[3]}:</strong> 3 punti</li>
-            <li><strong>{T.values[4]}:</strong> 2 punti</li>
-            <li><strong>Altre carte:</strong> 0 punti</li>
+            <li><strong>{T.values[0]}:</strong> {T.scorePoints(11)}</li>
+            <li><strong>{T.values[1]}:</strong> {T.scorePoints(10)}</li>
+            <li><strong>{T.values[2]}:</strong> {T.scorePoints(4)}</li>
+            <li><strong>{T.values[3]}:</strong> {T.scorePoints(3)}</li>
+            <li><strong>{T.values[4]}:</strong> {T.scorePoints(2)}</li>
+            <li><strong>{T.otherCards}:</strong> {T.scorePoints(0)}</li>
           </ul>
           <p className="win-condition">{T.winCondition}</p>
         </div>
