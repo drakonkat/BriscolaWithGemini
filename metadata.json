@@ -1,0 +1,5 @@
+{
+  "name": "Briscola con Gemini AI",
+  "description": "Un gioco di Briscola per un singolo giocatore contro un'intelligenza artificiale avanzata basata su Gemini.",
+  "requestFramePermissions": []
+}
