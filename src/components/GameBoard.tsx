@@ -18,9 +18,11 @@ interface GameBoardProps {
     cardsOnTable: Card[];
     message: string;
     isProcessing: boolean;
+    isAiThinkingMove: boolean; // Nuovo prop
     turn: Player;
     onPlayCard: (card: Card) => void;
     language: Language;
+    backgroundUrl: string;
 }
 
 export const GameBoard = ({
@@ -34,15 +36,20 @@ export const GameBoard = ({
     cardsOnTable,
     message,
     isProcessing,
+    isAiThinkingMove,
     turn,
     onPlayCard,
-    language
+    language,
+    backgroundUrl
 }: GameBoardProps) => {
 
     const T = translations[language];
 
     return (
         <main className="game-board">
+            <img src={backgroundUrl} alt={T.gameBoardBackground} className="game-board-background" />
+            <div className="message-log" aria-live="polite">{message}</div>
+
             <div className="player-area ai-area">
                 <div className="score">{aiName}: {aiScore}</div>
                 <div className="hand">
@@ -58,9 +65,8 @@ export const GameBoard = ({
                 </div>
                 <div className="played-cards">
                     {cardsOnTable.map((card) => <CardView key={getCardId(card, language)} card={card} lang={language} />)}
-                    {isProcessing && <div className="spinner" aria-label="L'IA sta pensando"></div>}
+                    {isAiThinkingMove && <div className="spinner" aria-label="L'IA sta pensando"></div>}
                 </div>
-                <div className="message-log" aria-live="polite">{message}</div>
             </div>
 
             <div className="player-area human-area">

@@ -6,7 +6,7 @@ import { useEffect, useState, useRef } from 'react';
 import { translations } from '../core/translations';
 import type { ChatMessage, Language } from '../core/types';
 
-export const ChatPanel = ({ history, aiName, onSendMessage, isChatting, isPlayerTurn, hasChattedThisTurn, onModalClose, lang }: { history: ChatMessage[], aiName: string, onSendMessage: (msg: string) => void, isChatting: boolean, isPlayerTurn: boolean, hasChattedThisTurn: boolean, onModalClose?: () => void, lang: Language }) => {
+export const ChatPanel = ({ history, aiName, onSendMessage, isChatting, isAiGeneratingMessage, isPlayerTurn, hasChattedThisTurn, onModalClose, lang }: { history: ChatMessage[], aiName: string, onSendMessage: (msg: string) => void, isChatting: boolean, isAiGeneratingMessage: boolean, isPlayerTurn: boolean, hasChattedThisTurn: boolean, onModalClose?: () => void, lang: Language }) => {
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const MAX_MESSAGE_LENGTH = 150;
@@ -16,7 +16,7 @@ export const ChatPanel = ({ history, aiName, onSendMessage, isChatting, isPlayer
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  useEffect(scrollToBottom, [history]);
+  useEffect(scrollToBottom, [history, isChatting, isAiGeneratingMessage]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +50,7 @@ export const ChatPanel = ({ history, aiName, onSendMessage, isChatting, isPlayer
             <div className="message">{msg.text}</div>
           </div>
         ))}
-        {isChatting && history[history.length - 1]?.sender === 'human' && (
+        {(isChatting || isAiGeneratingMessage) && (
             <div className="message-container ai">
                 <div className="message typing-indicator">
                     <span></span><span></span><span></span>

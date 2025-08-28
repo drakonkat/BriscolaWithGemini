@@ -33,16 +33,24 @@ export function App() {
   const [humanScore, setHumanScore] = useState(0);
   const [aiScore, setAiScore] = useState(0);
   const [trickStarter, setTrickStarter] = useState<Player>('human');
-  const [isProcessing, setIsProcessing] = useState(false); // Master lock for AI moves and trick resolution
   const [message, setMessage] = useState('');
   const [currentWaifu, setCurrentWaifu] = useState<Waifu | null>(null);
   
+  // Stati di caricamento specifici
+  const [isAiThinkingMove, setIsAiThinkingMove] = useState(false);
+  const [isResolvingTrick, setIsResolvingTrick] = useState(false);
+  const [isAiGeneratingMessage, setIsAiGeneratingMessage] = useState(false);
+
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatSession, setChatSession] = useState<Chat | null>(null);
   const [isAiChatting, setIsAiChatting] = useState(false);
   const [hasChattedThisTurn, setHasChattedThisTurn] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [aiEmotionalState, setAiEmotionalState] = useState<GameEmotionalState>('neutral');
+  const [backgroundUrl, setBackgroundUrl] = useState('');
+
+  // Stato derivato per disabilitare l'input dell'utente
+  const isProcessing = isAiThinkingMove || isResolvingTrick;
 
   const T = useMemo(() => translations[language], [language]);
   const aiName = useMemo(() => currentWaifu?.name ?? '', [currentWaifu]);
@@ -99,6 +107,11 @@ export function App() {
   }, []);
 
   const startGame = useCallback(() => {
+    const bgIndex = Math.floor(Math.random() * 3) + 1;
+    const isDesktop = window.innerWidth > 1024;
+    const backgroundPrefix = isDesktop ? 'landscape' : 'background';
+    setBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/${backgroundPrefix}${bgIndex}.png`);
+    
     playSound('game-start');
     const newWaifu = WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
     setCurrentWaifu(newWaifu);
@@ -190,11 +203,11 @@ export function App() {
   useEffect(() => {
     if (turn === 'ai' && !isProcessing && phase === 'playing' && cardsOnTable.length < 2 && aiHand.length > 0) {
       const performAiMove = async () => {
-        setIsProcessing(true);
+        setIsAiThinkingMove(true);
         setMessage(T.aiThinking(aiName));
         
         if (!briscolaSuit) {
-            setIsProcessing(false);
+            setIsAiThinkingMove(false);
             return;
         }
         
@@ -208,8 +221,8 @@ export function App() {
           setTurn('human');
           setHasChattedThisTurn(false);
           setMessage(T.aiPlayedYourTurn(aiName));
-          setIsProcessing(false);
         }
+        setIsAiThinkingMove(false);
       };
       performAiMove();
     }
@@ -217,11 +230,11 @@ export function App() {
 
   useEffect(() => {
     const resolveTrick = async () => {
-        setIsProcessing(true);
+        setIsResolvingTrick(true);
         await new Promise(resolve => setTimeout(resolve, 1500));
 
         if(!briscolaSuit || !currentWaifu) {
-            setIsProcessing(false);
+            setIsResolvingTrick(false);
             return;
         }
         const winner = getTrickWinner(cardsOnTable, trickStarter, briscolaSuit);
@@ -243,7 +256,8 @@ export function App() {
 
           const humanPlayedCard = trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1];
           const aiPlayedCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
-
+          
+          setIsAiGeneratingMessage(true);
           const waifuMsg = await getAIWaifuTrickMessage(
             currentWaifu,
             aiEmotionalState,
@@ -252,6 +266,7 @@ export function App() {
             points,
             language
           );
+          setIsAiGeneratingMessage(false);
           setChatHistory(prev => [...prev, {sender: 'ai', text: waifuMsg}]);
           trickMessage = T.aiWonTrick(aiName, points);
           playSound('trick-lose');
@@ -304,7 +319,7 @@ export function App() {
             }
             setPhase('gameOver');
         }
-        setIsProcessing(false);
+        setIsResolvingTrick(false);
     };
 
     if (cardsOnTable.length === 2 && phase === 'playing') {
@@ -337,9 +352,11 @@ export function App() {
             cardsOnTable={cardsOnTable}
             message={message}
             isProcessing={isProcessing}
+            isAiThinkingMove={isAiThinkingMove}
             turn={turn}
             onPlayCard={handlePlayCard}
             language={language}
+            backgroundUrl={backgroundUrl}
         />
         
         {phase === 'gameOver' && (
@@ -357,6 +374,7 @@ export function App() {
             aiName={aiName} 
             onSendMessage={handleSendChatMessage}
             isChatting={isAiChatting}
+            isAiGeneratingMessage={isAiGeneratingMessage}
             isPlayerTurn={turn === 'human'}
             hasChattedThisTurn={hasChattedThisTurn}
             onModalClose={() => setIsChatModalOpen(false)}

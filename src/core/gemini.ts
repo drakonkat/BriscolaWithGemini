@@ -10,6 +10,33 @@ import type { Card, GameEmotionalState, Language, Suit, Waifu } from './types';
 
 export const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
 
+/**
+ * Esegue una chiamata API con una logica di retry con backoff esponenziale.
+ * @param apiCall La funzione che esegue la chiamata API.
+ * @param maxRetries Numero massimo di tentativi.
+ * @param initialDelay Ritardo iniziale in millisecondi.
+ * @returns La promessa risolta dalla chiamata API.
+ */
+const withRetry = async <T>(apiCall: () => Promise<T>, maxRetries = 3, initialDelay = 1000): Promise<T> => {
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            return await apiCall();
+        } catch (error: any) {
+            const isRateLimitError = error.toString().includes('429') || error.toString().includes('RESOURCE_EXHAUSTED');
+
+            if (isRateLimitError && i < maxRetries - 1) {
+                const delay = initialDelay * Math.pow(2, i);
+                console.warn(`Rate limit superato. Riprovo in ${delay}ms... (Tentativo ${i + 1}/${maxRetries - 1})`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } else {
+                throw error; // Rilancia l'errore se non è un errore di rate limit o se i tentativi sono esauriti
+            }
+        }
+    }
+    throw new Error('Numero massimo di tentativi superato.');
+};
+
+
 export const getAIMove = async (
   aiHand: Card[],
   briscolaSuit: Suit,
@@ -25,7 +52,7 @@ export const getAIMove = async (
   
   const prompt = langStrings.aiMovePrompt(humanCardId, briscolaSuitId, aiHandIds);
 
-  try {
+  const performApiCall = async () => {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
@@ -56,12 +83,16 @@ export const getAIMove = async (
     if (chosenCard) {
       return chosenCard;
     } else {
-      console.warn("AI chose a card not in its hand, playing first valid card.");
+      console.warn("L'IA ha scelto una carta non presente nella sua mano, gioca la prima carta valida.");
       return aiHand[0];
     }
+  };
+
+  try {
+      return await withRetry(performApiCall);
   } catch (error) {
-      console.error("Error getting AI move:", error);
-      // Fallback in case of API error
+      console.error("Errore durante la scelta della mossa dell'IA:", error);
+      // Fallback in caso di errore API
       return aiHand[Math.floor(Math.random() * aiHand.length)];
   }
 };
@@ -87,7 +118,7 @@ export const getAIWaifuTrickMessage = async (
       points
   );
 
-  try {
+  const performApiCall = async () => {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
@@ -97,8 +128,12 @@ export const getAIWaifuTrickMessage = async (
       }
     });
     return response.text.trim();
+  };
+
+  try {
+    return await withRetry(performApiCall);
   } catch (error) {
-    console.error("Error generating waifu trick message:", error);
+    console.error("Errore durante la generazione del messaggio della waifu:", error);
     return T.chatFallback;
   }
 };

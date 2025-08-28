@@ -26,6 +26,7 @@ export const translations = {
     yourTurnMessage: "Tocca a te.",
     aiTurnMessage: (name: string) => `Tocca a ${name}.`,
     scoreYou: "Tu",
+    gameBoardBackground: "Sfondo del tavolo da gioco",
     // Game Over
     gameOverTitle: "Partita Terminata",
     finalScore: "Punteggio Finale:",
@@ -97,6 +98,7 @@ La risposta deve essere in italiano.
     yourTurnMessage: "Your turn.",
     aiTurnMessage: (name: string) => `${name}'s turn.`,
     scoreYou: "You",
+    gameBoardBackground: "Game board background",
     // Game Over
     gameOverTitle: "Game Over",
     finalScore: "Final Score:",

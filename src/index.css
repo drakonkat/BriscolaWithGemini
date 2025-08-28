@@ -154,6 +154,20 @@ body {
   border-radius: 20px 0 0 20px;
   position: relative;
   overflow: hidden;
+  padding-top: 75px; /* Aggiunge spazio in alto per la barra dei messaggi */
+}
+
+.game-board-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: blur(8px) brightness(0.7);
+  transform: scale(1.1); /* Per nascondere i bordi sfocati */
+  z-index: 0;
 }
 
 .player-area {
@@ -164,6 +178,7 @@ body {
   padding: 1rem;
   min-height: 200px;
   position: relative;
+  z-index: 1;
 }
 .human-area {
   justify-content: flex-end;
@@ -177,6 +192,7 @@ body {
   justify-content: space-around;
   align-items: center;
   position: relative;
+  z-index: 1;
 }
 
 .hand {
@@ -270,7 +286,7 @@ body {
 
 .message-log {
   position: absolute;
-  bottom: 10px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
@@ -285,6 +301,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 10;
 }
 
 .spinner {
@@ -662,15 +679,6 @@ body {
   }
   .played-cards {
     order: 2;
-  }
-  .message-log {
-    position: relative;
-    order: 3;
-    bottom: auto;
-    transform: none;
-    left: auto;
-    margin-top: 1rem;
-    width: 100%;
   }
   .deck-pile .card:last-child {
     transform: rotate(90deg) translateX(25px);
