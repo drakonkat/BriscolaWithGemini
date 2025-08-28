@@ -12,7 +12,7 @@ import { POINTS } from '../core/constants';
 import { translations } from '../core/translations';
 import { createDeck, shuffleDeck, getTrickWinner } from '../core/gameLogic';
 import { getCardId } from '../core/utils';
-import { QuotaExceededError, ai, getAIMove, getAIWaifuTrickMessage } from '../core/gemini';
+import { QuotaExceededError, ai, getAIWaifuTrickMessage } from '../core/gemini';
 import { getLocalAIMove, getFallbackWaifuMessage } from '../core/localAI';
 import { WAIFUS } from '../core/waifus';
 // FIX: The 'Suit' type is now correctly imported from the local types definition file.
@@ -239,161 +239,145 @@ export function App() {
         setIsAiThinkingMove(true);
         setMessage(T.aiThinking(aiName));
         
-        if (!briscolaSuit) {
-            setIsAiThinkingMove(false);
-            return;
-        }
-        
         try {
-            const aiCardToPlay = gameMode === 'online'
-                ? await getAIMove(aiHand, briscolaSuit, cardsOnTable, language)
-                : await new Promise<Card>(resolve => setTimeout(() => resolve(getLocalAIMove(aiHand, briscolaSuit, cardsOnTable)), 750));
+          if (!briscolaSuit) {
+            return; // Safeguard
+          }
+          
+          // Always use the local AI for card selection, with a delay to simulate thinking.
+          const aiCardToPlay = await new Promise<Card>(resolve =>
+            setTimeout(() => resolve(getLocalAIMove(aiHand, briscolaSuit, cardsOnTable)), 750)
+          );
 
-            playSound('card-place');
-            setAiHand(prev => prev.filter(c => getCardId(c, language) !== getCardId(aiCardToPlay, language)));
-            setCardsOnTable(prev => [...prev, aiCardToPlay]);
+          playSound('card-place');
+          setAiHand(prev => prev.filter(c => getCardId(c, language) !== getCardId(aiCardToPlay, language)));
+          setCardsOnTable(prev => [...prev, aiCardToPlay]);
 
-            if (trickStarter === 'ai') {
-              setTurn('human');
-              setHasChattedThisTurn(false);
-              setMessage(T.aiPlayedYourTurn(aiName));
-            }
+          if (trickStarter === 'ai') {
+            setTurn('human');
+            setHasChattedThisTurn(false);
+            setMessage(T.aiPlayedYourTurn(aiName));
+          }
         } catch (error) {
-            if (error instanceof QuotaExceededError) {
-                setIsQuotaExceeded(true);
-            } else {
-                console.error("Error during AI move, AI will not play a card.", error);
-            }
+          console.error("Error during local AI move, AI will not play a card.", error);
         } finally {
-            setIsAiThinkingMove(false);
+          setIsAiThinkingMove(false);
         }
       };
 
-      if (!isQuotaExceeded) {
-          performAiMove();
-      }
+      performAiMove();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [turn, isProcessing, phase, cardsOnTable, aiHand, gameMode]);
+  }, [turn, isProcessing, phase, cardsOnTable, aiHand]);
 
   useEffect(() => {
+    if (cardsOnTable.length !== 2 || phase !== 'playing' || isResolvingTrick) {
+      return;
+    }
+
     const resolveTrick = async () => {
-        setIsResolvingTrick(true);
-        await new Promise(resolve => setTimeout(resolve, 1500));
+      setIsResolvingTrick(true);
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-        if(!briscolaSuit || !currentWaifu) {
-            setIsResolvingTrick(false);
-            return;
-        }
-        const winner = getTrickWinner(cardsOnTable, trickStarter, briscolaSuit);
-        const points = POINTS[cardsOnTable[0].value] + POINTS[cardsOnTable[1].value];
-        
-        let trickMessage = '';
-        let finalHumanScore = humanScore;
-        let finalAiScore = aiScore;
-
-        if (winner === 'human') {
-          finalHumanScore += points;
-          setHumanScore(finalHumanScore);
-          setHasChattedThisTurn(false);
-          trickMessage = T.youWonTrick(points);
-          playSound('trick-win');
-        } else {
-          finalAiScore += points;
-          setAiScore(finalAiScore);
-
-          const humanPlayedCard = trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1];
-          const aiPlayedCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
-          
-          if (gameMode === 'fallback') {
-            const fallbackMsg = getFallbackWaifuMessage(currentWaifu, aiEmotionalState, language, usedFallbackMessages);
-            setUsedFallbackMessages(prev => [...prev, fallbackMsg]);
-            setChatHistory(prev => [...prev, {sender: 'ai', text: fallbackMsg}]);
-          } else {
-            setIsAiGeneratingMessage(true);
-            try {
-              const waifuMsg = await getAIWaifuTrickMessage(
-                currentWaifu,
-                aiEmotionalState,
-                humanPlayedCard,
-                aiPlayedCard,
-                points,
-                language
-              );
-              setChatHistory(prev => [...prev, {sender: 'ai', text: waifuMsg}]);
-            } catch (error) {
-              if (error instanceof QuotaExceededError) {
-                  setIsQuotaExceeded(true);
-              } else {
-                  console.error("Error generating waifu message:", error);
-              }
-            } finally {
-              setIsAiGeneratingMessage(false);
-            }
-          }
-
-          trickMessage = T.aiWonTrick(aiName, points);
-          playSound('trick-lose');
-        }
-        
-        let newDeck = [...deck];
-        let newHumanHand = [...humanHand];
-        let newAiHand = [...aiHand];
-
-        const drawCard = (): Card | undefined => {
-          if (newDeck.length > 0) {
-            return newDeck.shift();
-          }
-          if (briscolaCard) {
-            const lastCard = briscolaCard;
-            setBriscolaCard(null);
-            return lastCard;
-          }
-          return undefined;
-        };
-
-        if (winner === 'human') {
-            const humanCard = drawCard();
-            if(humanCard) newHumanHand.push(humanCard);
-            const aiCard = drawCard();
-            if(aiCard) newAiHand.push(aiCard);
-        } else {
-            const aiCard = drawCard();
-            if(aiCard) newAiHand.push(aiCard);
-            const humanCard = drawCard();
-            if(humanCard) newHumanHand.push(humanCard);
-        }
-
-        setDeck(newDeck);
-        setHumanHand(newHumanHand);
-        setAiHand(newAiHand);
-        
-        setCardsOnTable([]);
-        setTurn(winner);
-        setTrickStarter(winner);
-        setMessage(`${trickMessage} ${winner === 'human' ? T.yourTurnMessage : T.aiTurnMessage(aiName)}`)
-
-        if (newHumanHand.length === 0 && newAiHand.length === 0) {
-            if (finalHumanScore > 60) {
-              playSound('game-win');
-            } else if (finalAiScore > 60) {
-              playSound('game-lose');
-            } else {
-              playSound('trick-win'); // Neutral-positive sound for a tie
-            }
-            setPhase('gameOver');
-        }
+      if (!briscolaSuit || !currentWaifu) {
         setIsResolvingTrick(false);
+        return;
+      }
+
+      const winner = getTrickWinner(cardsOnTable, trickStarter, briscolaSuit);
+      const points = POINTS[cardsOnTable[0].value] + POINTS[cardsOnTable[1].value];
+      
+      if (winner === 'ai') {
+        const humanPlayedCard = trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1];
+        const aiPlayedCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
+        
+        if (gameMode === 'fallback') {
+          const fallbackMsg = getFallbackWaifuMessage(currentWaifu, aiEmotionalState, language, usedFallbackMessages);
+          setUsedFallbackMessages(prev => [...prev, fallbackMsg]);
+          setChatHistory(prev => [...prev, { sender: 'ai', text: fallbackMsg }]);
+          playSound('chat-notify');
+        } else {
+          setIsAiGeneratingMessage(true);
+          try {
+            const waifuMsg = await getAIWaifuTrickMessage(currentWaifu, aiEmotionalState, humanPlayedCard, aiPlayedCard, points, language);
+            setChatHistory(prev => [...prev, { sender: 'ai', text: waifuMsg }]);
+            playSound('chat-notify');
+          } catch (error) {
+            if (error instanceof QuotaExceededError) {
+              setIsQuotaExceeded(true);
+            } else {
+              console.error("Error generating waifu message:", error);
+            }
+          } finally {
+            setIsAiGeneratingMessage(false);
+          }
+        }
+      }
+
+      const trickMessage = winner === 'human' ? T.youWonTrick(points) : T.aiWonTrick(aiName, points);
+      const soundToPlay = winner === 'human' ? 'trick-win' : 'trick-lose';
+      playSound(soundToPlay);
+
+      const tempDeck = [...deck];
+      let tempBriscolaCard = briscolaCard;
+      const drawnCards: Card[] = [];
+      for (let i = 0; i < 2; i++) {
+        if (tempDeck.length > 0) {
+          drawnCards.push(tempDeck.shift()!);
+        } else if (tempBriscolaCard) {
+          drawnCards.push(tempBriscolaCard);
+          tempBriscolaCard = null;
+        }
+      }
+
+      const newHumanCard = winner === 'human' ? drawnCards[0] : drawnCards[1];
+      const newAiCard = winner === 'human' ? drawnCards[1] : drawnCards[0];
+
+      setDeck(tempDeck);
+      setBriscolaCard(tempBriscolaCard);
+      if (winner === 'human') {
+        setHumanScore(s => s + points);
+        if (newHumanCard) setHumanHand(prev => [...prev, newHumanCard]);
+        if (newAiCard) setAiHand(prev => [...prev, newAiCard]);
+        setHasChattedThisTurn(false);
+      } else {
+        setAiScore(s => s + points);
+        if (newAiCard) setAiHand(prev => [...prev, newAiCard]);
+        if (newHumanCard) setHumanHand(prev => [...prev, newHumanCard]);
+      }
+      
+      setCardsOnTable([]);
+      setTurn(winner);
+      setTrickStarter(winner);
+      setMessage(`${trickMessage} ${winner === 'human' ? T.yourTurnMessage : T.aiTurnMessage(aiName)}`);
+      setIsResolvingTrick(false);
     };
 
-    if (cardsOnTable.length === 2 && phase === 'playing') {
-      resolveTrick();
-    }
+    resolveTrick();
   }, [
-    T, aiEmotionalState, aiHand, aiName, briscolaCard, briscolaSuit, cardsOnTable,
-    currentWaifu, deck, gameMode, humanHand, humanScore, aiScore, language,
-    phase, trickStarter, usedFallbackMessages
+    T, aiEmotionalState, aiName, briscolaCard, briscolaSuit, cardsOnTable,
+    currentWaifu, deck, gameMode, language, phase, isResolvingTrick,
+    trickStarter, usedFallbackMessages
   ]);
+
+  // Separate useEffect for checking game over condition
+  useEffect(() => {
+    if (phase !== 'playing' || humanHand.length > 0 || aiHand.length > 0) {
+      return;
+    }
+
+    // This condition ensures we only check for game over after the last trick is resolved
+    if (deck.length === 0 && !briscolaCard) {
+      if (humanScore > 60) {
+        playSound('game-win');
+      } else if (aiScore > 60) {
+        playSound('game-lose');
+      } else {
+        playSound('trick-win'); // Neutral-positive sound for a tie
+      }
+      setPhase('gameOver');
+    }
+  }, [humanHand, aiHand, deck, briscolaCard, phase, humanScore, aiScore]);
 
 
   if (phase === 'menu' || !currentWaifu) {
