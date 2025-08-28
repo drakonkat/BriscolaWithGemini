@@ -24,6 +24,8 @@ import { GameOverModal } from './GameOverModal';
 import { ChatPanel } from './ChatPanel';
 import { QuotaExceededModal } from './QuotaExceededModal';
 import { RulesModal } from './RulesModal';
+import { WaifuDetailsModal } from './WaifuDetailsModal';
+import { ConfirmationModal } from './ConfirmationModal';
 
 const SCORE_THRESHOLD = 15; // Point difference to trigger personality change
 type GameMode = 'online' | 'fallback';
@@ -55,6 +57,8 @@ export function App() {
   const [hasChattedThisTurn, setHasChattedThisTurn] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
+  const [isWaifuModalOpen, setIsWaifuModalOpen] = useState(false);
+  const [isConfirmLeaveModalOpen, setIsConfirmLeaveModalOpen] = useState(false);
   const [aiEmotionalState, setAiEmotionalState] = useState<GameEmotionalState>('neutral');
   const [backgroundUrl, setBackgroundUrl] = useState('');
   const [menuBackgroundUrl, setMenuBackgroundUrl] = useState('');
@@ -62,6 +66,7 @@ export function App() {
   // Gestione modalità di gioco e quota API
   const [isQuotaExceeded, setIsQuotaExceeded] = useState(false);
   const [gameMode, setGameMode] = useState<GameMode>('online');
+  const [usedFallbackMessages, setUsedFallbackMessages] = useState<string[]>([]);
 
 
   // Stato derivato per disabilitare l'input dell'utente
@@ -159,10 +164,12 @@ export function App() {
     setHasChattedThisTurn(false);
     setIsQuotaExceeded(false);
     setGameMode('online');
+    setUsedFallbackMessages([]); // Reset used fallback messages for new game
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
   }, [language, T, updateChatSession]);
   
-  const handleGoToMenu = () => {
+  const handleConfirmLeave = () => {
+    setIsConfirmLeaveModalOpen(false);
     setPhase('menu');
   };
   
@@ -299,7 +306,8 @@ export function App() {
           const aiPlayedCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
           
           if (gameMode === 'fallback') {
-            const fallbackMsg = getFallbackWaifuMessage(currentWaifu, aiEmotionalState, language);
+            const fallbackMsg = getFallbackWaifuMessage(currentWaifu, aiEmotionalState, language, usedFallbackMessages);
+            setUsedFallbackMessages(prev => [...prev, fallbackMsg]);
             setChatHistory(prev => [...prev, {sender: 'ai', text: fallbackMsg}]);
           } else {
             setIsAiGeneratingMessage(true);
@@ -384,7 +392,7 @@ export function App() {
   }, [
     T, aiEmotionalState, aiHand, aiName, briscolaCard, briscolaSuit, cardsOnTable,
     currentWaifu, deck, gameMode, humanHand, humanScore, aiScore, language,
-    phase, trickStarter
+    phase, trickStarter, usedFallbackMessages
   ]);
 
 
@@ -423,7 +431,7 @@ export function App() {
             isAiThinkingMove={isAiThinkingMove}
             turn={turn}
             onPlayCard={handlePlayCard}
-            onGoToMenu={handleGoToMenu}
+            onGoToMenu={() => setIsConfirmLeaveModalOpen(true)}
             language={language}
             backgroundUrl={backgroundUrl}
         />
@@ -449,9 +457,28 @@ export function App() {
             />
         )}
 
+        <WaifuDetailsModal
+            isOpen={isWaifuModalOpen}
+            onClose={() => setIsWaifuModalOpen(false)}
+            waifu={currentWaifu}
+            language={language}
+        />
+
+        <ConfirmationModal
+            isOpen={isConfirmLeaveModalOpen}
+            onClose={() => setIsConfirmLeaveModalOpen(false)}
+            onConfirm={handleConfirmLeave}
+            title={T.confirmLeave.title}
+            message={T.confirmLeave.message}
+            confirmText={T.confirmLeave.confirm}
+            cancelText={T.confirmLeave.cancel}
+        />
+
         <ChatPanel 
             history={chatHistory} 
-            aiName={aiName} 
+            aiName={aiName}
+            waifu={currentWaifu}
+            onAvatarClick={() => setIsWaifuModalOpen(true)}
             onSendMessage={handleSendChatMessage}
             isChatting={isAiChatting}
             isAiGeneratingMessage={isAiGeneratingMessage}

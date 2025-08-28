@@ -432,9 +432,10 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 100;
+  cursor: pointer;
 }
 
-.game-over-modal, .rules-modal {
+.game-over-modal, .rules-modal, .waifu-details-modal, .confirmation-modal {
   background-color: var(--ui-bg);
   padding: 2rem 3rem;
   border-radius: 12px;
@@ -443,6 +444,7 @@ body {
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   max-width: 90%;
   width: 500px;
+  cursor: default;
 }
 .game-over-modal h2, .rules-modal h2 {
   font-size: 2rem;
@@ -535,6 +537,94 @@ body {
   margin-top: 1.5rem;
 }
 
+/* Waifu Details Modal Specifics */
+.waifu-details-modal {
+  padding: 2rem;
+  width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.waifu-details-image {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  margin: 0 auto 1.5rem auto;
+  border: 5px solid var(--primary-accent);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.waifu-details-modal h3 {
+    font-size: 2rem;
+    color: var(--primary-accent);
+    margin-bottom: 1rem;
+}
+.waifu-details-modal p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #ddd;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+.waifu-details-modal button {
+  font-size: 1.1rem;
+  padding: 0.6rem 1.8rem;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--primary-accent);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 1rem;
+}
+.waifu-details-modal button:hover, .waifu-details-modal button:focus {
+  background-color: var(--primary-accent-hover);
+}
+
+/* Confirmation Modal Specifics */
+.confirmation-modal h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: var(--font-color);
+}
+.confirmation-modal p {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+  color: #ccc;
+}
+.confirmation-modal .modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.confirmation-modal .modal-actions button {
+  font-size: 1.1rem;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 120px;
+}
+.button-secondary {
+  background-color: #555;
+  color: white;
+  border: 1px solid #777;
+}
+.button-secondary:hover, .button-secondary:focus {
+  background-color: #666;
+  border-color: #888;
+}
+.button-danger {
+  background-color: #c53030;
+  color: white;
+}
+.button-danger:hover, .button-danger:focus {
+  background-color: #e53e3e;
+}
+
 
 /* --- Chat Panel --- */
 .chat-panel {
@@ -551,27 +641,50 @@ body {
 }
 
 .chat-header {
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   background-color: #333;
   color: var(--font-color);
-  text-align: center;
   border-bottom: 2px solid #444;
   display: flex;
-  justify-content: center;
   align-items: center;
   position: relative;
+  gap: 0.75rem;
+}
+
+.chat-header-avatar-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  line-height: 0;
+}
+.chat-header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  border: 2px solid var(--primary-accent);
+  transition: transform 0.2s ease;
+}
+.chat-header-avatar-button:hover .chat-header-avatar,
+.chat-header-avatar-button:focus .chat-header-avatar {
+  transform: scale(1.1);
 }
 
 .chat-header h2 {
   font-size: 1.2rem;
   margin: 0;
+  flex-grow: 1;
+  text-align: left;
 }
 
 .chat-modal-close {
   display: none; /* Hidden on desktop */
   position: absolute;
   top: 50%;
-  right: 1rem;
+  right: 0.5rem;
   transform: translateY(-50%);
   background: none;
   border: none;
@@ -893,7 +1006,7 @@ body {
       width: 70px;
       height: 70px;
   }
-  .rules-modal {
+  .rules-modal, .waifu-details-modal, .confirmation-modal {
       padding: 1.5rem 1rem;
   }
   .rules-points-list {

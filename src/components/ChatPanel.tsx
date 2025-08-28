@@ -4,11 +4,39 @@
 */
 import { useEffect, useState, useRef } from 'react';
 import { translations } from '../core/translations';
-import type { ChatMessage, Language } from '../core/types';
+import type { ChatMessage, Language, Waifu } from '../core/types';
 
 type GameMode = 'online' | 'fallback';
 
-export const ChatPanel = ({ history, aiName, onSendMessage, isChatting, isAiGeneratingMessage, isPlayerTurn, hasChattedThisTurn, onModalClose, lang, gameMode }: { history: ChatMessage[], aiName: string, onSendMessage: (msg: string) => void, isChatting: boolean, isAiGeneratingMessage: boolean, isPlayerTurn: boolean, hasChattedThisTurn: boolean, onModalClose?: () => void, lang: Language, gameMode: GameMode }) => {
+type ChatPanelProps = {
+  history: ChatMessage[];
+  aiName: string;
+  onSendMessage: (msg: string) => void;
+  isChatting: boolean;
+  isAiGeneratingMessage: boolean;
+  isPlayerTurn: boolean;
+  hasChattedThisTurn: boolean;
+  onModalClose?: () => void;
+  lang: Language;
+  gameMode: GameMode;
+  waifu: Waifu;
+  onAvatarClick: () => void;
+};
+
+export const ChatPanel = ({ 
+  history, 
+  aiName, 
+  onSendMessage, 
+  isChatting, 
+  isAiGeneratingMessage, 
+  isPlayerTurn, 
+  hasChattedThisTurn, 
+  onModalClose, 
+  lang, 
+  gameMode,
+  waifu,
+  onAvatarClick,
+}: ChatPanelProps) => {
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const MAX_MESSAGE_LENGTH = 150;
@@ -40,6 +68,9 @@ export const ChatPanel = ({ history, aiName, onSendMessage, isChatting, isAiGene
   return (
     <aside className="chat-panel">
       <header className="chat-header">
+        <button className="chat-header-avatar-button" onClick={onAvatarClick} aria-label={`Dettagli su ${aiName}`}>
+          <img src={waifu.avatar} alt={aiName} className="chat-header-avatar" />
+        </button>
         <h2>{T.chatWith(aiName)}</h2>
         <button className="chat-modal-close" onClick={onModalClose} aria-label={T.closeChat}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">

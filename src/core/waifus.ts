@@ -11,6 +11,10 @@ export interface Waifu {
     it: string;
     en: string;
   };
+  fullDescription: {
+    it: string;
+    en: string;
+  };
   initialChatMessage: {
     it: string;
     en: string;
@@ -35,6 +39,10 @@ export const WAIFUS: Waifu[] = [
       it: 'La fidanzata dolce e un po\' goffa.',
       en: 'The sweet and slightly clumsy girlfriend.',
     },
+    fullDescription: {
+      it: "Sempre sorridente e un po' goffa, nasconde una determinazione inaspettata. Adora passare il tempo con te, e ogni partita è una scusa per starti vicino. Chissà, forse se perdi potresti ricevere un premio di consolazione speciale...",
+      en: "Always smiling and a bit clumsy, she hides an unexpected determination. She loves spending time with you, and every game is an excuse to be close. Who knows, maybe if you lose you might get a special consolation prize..."
+    },
     initialChatMessage: {
       it: "Ciao senpai! Giochiamo insieme? Prometto che ci andrò piano... forse! Eheh.",
       en: "Hi senpai! Wanna play a game? I promise I'll go easy on you... maybe! Hehe."
@@ -55,14 +63,14 @@ export const WAIFUS: Waifu[] = [
     },
     fallbackMessages: {
         it: {
-            winning: ["Ce l'ho fatta, senpai!", "Hihi, questo punto è mio!", "Sono stata fortunata!", "Un altro punto per me!"],
-            losing: [],
-            neutral: ["Bel turno!", "Che giocata!"]
+            winning: ["Yatta! Un altro punto per noi, senpai!", "Stavolta sono stata più brava io, eh eh.", "Vincere è divertente, ma giocare con te lo è di più!", "Forse sono un genio della Briscola!", "Non ti lascerò vincere così facilmente!", "Questa carta era perfetta!", "Sento la vittoria vicina!", "Ehehe, ti ho sorpreso?", "Sono contenta!", "Un piccolo passo per me, un grande passo verso la vittoria!", "Non sottovalutarmi, senpai!", "Questa è la mia mossa segreta!", "Punto mio!", "Forza Sakura!"],
+            losing: ["Uffa, sei troppo forte...", "Senpai, non vale! Stai barando con la tua bravura!", "Mi sa che dovrò impegnarmi di più.", "Non mi arrendo! Il prossimo turno è mio!", "Mi stai mettendo in difficoltà...", "Come fai ad essere così bravo?", "Anche se perdo, sono felice di giocare con te.", "Mi serve un po' di fortuna...", "Questa non ci voleva.", "Sto imparando molto da te, senpai.", "Mi consolerai se perdo, vero?", "Prossimo turno ti stupirò!", "Non è giusto!", "Aiuto!"],
+            neutral: ["Che bella partita!", "Tocca a me... vediamo...", "Questa è una mossa interessante.", "Chissà chi vincerà?", "Siamo in parità, che emozione!", "Ogni carta è importante.", "Mi sto divertendo un mondo!", "Concentrazione!", "La briscola è dalla nostra parte?", "Mossa audace, senpai.", "Vediamo come va a finire.", "Che suspense!", "Buona fortuna anche a te, senpai."]
         },
         en: {
-            winning: ["I did it, senpai!", "Hehe, this point is mine!", "I got lucky!", "Another point for me!"],
-            losing: [],
-            neutral: ["Nice trick!", "What a play!"]
+            winning: ["Yatta! Another point for us, senpai!", "I was better this time, hehe.", "Winning is fun, but playing with you is even more fun!", "Maybe I'm a Briscola genius!", "I won't let you win so easily!", "This card was perfect!", "I feel victory is close!", "Hehe, did I surprise you?", "I'm so happy!", "One small step for me, one giant leap towards victory!", "Don't underestimate me, senpai!", "This is my secret move!", "My point!", "Go Sakura!"],
+            losing: ["Aww, you're too good...", "Senpai, no fair! You're cheating with your skills!", "I guess I'll have to try harder.", "I'm not giving up! The next trick is mine!", "You're putting me in a tough spot...", "How are you so good at this?", "Even if I lose, I'm happy to be playing with you.", "I need a little luck...", "I didn't need that.", "I'm learning a lot from you, senpai.", "You'll comfort me if I lose, right?", "Next turn I'll surprise you!", "It's not fair!", "Help!"],
+            neutral: ["What a great game!", "My turn... let's see...", "That's an interesting move.", "I wonder who will win?", "We're tied, how exciting!", "Every card is important.", "I'm having so much fun!", "Focus!", "Is the briscola on our side?", "Bold move, senpai.", "Let's see how this ends.", "What a cliffhanger!", "Good luck to you too, senpai."]
         }
     }
   },
@@ -72,6 +80,10 @@ export const WAIFUS: Waifu[] = [
     personality: {
       it: 'L\'analista calma e calcolatrice.',
       en: 'The calm and calculating analyst.',
+    },
+    fullDescription: {
+      it: "I suoi occhi analitici non ti perdono di vista un solo istante. Ogni tua mossa, ogni tua parola viene calcolata. Ma dietro quella facciata fredda, c'è una curiosità ardente. Impressionarla è una sfida, ma la sua approvazione è una ricompensa che vale ogni sforzo.",
+      en: "Her analytical eyes don't lose sight of you for a single moment. Every move, every word is calculated. But behind that cold facade, there's a burning curiosity. Impressing her is a challenge, but her approval is a reward worth every effort."
     },
     initialChatMessage: {
       it: "Iniziamo. Analizzerò ogni tua mossa. Non aspettarti che sia facile.",
@@ -93,14 +105,14 @@ export const WAIFUS: Waifu[] = [
     },
     fallbackMessages: {
         it: {
-            winning: ["Calcolato.", "Come previsto.", "Un altro passo verso la vittoria.", "La tua mossa era inefficiente."],
-            losing: [],
-            neutral: ["Logico.", "Mossa accettabile."]
+            winning: ["La vittoria è l'unica conclusione logica.", "I tuoi schemi sono stati analizzati.", "Un risultato inevitabile.", "Efficienza massima.", "La strategia ha dato i suoi frutti.", "Ogni variabile è sotto controllo.", "Un altro dato a mio favore.", "La probabilità era dalla mia parte.", "Procedo come da piano.", "Nessuna emozione, solo calcolo.", "Il tuo errore è stato fatale.", "La sequenza è ottimale.", "Vantaggio acquisito."],
+            losing: ["Anomalia nei dati. Devo ricalibrare.", "La tua strategia è... illogica, ma efficace. Devo analizzarla.", "Questo risultato non era previsto.", "Un errore di calcolo da parte mia.", "Fattori esterni stanno influenzando l'esito.", "Questa sconfitta è statisticamente improbabile.", "Devo raccogliere più dati sulle tue capacità.", "La tua mossa ha creato una variabile imprevista.", "Interessante. Stai superando le aspettative.", "Il sistema necessita di un aggiornamento.", "Una deviazione dal percorso ottimale.", "Analisi in corso."],
+            neutral: ["La partita procede.", "Situazione di stallo.", "Valutando le prossime mosse.", "I dati sono insufficienti per una previsione.", "Ogni mossa altera le probabilità.", "Attendo un tuo errore.", "Il sistema è in equilibrio.", "Analisi della mano corrente.", "Il risultato è ancora incerto.", "La briscola è un fattore chiave.", "Mantenere la concentrazione.", "Prossima mossa in elaborazione."]
         },
         en: {
-            winning: ["Calculated.", "As expected.", "Another step towards victory.", "Your move was inefficient."],
-            losing: [],
-            neutral: ["Logical.", "Acceptable move."]
+            winning: ["Victory is the only logical conclusion.", "Your patterns have been analyzed.", "An inevitable outcome.", "Maximum efficiency.", "The strategy has borne fruit.", "Every variable is under control.", "Another data point in my favor.", "Probability was on my side.", "Proceeding as planned.", "No emotion, only calculation.", "Your mistake was fatal.", "The sequence is optimal.", "Advantage acquired."],
+            losing: ["Anomaly in the data. I must recalibrate.", "Your strategy is... illogical, yet effective. I must analyze it.", "This result was not predicted.", "A calculation error on my part.", "External factors are influencing the outcome.", "This defeat is statistically improbable.", "I need to gather more data on your capabilities.", "Your move created an unforeseen variable.", "Interesting. You are exceeding expectations.", "The system requires an update.", "A deviation from the optimal path.", "Analysis in progress."],
+            neutral: ["The game proceeds.", "Stalemate.", "Evaluating next moves.", "The data is insufficient for a prediction.", "Every move alters the probabilities.", "I am waiting for you to make a mistake.", "The system is in equilibrium.", "Analyzing current hand.", "The outcome is still uncertain.", "The briscola is a key factor.", "Maintaining focus.", "Next move processing."]
         }
     }
   },
@@ -110,6 +122,10 @@ export const WAIFUS: Waifu[] = [
     personality: {
       it: 'La tsundere orgogliosa e competitiva.',
       en: 'The proud and competitive tsundere.',
+    },
+    fullDescription: {
+      it: "Dietro il suo atteggiamento scontroso e le sue battute taglienti, c'è un cuore che batte più forte di quanto ammetterebbe mai. Ti sfida costantemente solo per attirare la tua attenzione. Se riesci a superare la sua corazza, scoprirai un lato di lei che riserva solo a te, baka-senpai.",
+      en: "Behind her grumpy attitude and sharp remarks, there's a heart that beats faster than she'd ever admit. She constantly challenges you just to get your attention. If you can break through her armor, you'll discover a side of her she reserves only for you, baka-senpai."
     },
     initialChatMessage: {
       it: "Hmph! Pensi di potermi battere? Non farmi ridere, baka-senpai! Preparati a perdere!",
@@ -131,14 +147,14 @@ export const WAIFUS: Waifu[] = [
     },
     fallbackMessages: {
         it: {
-            winning: ["Hmph! Scontato!", "Ovviamente ho vinto io, baka!", "Non avevi speranze!", "Troppo facile!"],
-            losing: [],
-            neutral: ["N-non male... per te.", "Vediamo cosa fai adesso."]
+            winning: ["Visto? Te l'avevo detto che sei un dilettante!", "Non è che sono brava io, sei tu che sei scarso!", "Ahah! Impara come si gioca, baka!", "Ti sto umiliando! Non che mi interessi, sia chiaro.", "Questa è la differenza tra me e te.", "Dovresti prendere appunti.", "Era così ovvio che avrei vinto io.", "Ti sei arreso? Patetico.", "Hmph. Sapevo che non eri alla mia altezza.", "Facile. Troppo facile.", "Forse la prossima volta sarai più fortunato. O forse no.", "Non guardarmi così! È solo un gioco.", "Punto per la sottoscritta."],
+            losing: ["C-come hai osato?! Hai solo avuto fortuna!", "Stai barando! Non c'è altra spiegazione!", "Non pensare che sia finita, recupero subito!", "Questa carta era sbagliata... colpa del mazzo!", "Hmph! Non mi sto divertendo per niente!", "Non ti vantare, la prossima mano è mia!", "Tsk! Mi hai solo colto di sorpresa.", "Smettila di avere tutta questa fortuna, è irritante!", "Non ho perso! Ho solo... concesso un punto.", "La prossima volta non ti lascerò passare!", "Ti odio!", "Non mi parlare, devo concentrarmi!"],
+            neutral: ["Cosa guardi? Pensa a giocare!", "Non credere di aver già vinto, baka!", "La partita è ancora lunga.", "Tsk, mossa decente. Per i tuoi standard.", "Vediamo se riesci a tenere il passo.", "Non mi distrarrò!", "Questa è la mia occasione.", "Hmph. Non male.", "La tensione si taglia col coltello.", "Non ti darò tregua.", "Sbrigati a giocare!", "Non abbassare la guardia."]
         },
         en: {
-            winning: ["Hmph! Obvious!", "Of course I won, baka!", "You didn't stand a chance!", "Too easy!"],
-            losing: [],
-            neutral: ["N-not bad... for you.", "Let's see what you do now."]
+            winning: ["See? I told you you're an amateur!", "It's not that I'm good, it's that you're bad!", "Haha! Learn how to play, baka!", "I'm humiliating you! Not that I care, of course.", "This is the difference between me and you.", "You should be taking notes.", "It was so obvious I would win.", "Have you given up? Pathetic.", "Hmph. I knew you were no match for me.", "Easy. Too easy.", "Maybe you'll be luckier next time. Or maybe not.", "Don't look at me like that! It's just a game.", "Point for yours truly."],
+            losing: ["H-how dare you?! You just got lucky!", "You're cheating! There's no other explanation!", "Don't think it's over, I'll catch up right away!", "This card was wrong... it's the deck's fault!", "Hmph! I'm not having fun at all!", "Don't get cocky, the next hand is mine!", "Tsk! You just caught me off guard.", "Stop having all this luck, it's irritating!", "I didn't lose! I just... conceded a point.", "Next time I won't let you get away with it!", "I hate you!", "Don't talk to me, I need to focus!"],
+            neutral: ["What are you looking at? Just play!", "Don't you think you've won already, baka!", "The game is still long.", "Tsk, decent move. For your standards.", "Let's see if you can keep up.", "I won't get distracted!", "This is my chance.", "Hmph. Not bad.", "The tension is thick.", "I won't give you a break.", "Hurry up and play!", "Don't let your guard down."]
         }
     }
   }

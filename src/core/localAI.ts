@@ -56,24 +56,33 @@ export const getLocalAIMove = (
 };
 
 /**
- * Seleziona un messaggio di fallback casuale dalla waifu.
+ * Seleziona un messaggio di fallback casuale dalla waifu, evitando le ripetizioni.
  * @param waifu La waifu attuale.
  * @param emotionalState Lo stato emotivo dell'IA.
  * @param lang La lingua corrente.
+ * @param usedMessages Un array di messaggi già utilizzati in questa partita.
  * @returns Una stringa con il messaggio.
  */
 export const getFallbackWaifuMessage = (
     waifu: Waifu,
     emotionalState: GameEmotionalState,
-    lang: Language
+    lang: Language,
+    usedMessages: string[] = []
 ): string => {
-    const messages = waifu.fallbackMessages[lang][emotionalState]
+    const allMessages = waifu.fallbackMessages[lang][emotionalState]
         || waifu.fallbackMessages[lang].neutral
         || [];
 
-    if (messages.length === 0) {
+    if (allMessages.length === 0) {
         return lang === 'it' ? "Bel turno!" : "Nice trick!";
     }
 
-    return messages[Math.floor(Math.random() * messages.length)];
+    let availableMessages = allMessages.filter(msg => !usedMessages.includes(msg));
+    
+    // Se tutti i messaggi per questa categoria sono stati usati, li rende di nuovo disponibili.
+    if (availableMessages.length === 0) {
+        availableMessages = allMessages;
+    }
+
+    return availableMessages[Math.floor(Math.random() * availableMessages.length)];
 };

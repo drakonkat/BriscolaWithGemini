@@ -92,6 +92,13 @@ La risposta deve essere in italiano.
         continueGame: "Continua a Giocare",
         quotaInfo: "Le quote si resettano ogni giorno. Grazie per la tua pazienza!",
     },
+    // Confirm Leave
+    confirmLeave: {
+        title: "Uscire dalla Partita?",
+        message: "Sei sicuro di voler tornare al menu principale? Tutti i progressi della partita andranno persi.",
+        confirm: "Sì, esci",
+        cancel: "Annulla"
+    },
   },
   en: {
     // Menu
@@ -179,6 +186,13 @@ The response must be in English.
         donationText: "Support the Project",
         continueGame: "Continue Playing",
         quotaInfo: "Quotas reset daily. Thanks for your patience!",
+    },
+    // Confirm Leave
+    confirmLeave: {
+        title: "Leave Game?",
+        message: "Are you sure you want to return to the main menu? All game progress will be lost.",
+        confirm: "Yes, Leave",
+        cancel: "Cancel"
     },
   }
 };
