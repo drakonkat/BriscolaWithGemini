@@ -50,24 +50,17 @@ const shuffleDeck = (deck: Card[]): Card[] => {
 
 const getCardId = (card: Card): string => `${card.value} di ${card.suit}`;
 
-const getSuitSymbol = (suit: Suit): string => {
-  switch (suit) {
-    case 'Bastoni': return '♣';
-    case 'Coppe': return '♥';
-    case 'Spade': return '♠';
-    case 'Denari': return '♦';
-  }
+const valueToFileNumber: { [key in Value]: number } = {
+  'Asso': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7,
+  'Fante': 8, 'Cavallo': 9, 'Re': 10,
 };
 
-const getCardShortName = (value: Value): string => {
-    switch (value) {
-        case 'Asso': return 'A';
-        case 'Re': return 'R';
-        case 'Cavallo': return 'C';
-        case 'Fante': return 'F';
-        default: return value;
-    }
-}
+const getCardImagePath = (card: Card): string => {
+  const suit = card.suit.toLowerCase();
+  const number = valueToFileNumber[card.value];
+  return `./assets/${suit}${number}.png`;
+};
+
 
 // --- GEMINI AI LOGIC ---
 
@@ -143,29 +136,27 @@ Based on this state, which card from your hand is the best to play now?
 // --- UI COMPONENTS ---
 
 const CardView = ({ card, isFaceDown, onClick, isPlayable }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean }) => {
-  const cardId = getCardId(card);
-  const suitSymbol = getSuitSymbol(card.suit);
-  const shortName = getCardShortName(card.value);
-  const isRed = card.suit === 'Coppe' || card.suit === 'Denari';
-
   if (isFaceDown) {
+    // Render the card back. Assuming an image `assets/back.png` exists.
     return <div className="card card-back" aria-label="Carta coperta"></div>;
   }
 
+  const cardId = getCardId(card);
+  const imagePath = getCardImagePath(card);
+
   return (
     <div
-      className={`card ${isPlayable ? 'playable' : ''} ${isRed ? 'red' : ''}`}
+      className={`card ${isPlayable ? 'playable' : ''}`}
       onClick={onClick}
       role="button"
       aria-label={cardId}
       tabIndex={isPlayable ? 0 : -1}
     >
-      <div className="card-value-top">{shortName}</div>
-      <div className="card-suit">{suitSymbol}</div>
-      <div className="card-value-bottom">{shortName}</div>
+      <img src={imagePath} alt={cardId} />
     </div>
   );
 };
+
 
 // --- MAIN GAME COMPONENT ---
 
