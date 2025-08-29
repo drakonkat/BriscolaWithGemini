@@ -643,6 +643,14 @@ body {
     line-height: 1.5;
     margin-bottom: 1.5rem;
 }
+.rules-modal h3.rules-subtitle {
+    font-size: 1.5rem;
+    color: #a0d8a2;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #555;
+}
 .rules-points-list {
     list-style: none;
     padding: 0;
@@ -660,6 +668,21 @@ body {
 }
 .rules-point-item span:first-child {
     font-weight: bold;
+}
+.rules-info-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+.rules-info-item {
+    font-size: 1.1rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-accent);
 }
 .rules-modal .modal-actions {
     text-align: center;
@@ -1151,6 +1174,30 @@ body {
   transform: scale(1.05);
   box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 }
+
+.gallery-item.rarity-r {
+  box-shadow: 0 0 0 3px #9b59b6, 0 4px 8px rgba(0,0,0,0.2);
+}
+.gallery-item.rarity-sr {
+  box-shadow: 0 0 0 3px #f1c40f, 0 4px 8px rgba(0,0,0,0.2);
+}
+.gallery-item.rarity-ssr {
+  box-shadow: 0 0 0 3px #3498db, 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.gallery-item.rarity-r:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 4px #9b59b6, 0 8px 16px rgba(0,0,0,0.3);
+}
+.gallery-item.rarity-sr:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 4px #f1c40f, 0 8px 16px rgba(0,0,0,0.3);
+}
+.gallery-item.rarity-ssr:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 4px #3498db, 0 8px 16px rgba(0,0,0,0.3);
+}
+
 .gallery-item.locked {
   background-color: rgba(0,0,0,0.3);
   display: flex;

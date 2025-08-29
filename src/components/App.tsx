@@ -40,13 +40,18 @@ const SCORE_THRESHOLD = 15; // Point difference to trigger personality change
 type GameMode = 'online' | 'fallback';
 type SnackbarType = 'success' | 'warning';
 
-const BACKGROUNDS = [
-    'https://s3.tebi.io/waifubriscola/background/landscape1.png',
-    'https://s3.tebi.io/waifubriscola/background/landscape2.png',
-    'https://s3.tebi.io/waifubriscola/background/landscape3.png',
-    'https://s3.tebi.io/waifubriscola/background/background1.png',
-    'https://s3.tebi.io/waifubriscola/background/background2.png',
-    'https://s3.tebi.io/waifubriscola/background/background3.png',
+type BackgroundItem = {
+    url: string;
+    rarity: 'R' | 'SR' | 'SSR';
+};
+
+const BACKGROUNDS: BackgroundItem[] = [
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape1.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape2.png', rarity: 'SR' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape3.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background1.png', rarity: 'SSR' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background2.png', rarity: 'SR' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background3.png', rarity: 'R' },
 ];
 
 export function App() {
@@ -121,15 +126,14 @@ export function App() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('unlocked_backgrounds');
-      // Initialize with one background unlocked by default for a better first impression.
       if (saved) {
         setUnlockedBackgrounds(JSON.parse(saved));
       } else {
-        setUnlockedBackgrounds([BACKGROUNDS[0]]);
+        setUnlockedBackgrounds([]);
       }
     } catch (error) {
       console.error("Failed to load unlocked backgrounds from localStorage", error);
-      setUnlockedBackgrounds([BACKGROUNDS[0]]);
+      setUnlockedBackgrounds([]);
     }
     
     try {
@@ -627,7 +631,7 @@ export function App() {
         return;
     }
 
-    const locked = BACKGROUNDS.filter(bg => !unlockedBackgrounds.includes(bg));
+    const locked = BACKGROUNDS.filter(bg => !unlockedBackgrounds.includes(bg.url));
     if (locked.length === 0) {
       setSnackbar({ message: T.gallery.gachaAllUnlocked, type: 'success' });
       return;
@@ -637,16 +641,59 @@ export function App() {
     setWaifuCoins(newTotalCoins);
     localStorage.setItem('waifu_coins', newTotalCoins.toString());
 
-    if (Math.random() < 0.25) { // 25% chance
-      const toUnlock = locked[Math.floor(Math.random() * locked.length)];
-      const newUnlocked = [...unlockedBackgrounds, toUnlock];
-      setUnlockedBackgrounds(newUnlocked);
-      localStorage.setItem('unlocked_backgrounds', JSON.stringify(newUnlocked));
-      setSnackbar({ message: T.gallery.gachaSuccess, type: 'success' });
-      posthog.capture('gacha_success', { unlocked_background: toUnlock, unlocked_count: newUnlocked.length });
+    // 50% chance to win a background
+    if (Math.random() < 0.50) { 
+        const rand = Math.random();
+        let rarityToPull: 'R' | 'SR' | 'SSR';
+
+        if (rand < 0.05) { // 5% for SSR
+            rarityToPull = 'SSR';
+        } else if (rand < 0.20) { // 15% for SR (0.05 + 0.15)
+            rarityToPull = 'SR';
+        } else { // 80% for R
+            rarityToPull = 'R';
+        }
+
+        let pool = locked.filter(item => item.rarity === rarityToPull);
+        
+        // Pity system: if no items of the pulled rarity are available, try other rarities.
+        if (pool.length === 0) {
+            if (rarityToPull === 'SSR') {
+                pool = locked.filter(item => item.rarity === 'SR');
+                if (pool.length === 0) pool = locked.filter(item => item.rarity === 'R');
+            } else if (rarityToPull === 'SR') {
+                pool = locked.filter(item => item.rarity === 'R');
+                if (pool.length === 0) pool = locked.filter(item => item.rarity === 'SSR');
+            } else { // rarityToPull was 'R'
+                pool = locked.filter(item => item.rarity === 'SR');
+                if (pool.length === 0) pool = locked.filter(item => item.rarity === 'SSR');
+            }
+        }
+        
+        // Final check, if pool is still empty, just use all locked items.
+        // This ensures the player always gets something if the 50% roll succeeds and items are available.
+        if (pool.length === 0) {
+            pool = locked;
+        }
+
+        if (pool.length > 0) {
+            const toUnlock = pool[Math.floor(Math.random() * pool.length)];
+            const newUnlocked = [...unlockedBackgrounds, toUnlock.url];
+            setUnlockedBackgrounds(newUnlocked);
+            localStorage.setItem('unlocked_backgrounds', JSON.stringify(newUnlocked));
+            setSnackbar({ message: T.gallery.gachaSuccess(toUnlock.rarity), type: 'success' });
+            posthog.capture('gacha_success', { 
+                unlocked_background: toUnlock.url,
+                rarity: toUnlock.rarity,
+                unlocked_count: newUnlocked.length 
+            });
+        } else {
+             setSnackbar({ message: T.gallery.gachaFailure, type: 'success' });
+             posthog.capture('gacha_failure', { reason: 'pity_system_failed' });
+        }
     } else {
       setSnackbar({ message: T.gallery.gachaFailure, type: 'success' });
-      posthog.capture('gacha_failure');
+      posthog.capture('gacha_failure', { reason: '50_percent_roll_failed' });
     }
   }, [unlockedBackgrounds, T, posthog, waifuCoins]);
 

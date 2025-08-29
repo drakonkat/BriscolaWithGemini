@@ -43,6 +43,24 @@ export const RulesModal = ({ isOpen, onClose, language }: RulesModalProps) => {
                         <span>{T.scorePoints(0)}</span>
                     </li>
                 </ul>
+
+                <h3 className="rules-subtitle">{T.waifuCoinRulesTitle}</h3>
+                <ul className="rules-info-list">
+                    <li className="rules-info-item">{T.waifuCoinRuleLoss}</li>
+                    <li className="rules-info-item">{T.waifuCoinRuleWin61}</li>
+                    <li className="rules-info-item">{T.waifuCoinRuleWin81}</li>
+                    <li className="rules-info-item">{T.waifuCoinRuleWin101}</li>
+                </ul>
+
+                <h3 className="rules-subtitle">{T.gachaRulesTitle}</h3>
+                <p>{T.gachaRule50Percent}</p>
+                <p>{T.gachaRuleRarityTitle}</p>
+                <ul className="rules-info-list">
+                    <li className="rules-info-item">{T.gachaRuleRarityR}</li>
+                    <li className="rules-info-item">{T.gachaRuleRaritySR}</li>
+                    <li className="rules-info-item">{T.gachaRuleRaritySSR}</li>
+                </ul>
+
                 <div className="modal-actions">
                     <button onClick={onClose}>{T.close}</button>
                 </div>

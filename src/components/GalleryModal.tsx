@@ -6,11 +6,16 @@ import { translations } from '../core/translations';
 import type { Language } from '../core/types';
 import { CachedImage } from './CachedImage';
 
+type BackgroundItem = {
+    url: string;
+    rarity: 'R' | 'SR' | 'SSR';
+};
+
 interface GalleryModalProps {
     isOpen: boolean;
     onClose: () => void;
     language: Language;
-    backgrounds: string[];
+    backgrounds: BackgroundItem[];
     unlockedBackgrounds: string[];
     waifuCoins: number;
     onGachaRoll: () => void;
@@ -32,20 +37,22 @@ export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedB
             <div className="gallery-modal" onClick={(e) => e.stopPropagation()}>
                 <h2>{T.gallery.title}</h2>
                 <div className="gallery-grid">
-                    {backgrounds.map((url, index) => {
-                        const isUnlocked = unlockedBackgrounds.includes(url);
+                    {backgrounds.map((item, index) => {
+                        const isUnlocked = unlockedBackgrounds.includes(item.url);
+                        const rarityClass = isUnlocked ? `rarity-${item.rarity.toLowerCase()}` : '';
+
                         return (
                             <div 
                                 key={index} 
-                                className={`gallery-item ${isUnlocked ? '' : 'locked'}`} 
-                                onClick={isUnlocked ? () => onImageSelect(url) : undefined}
-                                onKeyDown={isUnlocked ? (e) => (e.key === 'Enter' || e.key === ' ') && onImageSelect(url) : undefined}
+                                className={`gallery-item ${isUnlocked ? '' : 'locked'} ${rarityClass}`} 
+                                onClick={isUnlocked ? () => onImageSelect(item.url) : undefined}
+                                onKeyDown={isUnlocked ? (e) => (e.key === 'Enter' || e.key === ' ') && onImageSelect(item.url) : undefined}
                                 role={isUnlocked ? 'button' : 'img'}
                                 tabIndex={isUnlocked ? 0 : -1}
-                                aria-label={isUnlocked ? `${T.gallery.backgroundAlt} ${index + 1}. ${T.gallery.fullscreenView}` : T.gallery.locked}
+                                aria-label={isUnlocked ? `${T.gallery.backgroundAlt} ${index + 1} (${item.rarity}). ${T.gallery.fullscreenView}` : T.gallery.locked}
                             >
                                 {isUnlocked ? (
-                                    <CachedImage imageUrl={url} alt={`${T.gallery.backgroundAlt} ${index + 1}`} loading="lazy" />
+                                    <CachedImage imageUrl={item.url} alt={`${T.gallery.backgroundAlt} ${index + 1}`} loading="lazy" />
                                 ) : (
                                     <div className="locked-overlay">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
