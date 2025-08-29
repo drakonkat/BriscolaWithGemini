@@ -15,8 +15,11 @@
 
   /* Responsive Card Sizing */
   --card-aspect-ratio: 1.7857; /* 150 / 84 */
-  --card-width: clamp(54px, 6.5vw, 90px);
-  --card-height: calc(var(--card-width) * var(--card-aspect-ratio));
+  --card-width-clamp: clamp(54px, 6.5vw, 90px);
+  --card-height-from-vw: calc(var(--card-width-clamp) * var(--card-aspect-ratio));
+  --card-height-from-vh: calc(30vh - 50px);
+  --card-height: min(var(--card-height-from-vw), var(--card-height-from-vh));
+  --card-width: calc(var(--card-height) / var(--card-aspect-ratio));
   --card-border-radius: clamp(5px, 1vw, 8px);
   --played-card-offset: calc(var(--card-width) * 0.5 + 0.25rem);
 
@@ -1708,6 +1711,16 @@ input:checked + .slider:before {
 }
 
 @media (max-width: 768px) {
+  :root {
+    /* Increase card size on mobile by ~30% for better readability and touch interaction */
+    --card-width-clamp: clamp(70px, 18vw, 90px);
+  }
+
+  .rules-modal {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
   .table-area {
     justify-content: flex-end;
     padding-right: 1.5rem;
