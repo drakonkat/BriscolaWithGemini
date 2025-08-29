@@ -11,6 +11,7 @@ interface MenuProps {
     language: Language;
     gameplayMode: GameplayMode;
     backgroundUrl: string;
+    waifuCoins: number;
     onLanguageChange: (lang: Language) => void;
     onGameplayModeChange: (mode: GameplayMode) => void;
     onWaifuSelected: (waifu: Waifu | null) => void;
@@ -26,6 +27,7 @@ export const Menu = ({
     language, 
     gameplayMode,
     backgroundUrl, 
+    waifuCoins,
     onLanguageChange, 
     onGameplayModeChange,
     onWaifuSelected, 
@@ -42,16 +44,17 @@ export const Menu = ({
         <div className="menu">
             <CachedImage imageUrl={backgroundUrl} alt="Game background" className="menu-background" />
             <div className="menu-content">
+                <div className="waifu-coins-display">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9 16.5v-1c0-.83.67-1.5 1.5-1.5H12v-1h-1.5c-.83 0-1.5-.67-1.5-1.5v-1c0-.83.67-1.5 1.5-1.5H12V7h1.5c.83 0 1.5.67 1.5 1.5v1c0 .83-.67 1.5-1.5 1.5H12v1h1.5c.83 0 1.5.67 1.5 1.5v1c0 .83-.67 1.5-1.5 1.5H12v1H9z"/>
+                    </svg>
+                    <span>{waifuCoins}</span>
+                </div>
                 <div className="menu-title-container">
                     <h1>{T.title}</h1>
                     <button className="rules-button" onClick={onShowRules} aria-label={T.rulesTitle}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                        </svg>
-                    </button>
-                    <button className="rules-button" onClick={onShowGallery} aria-label={T.gallery.title}>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
                         </svg>
                     </button>
                     <button className="rules-button" onClick={onShowSupport} aria-label={T.supportModal.title}>
@@ -73,6 +76,12 @@ export const Menu = ({
                 <p>{T.subtitle}</p>
                 <p>{T.projectDescription1}</p>
                 <p>{T.projectDescription2}</p>
+
+                <div className="gallery-promo-container">
+                    <button className="gallery-promo-button" onClick={onShowGallery}>
+                        {T.gallery.promoButton}
+                    </button>
+                </div>
                 
                 <WaifuSelector language={language} onWaifuSelected={onWaifuSelected} />
 

@@ -57,6 +57,7 @@ body {
   width: 1200px;
   z-index: 2;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
 }
 .menu-background {
   position: absolute;
@@ -69,6 +70,29 @@ body {
   filter: blur(5px) brightness(0.6);
   transform: scale(1.1);
   z-index: -1;
+}
+
+.waifu-coins-display {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+  z-index: 3;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.waifu-coins-display svg {
+  width: 24px;
+  height: 24px;
+  color: #FFD700; /* Gold */
 }
 
 .menu-title-container {
@@ -223,6 +247,50 @@ body {
 }
 .random-waifu-card h3 {
   font-size: 1.4rem;
+}
+
+.gallery-promo-container {
+  margin: 2.5rem 0;
+  text-align: center;
+}
+
+.gallery-promo-button {
+  background: linear-gradient(45deg, #ffd700, #f7971e);
+  border: none;
+  border-radius: 12px;
+  color: #333;
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
+  font-weight: bold;
+  padding: 1rem 2.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 5px rgba(255, 215, 0, 0.7);
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.3);
+  display: inline-block;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.gallery-promo-button:hover, .gallery-promo-button:focus {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 10px rgba(255, 215, 0, 1);
+  outline: none;
+}
+
+.gallery-promo-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transition: all 0.6s ease;
+}
+
+.gallery-promo-button:hover::before {
+  left: 100%;
 }
 
 .menu-footer {
@@ -538,9 +606,16 @@ body {
   font-size: 1.2rem;
   margin-bottom: 0.5rem;
 }
+.game-over-winnings {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #FFD700; /* Gold */
+  margin: 1rem 0 0.5rem;
+  text-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
 .game-over-modal h3 {
   font-size: 1.5rem;
-  margin: 1.5rem 0;
+  margin: 0.5rem 0 1.5rem;
   color: #a0d8a2;
 }
 .game-over-modal button, .rules-modal button {
@@ -1224,6 +1299,20 @@ body {
   transition: opacity 0.3s, bottom 0.3s, visibility 0s;
 }
 
+.snackbar.warning {
+  background-color: #ffc107; /* Amber 500 */
+  color: #212121;
+}
+
+.snackbar.warning .snackbar-close-button {
+  color: #212121;
+}
+
+.snackbar.warning .snackbar-close-button:hover,
+.snackbar.warning .snackbar-close-button:focus {
+  background-color: rgba(0,0,0,0.1);
+}
+
 .snackbar span {
     text-align: left;
 }
@@ -1258,6 +1347,10 @@ body {
     overflow-y: auto;
     padding-top: 3rem;
     padding-bottom: 3rem;
+  }
+  .waifu-coins-display {
+      top: 1rem;
+      right: 1rem;
   }
 
   body {
@@ -1414,6 +1507,11 @@ body {
 
   .menu-content {
       padding: 1.5rem 1rem;
+  }
+  .waifu-coins-display {
+      position: static;
+      margin-bottom: 1.5rem;
+      justify-content: center;
   }
   .waifu-card, .random-waifu-card {
       width: 150px;

@@ -38,6 +38,7 @@ import { FullscreenImageModal } from './FullscreenImageModal';
 
 const SCORE_THRESHOLD = 15; // Point difference to trigger personality change
 type GameMode = 'online' | 'fallback';
+type SnackbarType = 'success' | 'warning';
 
 const BACKGROUNDS = [
     'https://s3.tebi.io/waifubriscola/background/landscape1.png',
@@ -89,7 +90,7 @@ export function App() {
   const [backgroundUrl, setBackgroundUrl] = useState('');
   const [menuBackgroundUrl, setMenuBackgroundUrl] = useState('');
   const [tokenCount, setTokenCount] = useState(0);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbar, setSnackbar] = useState<{ message: string; type: SnackbarType }>({ message: '', type: 'success' });
   const [unlockedBackgrounds, setUnlockedBackgrounds] = useState<string[]>([]);
   const [fullscreenImage, setFullscreenImage] = useState<string>('');
   
@@ -99,6 +100,9 @@ export function App() {
   const [usedFallbackMessages, setUsedFallbackMessages] = useState<string[]>([]);
   const [gameResult, setGameResult] = useState<'human' | 'ai' | 'tie' | null>(null);
 
+  // Valuta di gioco
+  const [waifuCoins, setWaifuCoins] = useState<number>(0);
+  const [lastGameWinnings, setLastGameWinnings] = useState<number>(0);
 
   // Stato derivato per disabilitare l'input dell'utente
   const isProcessing = isAiThinkingMove || isResolvingTrick;
@@ -126,6 +130,16 @@ export function App() {
     } catch (error) {
       console.error("Failed to load unlocked backgrounds from localStorage", error);
       setUnlockedBackgrounds([BACKGROUNDS[0]]);
+    }
+    
+    try {
+      const savedCoins = localStorage.getItem('waifu_coins');
+      if (savedCoins) {
+        setWaifuCoins(parseInt(savedCoins, 10));
+      }
+    } catch (error) {
+      console.error("Failed to load waifu coins from localStorage", error);
+      setWaifuCoins(0);
     }
   }, []);
 
@@ -253,6 +267,7 @@ export function App() {
     setUsedFallbackMessages([]); // Reset used fallback messages for new game
     setTokenCount(0);
     setGameResult(null);
+    setLastGameWinnings(0);
     setUnreadMessageCount(0);
     lastResolvedTrick.current = [];
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
@@ -542,6 +557,25 @@ export function App() {
       } else {
         winner = 'tie';
       }
+
+      let coinsEarned = 0;
+      if (winner === 'human') {
+        if (humanScore > 101) {
+          coinsEarned = 100;
+        } else if (humanScore >= 81) {
+          coinsEarned = 70;
+        } else if (humanScore >= 61) {
+          coinsEarned = 45;
+        }
+      } else { // Loss or Tie
+        coinsEarned = 5;
+      }
+      
+      setLastGameWinnings(coinsEarned);
+      const newTotalCoins = waifuCoins + coinsEarned;
+      setWaifuCoins(newTotalCoins);
+      localStorage.setItem('waifu_coins', newTotalCoins.toString());
+
       setGameResult(winner);
       setPhase('gameOver');
       posthog.capture('game_over', {
@@ -551,9 +585,10 @@ export function App() {
           score_difference: Math.abs(humanScore - aiScore),
           waifu_name: currentWaifu?.name,
           total_tokens_used: tokenCount,
+          coins_earned: coinsEarned,
       });
     }
-  }, [phase, humanHand.length, aiHand.length, deck.length, cardsOnTable.length, humanScore, aiScore, isResolvingTrick, posthog, currentWaifu, tokenCount]);
+  }, [phase, humanHand.length, aiHand.length, deck.length, cardsOnTable.length, humanScore, aiScore, isResolvingTrick, posthog, currentWaifu, tokenCount, waifuCoins]);
   
   // Handle switching to fallback mode
   useEffect(() => {
@@ -581,28 +616,39 @@ export function App() {
         language,
     });
     setIsSupportModalOpen(false);
-    setSnackbarMessage(T.supportModal.subscriptionInterestThanks);
+    setSnackbar({ message: T.supportModal.subscriptionInterestThanks, type: 'success' });
   }, [posthog, currentWaifu, language, T.supportModal.subscriptionInterestThanks]);
 
   const handleGachaRoll = useCallback(() => {
+    const GACHA_COST = 100;
+
+    if (waifuCoins < GACHA_COST) {
+        setSnackbar({ message: T.gallery.gachaNotEnoughCoins, type: 'warning' });
+        return;
+    }
+
     const locked = BACKGROUNDS.filter(bg => !unlockedBackgrounds.includes(bg));
     if (locked.length === 0) {
-      setSnackbarMessage(T.gallery.gachaAllUnlocked);
+      setSnackbar({ message: T.gallery.gachaAllUnlocked, type: 'success' });
       return;
     }
+
+    const newTotalCoins = waifuCoins - GACHA_COST;
+    setWaifuCoins(newTotalCoins);
+    localStorage.setItem('waifu_coins', newTotalCoins.toString());
 
     if (Math.random() < 0.25) { // 25% chance
       const toUnlock = locked[Math.floor(Math.random() * locked.length)];
       const newUnlocked = [...unlockedBackgrounds, toUnlock];
       setUnlockedBackgrounds(newUnlocked);
       localStorage.setItem('unlocked_backgrounds', JSON.stringify(newUnlocked));
-      setSnackbarMessage(T.gallery.gachaSuccess);
+      setSnackbar({ message: T.gallery.gachaSuccess, type: 'success' });
       posthog.capture('gacha_success', { unlocked_background: toUnlock, unlocked_count: newUnlocked.length });
     } else {
-      setSnackbarMessage(T.gallery.gachaFailure);
+      setSnackbar({ message: T.gallery.gachaFailure, type: 'success' });
       posthog.capture('gacha_failure');
     }
-  }, [unlockedBackgrounds, T, posthog]);
+  }, [unlockedBackgrounds, T, posthog, waifuCoins]);
 
   const handleImageSelect = (url: string) => {
     setFullscreenImage(url);
@@ -626,6 +672,7 @@ export function App() {
           language={language}
           gameplayMode={gameplayMode}
           backgroundUrl={menuBackgroundUrl}
+          waifuCoins={waifuCoins}
           onLanguageChange={setLanguage}
           onGameplayModeChange={setGameplayMode}
           onWaifuSelected={startGame}
@@ -645,6 +692,7 @@ export function App() {
           language={language}
           backgrounds={BACKGROUNDS}
           unlockedBackgrounds={unlockedBackgrounds}
+          waifuCoins={waifuCoins}
           onGachaRoll={handleGachaRoll}
           onImageSelect={handleImageSelect}
         />
@@ -662,7 +710,12 @@ export function App() {
           onClose={handleCloseFullscreen}
           language={language}
         />
-        <Snackbar message={snackbarMessage} onClose={() => setSnackbarMessage('')} lang={language} />
+        <Snackbar
+          message={snackbar.message}
+          onClose={() => setSnackbar({ message: '', type: 'success' })}
+          lang={language}
+          type={snackbar.type}
+        />
       </>
     );
   }
@@ -726,6 +779,7 @@ export function App() {
           winner={gameResult}
           onPlayAgain={() => startGame(currentWaifu)}
           language={language}
+          winnings={lastGameWinnings}
         />
       )}
       
@@ -772,7 +826,12 @@ export function App() {
         onClose={handleCloseFullscreen}
         language={language}
       />
-      <Snackbar message={snackbarMessage} onClose={() => setSnackbarMessage('')} lang={language} />
+      <Snackbar
+        message={snackbar.message}
+        onClose={() => setSnackbar({ message: '', type: 'success' })}
+        lang={language}
+        type={snackbar.type}
+      />
 
     </div>
   );

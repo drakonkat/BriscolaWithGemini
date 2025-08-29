@@ -10,9 +10,10 @@ interface SnackbarProps {
   message: string;
   onClose: () => void;
   lang: Language;
+  type?: 'success' | 'warning';
 }
 
-export const Snackbar = ({ message, onClose, lang }: SnackbarProps) => {
+export const Snackbar = ({ message, onClose, lang, type = 'success' }: SnackbarProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const T = translations[lang];
 
@@ -40,7 +41,7 @@ export const Snackbar = ({ message, onClose, lang }: SnackbarProps) => {
   }
 
   return (
-    <div className={`snackbar ${isVisible ? 'show' : ''}`} role="alert" aria-live="assertive">
+    <div className={`snackbar ${isVisible ? 'show' : ''} ${type === 'warning' ? 'warning' : ''}`} role="alert" aria-live="assertive">
       <span>{message}</span>
       <button className="snackbar-close-button" onClick={handleClose} aria-label={T.close}>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">

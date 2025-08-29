@@ -54,6 +54,7 @@ export const translations = {
     aiWins: (name: string) => `Ha Vinto ${name}!`,
     tie: "Pareggio!",
     playAgain: "Gioca Ancora",
+    coinsEarned: (coins: number) => `+${coins} Waifu Coins`,
     // Chat
     chatWith: (name:string) => `Chat con ${name}`,
     closeChat: "Chiudi chat",
@@ -122,7 +123,9 @@ La risposta deve essere in italiano.
     gallery: {
         title: "Galleria Sfondi",
         backgroundAlt: "Sfondo",
-        gachaButton: "Gacha!",
+        gachaButton: "Gacha! (100 WC)",
+        promoButton: "Galleria & Gacha",
+        gachaNotEnoughCoins: "Non hai abbastanza Waifu Coins! (Costo: 100)",
         gachaSuccess: "Congratulazioni! Hai sbloccato un nuovo sfondo!",
         gachaFailure: "Nessuna fortuna questa volta. Riprova!",
         gachaAllUnlocked: "Hai sbloccato tutti gli sfondi!",
@@ -266,6 +269,7 @@ La risposta deve essere in italiano.
     aiWins: (name: string) => `${name} Wins!`,
     tie: "It's a Tie!",
     playAgain: "Play Again",
+    coinsEarned: (coins: number) => `+${coins} Waifu Coins`,
     // Chat
     chatWith: (name: string) => `Chat with ${name}`,
     closeChat: "Close chat",
@@ -334,7 +338,9 @@ The response must be in English.
     gallery: {
         title: "Background Gallery",
         backgroundAlt: "Background",
-        gachaButton: "Gacha!",
+        gachaButton: "Gacha! (100 WC)",
+        promoButton: "Gallery & Gacha",
+        gachaNotEnoughCoins: "Not enough Waifu Coins! (Cost: 100)",
         gachaSuccess: "Congratulations! You unlocked a new background!",
         gachaFailure: "No luck this time. Try again!",
         gachaAllUnlocked: "You've unlocked all backgrounds!",
