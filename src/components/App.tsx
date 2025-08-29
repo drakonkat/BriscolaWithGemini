@@ -113,6 +113,16 @@ export function App() {
     lockOrientation();
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const showPage = params.get('show');
+    if (showPage === 'privacy') {
+        setIsPrivacyModalOpen(true);
+    } else if (showPage === 'terms') {
+        setIsTermsModalOpen(true);
+    }
+  }, []);
+
   const updateChatSession = useCallback((waifu: Waifu, history: ChatMessage[], emotionalState: GameEmotionalState, lang: Language) => {
     const systemInstruction = waifu.systemInstructions[lang][emotionalState];
     const apiHistory = [...history];
