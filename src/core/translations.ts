@@ -102,6 +102,13 @@ La risposta deve essere in italiano.
         confirm: "Sì, esci",
         cancel: "Annulla"
     },
+    // Support Modal
+    supportModal: {
+        title: "Supporta il Progetto",
+        message: "Waifu Briscola è un progetto gratuito. Le tue donazioni aiutano a coprire i costi dell'IA per tutti. In alternativa, facci sapere se saresti interessato a un abbonamento personale per un accesso illimitato!",
+        donateButton: "Dona su Ko-fi",
+        subscriptionButton: "Pagherei per un abbonamento"
+    },
   },
   en: {
     // Menu
@@ -199,6 +206,13 @@ The response must be in English.
         message: "Are you sure you want to return to the main menu? All game progress will be lost.",
         confirm: "Yes, Leave",
         cancel: "Cancel"
+    },
+    // Support Modal
+    supportModal: {
+        title: "Support the Project",
+        message: "Waifu Briscola is a free project. Your donations help cover the AI costs for everyone. Alternatively, let us know if you'd be interested in a personal subscription for unlimited access!",
+        donateButton: "Donate on Ko-fi",
+        subscriptionButton: "I'd Pay for a Subscription"
     },
   }
 };

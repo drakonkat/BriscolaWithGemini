@@ -29,6 +29,7 @@ import { QuotaExceededModal } from './QuotaExceededModal';
 import { RulesModal } from './RulesModal';
 import { WaifuDetailsModal } from './WaifuDetailsModal';
 import { ConfirmationModal } from './ConfirmationModal';
+import { SupportModal } from './SupportModal';
 
 const SCORE_THRESHOLD = 15; // Point difference to trigger personality change
 type GameMode = 'online' | 'fallback';
@@ -64,6 +65,8 @@ export function App() {
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [isWaifuModalOpen, setIsWaifuModalOpen] = useState(false);
   const [isConfirmLeaveModalOpen, setIsConfirmLeaveModalOpen] = useState(false);
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [aiEmotionalState, setAiEmotionalState] = useState<GameEmotionalState>('neutral');
   const [backgroundUrl, setBackgroundUrl] = useState('');
   const [menuBackgroundUrl, setMenuBackgroundUrl] = useState('');
@@ -198,6 +201,7 @@ export function App() {
     setUsedFallbackMessages([]); // Reset used fallback messages for new game
     setTokenCount(0);
     setGameResult(null);
+    setUnreadMessageCount(0);
     lastResolvedTrick.current = [];
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
   }, [language, T, updateChatSession, posthog]);
@@ -263,6 +267,9 @@ export function App() {
         });
 
         setChatHistory(prev => [...prev, aiMessage]);
+        if (!isChatModalOpen) {
+          setUnreadMessageCount(prev => prev + 1);
+        }
         playSound('chat-notify');
       } catch (error: any) {
         if (error.toString().includes('RESOURCE_EXHAUSTED')) {
@@ -372,6 +379,9 @@ export function App() {
           const fallbackMsg = getFallbackWaifuMessage(currentWaifu, aiEmotionalState, language, usedFallbackMessages);
           setUsedFallbackMessages(prev => [...prev, fallbackMsg]);
           setChatHistory(prev => [...prev, { sender: 'ai', text: fallbackMsg }]);
+          if (!isChatModalOpen) {
+            setUnreadMessageCount(prev => prev + 1);
+          }
           playSound('chat-notify');
         } else {
           setIsAiGeneratingMessage(true);
@@ -387,6 +397,9 @@ export function App() {
             });
             setTokenCount(prev => prev + tokensUsed);
             setChatHistory(prev => [...prev, { sender: 'ai', text: waifuMsg }]);
+            if (!isChatModalOpen) {
+              setUnreadMessageCount(prev => prev + 1);
+            }
             playSound('chat-notify');
           } catch (error) {
             if (error instanceof QuotaExceededError) {
@@ -460,158 +473,179 @@ export function App() {
     resolveTrick();
   }, [
     T, aiEmotionalState, aiName, briscolaCard, briscolaSuit, cardsOnTable,
-    currentWaifu, deck, gameMode, language, phase, isResolvingTrick,
-    trickStarter, usedFallbackMessages, posthog
+    currentWaifu, deck, gameMode, language, isResolvingTrick, trickStarter,
+    posthog, usedFallbackMessages, isChatModalOpen
   ]);
-
-  // Separate useEffect for checking game over condition
+  
+  // The end of the game logic
   useEffect(() => {
-    if (phase !== 'playing' || humanHand.length > 0 || aiHand.length > 0) {
-      return;
-    }
-
-    // This condition ensures we only check for game over after the last trick is resolved
-    if (deck.length === 0 && !briscolaCard) {
-      let finalWinner: 'human' | 'ai' | 'tie';
-      if (humanScore > 60) {
-        finalWinner = 'human';
+    if (phase === 'playing' && humanHand.length === 0 && aiHand.length === 0 && deck.length === 0 && cardsOnTable.length === 0 && !isResolvingTrick) {
+      let winner: 'human' | 'ai' | 'tie';
+      if (humanScore > aiScore) {
+        winner = 'human';
         playSound('game-win');
-      } else if (aiScore > 60) {
-        finalWinner = 'ai';
+      } else if (aiScore > humanScore) {
+        winner = 'ai';
         playSound('game-lose');
-      } else { // This implies humanScore === 60 and aiScore === 60
-        finalWinner = 'tie';
-        playSound('trick-win'); // Neutral-positive sound for a tie
+      } else {
+        winner = 'tie';
       }
-      
-      setGameResult(finalWinner);
+      setGameResult(winner);
       setPhase('gameOver');
-      
       posthog.capture('game_over', {
-          waifu_name: aiName,
+          winner,
           human_score: humanScore,
           ai_score: aiScore,
-          winner: finalWinner,
-          language: language,
-          total_tokens_used: tokenCount
+          score_difference: Math.abs(humanScore - aiScore),
+          waifu_name: currentWaifu?.name,
+          total_tokens_used: tokenCount,
       });
     }
-  }, [humanHand, aiHand, deck, briscolaCard, phase, humanScore, aiScore, posthog, aiName, language, tokenCount]);
+  }, [phase, humanHand.length, aiHand.length, deck.length, cardsOnTable.length, humanScore, aiScore, isResolvingTrick, posthog, currentWaifu, tokenCount]);
+  
+  // Handle switching to fallback mode
+  useEffect(() => {
+    if (isQuotaExceeded && gameMode === 'online') {
+      setGameMode('fallback');
+      setMessage(prev => `${prev}\n${T.offlineModeActive}`);
+    }
+  }, [isQuotaExceeded, gameMode, T]);
 
+  const handleContinueFromQuotaModal = () => {
+      setIsQuotaExceeded(false); // Hide the modal
+      setGameMode('fallback');
+      // The game continues where it left off, but now using local AI
+  };
+  
+  const handleOpenWaifuDetails = () => {
+      if (currentWaifu) {
+        setIsWaifuModalOpen(true);
+      }
+  };
 
-  if (phase === 'menu' || !currentWaifu) {
+  const handleSubscriptionInterest = useCallback(() => {
+    posthog.capture('subscription_interest_expressed', {
+        waifu_name: currentWaifu?.name,
+        language,
+    });
+    setIsSupportModalOpen(false);
+  }, [posthog, currentWaifu, language]);
+
+  const handleOpenChat = () => {
+    setIsChatModalOpen(true);
+    setUnreadMessageCount(0);
+  };
+
+  const isAiTyping = isAiChatting || isAiGeneratingMessage;
+
+  if (phase === 'menu') {
     return (
-        <>
-            <Menu
-                language={language}
-                backgroundUrl={menuBackgroundUrl}
-                onLanguageChange={(lang) => {
-                    posthog.capture('language_changed', { new_language: lang, old_language: language });
-                    setLanguage(lang);
-                }}
-                onWaifuSelected={startGame}
-                onShowRules={() => {
-                    posthog.capture('rules_viewed');
-                    setIsRulesModalOpen(true);
-                }}
-            />
-            <RulesModal
-                isOpen={isRulesModalOpen}
-                onClose={() => setIsRulesModalOpen(false)}
-                language={language}
-            />
-        </>
+      <>
+        <Menu
+          language={language}
+          backgroundUrl={menuBackgroundUrl}
+          onLanguageChange={setLanguage}
+          onWaifuSelected={startGame}
+          onShowRules={() => setIsRulesModalOpen(true)}
+        />
+        <RulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} language={language} />
+      </>
     );
   }
 
   return (
     <div className={`app-container ${isChatModalOpen ? 'chat-open-mobile' : ''}`}>
-        <GameBoard
-            aiName={aiName}
-            aiScore={aiScore}
-            aiHand={aiHand}
-            humanScore={humanScore}
-            humanHand={humanHand}
-            briscolaCard={briscolaCard}
-            deckSize={deck.length}
-            cardsOnTable={cardsOnTable}
-            message={message}
-            isProcessing={isProcessing}
-            isAiThinkingMove={isAiThinkingMove}
-            turn={turn}
-            onPlayCard={handlePlayCard}
-            onGoToMenu={() => setIsConfirmLeaveModalOpen(true)}
-            language={language}
-            backgroundUrl={backgroundUrl}
-            animatingCard={animatingCard}
-            drawingCards={drawingCards}
+      <GameBoard
+        aiName={aiName}
+        aiScore={aiScore}
+        aiHand={aiHand}
+        humanScore={humanScore}
+        humanHand={humanHand}
+        briscolaCard={briscolaCard}
+        deckSize={deck.length + (briscolaCard ? 1 : 0)}
+        cardsOnTable={cardsOnTable}
+        message={message}
+        isProcessing={isProcessing}
+        isAiThinkingMove={isAiThinkingMove}
+        turn={turn}
+        onPlayCard={handlePlayCard}
+        onGoToMenu={() => setIsConfirmLeaveModalOpen(true)}
+        onOpenSupportModal={() => setIsSupportModalOpen(true)}
+        language={language}
+        backgroundUrl={backgroundUrl}
+        animatingCard={animatingCard}
+        drawingCards={drawingCards}
+      />
+      {currentWaifu &&
+        <ChatPanel
+          history={chatHistory}
+          aiName={aiName}
+          onSendMessage={handleSendChatMessage}
+          isChatting={isAiChatting}
+          isAiGeneratingMessage={isAiGeneratingMessage}
+          isPlayerTurn={turn === 'human'}
+          hasChattedThisTurn={hasChattedThisTurn}
+          onModalClose={() => setIsChatModalOpen(false)}
+          lang={language}
+          gameMode={gameMode}
+          waifu={currentWaifu}
+          onAvatarClick={handleOpenWaifuDetails}
         />
-        
-        {phase === 'gameOver' && gameResult && (
-            <GameOverModal
-                humanScore={humanScore}
-                aiScore={aiScore}
-                aiName={aiName}
-                winner={gameResult}
-                onPlayAgain={() => startGame(currentWaifu)}
-                language={language}
-            />
-        )}
-        
-        {isQuotaExceeded && (
-            <QuotaExceededModal
-                language={language}
-                onContinue={() => {
-                    posthog.capture('fallback_mode_activated');
-                    setGameMode('fallback');
-                    setIsQuotaExceeded(false);
-                    setMessage(T.offlineModeActive);
-                }}
-            />
-        )}
+      }
 
-        <WaifuDetailsModal
+      <button className="chat-fab" onClick={handleOpenChat} aria-label={T.chatWith(aiName)}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+          </svg>
+          {isAiTyping ? (
+            <span className="chat-fab-badge typing"></span>
+          ) : unreadMessageCount > 0 && (
+            <span className="chat-fab-badge">{unreadMessageCount > 9 ? '9+' : unreadMessageCount}</span>
+          )}
+      </button>
+
+      {phase === 'gameOver' && gameResult && (
+        <GameOverModal
+          humanScore={humanScore}
+          aiScore={aiScore}
+          aiName={aiName}
+          winner={gameResult}
+          onPlayAgain={() => startGame(currentWaifu)}
+          language={language}
+        />
+      )}
+      {isQuotaExceeded && gameMode === 'online' && (
+        <QuotaExceededModal
+          language={language}
+          onContinue={handleContinueFromQuotaModal}
+        />
+      )}
+      <RulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} language={language} />
+      {isWaifuModalOpen && currentWaifu && (
+          <WaifuDetailsModal
             isOpen={isWaifuModalOpen}
             onClose={() => setIsWaifuModalOpen(false)}
             waifu={currentWaifu}
             language={language}
+          />
+      )}
+      <ConfirmationModal
+          isOpen={isConfirmLeaveModalOpen}
+          onClose={() => setIsConfirmLeaveModalOpen(false)}
+          onConfirm={handleConfirmLeave}
+          title={T.confirmLeave.title}
+          message={T.confirmLeave.message}
+          confirmText={T.confirmLeave.confirm}
+          cancelText={T.confirmLeave.cancel}
+      />
+      {isSupportModalOpen && (
+        <SupportModal
+            isOpen={isSupportModalOpen}
+            onClose={() => setIsSupportModalOpen(false)}
+            onSubscriptionInterest={handleSubscriptionInterest}
+            language={language}
         />
-
-        <ConfirmationModal
-            isOpen={isConfirmLeaveModalOpen}
-            onClose={() => setIsConfirmLeaveModalOpen(false)}
-            onConfirm={handleConfirmLeave}
-            title={T.confirmLeave.title}
-            message={T.confirmLeave.message}
-            confirmText={T.confirmLeave.confirm}
-            cancelText={T.confirmLeave.cancel}
-        />
-
-        <ChatPanel 
-            history={chatHistory} 
-            aiName={aiName}
-            waifu={currentWaifu}
-            onAvatarClick={() => {
-                posthog.capture('waifu_details_viewed', { waifu_name: aiName, source: 'chat_header' });
-                setIsWaifuModalOpen(true);
-            }}
-            onSendMessage={handleSendChatMessage}
-            isChatting={isAiChatting}
-            isAiGeneratingMessage={isAiGeneratingMessage}
-            isPlayerTurn={turn === 'human'}
-            hasChattedThisTurn={hasChattedThisTurn}
-            onModalClose={() => setIsChatModalOpen(false)}
-            lang={language}
-            gameMode={gameMode}
-        />
-        <button className="chat-fab" onClick={() => {
-                posthog.capture('chat_opened_mobile');
-                setIsChatModalOpen(true);
-            }} aria-label="Apri chat">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
-                <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-            </svg>
-        </button>
+      )}
     </div>
   );
 }
