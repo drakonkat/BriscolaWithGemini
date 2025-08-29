@@ -69,7 +69,7 @@ export const ChatPanel = ({
   return (
     <aside className="chat-panel">
       <header className="chat-header">
-        <button className="chat-header-avatar-button" onClick={onAvatarClick} aria-label={`Dettagli su ${aiName}`}>
+        <button className="chat-header-avatar-button" onClick={onAvatarClick} aria-label={T.waifuDetails(aiName)}>
           <CachedImage imageUrl={waifu.avatar} alt={aiName} className="chat-header-avatar" />
         </button>
         <h2>{T.chatWith(aiName)}</h2>

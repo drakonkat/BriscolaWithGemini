@@ -45,6 +45,7 @@ export const translations = {
     randomOpponent: "Avversaria Casuale",
     waifuAvatarAlt: (name: string) => `Avatar di ${name}`,
     close: "Chiudi",
+    waifuDetails: (name: string) => `Dettagli su ${name}`,
     buyWaifuCoffee: "Supporta la tua Waifu",
     supportEmail: "Contatta Supporto",
     // Game
@@ -279,6 +280,7 @@ La risposta deve essere in italiano.
     randomOpponent: "Random Opponent",
     waifuAvatarAlt: (name: string) => `Avatar of ${name}`,
     close: "Close",
+    waifuDetails: (name: string) => `Details about ${name}`,
     buyWaifuCoffee: "Support your Waifu",
     supportEmail: "Contact Support",
     // Game

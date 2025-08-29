@@ -804,6 +804,14 @@ export function App() {
     setIsChatModalOpen(true);
     setUnreadMessageCount(0);
   };
+
+  const handleWaifuIconClick = () => {
+      if (isChatEnabled) {
+          handleOpenChat();
+      } else {
+          handleOpenWaifuDetails();
+      }
+  };
   
   const handleWaitForWaifuResponseChange = (enabled: boolean) => {
     setWaitForWaifuResponse(enabled);
@@ -899,7 +907,8 @@ export function App() {
         animatingCard={animatingCard}
         drawingCards={drawingCards}
         currentWaifu={currentWaifu}
-        onOpenChat={handleOpenChat}
+        onWaifuIconClick={handleWaifuIconClick}
+        isChatEnabled={isChatEnabled}
         unreadMessageCount={unreadMessageCount}
         isAiTyping={isAiTyping}
         waifuBubbleMessage={waifuBubbleMessage}

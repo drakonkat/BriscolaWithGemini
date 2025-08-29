@@ -1802,6 +1802,7 @@ input:checked + .slider:before {
   }
   .settings-selector select {
     width: 60%;
+    min-width: 0; /* Prevents long option text from stretching the select box */
   }
   .gallery-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

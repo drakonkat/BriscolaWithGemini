@@ -29,7 +29,8 @@ interface GameBoardProps {
     animatingCard: { card: Card; player: Player } | null;
     drawingCards: { destination: Player }[] | null;
     currentWaifu: Waifu | null;
-    onOpenChat: () => void;
+    onWaifuIconClick: () => void;
+    isChatEnabled: boolean;
     unreadMessageCount: number;
     isAiTyping: boolean;
     waifuBubbleMessage: string;
@@ -57,7 +58,8 @@ export const GameBoard = ({
     animatingCard,
     drawingCards,
     currentWaifu,
-    onOpenChat,
+    onWaifuIconClick,
+    isChatEnabled,
     unreadMessageCount,
     isAiTyping,
     waifuBubbleMessage,
@@ -75,6 +77,8 @@ export const GameBoard = ({
     const backgroundStyle = {
         filter: `blur(${blurValue}px) brightness(0.7)`
     };
+
+    const waifuIconAriaLabel = isChatEnabled ? T.chatWith(aiName) : T.waifuDetails(aiName);
 
     return (
         <main className="game-board">
@@ -103,10 +107,10 @@ export const GameBoard = ({
                 </div>
                 <div className="waifu-status-container">
                     {currentWaifu && (
-                        <button className="waifu-status-button" onClick={onOpenChat} aria-label={T.chatWith(aiName)}>
+                        <button className="waifu-status-button" onClick={onWaifuIconClick} aria-label={waifuIconAriaLabel}>
                             <CachedImage imageUrl={currentWaifu.avatar} alt={aiName} className="waifu-status-avatar" />
-                            {unreadMessageCount > 0 && !isAiTyping && <span className="waifu-status-badge">{unreadMessageCount}</span>}
-                            {isAiTyping && <span className="waifu-status-badge typing"></span>}
+                            {isChatEnabled && unreadMessageCount > 0 && !isAiTyping && <span className="waifu-status-badge">{unreadMessageCount}</span>}
+                            {isChatEnabled && isAiTyping && <span className="waifu-status-badge typing"></span>}
                         </button>
                     )}
                 </div>
