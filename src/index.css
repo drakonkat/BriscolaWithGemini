@@ -19,8 +19,6 @@
   --card-height: calc(var(--card-width) * var(--card-aspect-ratio));
   --card-border-radius: clamp(5px, 1vw, 8px);
   --played-card-offset: calc(var(--card-width) * 0.5 + 0.25rem);
-  --deck-card-height: clamp(66px, 9.35vh, 82.5px);
-  --deck-card-width: calc(var(--deck-card-height) / var(--card-aspect-ratio));
 
   --top-bar-height: 55px;
   --bottom-bar-height: 55px;
@@ -133,6 +131,7 @@ body {
     font-size: 1.2rem;
     font-weight: bold;
     transition: all 0.2s ease;
+    flex-shrink: 0;
 }
 .rules-button:hover, .rules-button:focus {
     background-color: var(--primary-accent);
@@ -526,6 +525,7 @@ input:checked + .slider:before {
   left: calc(15px + env(safe-area-inset-left));
   z-index: 20;
   display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
@@ -570,8 +570,7 @@ input:checked + .slider:before {
   z-index: 20;
   display: flex;
   align-items: center;
-  height: var(--deck-card-height);
-  gap: 15px;
+  height: var(--card-height);
 }
 
 .deck-pile-wrapper {
@@ -579,6 +578,8 @@ input:checked + .slider:before {
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  position: relative;
+  z-index: 2;
 }
 
 .deck-size-indicator {
@@ -596,12 +597,15 @@ input:checked + .slider:before {
 
 .briscola-card-rotated {
   transform: rotate(90deg);
+  position: relative;
+  z-index: 1;
+  /* Overlap is 25% of the card's rotated width (its height), leaving 75% visible */
+  margin-left: calc(var(--card-height) * -0.25);
 }
 
 /* Common styles for cards in the deck */
 .deck-container .card {
-  width: var(--deck-card-width);
-  height: var(--deck-card-height);
+  /* Inherits width and height from the base .card style */
   border-radius: calc(var(--card-border-radius) * 0.7);
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   pointer-events: none; /* No interaction */
@@ -1127,10 +1131,10 @@ input:checked + .slider:before {
     right: 0;
     background-color: var(--waifu-bubble);
     color: var(--black-suit);
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1.5rem 0.75rem 1rem;
     border-radius: 12px;
-    max-width: 280px;
-    min-width: 120px;
+    max-width: 320px;
+    min-width: 150px;
     font-size: 0.95rem;
     line-height: 1.4;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -1699,7 +1703,7 @@ input:checked + .slider:before {
   }
 
   .deck-container {
-    height: var(--deck-card-height);
+    height: var(--card-height);
   }
 }
 
@@ -1765,6 +1769,30 @@ input:checked + .slider:before {
   .gallery-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
+  .waifu-message-bubble {
+    position: fixed; /* Use fixed positioning for fullscreen context */
+    top: calc(var(--top-bar-height) + env(safe-area-inset-top) + 10px);
+    left: 5%;
+    right: 5%;
+    width: 90%;
+    max-width: 90%;
+    font-size: 1rem;
+  }
+  .waifu-message-bubble::after {
+    right: 30px; /* Adjust pointer position for fixed layout */
+  }
+
+  .bubble-close-button {
+    display: block;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: none;
+    border: none;
+    color: var(--black-suit);
+    opacity: 0.5;
+    cursor: pointer;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1800,8 +1828,8 @@ input:checked + .slider:before {
     grid-template-columns: 1fr;
   }
   .waifu-message-bubble {
-    max-width: 220px;
-    min-width: 100px;
+    max-width: 90%;
+    min-width: 90%;
     font-size: 0.9rem;
   }
 }

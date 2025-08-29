@@ -33,6 +33,7 @@ interface GameBoardProps {
     unreadMessageCount: number;
     isAiTyping: boolean;
     waifuBubbleMessage: string;
+    onCloseBubble: () => void;
 }
 
 export const GameBoard = ({
@@ -60,6 +61,7 @@ export const GameBoard = ({
     unreadMessageCount,
     isAiTyping,
     waifuBubbleMessage,
+    onCloseBubble,
 }: GameBoardProps) => {
 
     const T = translations[language];
@@ -100,11 +102,6 @@ export const GameBoard = ({
                     <span>{aiName}: {aiScore}</span>
                 </div>
                 <div className="waifu-status-container">
-                    {waifuBubbleMessage && (
-                        <div className="waifu-message-bubble">
-                            {waifuBubbleMessage}
-                        </div>
-                    )}
                     {currentWaifu && (
                         <button className="waifu-status-button" onClick={onOpenChat} aria-label={T.chatWith(aiName)}>
                             <CachedImage imageUrl={currentWaifu.avatar} alt={aiName} className="waifu-status-avatar" />
@@ -113,6 +110,16 @@ export const GameBoard = ({
                         </button>
                     )}
                 </div>
+                {waifuBubbleMessage && (
+                    <div className="waifu-message-bubble">
+                        {waifuBubbleMessage}
+                        <button className="bubble-close-button" onClick={onCloseBubble} aria-label={T.close}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className="top-left-actions">

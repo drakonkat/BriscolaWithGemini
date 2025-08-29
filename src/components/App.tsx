@@ -144,11 +144,24 @@ export function App() {
       
       const savedWaitSetting = localStorage.getItem('wait_for_waifu_response');
       if (savedWaitSetting !== null) setWaitForWaifuResponse(JSON.parse(savedWaitSetting));
+
+      const savedLanguage = localStorage.getItem('language');
+      if (savedLanguage && (savedLanguage === 'it' || savedLanguage === 'en')) {
+        setLanguage(savedLanguage as Language);
+      }
       
     } catch (error) {
       console.error("Failed to load settings from localStorage", error);
     }
   }, []);
+
+  useEffect(() => {
+    try {
+        localStorage.setItem('language', language);
+    } catch (error) {
+        console.error("Failed to save language setting to localStorage", error);
+    }
+  }, [language]);
 
   useEffect(() => {
     try {
@@ -197,15 +210,21 @@ export function App() {
     setMenuBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/landscape${bgIndex}.png`);
   }, []);
 
-  const showWaifuBubble = useCallback((message: string) => {
+  const closeWaifuBubble = useCallback(() => {
     if (bubbleTimeoutRef.current) {
         clearTimeout(bubbleTimeoutRef.current);
+        bubbleTimeoutRef.current = null;
     }
+    setWaifuBubbleMessage('');
+  }, []);
+  
+  const showWaifuBubble = useCallback((message: string) => {
+    closeWaifuBubble(); // Close any existing bubble first
     setWaifuBubbleMessage(message);
     bubbleTimeoutRef.current = setTimeout(() => {
         setWaifuBubbleMessage('');
     }, 5000); // Display for 5 seconds
-  }, []);
+  }, [closeWaifuBubble]);
 
   const updateChatSession = useCallback((waifu: Waifu, history: ChatMessage[], emotionalState: GameEmotionalState, lang: Language) => {
     if (!isChatEnabled) return;
@@ -867,6 +886,7 @@ export function App() {
         unreadMessageCount={unreadMessageCount}
         isAiTyping={isAiTyping}
         waifuBubbleMessage={waifuBubbleMessage}
+        onCloseBubble={closeWaifuBubble}
       />
       {isChatEnabled && currentWaifu &&
         <ChatPanel
