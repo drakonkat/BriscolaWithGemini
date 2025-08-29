@@ -84,7 +84,7 @@ jobs:
             --recursive \
             --exclude "*" \
             --include "*.apk" \
-            --endpoint-url "$TEBI_S3_ENDPOINT" \
+            --endpoint-url "https://s3.tebi.io/" \
             --acl public-read \
             --content-type "application/vnd.android.package-archive"
 
