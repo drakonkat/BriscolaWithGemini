@@ -14,3 +14,4 @@ export type Language = 'it' | 'en';
 export type Waifu = WaifuType;
 export type GameEmotionalState = 'winning' | 'losing' | 'neutral';
 export type GameplayMode = 'classic' | 'roguelike';
+export type Difficulty = 'easy' | 'medium' | 'hard';

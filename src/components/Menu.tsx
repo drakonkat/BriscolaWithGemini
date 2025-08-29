@@ -3,19 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { translations } from '../core/translations';
-import type { Language, Waifu, GameplayMode } from '../core/types';
+import type { Language, Waifu, GameplayMode, Difficulty } from '../core/types';
 import { WaifuSelector } from './WaifuSelector';
 import { CachedImage } from './CachedImage';
 
 interface MenuProps {
     language: Language;
     gameplayMode: GameplayMode;
+    difficulty: Difficulty;
     isChatEnabled: boolean;
     waitForWaifuResponse: boolean;
     backgroundUrl: string;
     waifuCoins: number;
     onLanguageChange: (lang: Language) => void;
     onGameplayModeChange: (mode: GameplayMode) => void;
+    onDifficultyChange: (difficulty: Difficulty) => void;
     onChatEnabledChange: (enabled: boolean) => void;
     onWaitForWaifuResponseChange: (enabled: boolean) => void;
     onWaifuSelected: (waifu: Waifu | null) => void;
@@ -30,12 +32,14 @@ interface MenuProps {
 export const Menu = ({ 
     language, 
     gameplayMode,
+    difficulty,
     isChatEnabled,
     waitForWaifuResponse,
     backgroundUrl, 
     waifuCoins,
     onLanguageChange, 
     onGameplayModeChange,
+    onDifficultyChange,
     onChatEnabledChange,
     onWaitForWaifuResponseChange,
     onWaifuSelected, 
@@ -107,6 +111,14 @@ export const Menu = ({
                             <input id="wait-toggle" type="checkbox" checked={waitForWaifuResponse} onChange={(e) => onWaitForWaifuResponseChange(e.target.checked)} disabled={!isChatEnabled} />
                             <span className="slider"></span>
                         </label>
+                    </div>
+                     <div className="settings-selector">
+                        <label htmlFor="difficulty-select">{T.difficultyLabel}:</label>
+                        <select id="difficulty-select" value={difficulty} onChange={(e) => onDifficultyChange(e.target.value as Difficulty)}>
+                            <option value="easy">{T.difficultyEasy}</option>
+                            <option value="medium">{T.difficultyMedium}</option>
+                            <option value="hard">{T.difficultyHard}</option>
+                        </select>
                     </div>
                      <div className="settings-selector">
                         <label htmlFor="game-mode-select">{T.gameModeLabel}:</label>

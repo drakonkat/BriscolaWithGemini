@@ -19,7 +19,7 @@ import { QuotaExceededError, ai, getAIWaifuTrickMessage } from '../core/gemini';
 import { getLocalAIMove, getFallbackWaifuMessage } from '../core/localAI';
 import { WAIFUS } from '../core/waifus';
 // FIX: The 'Suit' type is now correctly imported from the local types definition file.
-import type { GamePhase, Language, Card, Player, ChatMessage, Waifu, GameEmotionalState, Suit, GameplayMode } from '../core/types';
+import type { GamePhase, Language, Card, Player, ChatMessage, Waifu, GameEmotionalState, Suit, GameplayMode, Difficulty } from '../core/types';
 
 import { Menu } from './Menu';
 import { GameBoard } from './GameBoard';
@@ -58,8 +58,9 @@ export function App() {
   const [phase, setPhase] = useState<GamePhase>('menu');
   const [language, setLanguage] = useState<Language>('it');
   const [gameplayMode, setGameplayMode] = useState<GameplayMode>('classic');
+  const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [isChatEnabled, setIsChatEnabled] = useState(true);
-  const [waitForWaifuResponse, setWaitForWaifuResponse] = useState(true);
+  const [waitForWaifuResponse, setWaitForWaifuResponse] = useState(false);
   const [deck, setDeck] = useState<Card[]>([]);
   const [humanHand, setHumanHand] = useState<Card[]>([]);
   const [aiHand, setAiHand] = useState<Card[]>([]);
@@ -149,6 +150,11 @@ export function App() {
       if (savedLanguage && (savedLanguage === 'it' || savedLanguage === 'en')) {
         setLanguage(savedLanguage as Language);
       }
+
+      const savedDifficulty = localStorage.getItem('difficulty');
+      if (savedDifficulty && ['easy', 'medium', 'hard'].includes(savedDifficulty)) {
+        setDifficulty(savedDifficulty as Difficulty);
+      }
       
     } catch (error) {
       console.error("Failed to load settings from localStorage", error);
@@ -178,6 +184,14 @@ export function App() {
         console.error("Failed to save wait setting to localStorage", error);
     }
   }, [waitForWaifuResponse]);
+
+  useEffect(() => {
+    try {
+        localStorage.setItem('difficulty', difficulty);
+    } catch (error) {
+        console.error("Failed to save difficulty setting to localStorage", error);
+    }
+  }, [difficulty]);
 
   useEffect(() => {
     const lockOrientation = async () => {
@@ -287,6 +301,7 @@ export function App() {
         language: language,
         selection_mode: selectedWaifu ? 'specific' : 'random',
         gameplay_mode: gameplayMode,
+        difficulty: difficulty,
         is_chat_enabled: isChatEnabled,
     });
 
@@ -330,7 +345,7 @@ export function App() {
     setUnreadMessageCount(0);
     lastResolvedTrick.current = [];
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
-  }, [language, T, updateChatSession, posthog, gameplayMode, isChatEnabled, showWaifuBubble]);
+  }, [language, T, updateChatSession, posthog, gameplayMode, isChatEnabled, showWaifuBubble, difficulty]);
   
   const handleConfirmLeave = () => {
     posthog.capture('game_left', {
@@ -444,7 +459,7 @@ export function App() {
           }
           
           const aiCardToPlay = await new Promise<Card>(resolve =>
-            setTimeout(() => resolve(getLocalAIMove(aiHand, briscolaSuit, cardsOnTable)), 750)
+            setTimeout(() => resolve(getLocalAIMove(aiHand, briscolaSuit, cardsOnTable, difficulty)), 750)
           );
 
           playSound('card-place');
@@ -471,7 +486,7 @@ export function App() {
       performAiMove();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [turn, isProcessing, phase, cardsOnTable, aiHand, animatingCard]);
+  }, [turn, isProcessing, phase, cardsOnTable, aiHand, animatingCard, difficulty]);
 
   useEffect(() => {
     if (cardsOnTable.length !== 2 || phase !== 'playing' || isResolvingTrick) {
@@ -805,12 +820,14 @@ export function App() {
         <Menu
           language={language}
           gameplayMode={gameplayMode}
+          difficulty={difficulty}
           isChatEnabled={isChatEnabled}
           waitForWaifuResponse={waitForWaifuResponse}
           backgroundUrl={menuBackgroundUrl}
           waifuCoins={waifuCoins}
           onLanguageChange={setLanguage}
           onGameplayModeChange={setGameplayMode}
+          onDifficultyChange={setDifficulty}
           onChatEnabledChange={setIsChatEnabled}
           onWaitForWaifuResponseChange={handleWaitForWaifuResponseChange}
           onWaifuSelected={startGame}

@@ -3,26 +3,34 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { RANK, POINTS } from './constants';
-import type { Card, Suit, Language, Waifu, GameEmotionalState } from './types';
+import type { Card, Suit, Language, Waifu, GameEmotionalState, Difficulty } from './types';
 
 /**
  * Logica per la mossa dell'IA in modalità offline/fallback.
  * @param aiHand La mano dell'IA.
  * @param briscolaSuit Il seme di briscola.
  * @param cardsOnTable Le carte sul tavolo (0 o 1).
+ * @param difficulty Il livello di difficoltà.
  * @returns La carta scelta.
  */
 export const getLocalAIMove = (
     aiHand: Card[],
     briscolaSuit: Suit,
-    cardsOnTable: Card[]
+    cardsOnTable: Card[],
+    difficulty: Difficulty
 ): Card => {
-    // Ordina le carte per valore (dal più basso al più alto)
+    // Difficoltà Facile: gioca una carta casuale
+    if (difficulty === 'easy') {
+        return aiHand[Math.floor(Math.random() * aiHand.length)];
+    }
+
     const sortedHand = [...aiHand].sort((a, b) => (POINTS[a.value] - POINTS[b.value]) || (RANK[a.value] - RANK[b.value]));
 
     // Se l'IA è il secondo giocatore
     if (cardsOnTable.length > 0) {
         const humanCard = cardsOnTable[0];
+        const trickPoints = POINTS[humanCard.value];
+
         const winningCards = sortedHand.filter(aiCard => {
             const aiIsBriscola = aiCard.suit === briscolaSuit;
             const humanIsBriscola = humanCard.suit === briscolaSuit;
@@ -34,23 +42,51 @@ export const getLocalAIMove = (
             return false;
         });
 
-        // Se può vincere, gioca la carta vincente di minor valore
+        // Se l'IA può vincere
         if (winningCards.length > 0) {
+            // Difficoltà Difficile: strategia più conservativa con le briscole di valore
+            if (difficulty === 'hard') {
+                const bestWinningCard = winningCards[0];
+                const totalTrickPoints = trickPoints + POINTS[bestWinningCard.value];
+                const isUsingBriscola = bestWinningCard.suit === briscolaSuit;
+                
+                // Non usare un Asso o un 3 di briscola per un turno con pochi punti
+                if (isUsingBriscola && POINTS[bestWinningCard.value] >= 10 && totalTrickPoints < 10) {
+                    const nonBriscolaLosingCards = sortedHand.filter(c => c.suit !== briscolaSuit && !winningCards.includes(c));
+                    if (nonBriscolaLosingCards.length > 0) {
+                        return nonBriscolaLosingCards[0]; // Scarta un liscio
+                    }
+                }
+            }
+            // Difficoltà Media e Difficile (se non scarta): gioca la carta vincente di minor valore
             return winningCards[0];
         }
 
-        // Se non può vincere, scarta la carta di minor valore (un "liscio")
+        // Se l'IA non può vincere, scarta la carta di minor valore
         return sortedHand[0];
-    }
-
+    } 
     // Se l'IA è il primo giocatore
     else {
+        // Difficoltà Difficile: evita di iniziare con carte di valore
+        if (difficulty === 'hard') {
+             const briscolaInHand = sortedHand.filter(c => c.suit === briscolaSuit);
+             const nonBriscolaInHand = sortedHand.filter(c => c.suit !== briscolaSuit);
+
+             if (nonBriscolaInHand.length === 0) {
+                 return briscolaInHand[0]; // Costretto a giocare briscola
+             }
+             const lowPointNonBriscola = nonBriscolaInHand.filter(c => POINTS[c.value] < 2);
+             if (lowPointNonBriscola.length > 0) {
+                 return lowPointNonBriscola[0]; // Gioca un liscio non di briscola
+             }
+             return nonBriscolaInHand[0]; // Costretto a giocare un carico non di briscola
+        }
+
+        // Difficoltà Media: gioca la non-briscola più bassa, o la briscola più bassa se costretto
         const nonBriscolaCards = sortedHand.filter(card => card.suit !== briscolaSuit);
-        // Se ha carte non di briscola, gioca quella di minor valore
         if (nonBriscolaCards.length > 0) {
             return nonBriscolaCards[0];
         }
-        // Altrimenti, è costretto a giocare la briscola di minor valore
         return sortedHand[0];
     }
 };
