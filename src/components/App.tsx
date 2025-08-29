@@ -8,6 +8,7 @@ import type {Chat} from '@google/genai';
 import {useEffect, useState, useMemo, useCallback, useRef} from 'react';
 import { Capacitor } from '@capacitor/core';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
+import { usePostHog } from 'posthog-js/react';
 
 import { playSound } from '../core/soundManager';
 import { POINTS } from '../core/constants';
@@ -77,6 +78,7 @@ export function App() {
   // Stato derivato per disabilitare l'input dell'utente
   const isProcessing = isAiThinkingMove || isResolvingTrick;
   const lastResolvedTrick = useRef<string[]>([]);
+  const posthog = usePostHog();
 
   const T = useMemo(() => translations[language], [language]);
   const aiName = useMemo(() => currentWaifu?.name ?? '', [currentWaifu]);
@@ -157,6 +159,12 @@ export function App() {
     playSound('game-start');
     const newWaifu = selectedWaifu ?? WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
     setCurrentWaifu(newWaifu);
+    
+    posthog.capture('game_started', {
+        waifu_name: newWaifu.name,
+        language: language,
+        selection_mode: selectedWaifu ? 'specific' : 'random'
+    });
 
     const emotionalState = 'neutral';
     setAiEmotionalState(emotionalState);
@@ -190,9 +198,14 @@ export function App() {
     setTokenCount(0);
     lastResolvedTrick.current = [];
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
-  }, [language, T, updateChatSession]);
+  }, [language, T, updateChatSession, posthog]);
   
   const handleConfirmLeave = () => {
+    posthog.capture('game_left', {
+        human_score: humanScore,
+        ai_score: aiScore,
+        total_tokens_used: tokenCount
+    });
     setIsConfirmLeaveModalOpen(false);
     setPhase('menu');
   };
@@ -221,7 +234,13 @@ export function App() {
 
   const handleSendChatMessage = async (userMessage: string) => {
       if (isQuotaExceeded || !chatSession || gameMode === 'fallback') return;
-  
+      
+      posthog.capture('chat_message_sent', {
+        waifu_name: aiName,
+        message_length: userMessage.length,
+        emotional_state: aiEmotionalState
+      });
+
       const humanMessage: ChatMessage = { sender: 'human', text: userMessage };
       setChatHistory(prev => [...prev, humanMessage]);
       setIsAiChatting(true);
@@ -236,6 +255,7 @@ export function App() {
         playSound('chat-notify');
       } catch (error: any) {
         if (error.toString().includes('RESOURCE_EXHAUSTED')) {
+            posthog.capture('api_quota_exceeded', { source: 'chat_message' });
             setIsQuotaExceeded(true);
         } else {
             console.error("Error sending chat message:", error);
@@ -346,11 +366,17 @@ export function App() {
           setIsAiGeneratingMessage(true);
           try {
             const { message: waifuMsg, tokens: tokensUsed } = await getAIWaifuTrickMessage(currentWaifu, aiEmotionalState, humanPlayedCard, aiPlayedCard, points, language);
+            posthog.capture('waifu_trick_comment', {
+                waifu_name: aiName,
+                emotional_state: aiEmotionalState,
+                points_won: points
+            });
             setTokenCount(prev => prev + tokensUsed);
             setChatHistory(prev => [...prev, { sender: 'ai', text: waifuMsg }]);
             playSound('chat-notify');
           } catch (error) {
             if (error instanceof QuotaExceededError) {
+              posthog.capture('api_quota_exceeded', { source: 'trick_comment' });
               setIsQuotaExceeded(true);
             } else {
               console.error("Error generating waifu message:", error);
@@ -421,7 +447,7 @@ export function App() {
   }, [
     T, aiEmotionalState, aiName, briscolaCard, briscolaSuit, cardsOnTable,
     currentWaifu, deck, gameMode, language, phase, isResolvingTrick,
-    trickStarter, usedFallbackMessages
+    trickStarter, usedFallbackMessages, posthog
   ]);
 
   // Separate useEffect for checking game over condition
@@ -440,8 +466,21 @@ export function App() {
         playSound('trick-win'); // Neutral-positive sound for a tie
       }
       setPhase('gameOver');
+      
+      let winner = 'tie';
+      if (humanScore > 60) winner = 'human';
+      else if (aiScore > 60) winner = 'ai';
+
+      posthog.capture('game_over', {
+          waifu_name: aiName,
+          human_score: humanScore,
+          ai_score: aiScore,
+          winner: winner,
+          language: language,
+          total_tokens_used: tokenCount
+      });
     }
-  }, [humanHand, aiHand, deck, briscolaCard, phase, humanScore, aiScore]);
+  }, [humanHand, aiHand, deck, briscolaCard, phase, humanScore, aiScore, posthog, aiName, language, tokenCount]);
 
 
   if (phase === 'menu' || !currentWaifu) {
@@ -450,9 +489,15 @@ export function App() {
             <Menu
                 language={language}
                 backgroundUrl={menuBackgroundUrl}
-                onLanguageChange={setLanguage}
+                onLanguageChange={(lang) => {
+                    posthog.capture('language_changed', { new_language: lang, old_language: language });
+                    setLanguage(lang);
+                }}
                 onWaifuSelected={startGame}
-                onShowRules={() => setIsRulesModalOpen(true)}
+                onShowRules={() => {
+                    posthog.capture('rules_viewed');
+                    setIsRulesModalOpen(true);
+                }}
             />
             <RulesModal
                 isOpen={isRulesModalOpen}
@@ -501,6 +546,7 @@ export function App() {
             <QuotaExceededModal
                 language={language}
                 onContinue={() => {
+                    posthog.capture('fallback_mode_activated');
                     setGameMode('fallback');
                     setIsQuotaExceeded(false);
                     setMessage(T.offlineModeActive);
@@ -529,7 +575,10 @@ export function App() {
             history={chatHistory} 
             aiName={aiName}
             waifu={currentWaifu}
-            onAvatarClick={() => setIsWaifuModalOpen(true)}
+            onAvatarClick={() => {
+                posthog.capture('waifu_details_viewed', { waifu_name: aiName, source: 'chat_header' });
+                setIsWaifuModalOpen(true);
+            }}
             onSendMessage={handleSendChatMessage}
             isChatting={isAiChatting}
             isAiGeneratingMessage={isAiGeneratingMessage}
@@ -539,7 +588,10 @@ export function App() {
             lang={language}
             gameMode={gameMode}
         />
-        <button className="chat-fab" onClick={() => setIsChatModalOpen(true)} aria-label="Apri chat">
+        <button className="chat-fab" onClick={() => {
+                posthog.capture('chat_opened_mobile');
+                setIsChatModalOpen(true);
+            }} aria-label="Apri chat">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
                 <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
             </svg>
