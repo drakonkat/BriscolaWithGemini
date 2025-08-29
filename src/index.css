@@ -1106,6 +1106,13 @@ body {
 
 /* --- Responsive Design --- */
 @media (max-width: 1024px) {
+  .menu {
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
   body {
     overflow: auto;
     height: auto;
@@ -1267,6 +1274,21 @@ body {
   }
   .waifu-card h3, .random-waifu-card h3 {
       font-size: 1.2rem;
+  }
+  .menu-settings {
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+    gap: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .settings-selector {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .settings-selector select {
+    width: 60%;
   }
 }
 
