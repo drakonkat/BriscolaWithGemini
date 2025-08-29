@@ -533,7 +533,8 @@ input:checked + .slider:before {
 }
 
 .back-button,
-.support-button {
+.support-button,
+.music-button {
   background: rgba(0, 0, 0, 0.3);
   border: none;
   border-radius: 50%;
@@ -548,13 +549,15 @@ input:checked + .slider:before {
 }
 
 .back-button:hover, .back-button:focus,
-.support-button:hover, .support-button:focus {
+.support-button:hover, .support-button:focus,
+.music-button:hover, .music-button:focus {
   background: rgba(0, 0, 0, 0.6);
   outline: 2px solid var(--primary-accent);
 }
 
 .back-button svg,
-.support-button svg {
+.support-button svg,
+.music-button svg {
   width: 24px;
   height: 24px;
 }

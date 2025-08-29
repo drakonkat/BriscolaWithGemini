@@ -19,7 +19,7 @@ import { QuotaExceededError, ai, getAIWaifuTrickMessage } from '../core/gemini';
 import { getLocalAIMove, getFallbackWaifuMessage } from '../core/localAI';
 import { WAIFUS } from '../core/waifus';
 // FIX: The 'Suit' type is now correctly imported from the local types definition file.
-import type { GamePhase, Language, Card, Player, ChatMessage, Waifu, GameEmotionalState, Suit, GameplayMode, Difficulty } from '../core/types';
+import type { GamePhase, Language, Card, Player, ChatMessage, Waifu, GameEmotionalState, Suit, GameplayMode, Difficulty, Soundtrack } from '../core/types';
 
 import { Menu } from './Menu';
 import { GameBoard } from './GameBoard';
@@ -149,6 +149,11 @@ export function App() {
   const [lastGameWinnings, setLastGameWinnings] = useState<number>(0);
   const [hasRolledGacha, setHasRolledGacha] = useState(false);
   const [waifuBubbleMessage, setWaifuBubbleMessage] = useState<string>('');
+  
+  // Musica
+  const [soundtrack, setSoundtrack] = useState<Soundtrack>('epic');
+  const [isMuted, setIsMuted] = useState(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const bubbleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastResolvedTrick = useRef<string[]>([]);
@@ -158,6 +163,76 @@ export function App() {
   const isProcessing = isAiThinkingMove || isResolvingTrick;
   const T = useMemo(() => translations[language], [language]);
   const aiName = useMemo(() => currentWaifu?.name ?? '', [currentWaifu]);
+  
+  // Inizializza l'audio e carica le impostazioni una sola volta all'avvio
+  useEffect(() => {
+    // Crea l'oggetto Audio una sola volta
+    if (!audioRef.current) {
+        const audio = new Audio();
+        audio.loop = true;
+        audio.volume = 0.3;
+        audioRef.current = audio;
+    }
+
+    // Carica le preferenze salvate
+    try {
+        const savedMuteSetting = localStorage.getItem('is_muted');
+        // Default a muto se non c'è nessuna impostazione salvata
+        const initialMuteState = savedMuteSetting !== null ? JSON.parse(savedMuteSetting) : true;
+        setIsMuted(initialMuteState);
+
+        const savedSoundtrack = localStorage.getItem('soundtrack');
+        if (savedSoundtrack && (savedSoundtrack === 'epic' || savedSoundtrack === 'chill')) {
+            setSoundtrack(savedSoundtrack as Soundtrack);
+        }
+    } catch (error) {
+        console.error("Errore nel caricare le impostazioni audio da localStorage", error);
+        setIsMuted(true); // Default a muto in caso di errore
+    }
+  }, []);
+
+  // Gestisce il CAMBIO di traccia musicale
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const soundtrackFile = soundtrack === 'epic' ? '../../assets/bgMusic.mp3' : '../../assets/bgMusicChill.mp3';
+
+    // Se la traccia è cambiata, aggiorna la sorgente
+    if (!audio.src.endsWith(soundtrackFile)) {
+        const wasPlaying = !audio.paused;
+        audio.src = soundtrackFile;
+        audio.load();
+        if (wasPlaying) {
+            // Prova a riprendere la riproduzione con la nuova traccia
+            audio.play().catch(e => {
+                console.warn("Impossibile riprodurre automaticamente la nuova traccia, l'audio è stato disattivato.", e);
+                setIsMuted(true); // Disattiva se il browser blocca la riproduzione
+            });
+        }
+    }
+  }, [soundtrack]);
+  
+  const handleToggleMute = useCallback(() => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      
+      const newMutedState = !isMuted;
+      setIsMuted(newMutedState);
+      localStorage.setItem('is_muted', JSON.stringify(newMutedState));
+
+      if (newMutedState) {
+          audio.pause();
+      } else {
+          // La chiamata a play() è qui, direttamente dentro l'handler dell'evento utente
+          audio.play().catch(error => {
+              console.warn("La riproduzione della musica è stata bloccata dal browser:", error);
+              // Se la riproduzione fallisce, reimposta lo stato su muto
+              setIsMuted(true);
+              localStorage.setItem('is_muted', 'true');
+          });
+      }
+  }, [isMuted]);
 
   useEffect(() => {
       setMessage(T.welcomeMessage);
@@ -228,6 +303,14 @@ export function App() {
         console.error("Failed to save difficulty setting to localStorage", error);
     }
   }, [difficulty]);
+
+  useEffect(() => {
+    try {
+        localStorage.setItem('soundtrack', soundtrack);
+    } catch (error) {
+        console.error("Failed to save soundtrack setting to localStorage", error);
+    }
+  }, [soundtrack]);
 
   useEffect(() => {
     const lockOrientation = async () => {
@@ -323,6 +406,7 @@ export function App() {
   }, [isChatEnabled]);
 
   const startGame = useCallback((selectedWaifu: Waifu | null) => {
+    // La musica viene già gestita dall'effetto principale, non è necessario chiamare playMusic qui
     const bgIndex = Math.floor(Math.random() * 21) + 1;
     const isDesktop = window.innerWidth > 1024;
     const backgroundPrefix = isDesktop ? 'landscape' : 'background';
@@ -865,13 +949,16 @@ export function App() {
           language={language}
           gameplayMode={gameplayMode}
           difficulty={difficulty}
+          soundtrack={soundtrack}
           isChatEnabled={isChatEnabled}
           waitForWaifuResponse={waitForWaifuResponse}
           backgroundUrl={menuBackgroundUrl}
           waifuCoins={waifuCoins}
+          isMuted={isMuted}
           onLanguageChange={setLanguage}
           onGameplayModeChange={setGameplayMode}
           onDifficultyChange={setDifficulty}
+          onSoundtrackChange={setSoundtrack}
           onChatEnabledChange={setIsChatEnabled}
           onWaitForWaifuResponseChange={handleWaitForWaifuResponseChange}
           onWaifuSelected={startGame}
@@ -881,6 +968,7 @@ export function App() {
           onShowSupport={() => setIsSupportModalOpen(true)}
           onRefreshBackground={refreshMenuBackground}
           onShowGallery={() => setIsGalleryModalOpen(true)}
+          onToggleMute={handleToggleMute}
         />
         <RulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} language={language} />
         <PrivacyPolicyModal isOpen={isPrivacyModalOpen} onClose={() => setIsPrivacyModalOpen(false)} language={language} />
@@ -935,6 +1023,7 @@ export function App() {
         isProcessing={isProcessing}
         isAiThinkingMove={isAiThinkingMove}
         turn={turn}
+        isMuted={isMuted}
         onPlayCard={handlePlayCard}
         onGoToMenu={() => setIsConfirmLeaveModalOpen(true)}
         onOpenSupportModal={() => setIsSupportModalOpen(true)}
@@ -949,6 +1038,7 @@ export function App() {
         isAiTyping={isAiTyping}
         waifuBubbleMessage={waifuBubbleMessage}
         onCloseBubble={closeWaifuBubble}
+        onToggleMute={handleToggleMute}
       />
       {isChatEnabled && currentWaifu &&
         <ChatPanel

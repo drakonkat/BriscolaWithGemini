@@ -48,6 +48,10 @@ export const translations = {
     waifuDetails: (name: string) => `Dettagli su ${name}`,
     buyWaifuCoffee: "Supporta la tua Waifu",
     supportEmail: "Contatta Supporto",
+    toggleMusic: "Attiva/Disattiva Musica",
+    soundtrackLabel: "Colonna Sonora",
+    soundtrackEpic: "Musica Epica",
+    soundtrackChill: "Musica chill",
     // Game
     welcomeMessage: "Benvenuto! Inizia una nuova partita.",
     yourTurn: "Tocca a te iniziare.",
@@ -219,7 +223,7 @@ La risposta deve essere in italiano.
         },
         aiContent: {
             title: "Contenuti Generati dall'IA",
-            intro: "Il Servizio utilizza modelli di intelligenza artificiale (Google Gemini) per generare risposte, commenti e mosse di gioco. Riconosci che:",
+            intro: "Il Servizio utilizza modelli di intelleigenza artificiale (Google Gemini) per generare risposte, commenti e mosse di gioco. Riconosci che:",
             points: [
                 "I contenuti generati dall'IA sono prodotti da un modello e potrebbero non essere sempre accurati, appropriati o coerenti.",
                 "Non siamo responsabili per i contenuti generati dall'IA.",
@@ -283,6 +287,10 @@ La risposta deve essere in italiano.
     waifuDetails: (name: string) => `Details about ${name}`,
     buyWaifuCoffee: "Support your Waifu",
     supportEmail: "Contact Support",
+    toggleMusic: "Toggle Music",
+    soundtrackLabel: "Soundtrack",
+    soundtrackEpic: "Epic Music",
+    soundtrackChill: "Chill Music",
     // Game
     welcomeMessage: "Welcome! Start a new game.",
     yourTurn: "It's your turn to start.",
