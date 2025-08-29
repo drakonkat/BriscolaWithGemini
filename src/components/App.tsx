@@ -33,9 +33,20 @@ import { SupportModal } from './SupportModal';
 import { PrivacyPolicyModal } from './PrivacyPolicyModal';
 import { TermsAndConditionsModal } from './TermsAndConditionsModal';
 import { Snackbar } from './Snackbar';
+import { GalleryModal } from './GalleryModal';
+import { FullscreenImageModal } from './FullscreenImageModal';
 
 const SCORE_THRESHOLD = 15; // Point difference to trigger personality change
 type GameMode = 'online' | 'fallback';
+
+const BACKGROUNDS = [
+    'https://s3.tebi.io/waifubriscola/background/landscape1.png',
+    'https://s3.tebi.io/waifubriscola/background/landscape2.png',
+    'https://s3.tebi.io/waifubriscola/background/landscape3.png',
+    'https://s3.tebi.io/waifubriscola/background/background1.png',
+    'https://s3.tebi.io/waifubriscola/background/background2.png',
+    'https://s3.tebi.io/waifubriscola/background/background3.png',
+];
 
 export function App() {
   const [phase, setPhase] = useState<GamePhase>('menu');
@@ -72,12 +83,15 @@ export function App() {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [aiEmotionalState, setAiEmotionalState] = useState<GameEmotionalState>('neutral');
   const [backgroundUrl, setBackgroundUrl] = useState('');
   const [menuBackgroundUrl, setMenuBackgroundUrl] = useState('');
   const [tokenCount, setTokenCount] = useState(0);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [unlockedBackgrounds, setUnlockedBackgrounds] = useState<string[]>([]);
+  const [fullscreenImage, setFullscreenImage] = useState<string>('');
   
   // Gestione modalità di gioco e quota API
   const [isQuotaExceeded, setIsQuotaExceeded] = useState(false);
@@ -100,6 +114,21 @@ export function App() {
       setMenuBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/landscape${bgIndex}.png`);
   }, [T]);
   
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('unlocked_backgrounds');
+      // Initialize with one background unlocked by default for a better first impression.
+      if (saved) {
+        setUnlockedBackgrounds(JSON.parse(saved));
+      } else {
+        setUnlockedBackgrounds([BACKGROUNDS[0]]);
+      }
+    } catch (error) {
+      console.error("Failed to load unlocked backgrounds from localStorage", error);
+      setUnlockedBackgrounds([BACKGROUNDS[0]]);
+    }
+  }, []);
+
   useEffect(() => {
     const lockOrientation = async () => {
       if (Capacitor.isNativePlatform()) {
@@ -555,6 +584,34 @@ export function App() {
     setSnackbarMessage(T.supportModal.subscriptionInterestThanks);
   }, [posthog, currentWaifu, language, T.supportModal.subscriptionInterestThanks]);
 
+  const handleGachaRoll = useCallback(() => {
+    const locked = BACKGROUNDS.filter(bg => !unlockedBackgrounds.includes(bg));
+    if (locked.length === 0) {
+      setSnackbarMessage(T.gallery.gachaAllUnlocked);
+      return;
+    }
+
+    if (Math.random() < 0.25) { // 25% chance
+      const toUnlock = locked[Math.floor(Math.random() * locked.length)];
+      const newUnlocked = [...unlockedBackgrounds, toUnlock];
+      setUnlockedBackgrounds(newUnlocked);
+      localStorage.setItem('unlocked_backgrounds', JSON.stringify(newUnlocked));
+      setSnackbarMessage(T.gallery.gachaSuccess);
+      posthog.capture('gacha_success', { unlocked_background: toUnlock, unlocked_count: newUnlocked.length });
+    } else {
+      setSnackbarMessage(T.gallery.gachaFailure);
+      posthog.capture('gacha_failure');
+    }
+  }, [unlockedBackgrounds, T, posthog]);
+
+  const handleImageSelect = (url: string) => {
+    setFullscreenImage(url);
+  };
+
+  const handleCloseFullscreen = () => {
+    setFullscreenImage('');
+  };
+
   const handleOpenChat = () => {
     setIsChatModalOpen(true);
     setUnreadMessageCount(0);
@@ -577,10 +634,20 @@ export function App() {
           onShowTerms={() => setIsTermsModalOpen(true)}
           onShowSupport={() => setIsSupportModalOpen(true)}
           onRefreshBackground={refreshMenuBackground}
+          onShowGallery={() => setIsGalleryModalOpen(true)}
         />
         <RulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} language={language} />
         <PrivacyPolicyModal isOpen={isPrivacyModalOpen} onClose={() => setIsPrivacyModalOpen(false)} language={language} />
         <TermsAndConditionsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} language={language} />
+        <GalleryModal
+          isOpen={isGalleryModalOpen}
+          onClose={() => setIsGalleryModalOpen(false)}
+          language={language}
+          backgrounds={BACKGROUNDS}
+          unlockedBackgrounds={unlockedBackgrounds}
+          onGachaRoll={handleGachaRoll}
+          onImageSelect={handleImageSelect}
+        />
         {isSupportModalOpen && (
             <SupportModal
                 isOpen={isSupportModalOpen}
@@ -589,6 +656,12 @@ export function App() {
                 language={language}
             />
         )}
+        <FullscreenImageModal
+          isOpen={!!fullscreenImage}
+          imageUrl={fullscreenImage}
+          onClose={handleCloseFullscreen}
+          language={language}
+        />
         <Snackbar message={snackbarMessage} onClose={() => setSnackbarMessage('')} lang={language} />
       </>
     );
@@ -636,12 +709,12 @@ export function App() {
 
       <button className="chat-fab" onClick={handleOpenChat} aria-label={T.chatWith(aiName)}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
-              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2zM-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
           </svg>
           {isAiTyping ? (
             <span className="chat-fab-badge typing"></span>
           ) : unreadMessageCount > 0 && (
-            <span className="chat-fab-badge">{unreadMessageCount > 9 ? '9+' : unreadMessageCount}</span>
+            <span className="chat-fab-badge">{unreadMessageCount}</span>
           )}
       </button>
 
@@ -655,30 +728,26 @@ export function App() {
           language={language}
         />
       )}
+      
       {isQuotaExceeded && gameMode === 'online' && (
         <QuotaExceededModal
           language={language}
           onContinue={handleContinueFromQuotaModal}
         />
       )}
-      <RulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} language={language} />
-      {isWaifuModalOpen && currentWaifu && (
-          <WaifuDetailsModal
-            isOpen={isWaifuModalOpen}
-            onClose={() => setIsWaifuModalOpen(false)}
-            waifu={currentWaifu}
-            language={language}
+
+      {isConfirmLeaveModalOpen && (
+          <ConfirmationModal
+            isOpen={isConfirmLeaveModalOpen}
+            onClose={() => setIsConfirmLeaveModalOpen(false)}
+            onConfirm={handleConfirmLeave}
+            title={T.confirmLeave.title}
+            message={T.confirmLeave.message}
+            confirmText={T.confirmLeave.confirm}
+            cancelText={T.confirmLeave.cancel}
           />
       )}
-      <ConfirmationModal
-          isOpen={isConfirmLeaveModalOpen}
-          onClose={() => setIsConfirmLeaveModalOpen(false)}
-          onConfirm={handleConfirmLeave}
-          title={T.confirmLeave.title}
-          message={T.confirmLeave.message}
-          confirmText={T.confirmLeave.confirm}
-          cancelText={T.confirmLeave.cancel}
-      />
+      
       {isSupportModalOpen && (
         <SupportModal
             isOpen={isSupportModalOpen}
@@ -687,9 +756,24 @@ export function App() {
             language={language}
         />
       )}
-      <PrivacyPolicyModal isOpen={isPrivacyModalOpen} onClose={() => setIsPrivacyModalOpen(false)} language={language} />
-      <TermsAndConditionsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} language={language} />
+
+      {currentWaifu && (
+          <WaifuDetailsModal
+            isOpen={isWaifuModalOpen}
+            onClose={() => setIsWaifuModalOpen(false)}
+            waifu={currentWaifu}
+            language={language}
+          />
+      )}
+      
+      <FullscreenImageModal
+        isOpen={!!fullscreenImage}
+        imageUrl={fullscreenImage}
+        onClose={handleCloseFullscreen}
+        language={language}
+      />
       <Snackbar message={snackbarMessage} onClose={() => setSnackbarMessage('')} lang={language} />
+
     </div>
   );
 }

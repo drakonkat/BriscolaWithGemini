@@ -28,6 +28,7 @@ export const translations = {
     waifuAvatarAlt: (name: string) => `Avatar di ${name}`,
     close: "Chiudi",
     buyWaifuCoffee: "Supporta la tua Waifu",
+    supportEmail: "Contatta Supporto",
     // Game
     welcomeMessage: "Benvenuto! Inizia una nuova partita.",
     yourTurn: "Tocca a te iniziare.",
@@ -116,6 +117,18 @@ La risposta deve essere in italiano.
         message: "Waifu Briscola è un progetto gratuito. Le tue donazioni aiutano a coprire i costi dell'IA per tutti. In alternativa, facci sapere se saresti interessato a un abbonamento personale per un accesso illimitato!",
         subscriptionButton: "Pagherei per un abbonamento",
         subscriptionInterestThanks: "Grazie per il tuo feedback!",
+    },
+    // Gallery
+    gallery: {
+        title: "Galleria Sfondi",
+        backgroundAlt: "Sfondo",
+        gachaButton: "Gacha!",
+        gachaSuccess: "Congratulazioni! Hai sbloccato un nuovo sfondo!",
+        gachaFailure: "Nessuna fortuna questa volta. Riprova!",
+        gachaAllUnlocked: "Hai sbloccato tutti gli sfondi!",
+        locked: "Bloccato",
+        download: "Scarica",
+        fullscreenView: "Visualizza a schermo intero",
     },
     // Legal Modals
     privacyPolicy: {
@@ -227,6 +240,7 @@ La risposta deve essere in italiano.
     waifuAvatarAlt: (name: string) => `Avatar of ${name}`,
     close: "Close",
     buyWaifuCoffee: "Support your Waifu",
+    supportEmail: "Contact Support",
     // Game
     welcomeMessage: "Welcome! Start a new game.",
     yourTurn: "It's your turn to start.",
@@ -315,6 +329,18 @@ The response must be in English.
         message: "Waifu Briscola is a free project. Your donations help cover the AI costs for everyone. Alternatively, let us know if you'd be interested in a personal subscription for unlimited access!",
         subscriptionButton: "I'd Pay for a Subscription",
         subscriptionInterestThanks: "Thanks for your feedback!",
+    },
+    // Gallery
+    gallery: {
+        title: "Background Gallery",
+        backgroundAlt: "Background",
+        gachaButton: "Gacha!",
+        gachaSuccess: "Congratulations! You unlocked a new background!",
+        gachaFailure: "No luck this time. Try again!",
+        gachaAllUnlocked: "You've unlocked all backgrounds!",
+        locked: "Locked",
+        download: "Download",
+        fullscreenView: "View fullscreen",
     },
     // Legal Modals
     privacyPolicy: {
