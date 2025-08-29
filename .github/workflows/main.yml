@@ -62,18 +62,30 @@ jobs:
       - name: Build debug APK
         run: npm run android:apk
 
-      - name: Publish APK to GitHub Release (nightly)
-        uses: ncipollo/release-action@v1
-        with:
-          tag: nightly
-          name: Nightly Build
-          prerelease: true
-          allowUpdates: true
-          replacesArtifacts: true
-          generateReleaseNotes: true
-          artifactErrorsFailBuild: true
-          artifacts: |
-            android/**/outputs/**/*.apk
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+      - name: Upload APKs to Tebi (S3-compatible)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TEBI_S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TEBI_S3_SECRET_ACCESS_KEY }}
+          TEBI_S3_BUCKET: ${{ secrets.TEBI_S3_BUCKET }}
+          TEBI_S3_ENDPOINT: ${{ secrets.TEBI_S3_ENDPOINT }}
+          TEBI_S3_PREFIX: ${{ secrets.TEBI_S3_PREFIX }}
+        run: |
+          set -euo pipefail
+          SHA_SHORT="${GITHUB_SHA::7}"
+          PREFIX="${TEBI_S3_PREFIX:-apks}/${GITHUB_REF_NAME}/${SHA_SHORT}"
+          echo "Uploading APKs to s3://${TEBI_S3_BUCKET}/${PREFIX}/"
+          aws s3 cp android "s3://${TEBI_S3_BUCKET}/${PREFIX}/" \
+            --recursive \
+            --exclude "*" \
+            --include "*.apk" \
+            --endpoint-url "$TEBI_S3_ENDPOINT" \
+            --acl public-read \
+            --content-type "application/vnd.android.package-archive"
+
   # Single deploy job since we're just deploying
   deploy:
     runs-on: ubuntu-latest
