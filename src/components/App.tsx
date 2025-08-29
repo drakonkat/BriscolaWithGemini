@@ -32,6 +32,7 @@ import { ConfirmationModal } from './ConfirmationModal';
 import { SupportModal } from './SupportModal';
 import { PrivacyPolicyModal } from './PrivacyPolicyModal';
 import { TermsAndConditionsModal } from './TermsAndConditionsModal';
+import { Snackbar } from './Snackbar';
 
 const SCORE_THRESHOLD = 15; // Point difference to trigger personality change
 type GameMode = 'online' | 'fallback';
@@ -75,6 +76,7 @@ export function App() {
   const [backgroundUrl, setBackgroundUrl] = useState('');
   const [menuBackgroundUrl, setMenuBackgroundUrl] = useState('');
   const [tokenCount, setTokenCount] = useState(0);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   
   // Gestione modalità di gioco e quota API
   const [isQuotaExceeded, setIsQuotaExceeded] = useState(false);
@@ -121,6 +123,11 @@ export function App() {
     } else if (showPage === 'terms') {
         setIsTermsModalOpen(true);
     }
+  }, []);
+
+  const refreshMenuBackground = useCallback(() => {
+    const bgIndex = Math.floor(Math.random() * 3) + 1;
+    setMenuBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/landscape${bgIndex}.png`);
   }, []);
 
   const updateChatSession = useCallback((waifu: Waifu, history: ChatMessage[], emotionalState: GameEmotionalState, lang: Language) => {
@@ -543,7 +550,8 @@ export function App() {
         language,
     });
     setIsSupportModalOpen(false);
-  }, [posthog, currentWaifu, language]);
+    setSnackbarMessage(T.supportModal.subscriptionInterestThanks);
+  }, [posthog, currentWaifu, language, T.supportModal.subscriptionInterestThanks]);
 
   const handleOpenChat = () => {
     setIsChatModalOpen(true);
@@ -563,10 +571,21 @@ export function App() {
           onShowRules={() => setIsRulesModalOpen(true)}
           onShowPrivacy={() => setIsPrivacyModalOpen(true)}
           onShowTerms={() => setIsTermsModalOpen(true)}
+          onShowSupport={() => setIsSupportModalOpen(true)}
+          onRefreshBackground={refreshMenuBackground}
         />
         <RulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} language={language} />
         <PrivacyPolicyModal isOpen={isPrivacyModalOpen} onClose={() => setIsPrivacyModalOpen(false)} language={language} />
         <TermsAndConditionsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} language={language} />
+        {isSupportModalOpen && (
+            <SupportModal
+                isOpen={isSupportModalOpen}
+                onClose={() => setIsSupportModalOpen(false)}
+                onSubscriptionInterest={handleSubscriptionInterest}
+                language={language}
+            />
+        )}
+        <Snackbar message={snackbarMessage} onClose={() => setSnackbarMessage('')} lang={language} />
       </>
     );
   }
@@ -666,6 +685,7 @@ export function App() {
       )}
       <PrivacyPolicyModal isOpen={isPrivacyModalOpen} onClose={() => setIsPrivacyModalOpen(false)} language={language} />
       <TermsAndConditionsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} language={language} />
+      <Snackbar message={snackbarMessage} onClose={() => setSnackbarMessage('')} lang={language} />
     </div>
   );
 }

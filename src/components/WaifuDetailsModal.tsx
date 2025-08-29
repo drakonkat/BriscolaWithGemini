@@ -4,6 +4,7 @@
 */
 import { translations } from '../core/translations';
 import type { Language, Waifu } from '../core/types';
+import { CachedImage } from './CachedImage';
 
 interface WaifuDetailsModalProps {
     isOpen: boolean;
@@ -22,7 +23,7 @@ export const WaifuDetailsModal = ({ isOpen, onClose, waifu, language }: WaifuDet
     return (
         <div className="game-over-overlay" onClick={onClose}>
             <div className="waifu-details-modal" onClick={(e) => e.stopPropagation()}>
-                <img src={waifu.avatar} alt={waifu.name} className="waifu-details-image" />
+                <CachedImage imageUrl={waifu.avatar} alt={waifu.name} className="waifu-details-image" />
                 <h3>{waifu.name}</h3>
                 <p>{waifu.fullDescription[language]}</p>
                 <button onClick={onClose}>{T.close}</button>

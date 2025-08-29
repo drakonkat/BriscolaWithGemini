@@ -5,6 +5,7 @@
 import { translations } from '../core/translations';
 import type { Language, Waifu } from '../core/types';
 import { WAIFUS } from '../core/waifus';
+import { CachedImage } from './CachedImage';
 
 interface WaifuSelectorProps {
     language: Language;
@@ -20,7 +21,7 @@ export const WaifuSelector = ({ language, onWaifuSelected }: WaifuSelectorProps)
             <div className="waifu-selector-container">
                 {WAIFUS.map(waifu => (
                     <div key={waifu.name} className="waifu-card" onClick={() => onWaifuSelected(waifu)} role="button" tabIndex={0} aria-label={waifu.name}>
-                        <img src={waifu.avatar} alt={T.waifuAvatarAlt(waifu.name)} />
+                        <CachedImage imageUrl={waifu.avatar} alt={T.waifuAvatarAlt(waifu.name)} />
                         <div>
                             <h3>{waifu.name}</h3>
                             <p>{waifu.personality[language]}</p>

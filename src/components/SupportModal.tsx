@@ -18,6 +18,10 @@ export const SupportModal = ({ isOpen, onClose, onSubscriptionInterest, language
     }
 
     const T = translations[language].supportModal;
+    const T_common = translations[language];
+
+    const buttonText = encodeURIComponent(T_common.buyWaifuCoffee);
+    const imageUrl = `https://img.buymeacoffee.com/button-api/?text=${buttonText}&emoji=&slug=waifubriscola&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff`;
 
     return (
         <div className="game-over-overlay" onClick={onClose}>
@@ -26,13 +30,12 @@ export const SupportModal = ({ isOpen, onClose, onSubscriptionInterest, language
                 <p>{T.message}</p>
                 <div className="modal-actions">
                     <a 
-                        href="https://ko-fi.com/waifubriscoladev" 
+                        href="https://www.buymeacoffee.com/waifubriscola" 
                         target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="donation-link"
+                        rel="noopener noreferrer"
                         onClick={onClose}
                     >
-                        {T.donateButton}
+                        <img src={imageUrl} alt={T_common.buyWaifuCoffee} />
                     </a>
                     <button onClick={onSubscriptionInterest}>
                         {T.subscriptionButton}

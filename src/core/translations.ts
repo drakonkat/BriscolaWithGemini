@@ -9,9 +9,12 @@ export const translations = {
     // Menu
     title: "Waifu Briscola",
     subtitle: "Sfida un'avversaria controllata da Gemini AI.",
+    projectDescription1: "Questo è un piccolo progetto senza pretese, nato per divertimento. L'obiettivo è aggiungere gradualmente nuove funzionalità, più mazzi di carte e, soprattutto, tantissime nuove Waifu con personalità uniche tutte da scoprire!",
+    projectDescription2: "I fondi raccolti dalle donazioni serviranno ad assumere disegnatori e artisti per migliorare sempre più le waifu e il gioco, così da ridistribuire la ricchezza tra gli umani e non far rubare il loro lavoro all'IA.",
     startGame: "Inizia Partita",
     language: "Lingua",
     rulesTitle: "Regole del Punteggio",
+    refreshBackground: "Cambia Sfondo",
     winCondition: "Il mazzo ha un totale di 120 punti. Il primo giocatore a totalizzare più di 60 punti vince la partita.",
     otherCards: "Altre carte",
     scorePoints: (points: number) => `${points} punti`,
@@ -19,6 +22,7 @@ export const translations = {
     randomOpponent: "Avversaria Casuale",
     waifuAvatarAlt: (name: string) => `Avatar di ${name}`,
     close: "Chiudi",
+    buyWaifuCoffee: "Supporta la tua Waifu",
     // Game
     welcomeMessage: "Benvenuto! Inizia una nuova partita.",
     yourTurn: "Tocca a te iniziare.",
@@ -91,7 +95,6 @@ La risposta deve essere in italiano.
     quotaExceeded: {
         title: "Quota API Esaurita",
         message: "Purtroppo abbiamo raggiunto il limite di richieste giornaliere all'IA. Puoi continuare a giocare contro un'IA più semplice.",
-        donationText: "Supporta il Progetto",
         continueGame: "Continua a Giocare",
         quotaInfo: "Le quote si resettano ogni giorno. Grazie per la tua pazienza!",
     },
@@ -106,8 +109,8 @@ La risposta deve essere in italiano.
     supportModal: {
         title: "Supporta il Progetto",
         message: "Waifu Briscola è un progetto gratuito. Le tue donazioni aiutano a coprire i costi dell'IA per tutti. In alternativa, facci sapere se saresti interessato a un abbonamento personale per un accesso illimitato!",
-        donateButton: "Dona su Ko-fi",
-        subscriptionButton: "Pagherei per un abbonamento"
+        subscriptionButton: "Pagherei per un abbonamento",
+        subscriptionInterestThanks: "Grazie per il tuo feedback!",
     },
     // Legal Modals
     privacyPolicy: {
@@ -200,9 +203,12 @@ La risposta deve essere in italiano.
     // Menu
     title: "Waifu Briscola",
     subtitle: "Challenge an opponent controlled by Gemini AI.",
+    projectDescription1: "This is a small, unpretentious project, born for fun. The goal is to gradually add new features, more card decks, and, most importantly, lots of new Waifus with unique personalities to discover!",
+    projectDescription2: "The funds raised from donations will be used to hire designers and artists to continuously improve the waifus and the game, thereby redistributing wealth among humans and preventing AI from stealing their jobs.",
     startGame: "Start Game",
     language: "Language",
     rulesTitle: "Scoring Rules",
+    refreshBackground: "Change Background",
     winCondition: "The deck has a total of 120 points. The first player to score more than 60 points wins the game.",
     otherCards: "Other cards",
     scorePoints: (points: number) => `${points} points`,
@@ -210,6 +216,7 @@ La risposta deve essere in italiano.
     randomOpponent: "Random Opponent",
     waifuAvatarAlt: (name: string) => `Avatar of ${name}`,
     close: "Close",
+    buyWaifuCoffee: "Support your Waifu",
     // Game
     welcomeMessage: "Welcome! Start a new game.",
     yourTurn: "It's your turn to start.",
@@ -282,7 +289,6 @@ The response must be in English.
     quotaExceeded: {
         title: "API Quota Exceeded",
         message: "Unfortunately, we've hit our daily AI request limit. You can continue playing against a simpler AI.",
-        donationText: "Support the Project",
         continueGame: "Continue Playing",
         quotaInfo: "Quotas reset daily. Thanks for your patience!",
     },
@@ -297,8 +303,8 @@ The response must be in English.
     supportModal: {
         title: "Support the Project",
         message: "Waifu Briscola is a free project. Your donations help cover the AI costs for everyone. Alternatively, let us know if you'd be interested in a personal subscription for unlimited access!",
-        donateButton: "Donate on Ko-fi",
-        subscriptionButton: "I'd Pay for a Subscription"
+        subscriptionButton: "I'd Pay for a Subscription",
+        subscriptionInterestThanks: "Thanks for your feedback!",
     },
     // Legal Modals
     privacyPolicy: {

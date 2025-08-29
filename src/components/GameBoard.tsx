@@ -6,6 +6,7 @@ import { CardView } from './CardView';
 import { getCardId } from '../core/utils';
 import { translations } from '../core/translations';
 import type { Card, Language, Player } from '../core/types';
+import { CachedImage } from './CachedImage';
 
 interface GameBoardProps {
     aiName: string;
@@ -65,8 +66,8 @@ export const GameBoard = ({
 
     return (
         <main className="game-board">
-            <img 
-                src={backgroundUrl} 
+            <CachedImage 
+                imageUrl={backgroundUrl} 
                 alt={T.gameBoardBackground} 
                 className="game-board-background"
                 style={backgroundStyle}

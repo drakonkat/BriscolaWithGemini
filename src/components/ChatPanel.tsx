@@ -5,6 +5,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { translations } from '../core/translations';
 import type { ChatMessage, Language, Waifu } from '../core/types';
+import { CachedImage } from './CachedImage';
 
 type GameMode = 'online' | 'fallback';
 
@@ -69,7 +70,7 @@ export const ChatPanel = ({
     <aside className="chat-panel">
       <header className="chat-header">
         <button className="chat-header-avatar-button" onClick={onAvatarClick} aria-label={`Dettagli su ${aiName}`}>
-          <img src={waifu.avatar} alt={aiName} className="chat-header-avatar" />
+          <CachedImage imageUrl={waifu.avatar} alt={aiName} className="chat-header-avatar" />
         </button>
         <h2>{T.chatWith(aiName)}</h2>
         <button className="chat-modal-close" onClick={onModalClose} aria-label={T.closeChat}>
