@@ -72,15 +72,10 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TEBI_S3_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TEBI_S3_SECRET_ACCESS_KEY }}
-          TEBI_S3_BUCKET: ${{ secrets.TEBI_S3_BUCKET }}
-          TEBI_S3_ENDPOINT: ${{ secrets.TEBI_S3_ENDPOINT }}
-          TEBI_S3_PREFIX: ${{ secrets.TEBI_S3_PREFIX }}
         run: |
           set -euo pipefail
-          SHA_SHORT="${GITHUB_SHA::7}"
-          PREFIX="${TEBI_S3_PREFIX:-apks}/${GITHUB_REF_NAME}/${SHA_SHORT}"
-          echo "Uploading APKs to s3://${TEBI_S3_BUCKET}/${PREFIX}/"
-          aws s3 cp android "s3://${TEBI_S3_BUCKET}/${PREFIX}/" \
+          echo "Uploading APKs to s3://waifubriscola/build/"
+          aws s3 cp android "s3://waifubriscola/build/" \
             --recursive \
             --exclude "*" \
             --include "*.apk" \
