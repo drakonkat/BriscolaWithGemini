@@ -4,15 +4,16 @@
 */
 import { translations } from '../core/translations';
 import { VALUES_IT } from '../core/constants';
-import type { Language } from '../core/types';
+import type { Language, Difficulty } from '../core/types';
 
 interface RulesModalProps {
     isOpen: boolean;
     onClose: () => void;
     language: Language;
+    difficulty: Difficulty;
 }
 
-export const RulesModal = ({ isOpen, onClose, language }: RulesModalProps) => {
+export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModalProps) => {
     if (!isOpen) {
         return null;
     }
@@ -25,6 +26,20 @@ export const RulesModal = ({ isOpen, onClose, language }: RulesModalProps) => {
         { value: T.values[VALUES_IT.indexOf('Cavallo')], points: 3 },
         { value: T.values[VALUES_IT.indexOf('Fante')], points: 2 },
     ];
+
+    let difficultyMultiplier = 1.0;
+    if (difficulty === 'easy') {
+        difficultyMultiplier = 0.5;
+    } else if (difficulty === 'hard') {
+        difficultyMultiplier = 1.5;
+    }
+
+    const rewards = {
+        loss: Math.round(20 * difficultyMultiplier),
+        win61: Math.round(45 * difficultyMultiplier),
+        win81: Math.round(70 * difficultyMultiplier),
+        win101: Math.round(100 * difficultyMultiplier),
+    };
 
     return (
         <div className="game-over-overlay" onClick={onClose}>
@@ -46,10 +61,18 @@ export const RulesModal = ({ isOpen, onClose, language }: RulesModalProps) => {
 
                 <h3 className="rules-subtitle">{T.waifuCoinRulesTitle}</h3>
                 <ul className="rules-info-list">
-                    <li className="rules-info-item">{T.waifuCoinRuleLoss}</li>
-                    <li className="rules-info-item">{T.waifuCoinRuleWin61}</li>
-                    <li className="rules-info-item">{T.waifuCoinRuleWin81}</li>
-                    <li className="rules-info-item">{T.waifuCoinRuleWin101}</li>
+                    <li className="rules-info-item">{T.waifuCoinRuleLoss(rewards.loss)}</li>
+                    <li className="rules-info-item">{T.waifuCoinRuleWin61(rewards.win61)}</li>
+                    <li className="rules-info-item">{T.waifuCoinRuleWin81(rewards.win81)}</li>
+                    <li className="rules-info-item">{T.waifuCoinRuleWin101(rewards.win101)}</li>
+                </ul>
+
+                <h3 className="rules-subtitle">{T.waifuCoinDifficultyMultiplier}</h3>
+                <p>{T.waifuCoinDifficultyMultiplierInfo}</p>
+                <ul className="rules-info-list">
+                    <li className={`rules-info-item ${difficulty === 'easy' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierEasy}</li>
+                    <li className={`rules-info-item ${difficulty === 'medium' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierMedium}</li>
+                    <li className={`rules-info-item ${difficulty === 'hard' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierHard}</li>
                 </ul>
 
                 <h3 className="rules-subtitle">{T.gachaRulesTitle}</h3>

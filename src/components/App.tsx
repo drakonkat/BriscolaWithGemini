@@ -769,18 +769,26 @@ export function App() {
         winner = 'tie';
       }
 
-      let coinsEarned = 0;
+      let baseCoinsEarned = 0;
       if (winner === 'human') {
         if (humanScore > 101) {
-          coinsEarned = 100;
+          baseCoinsEarned = 100;
         } else if (humanScore >= 81) {
-          coinsEarned = 70;
+          baseCoinsEarned = 70;
         } else if (humanScore >= 61) {
-          coinsEarned = 45;
+          baseCoinsEarned = 45;
         }
       } else { // Loss or Tie
-        coinsEarned = 20;
+        baseCoinsEarned = 20;
       }
+      
+      let difficultyMultiplier = 1.0;
+      if (difficulty === 'easy') {
+          difficultyMultiplier = 0.5;
+      } else if (difficulty === 'hard') {
+          difficultyMultiplier = 1.5;
+      }
+      const coinsEarned = Math.round(baseCoinsEarned * difficultyMultiplier);
       
       setLastGameWinnings(coinsEarned);
       const newTotalCoins = waifuCoins + coinsEarned;
@@ -798,9 +806,10 @@ export function App() {
           total_tokens_used: tokenCount,
           coins_earned: coinsEarned,
           is_chat_enabled: isChatEnabled,
+          difficulty,
       });
     }
-  }, [phase, humanHand.length, aiHand.length, deck.length, cardsOnTable.length, humanScore, aiScore, isResolvingTrick, posthog, currentWaifu, tokenCount, waifuCoins, isChatEnabled]);
+  }, [phase, humanHand.length, aiHand.length, deck.length, cardsOnTable.length, humanScore, aiScore, isResolvingTrick, posthog, currentWaifu, tokenCount, waifuCoins, isChatEnabled, difficulty]);
   
   // Handle switching to fallback mode
   useEffect(() => {
@@ -970,7 +979,7 @@ export function App() {
           onShowGallery={() => setIsGalleryModalOpen(true)}
           onToggleMute={handleToggleMute}
         />
-        <RulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} language={language} />
+        <RulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} language={language} difficulty={difficulty} />
         <PrivacyPolicyModal isOpen={isPrivacyModalOpen} onClose={() => setIsPrivacyModalOpen(false)} language={language} />
         <TermsAndConditionsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} language={language} />
         <GalleryModal
@@ -1064,6 +1073,7 @@ export function App() {
           aiName={aiName}
           winner={gameResult}
           onPlayAgain={() => startGame(currentWaifu)}
+          onGoToMenu={() => setPhase('menu')}
           language={language}
           winnings={lastGameWinnings}
         />

@@ -11,11 +11,12 @@ interface GameOverModalProps {
     aiName: string;
     winner: 'human' | 'ai' | 'tie';
     onPlayAgain: () => void;
+    onGoToMenu: () => void;
     language: Language;
     winnings: number;
 }
 
-export const GameOverModal = ({ humanScore, aiScore, aiName, winner, onPlayAgain, language, winnings }: GameOverModalProps) => {
+export const GameOverModal = ({ humanScore, aiScore, aiName, winner, onPlayAgain, onGoToMenu, language, winnings }: GameOverModalProps) => {
     const T = translations[language];
 
     let finalMessage: string;
@@ -39,7 +40,10 @@ export const GameOverModal = ({ humanScore, aiScore, aiName, winner, onPlayAgain
                 <p>{T.scoreYou}: {humanScore} - {aiName}: {aiScore}</p>
                 {winnings > 0 && <p className="game-over-winnings">{T.coinsEarned(winnings)}</p>}
                 <h3>{finalMessage}</h3>
-                <button onClick={onPlayAgain}>{T.playAgain}</button>
+                <div className="modal-actions">
+                    <button onClick={onPlayAgain}>{T.playAgain}</button>
+                    <button onClick={onGoToMenu} className="button-secondary">{T.backToMenu}</button>
+                </div>
             </div>
         </div>
     );
