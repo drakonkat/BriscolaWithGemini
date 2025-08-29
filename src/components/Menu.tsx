@@ -3,14 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { translations } from '../core/translations';
-import type { Language, Waifu } from '../core/types';
+import type { Language, Waifu, GameplayMode } from '../core/types';
 import { WaifuSelector } from './WaifuSelector';
 import { CachedImage } from './CachedImage';
 
 interface MenuProps {
     language: Language;
+    gameplayMode: GameplayMode;
     backgroundUrl: string;
     onLanguageChange: (lang: Language) => void;
+    onGameplayModeChange: (mode: GameplayMode) => void;
     onWaifuSelected: (waifu: Waifu | null) => void;
     onShowRules: () => void;
     onShowPrivacy: () => void;
@@ -19,7 +21,19 @@ interface MenuProps {
     onRefreshBackground: () => void;
 }
 
-export const Menu = ({ language, backgroundUrl, onLanguageChange, onWaifuSelected, onShowRules, onShowPrivacy, onShowTerms, onShowSupport, onRefreshBackground }: MenuProps) => {
+export const Menu = ({ 
+    language, 
+    gameplayMode,
+    backgroundUrl, 
+    onLanguageChange, 
+    onGameplayModeChange,
+    onWaifuSelected, 
+    onShowRules, 
+    onShowPrivacy, 
+    onShowTerms, 
+    onShowSupport, 
+    onRefreshBackground 
+}: MenuProps) => {
     const T = translations[language];
 
     return (
@@ -50,12 +64,23 @@ export const Menu = ({ language, backgroundUrl, onLanguageChange, onWaifuSelecte
                 
                 <WaifuSelector language={language} onWaifuSelected={onWaifuSelected} />
 
-                <div className="language-selector">
-                    <label htmlFor="language-select">{T.language}:</label>
-                    <select id="language-select" value={language} onChange={(e) => onLanguageChange(e.target.value as Language)}>
-                        <option value="it">Italiano</option>
-                        <option value="en">English</option>
-                    </select>
+                <div className="menu-settings">
+                    <div className="settings-selector game-mode-selector">
+                        <label htmlFor="game-mode-select">{T.gameModeLabel}:</label>
+                        <select id="game-mode-select" value={gameplayMode} onChange={(e) => onGameplayModeChange(e.target.value as GameplayMode)}>
+                            <option value="classic">{T.gameModeClassic}</option>
+                            <option value="roguelike" disabled title={T.comingSoonTooltip}>
+                                {T.gameModeRoguelike}{T.comingSoon}
+                            </option>
+                        </select>
+                    </div>
+                    <div className="settings-selector language-selector">
+                        <label htmlFor="language-select">{T.language}:</label>
+                        <select id="language-select" value={language} onChange={(e) => onLanguageChange(e.target.value as Language)}>
+                            <option value="it">Italiano</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
                 </div>
 
                 <footer className="menu-footer">

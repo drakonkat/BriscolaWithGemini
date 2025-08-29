@@ -13,3 +13,4 @@ export type ChatMessage = { sender: 'human' | 'ai'; text: string; };
 export type Language = 'it' | 'en';
 export type Waifu = WaifuType;
 export type GameEmotionalState = 'winning' | 'losing' | 'neutral';
+export type GameplayMode = 'classic' | 'roguelike';

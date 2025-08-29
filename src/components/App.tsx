@@ -19,7 +19,7 @@ import { QuotaExceededError, ai, getAIWaifuTrickMessage } from '../core/gemini';
 import { getLocalAIMove, getFallbackWaifuMessage } from '../core/localAI';
 import { WAIFUS } from '../core/waifus';
 // FIX: The 'Suit' type is now correctly imported from the local types definition file.
-import type { GamePhase, Language, Card, Player, ChatMessage, Waifu, GameEmotionalState, Suit } from '../core/types';
+import type { GamePhase, Language, Card, Player, ChatMessage, Waifu, GameEmotionalState, Suit, GameplayMode } from '../core/types';
 
 import { Menu } from './Menu';
 import { GameBoard } from './GameBoard';
@@ -40,6 +40,7 @@ type GameMode = 'online' | 'fallback';
 export function App() {
   const [phase, setPhase] = useState<GamePhase>('menu');
   const [language, setLanguage] = useState<Language>('it');
+  const [gameplayMode, setGameplayMode] = useState<GameplayMode>('classic');
   const [deck, setDeck] = useState<Card[]>([]);
   const [humanHand, setHumanHand] = useState<Card[]>([]);
   const [aiHand, setAiHand] = useState<Card[]>([]);
@@ -188,7 +189,8 @@ export function App() {
     posthog.capture('game_started', {
         waifu_name: newWaifu.name,
         language: language,
-        selection_mode: selectedWaifu ? 'specific' : 'random'
+        selection_mode: selectedWaifu ? 'specific' : 'random',
+        gameplay_mode: gameplayMode,
     });
 
     const emotionalState = 'neutral';
@@ -225,7 +227,7 @@ export function App() {
     setUnreadMessageCount(0);
     lastResolvedTrick.current = [];
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
-  }, [language, T, updateChatSession, posthog]);
+  }, [language, T, updateChatSession, posthog, gameplayMode]);
   
   const handleConfirmLeave = () => {
     posthog.capture('game_left', {
@@ -565,8 +567,10 @@ export function App() {
       <>
         <Menu
           language={language}
+          gameplayMode={gameplayMode}
           backgroundUrl={menuBackgroundUrl}
           onLanguageChange={setLanguage}
+          onGameplayModeChange={setGameplayMode}
           onWaifuSelected={startGame}
           onShowRules={() => setIsRulesModalOpen(true)}
           onShowPrivacy={() => setIsPrivacyModalOpen(true)}
