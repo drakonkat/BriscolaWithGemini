@@ -59,6 +59,7 @@ export function App() {
   const [language, setLanguage] = useState<Language>('it');
   const [gameplayMode, setGameplayMode] = useState<GameplayMode>('classic');
   const [isChatEnabled, setIsChatEnabled] = useState(true);
+  const [waitForWaifuResponse, setWaitForWaifuResponse] = useState(true);
   const [deck, setDeck] = useState<Card[]>([]);
   const [humanHand, setHumanHand] = useState<Card[]>([]);
   const [aiHand, setAiHand] = useState<Card[]>([]);
@@ -110,12 +111,14 @@ export function App() {
   const [waifuCoins, setWaifuCoins] = useState<number>(0);
   const [lastGameWinnings, setLastGameWinnings] = useState<number>(0);
   const [hasRolledGacha, setHasRolledGacha] = useState(false);
+  const [waifuBubbleMessage, setWaifuBubbleMessage] = useState<string>('');
 
-  // Stato derivato per disabilitare l'input dell'utente
-  const isProcessing = isAiThinkingMove || isResolvingTrick;
+  const bubbleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastResolvedTrick = useRef<string[]>([]);
   const posthog = usePostHog();
 
+  // Stato derivato per disabilitare l'input dell'utente
+  const isProcessing = isAiThinkingMove || isResolvingTrick;
   const T = useMemo(() => translations[language], [language]);
   const aiName = useMemo(() => currentWaifu?.name ?? '', [currentWaifu]);
 
@@ -127,45 +130,23 @@ export function App() {
   
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('unlocked_backgrounds');
-      if (saved) {
-        setUnlockedBackgrounds(JSON.parse(saved));
-      } else {
-        setUnlockedBackgrounds([]);
-      }
-    } catch (error) {
-      console.error("Failed to load unlocked backgrounds from localStorage", error);
-      setUnlockedBackgrounds([]);
-    }
-    
-    try {
+      const savedUnlocked = localStorage.getItem('unlocked_backgrounds');
+      if (savedUnlocked) setUnlockedBackgrounds(JSON.parse(savedUnlocked));
+
       const savedCoins = localStorage.getItem('waifu_coins');
-      if (savedCoins) {
-        setWaifuCoins(parseInt(savedCoins, 10));
-      }
-    } catch (error) {
-      console.error("Failed to load waifu coins from localStorage", error);
-      setWaifuCoins(0);
-    }
+      if (savedCoins) setWaifuCoins(parseInt(savedCoins, 10));
 
-    try {
       const savedRolled = localStorage.getItem('has_rolled_gacha');
-      if (savedRolled) {
-        setHasRolledGacha(JSON.parse(savedRolled));
-      }
-    } catch (error) {
-      console.error("Failed to load gacha roll status from localStorage", error);
-      setHasRolledGacha(false);
-    }
+      if (savedRolled) setHasRolledGacha(JSON.parse(savedRolled));
 
-    try {
-        const savedChatSetting = localStorage.getItem('is_chat_enabled');
-        if (savedChatSetting !== null) {
-            setIsChatEnabled(JSON.parse(savedChatSetting));
-        }
+      const savedChatSetting = localStorage.getItem('is_chat_enabled');
+      if (savedChatSetting !== null) setIsChatEnabled(JSON.parse(savedChatSetting));
+      
+      const savedWaitSetting = localStorage.getItem('wait_for_waifu_response');
+      if (savedWaitSetting !== null) setWaitForWaifuResponse(JSON.parse(savedWaitSetting));
+      
     } catch (error) {
-        console.error("Failed to load chat setting from localStorage", error);
-        setIsChatEnabled(true);
+      console.error("Failed to load settings from localStorage", error);
     }
   }, []);
 
@@ -176,6 +157,14 @@ export function App() {
         console.error("Failed to save chat setting to localStorage", error);
     }
   }, [isChatEnabled]);
+
+  useEffect(() => {
+    try {
+        localStorage.setItem('wait_for_waifu_response', JSON.stringify(waitForWaifuResponse));
+    } catch (error) {
+        console.error("Failed to save wait setting to localStorage", error);
+    }
+  }, [waitForWaifuResponse]);
 
   useEffect(() => {
     const lockOrientation = async () => {
@@ -206,6 +195,16 @@ export function App() {
   const refreshMenuBackground = useCallback(() => {
     const bgIndex = Math.floor(Math.random() * 3) + 1;
     setMenuBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/landscape${bgIndex}.png`);
+  }, []);
+
+  const showWaifuBubble = useCallback((message: string) => {
+    if (bubbleTimeoutRef.current) {
+        clearTimeout(bubbleTimeoutRef.current);
+    }
+    setWaifuBubbleMessage(message);
+    bubbleTimeoutRef.current = setTimeout(() => {
+        setWaifuBubbleMessage('');
+    }, 5000); // Display for 5 seconds
   }, []);
 
   const updateChatSession = useCallback((waifu: Waifu, history: ChatMessage[], emotionalState: GameEmotionalState, lang: Language) => {
@@ -280,6 +279,7 @@ export function App() {
       const initialHistory: ChatMessage[] = [initialAiMessage];
       setChatHistory(initialHistory);
       updateChatSession(newWaifu, initialHistory, emotionalState, language);
+      showWaifuBubble(initialAiMessage.text);
     } else {
       setChatHistory([]);
       setChatSession(null);
@@ -311,7 +311,7 @@ export function App() {
     setUnreadMessageCount(0);
     lastResolvedTrick.current = [];
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
-  }, [language, T, updateChatSession, posthog, gameplayMode, isChatEnabled]);
+  }, [language, T, updateChatSession, posthog, gameplayMode, isChatEnabled, showWaifuBubble]);
   
   const handleConfirmLeave = () => {
     posthog.capture('game_left', {
@@ -375,6 +375,7 @@ export function App() {
 
         setChatHistory(prev => [...prev, aiMessage]);
         if (!isChatModalOpen) {
+          showWaifuBubble(aiMessage.text);
           setUnreadMessageCount(prev => prev + 1);
         }
         playSound('chat-notify');
@@ -457,39 +458,92 @@ export function App() {
     if (cardsOnTable.length !== 2 || phase !== 'playing' || isResolvingTrick) {
       return;
     }
-
+  
     const resolveTrick = async () => {
       setIsResolvingTrick(true);
-      
+  
+      await new Promise(resolve => setTimeout(resolve, 1000));
+  
       const currentTrickCardIds = cardsOnTable.map(c => getCardId(c, language)).sort();
       if (JSON.stringify(currentTrickCardIds) === JSON.stringify(lastResolvedTrick.current)) {
-          console.warn("Attempted to resolve the same trick twice. Aborting.");
-          setIsResolvingTrick(false);
-          return;
+        console.warn("Attempted to resolve the same trick twice. Aborting.");
+        setIsResolvingTrick(false);
+        return;
       }
-
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
+  
       if (!briscolaSuit || !currentWaifu) {
         setIsResolvingTrick(false);
         return;
       }
-
+  
       const winner = getTrickWinner(cardsOnTable, trickStarter, briscolaSuit);
       const points = POINTS[cardsOnTable[0].value] + POINTS[cardsOnTable[1].value];
-      
-      if (winner === 'ai' && isChatEnabled) {
+  
+      const proceedToNextTurn = async () => {
+        const trickMessage = winner === 'human' ? T.youWonTrick(points) : T.aiWonTrick(aiName, points);
+        const soundToPlay = winner === 'human' ? 'trick-win' : 'trick-lose';
+        playSound(soundToPlay);
+    
+        const tempDeck = [...deck];
+        let tempBriscolaCard = briscolaCard;
+        const drawnCards: Card[] = [];
+        for (let i = 0; i < 2; i++) {
+          if (tempDeck.length > 0) {
+            drawnCards.push(tempDeck.shift()!);
+          } else if (tempBriscolaCard) {
+            drawnCards.push(tempBriscolaCard);
+            tempBriscolaCard = null;
+          }
+        }
+    
+        setCardsOnTable([]);
+    
+        if (drawnCards.length > 0) {
+          playSound('card-place');
+          const drawAnimations = [];
+          drawAnimations.push({ destination: winner });
+          if (drawnCards.length > 1) {
+            drawAnimations.push({ destination: winner === 'human' ? 'ai' : 'human' });
+          }
+          setDrawingCards(drawAnimations);
+    
+          await new Promise(resolve => setTimeout(resolve, 600));
+          setDrawingCards(null);
+        }
+    
+        const newHumanCard = winner === 'human' ? drawnCards[0] : drawnCards[1];
+        const newAiCard = winner === 'human' ? drawnCards[1] : drawnCards[0];
+    
+        setDeck(tempDeck);
+        setBriscolaCard(tempBriscolaCard);
+        if (winner === 'human') {
+          setHumanScore(s => s + points);
+          if (newHumanCard) setHumanHand(prev => [...prev, newHumanCard]);
+          if (newAiCard) setAiHand(prev => [...prev, newAiCard]);
+          setHasChattedThisTurn(false);
+        } else {
+          setAiScore(s => s + points);
+          if (newAiCard) setAiHand(prev => [...prev, newAiCard]);
+          if (newHumanCard) setHumanHand(prev => [...prev, newHumanCard]);
+        }
+    
+        lastResolvedTrick.current = currentTrickCardIds;
+        setTurn(winner);
+        setTrickStarter(winner);
+        setMessage(`${trickMessage} ${winner === 'human' ? T.yourTurnMessage : T.aiTurnMessage(aiName)}`);
+        setIsResolvingTrick(false);
+      };
+
+      const generateWaifuMessage = async () => {
         const humanPlayedCard = trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1];
         const aiPlayedCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
-        
+        let messageToShow = '';
+  
         if (gameMode === 'fallback') {
           const fallbackMsg = getFallbackWaifuMessage(currentWaifu, aiEmotionalState, language, usedFallbackMessages);
           setUsedFallbackMessages(prev => [...prev, fallbackMsg]);
           setChatHistory(prev => [...prev, { sender: 'ai', text: fallbackMsg }]);
-          if (!isChatModalOpen) {
-            setUnreadMessageCount(prev => prev + 1);
-          }
-          playSound('chat-notify');
+          messageToShow = fallbackMsg;
         } else {
           setIsAiGeneratingMessage(true);
           try {
@@ -504,10 +558,7 @@ export function App() {
             });
             setTokenCount(prev => prev + tokensUsed);
             setChatHistory(prev => [...prev, { sender: 'ai', text: waifuMsg }]);
-            if (!isChatModalOpen) {
-              setUnreadMessageCount(prev => prev + 1);
-            }
-            playSound('chat-notify');
+            messageToShow = waifuMsg;
           } catch (error) {
             if (error instanceof QuotaExceededError) {
               posthog.capture('api_quota_exceeded', { source: 'trick_comment' });
@@ -519,69 +570,35 @@ export function App() {
             setIsAiGeneratingMessage(false);
           }
         }
-      }
-
-      const trickMessage = winner === 'human' ? T.youWonTrick(points) : T.aiWonTrick(aiName, points);
-      const soundToPlay = winner === 'human' ? 'trick-win' : 'trick-lose';
-      playSound(soundToPlay);
-
-      const tempDeck = [...deck];
-      let tempBriscolaCard = briscolaCard;
-      const drawnCards: Card[] = [];
-      for (let i = 0; i < 2; i++) {
-        if (tempDeck.length > 0) {
-          drawnCards.push(tempDeck.shift()!);
-        } else if (tempBriscolaCard) {
-          drawnCards.push(tempBriscolaCard);
-          tempBriscolaCard = null;
-        }
-      }
-
-      // Start visual updates: clear table, then animate drawing
-      setCardsOnTable([]);
-      
-      if (drawnCards.length > 0) {
-        playSound('card-place'); // Re-use sound for drawing
-        const drawAnimations = [];
-        drawAnimations.push({ destination: winner });
-        if (drawnCards.length > 1) {
-            drawAnimations.push({ destination: winner === 'human' ? 'ai' : 'human' });
-        }
-        setDrawingCards(drawAnimations);
         
-        await new Promise(resolve => setTimeout(resolve, 600)); // Wait for animation
-        setDrawingCards(null);
-      }
-      
-      // Now update game state after animations
-      const newHumanCard = winner === 'human' ? drawnCards[0] : drawnCards[1];
-      const newAiCard = winner === 'human' ? drawnCards[1] : drawnCards[0];
+        if (messageToShow) {
+          showWaifuBubble(messageToShow);
+        }
+        if (!isChatModalOpen) {
+          setUnreadMessageCount(prev => prev + 1);
+        }
+        playSound('chat-notify');
+      };
 
-      setDeck(tempDeck);
-      setBriscolaCard(tempBriscolaCard);
-      if (winner === 'human') {
-        setHumanScore(s => s + points);
-        if (newHumanCard) setHumanHand(prev => [...prev, newHumanCard]);
-        if (newAiCard) setAiHand(prev => [...prev, newAiCard]);
-        setHasChattedThisTurn(false);
+      if (winner === 'ai' && isChatEnabled) {
+        if (waitForWaifuResponse) {
+          await generateWaifuMessage();
+          await new Promise(resolve => setTimeout(resolve, 500)); 
+          proceedToNextTurn();
+        } else {
+          generateWaifuMessage();
+          proceedToNextTurn();
+        }
       } else {
-        setAiScore(s => s + points);
-        if (newAiCard) setAiHand(prev => [...prev, newAiCard]);
-        if (newHumanCard) setHumanHand(prev => [...prev, newHumanCard]);
+        proceedToNextTurn();
       }
-      
-      lastResolvedTrick.current = currentTrickCardIds;
-      setTurn(winner);
-      setTrickStarter(winner);
-      setMessage(`${trickMessage} ${winner === 'human' ? T.yourTurnMessage : T.aiTurnMessage(aiName)}`);
-      setIsResolvingTrick(false);
     };
-
+  
     resolveTrick();
   }, [
     T, aiEmotionalState, aiName, briscolaCard, briscolaSuit, cardsOnTable,
     currentWaifu, deck, gameMode, language, isResolvingTrick, trickStarter,
-    posthog, usedFallbackMessages, isChatModalOpen, isChatEnabled
+    posthog, usedFallbackMessages, isChatModalOpen, isChatEnabled, waitForWaifuResponse, showWaifuBubble
   ]);
   
   // The end of the game logic
@@ -753,6 +770,13 @@ export function App() {
     setIsChatModalOpen(true);
     setUnreadMessageCount(0);
   };
+  
+  const handleWaitForWaifuResponseChange = (enabled: boolean) => {
+    setWaitForWaifuResponse(enabled);
+    if (!enabled) {
+        setSnackbar({ message: T.fastModeEnabled, type: 'success' });
+    }
+  };
 
   const isAiTyping = isAiChatting || isAiGeneratingMessage;
 
@@ -763,11 +787,13 @@ export function App() {
           language={language}
           gameplayMode={gameplayMode}
           isChatEnabled={isChatEnabled}
+          waitForWaifuResponse={waitForWaifuResponse}
           backgroundUrl={menuBackgroundUrl}
           waifuCoins={waifuCoins}
           onLanguageChange={setLanguage}
           onGameplayModeChange={setGameplayMode}
           onChatEnabledChange={setIsChatEnabled}
+          onWaitForWaifuResponseChange={handleWaitForWaifuResponseChange}
           onWaifuSelected={startGame}
           onShowRules={() => setIsRulesModalOpen(true)}
           onShowPrivacy={() => setIsPrivacyModalOpen(true)}
@@ -836,6 +862,11 @@ export function App() {
         backgroundUrl={backgroundUrl}
         animatingCard={animatingCard}
         drawingCards={drawingCards}
+        currentWaifu={currentWaifu}
+        onOpenChat={handleOpenChat}
+        unreadMessageCount={unreadMessageCount}
+        isAiTyping={isAiTyping}
+        waifuBubbleMessage={waifuBubbleMessage}
       />
       {isChatEnabled && currentWaifu &&
         <ChatPanel
@@ -852,16 +883,6 @@ export function App() {
           waifu={currentWaifu}
           onAvatarClick={handleOpenWaifuDetails}
         />
-      }
-
-      {isChatEnabled && 
-        <button className="chat-fab" onClick={handleOpenChat} aria-label={T.chatWith(aiName)}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-            </svg>
-            {unreadMessageCount > 0 && !isAiTyping && <span className="chat-fab-badge">{unreadMessageCount}</span>}
-            {isAiTyping && <span className="chat-fab-badge typing"></span>}
-        </button>
       }
 
       {phase === 'gameOver' && gameResult && (

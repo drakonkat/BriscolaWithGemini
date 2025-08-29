@@ -19,9 +19,11 @@
   --card-height: calc(var(--card-width) * var(--card-aspect-ratio));
   --card-border-radius: clamp(5px, 1vw, 8px);
   --played-card-offset: calc(var(--card-width) * 0.5 + 0.25rem);
-  --deck-card-height: clamp(60px, 8.5vh, 75px);
+  --deck-card-height: clamp(66px, 9.35vh, 82.5px);
   --deck-card-width: calc(var(--deck-card-height) / var(--card-aspect-ratio));
-  --briscola-offset: calc(var(--deck-card-width) * -0.4);
+
+  --top-bar-height: 55px;
+  --bottom-bar-height: 55px;
 }
 
 * {
@@ -171,6 +173,7 @@ body {
 .settings-selector label {
   font-size: 1.1rem;
   color: #ccc;
+  transition: color 0.2s;
 }
 
 .settings-selector select {
@@ -187,6 +190,11 @@ body {
   color: #888;
   background-color: #222; /* Note: background styling for options has limited browser support */
   cursor: not-allowed;
+}
+
+.settings-selector.disabled > label {
+    color: #888;
+    cursor: not-allowed;
 }
 
 /* Toggle Switch Styles */
@@ -233,6 +241,15 @@ input:checked + .slider {
 
 input:checked + .slider:before {
   transform: translateX(22px);
+}
+
+.toggle-switch input:disabled + .slider {
+  cursor: not-allowed;
+  background-color: #444;
+}
+
+.toggle-switch input:disabled + .slider:before {
+  background-color: #ccc;
 }
 
 
@@ -426,10 +443,11 @@ input:checked + .slider:before {
 }
 .human-area {
   justify-content: flex-end;
+  padding-bottom: calc(var(--bottom-bar-height) + env(safe-area-inset-bottom) + 1.5rem);
 }
 .ai-area {
   justify-content: flex-start;
-  padding-top: 8.2rem; /* Adjusted to avoid overlap with new compact score */
+  padding-top: calc(var(--top-bar-height) + 1rem);
 }
 .table-area {
   flex: 2;
@@ -448,49 +466,11 @@ input:checked + .slider:before {
   perspective: 1000px;
 }
 
-.score-summary {
-  position: absolute;
-  top: 15px;
-  top: calc(15px + env(safe-area-inset-top));
-  right: 15px;
-  right: calc(15px + env(safe-area-inset-right));
-  background: rgba(0, 0, 0, 0.6);
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  z-index: 20;
-  text-align: left;
-  color: white;
-  min-width: 190px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-.score-summary .score-line {
-  display: flex;
-  justify-content: space-between;
-  font-size: 1rem;
-  font-weight: bold;
-  gap: 0.5rem;
-}
-.score-summary .game-info {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding-top: 0.4rem;
-  font-size: 0.85rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-.score-summary .game-info strong {
-  color: #ccc;
-}
-.score-summary .turn-message {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding-top: 0.4rem;
-  font-size: 0.9rem;
-  font-weight: normal;
-  font-style: italic;
-  min-height: 1.2em; /* Prevents layout shifts */
+.waifu-status-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .card {
@@ -540,40 +520,17 @@ input:checked + .slider:before {
   transition: transform 0.5s ease-in-out;
 }
 
-.back-button {
+.top-left-actions {
   position: absolute;
-  top: 15px;
-  top: calc(15px + env(safe-area-inset-top));
-  left: 15px;
+  top: calc(var(--top-bar-height) + 10px);
   left: calc(15px + env(safe-area-inset-left));
-  background: rgba(0, 0, 0, 0.3);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
   z-index: 20;
-  transition: background-color 0.2s;
-}
-.back-button:hover, .back-button:focus {
-  background: rgba(0, 0, 0, 0.6);
-  outline: 2px solid var(--primary-accent);
-}
-.back-button svg {
-    width: 24px;
-    height: 24px;
+  display: flex;
+  gap: 10px;
 }
 
+.back-button,
 .support-button {
-  position: absolute;
-  top: 15px;
-  top: calc(15px + env(safe-area-inset-top));
-  left: 65px;
-  left: calc(65px + env(safe-area-inset-left));
   background: rgba(0, 0, 0, 0.3);
   border: none;
   border-radius: 50%;
@@ -584,37 +541,61 @@ input:checked + .slider:before {
   align-items: center;
   justify-content: center;
   color: white;
-  z-index: 20;
   transition: background-color 0.2s;
 }
+
+.back-button:hover, .back-button:focus,
 .support-button:hover, .support-button:focus {
   background: rgba(0, 0, 0, 0.6);
   outline: 2px solid var(--primary-accent);
 }
+
+.back-button svg,
 .support-button svg {
-    width: 24px;
-    height: 24px;
+  width: 24px;
+  height: 24px;
 }
 
+
 /* DECK STYLES */
-.deck-container {
+.deck-area-wrapper {
   position: absolute;
   top: 50%;
   left: calc(15px + env(safe-area-inset-left));
   transform: translateY(-50%);
   z-index: 20;
+}
+
+.deck-container {
+  z-index: 20;
   display: flex;
   align-items: center;
   height: var(--deck-card-height);
+  gap: 15px;
+}
+
+.deck-pile-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.deck-size-indicator {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-weight: bold;
+  font-size: 0.8rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .briscola-card-rotated {
   transform: rotate(90deg);
-  position: relative;
-  /* Pull the card left so it appears underneath the deck pile */
-  margin-left: var(--briscola-offset);
-  /* Ensure it's rendered behind the deck pile */
-  z-index: -1;
 }
 
 /* Common styles for cards in the deck */
@@ -1089,8 +1070,106 @@ input:checked + .slider:before {
   font-weight: bold;
 }
 
-.chat-fab {
-    display: none; /* Hidden on desktop */
+.waifu-status-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 50%;
+    position: relative;
+    line-height: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    transition: transform 0.2s ease;
+}
+.waifu-status-button:hover, .waifu-status-button:focus {
+    transform: scale(1.1);
+    outline: 2px solid var(--primary-accent);
+}
+.waifu-status-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: top;
+    border: 2px solid var(--primary-accent);
+}
+.waifu-status-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background-color: var(--red-suit);
+    color: white;
+    border-radius: 50%;
+    min-width: 22px;
+    height: 22px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid var(--card-bg);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    pointer-events: none;
+}
+.waifu-status-badge.typing {
+    min-width: auto;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    animation: pulse-badge 1.5s infinite;
+}
+
+/* --- Waifu Message Bubble --- */
+.waifu-message-bubble {
+    position: absolute;
+    top: calc(100% + 10px); /* Position below the icon's container */
+    right: 0;
+    background-color: var(--waifu-bubble);
+    color: var(--black-suit);
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    max-width: 280px;
+    min-width: 120px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 21; /* Above other UI */
+    animation: fade-in-out 5s ease-in-out forwards;
+    opacity: 0;
+    text-align: left;
+    word-break: break-word;
+}
+
+.waifu-message-bubble::after {
+    content: '';
+    position: absolute;
+    top: -10px; /* Position at the top, pointing up */
+    right: 15px; /* Align with the icon center */
+    width: 0;
+    height: 0;
+    border: 10px solid transparent;
+    border-bottom-color: var(--waifu-bubble);
+    border-top: 0;
+}
+
+@keyframes fade-in-out {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    10% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    90% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
 }
 
 /* --- Card Playing Animation --- */
@@ -1466,6 +1545,54 @@ input:checked + .slider:before {
 }
 
 
+/* --- New UI Bar Styles --- */
+.top-bar, .bottom-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
+    padding-right: calc(15px + env(safe-area-inset-right));
+    padding-left: calc(15px + env(safe-area-inset-left));
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 25;
+}
+
+.top-bar {
+    top: 0;
+    height: var(--top-bar-height);
+    padding-top: calc(env(safe-area-inset-top));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bottom-bar {
+    bottom: 0;
+    height: var(--bottom-bar-height);
+    padding-bottom: calc(env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-score {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.bottom-bar .turn-message {
+    font-size: 0.9rem;
+    font-style: italic;
+    text-align: right;
+    flex-grow: 1;
+    padding-left: 1rem;
+    min-height: 1.2em; /* Prevents layout shifts */
+}
+
+
 /* --- Responsive Design --- */
 @media (max-width: 1024px) {
   .menu {
@@ -1534,55 +1661,6 @@ input:checked + .slider:before {
       display: block;
   }
 
-  .chat-fab {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    width: 60px;
-    height: 60px;
-    background-color: var(--primary-accent);
-    color: white;
-    border-radius: 50%;
-    border: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    cursor: pointer;
-    z-index: 998;
-    transition: background-color 0.2s, transform 0.2s;
-  }
-  .chat-fab:hover {
-      background-color: var(--primary-accent-hover);
-      transform: scale(1.05);
-  }
-  .chat-fab-badge {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    background-color: var(--red-suit);
-    color: white;
-    border-radius: 50%;
-    min-width: 22px;
-    height: 22px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4px;
-    border: 2px solid var(--card-bg);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    pointer-events: none;
-  }
-  .chat-fab-badge.typing {
-    min-width: auto;
-    width: 14px;
-    height: 14px;
-    padding: 0;
-    animation: pulse-badge 1.5s infinite;
-  }
-
   .waifu-card, .random-waifu-card {
       width: 180px;
   }
@@ -1626,6 +1704,11 @@ input:checked + .slider:before {
 }
 
 @media (max-width: 768px) {
+  .table-area {
+    justify-content: flex-end;
+    padding-right: 1.5rem;
+  }
+
   .game-board {
     border-width: 5px;
     border-right-width: 5px;
@@ -1636,24 +1719,13 @@ input:checked + .slider:before {
     padding: 0.5rem;
   }
   .ai-area {
-      padding-top: 8.2rem;
+      padding-top: calc(var(--top-bar-height) + 0.5rem);
+  }
+  .human-area {
+    padding-bottom: calc(var(--bottom-bar-height) + env(safe-area-inset-bottom) + 1rem);
   }
   .played-cards {
     min-width: auto;
-  }
-  .score-summary {
-    padding: 0.4rem 0.8rem;
-    min-width: 160px;
-  }
-  .score-summary .score-line, .score-summary .turn-message, .score-summary .briscola-info {
-    font-size: 0.9rem;
-  }
-
-  .chat-fab {
-      bottom: 1.5rem;
-      right: 1.5rem;
-      width: 56px;
-      height: 56px;
   }
 
   .menu-content {
@@ -1697,20 +1769,15 @@ input:checked + .slider:before {
 
 @media (max-width: 480px) {
   .ai-area {
-      padding-top: 8.2rem;
+      padding-top: calc(var(--top-bar-height) + 0.5rem);
   }
   
   .table-area {
-    justify-content: center;
+    justify-content: flex-end;
     gap: 0;
   }
   .played-cards {
     order: 2;
-  }
-
-  .chat-fab {
-      bottom: 1rem;
-      right: 1rem;
   }
 
   .waifu-selector-container {
@@ -1731,5 +1798,10 @@ input:checked + .slider:before {
   }
   .gallery-grid {
     grid-template-columns: 1fr;
+  }
+  .waifu-message-bubble {
+    max-width: 220px;
+    min-width: 100px;
+    font-size: 0.9rem;
   }
 }

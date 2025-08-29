@@ -11,11 +11,13 @@ interface MenuProps {
     language: Language;
     gameplayMode: GameplayMode;
     isChatEnabled: boolean;
+    waitForWaifuResponse: boolean;
     backgroundUrl: string;
     waifuCoins: number;
     onLanguageChange: (lang: Language) => void;
     onGameplayModeChange: (mode: GameplayMode) => void;
     onChatEnabledChange: (enabled: boolean) => void;
+    onWaitForWaifuResponseChange: (enabled: boolean) => void;
     onWaifuSelected: (waifu: Waifu | null) => void;
     onShowRules: () => void;
     onShowPrivacy: () => void;
@@ -29,11 +31,13 @@ export const Menu = ({
     language, 
     gameplayMode,
     isChatEnabled,
+    waitForWaifuResponse,
     backgroundUrl, 
     waifuCoins,
     onLanguageChange, 
     onGameplayModeChange,
     onChatEnabledChange,
+    onWaitForWaifuResponseChange,
     onWaifuSelected, 
     onShowRules, 
     onShowPrivacy, 
@@ -94,6 +98,13 @@ export const Menu = ({
                         <label htmlFor="chat-toggle">{T.toggleChatLabel}:</label>
                         <label className="toggle-switch">
                             <input id="chat-toggle" type="checkbox" checked={isChatEnabled} onChange={(e) => onChatEnabledChange(e.target.checked)} />
+                            <span className="slider"></span>
+                        </label>
+                    </div>
+                    <div className={`settings-selector ${!isChatEnabled ? 'disabled' : ''}`}>
+                        <label htmlFor="wait-toggle">{T.toggleWaitForWaifuLabel}:</label>
+                        <label className="toggle-switch">
+                            <input id="wait-toggle" type="checkbox" checked={waitForWaifuResponse} onChange={(e) => onWaitForWaifuResponseChange(e.target.checked)} disabled={!isChatEnabled} />
                             <span className="slider"></span>
                         </label>
                     </div>
