@@ -12,6 +12,16 @@
   --border-color: #855a3c;
   --primary-accent: #4CAF50;
   --primary-accent-hover: #45a049;
+
+  /* Responsive Card Sizing */
+  --card-aspect-ratio: 1.7857; /* 150 / 84 */
+  --card-width: clamp(54px, 6.5vw, 90px);
+  --card-height: calc(var(--card-width) * var(--card-aspect-ratio));
+  --card-border-radius: clamp(5px, 1vw, 8px);
+  --played-card-offset: calc(var(--card-width) * 0.5 + 0.25rem);
+  --deck-card-height: clamp(60px, 8.5vh, 75px);
+  --deck-card-width: calc(var(--deck-card-height) / var(--card-aspect-ratio));
+  --briscola-offset: calc(var(--deck-card-width) * -0.4);
 }
 
 * {
@@ -179,6 +189,52 @@ body {
   cursor: not-allowed;
 }
 
+/* Toggle Switch Styles */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #555;
+  transition: .4s;
+  border-radius: 28px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--primary-accent);
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
 
 .waifu-selection {
   margin-top: 2rem;
@@ -338,6 +394,13 @@ body {
   padding-top: 10px; /* Spazio per elementi UI in alto */
 }
 
+/* When chat is disabled, game board takes full width */
+.app-container.chat-disabled .game-board {
+  flex: 1;
+  border-radius: 20px;
+  border-right-width: 10px;
+}
+
 .game-board-background {
   position: absolute;
   top: 0;
@@ -357,7 +420,7 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 1rem;
-  min-height: 200px;
+  min-height: calc(var(--card-height) + 3rem);
   position: relative;
   z-index: 1;
 }
@@ -379,9 +442,9 @@ body {
 
 .hand {
   display: flex;
-  gap: 12px;
+  gap: clamp(6px, 1.5vw, 15px);
   justify-content: center;
-  min-height: 150px;
+  min-height: var(--card-height);
   perspective: 1000px;
 }
 
@@ -431,9 +494,9 @@ body {
 }
 
 .card {
-  width: 84px; /* Aspect ratio 9:16 (1080x1920) */
-  height: 150px;
-  border-radius: 8px;
+  width: var(--card-width);
+  height: var(--card-height);
+  border-radius: var(--card-border-radius);
   box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.1);
   position: relative;
   user-select: none;
@@ -460,7 +523,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: var(--card-border-radius);
 }
 
 .played-cards {
@@ -468,9 +531,10 @@ body {
   gap: 1rem;
   align-items: center;
   justify-content: center;
-  min-height: 160px;
-  min-width: 250px;
+  min-height: calc(var(--card-height) + 1rem);
+  min-width: calc(var(--card-width) * 2 + 1rem);
   position: relative;
+  transform: translateX(20%);
 }
 .played-cards .card {
   transition: transform 0.5s ease-in-out;
@@ -532,24 +596,39 @@ body {
     height: 24px;
 }
 
-.briscola-indicator {
+/* DECK STYLES */
+.deck-container {
   position: absolute;
-  top: 65px;
-  top: calc(65px + env(safe-area-inset-top));
-  left: 15px;
+  top: 50%;
   left: calc(15px + env(safe-area-inset-left));
+  transform: translateY(-50%);
   z-index: 20;
+  display: flex;
+  align-items: center;
+  height: var(--deck-card-height);
 }
-.briscola-indicator .card {
-  width: 42px; /* Half size */
-  height: 75px;
-  border-radius: 4px;
+
+.briscola-card-rotated {
+  transform: rotate(90deg);
+  position: relative;
+  /* Pull the card left so it appears underneath the deck pile */
+  margin-left: var(--briscola-offset);
+  /* Ensure it's rendered behind the deck pile */
+  z-index: -1;
+}
+
+/* Common styles for cards in the deck */
+.deck-container .card {
+  width: var(--deck-card-width);
+  height: var(--deck-card-height);
+  border-radius: calc(var(--card-border-radius) * 0.7);
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   pointer-events: none; /* No interaction */
 }
-/* Override hover effects for the indicator card */
-.briscola-indicator .card.playable:hover,
-.briscola-indicator .card.playable:focus {
+
+/* Override hover effects for the card */
+.deck-container .card.playable:hover,
+.deck-container .card.playable:focus {
   transform: none;
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   outline: none;
@@ -1020,6 +1099,7 @@ body {
   left: 50%;
   z-index: 50;
   pointer-events: none;
+  transform: translateX(10%);
 }
 
 .animating-card-container .card, .drawing-card-container .card {
@@ -1033,22 +1113,21 @@ body {
 .animating-card-container.player-ai.position-0 { animation: play-ai-p0 0.5s ease-in-out forwards; }
 .animating-card-container.player-ai.position-1 { animation: play-ai-p1 0.5s ease-in-out forwards; }
 
-/* Note: 50px = (84px card width / 2) + (16px gap / 2) = 42px + 8px */
 @keyframes play-human-p0 {
-  from { top: 85%; transform: translateX(-50%) scale(1.1); }
-  to { top: 50%; transform: translate(calc(-50% - 50px), -50%) scale(1); }
+  from { top: 85%; transform: translateX(calc(-50% + 10%)) scale(1.1); }
+  to { top: 50%; transform: translate(calc(-50% - var(--played-card-offset) + 10%), -50%) scale(1); }
 }
 @keyframes play-human-p1 {
-  from { top: 85%; transform: translateX(-50%) scale(1.1); }
-  to { top: 50%; transform: translate(calc(-50% + 50px), -50%) scale(1); }
+  from { top: 85%; transform: translateX(calc(-50% + 10%)) scale(1.1); }
+  to { top: 50%; transform: translate(calc(-50% + var(--played-card-offset) + 10%), -50%) scale(1); }
 }
 @keyframes play-ai-p0 {
-  from { top: 15%; transform: translateX(-50%) scale(1); }
-  to { top: 50%; transform: translate(calc(-50% - 50px), -50%) scale(1); }
+  from { top: 15%; transform: translateX(calc(-50% + 10%)) scale(1); }
+  to { top: 50%; transform: translate(calc(-50% - var(--played-card-offset) + 10%), -50%) scale(1); }
 }
 @keyframes play-ai-p1 {
-  from { top: 15%; transform: translateX(-50%) scale(1); }
-  to { top: 50%; transform: translate(calc(-50% + 50px), -50%) scale(1); }
+  from { top: 15%; transform: translateX(calc(-50% + 10%)) scale(1); }
+  to { top: 50%; transform: translate(calc(-50% + var(--played-card-offset) + 10%), -50%) scale(1); }
 }
 
 /* --- Card Drawing Animation --- */
@@ -1419,6 +1498,11 @@ body {
     padding-bottom: 2.5rem; /* Aumento il margine inferiore per evitare sovrapposizioni con la UI di sistema */
     padding-bottom: calc(2.5rem + env(safe-area-inset-bottom));
   }
+  .app-container.chat-disabled .game-board {
+    border-radius: 0;
+    border-right-width: 0;
+  }
+
   .chat-panel {
     position: fixed;
     top: 0;
@@ -1510,6 +1594,35 @@ body {
   .gallery-modal {
     width: 90%;
   }
+
+  .played-cards {
+    transform: translateX(0); /* Reset horizontal shift on mobile */
+  }
+  
+  .animating-card-container {
+    transform: translateX(0); /* Reset horizontal shift on mobile */
+  }
+
+  @keyframes play-human-p0 {
+    from { top: 85%; transform: translateX(-50%) scale(1.1); }
+    to { top: 50%; transform: translate(calc(-50% - var(--played-card-offset)), -50%) scale(1); }
+  }
+  @keyframes play-human-p1 {
+    from { top: 85%; transform: translateX(-50%) scale(1.1); }
+    to { top: 50%; transform: translate(calc(-50% + var(--played-card-offset)), -50%) scale(1); }
+  }
+  @keyframes play-ai-p0 {
+    from { top: 15%; transform: translateX(-50%) scale(1); }
+    to { top: 50%; transform: translate(calc(-50% - var(--played-card-offset)), -50%) scale(1); }
+  }
+  @keyframes play-ai-p1 {
+    from { top: 15%; transform: translateX(-50%) scale(1); }
+    to { top: 50%; transform: translate(calc(-50% + var(--played-card-offset)), -50%) scale(1); }
+  }
+
+  .deck-container {
+    height: var(--deck-card-height);
+  }
 }
 
 @media (max-width: 768px) {
@@ -1520,22 +1633,13 @@ body {
   }
 
   .player-area {
-    min-height: 180px;
     padding: 0.5rem;
   }
   .ai-area {
       padding-top: 8.2rem;
   }
-  .hand {
-    gap: 8px;
-    min-height: 145px;
-  }
-  .card {
-    width: 75px;
-    height: 133px;
-  }
   .played-cards {
-    min-width: 160px;
+    min-width: auto;
   }
   .score-summary {
     padding: 0.4rem 0.8rem;
@@ -1592,20 +1696,8 @@ body {
 }
 
 @media (max-width: 480px) {
-  .player-area {
-    min-height: 200px;
-  }
   .ai-area {
       padding-top: 8.2rem;
-  }
-  .hand {
-    gap: 6px;
-    min-height: 160px;
-  }
-  .card {
-    width: 84px;
-    height: 150px;
-    border-radius: 8px;
   }
   
   .table-area {

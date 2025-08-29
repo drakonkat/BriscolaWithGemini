@@ -20,17 +20,20 @@ interface GalleryModalProps {
     waifuCoins: number;
     onGachaRoll: () => void;
     onImageSelect: (url: string) => void;
+    hasRolledGacha: boolean;
 }
 
-export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onImageSelect }: GalleryModalProps) => {
+export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onImageSelect, hasRolledGacha }: GalleryModalProps) => {
     if (!isOpen) {
         return null;
     }
 
     const T = translations[language];
     const GACHA_COST = 100;
+    const isFirstRoll = !hasRolledGacha;
     const allUnlocked = unlockedBackgrounds.length >= backgrounds.length;
     const canAfford = waifuCoins >= GACHA_COST;
+    const buttonText = isFirstRoll ? T.gallery.gachaButtonFree : T.gallery.gachaButton;
 
     return (
         <div className="game-over-overlay" onClick={onClose}>
@@ -65,8 +68,8 @@ export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedB
                     })}
                 </div>
                 <div className="modal-actions">
-                    <button onClick={onGachaRoll} disabled={allUnlocked || !canAfford}>
-                        {T.gallery.gachaButton}
+                    <button onClick={onGachaRoll} disabled={allUnlocked || (!isFirstRoll && !canAfford)}>
+                        {buttonText}
                     </button>
                     <button onClick={onClose} className="button-secondary">{T.close}</button>
                 </div>

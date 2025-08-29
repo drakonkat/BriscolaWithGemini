@@ -10,10 +10,12 @@ import { CachedImage } from './CachedImage';
 interface MenuProps {
     language: Language;
     gameplayMode: GameplayMode;
+    isChatEnabled: boolean;
     backgroundUrl: string;
     waifuCoins: number;
     onLanguageChange: (lang: Language) => void;
     onGameplayModeChange: (mode: GameplayMode) => void;
+    onChatEnabledChange: (enabled: boolean) => void;
     onWaifuSelected: (waifu: Waifu | null) => void;
     onShowRules: () => void;
     onShowPrivacy: () => void;
@@ -26,10 +28,12 @@ interface MenuProps {
 export const Menu = ({ 
     language, 
     gameplayMode,
+    isChatEnabled,
     backgroundUrl, 
     waifuCoins,
     onLanguageChange, 
     onGameplayModeChange,
+    onChatEnabledChange,
     onWaifuSelected, 
     onShowRules, 
     onShowPrivacy, 
@@ -86,7 +90,14 @@ export const Menu = ({
                 <WaifuSelector language={language} onWaifuSelected={onWaifuSelected} />
 
                 <div className="menu-settings">
-                    <div className="settings-selector game-mode-selector">
+                    <div className="settings-selector">
+                        <label htmlFor="chat-toggle">{T.toggleChatLabel}:</label>
+                        <label className="toggle-switch">
+                            <input id="chat-toggle" type="checkbox" checked={isChatEnabled} onChange={(e) => onChatEnabledChange(e.target.checked)} />
+                            <span className="slider"></span>
+                        </label>
+                    </div>
+                     <div className="settings-selector">
                         <label htmlFor="game-mode-select">{T.gameModeLabel}:</label>
                         <select id="game-mode-select" value={gameplayMode} onChange={(e) => onGameplayModeChange(e.target.value as GameplayMode)}>
                             <option value="classic">{T.gameModeClassic}</option>
@@ -95,7 +106,7 @@ export const Menu = ({
                             </option>
                         </select>
                     </div>
-                    <div className="settings-selector language-selector">
+                     <div className="settings-selector">
                         <label htmlFor="language-select">{T.language}:</label>
                         <select id="language-select" value={language} onChange={(e) => onLanguageChange(e.target.value as Language)}>
                             <option value="it">Italiano</option>

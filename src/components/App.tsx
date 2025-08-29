@@ -58,6 +58,7 @@ export function App() {
   const [phase, setPhase] = useState<GamePhase>('menu');
   const [language, setLanguage] = useState<Language>('it');
   const [gameplayMode, setGameplayMode] = useState<GameplayMode>('classic');
+  const [isChatEnabled, setIsChatEnabled] = useState(true);
   const [deck, setDeck] = useState<Card[]>([]);
   const [humanHand, setHumanHand] = useState<Card[]>([]);
   const [aiHand, setAiHand] = useState<Card[]>([]);
@@ -108,6 +109,7 @@ export function App() {
   // Valuta di gioco
   const [waifuCoins, setWaifuCoins] = useState<number>(0);
   const [lastGameWinnings, setLastGameWinnings] = useState<number>(0);
+  const [hasRolledGacha, setHasRolledGacha] = useState(false);
 
   // Stato derivato per disabilitare l'input dell'utente
   const isProcessing = isAiThinkingMove || isResolvingTrick;
@@ -145,7 +147,35 @@ export function App() {
       console.error("Failed to load waifu coins from localStorage", error);
       setWaifuCoins(0);
     }
+
+    try {
+      const savedRolled = localStorage.getItem('has_rolled_gacha');
+      if (savedRolled) {
+        setHasRolledGacha(JSON.parse(savedRolled));
+      }
+    } catch (error) {
+      console.error("Failed to load gacha roll status from localStorage", error);
+      setHasRolledGacha(false);
+    }
+
+    try {
+        const savedChatSetting = localStorage.getItem('is_chat_enabled');
+        if (savedChatSetting !== null) {
+            setIsChatEnabled(JSON.parse(savedChatSetting));
+        }
+    } catch (error) {
+        console.error("Failed to load chat setting from localStorage", error);
+        setIsChatEnabled(true);
+    }
   }, []);
+
+  useEffect(() => {
+    try {
+        localStorage.setItem('is_chat_enabled', JSON.stringify(isChatEnabled));
+    } catch (error) {
+        console.error("Failed to save chat setting to localStorage", error);
+    }
+  }, [isChatEnabled]);
 
   useEffect(() => {
     const lockOrientation = async () => {
@@ -179,6 +209,7 @@ export function App() {
   }, []);
 
   const updateChatSession = useCallback((waifu: Waifu, history: ChatMessage[], emotionalState: GameEmotionalState, lang: Language) => {
+    if (!isChatEnabled) return;
     const systemInstruction = waifu.systemInstructions[lang][emotionalState];
     const apiHistory = [...history];
 
@@ -221,7 +252,7 @@ export function App() {
       history: cleanedHistoryForApi,
     });
     setChatSession(newChat);
-  }, []);
+  }, [isChatEnabled]);
 
   const startGame = useCallback((selectedWaifu: Waifu | null) => {
     const bgIndex = Math.floor(Math.random() * 3) + 1;
@@ -238,16 +269,21 @@ export function App() {
         language: language,
         selection_mode: selectedWaifu ? 'specific' : 'random',
         gameplay_mode: gameplayMode,
+        is_chat_enabled: isChatEnabled,
     });
 
     const emotionalState = 'neutral';
     setAiEmotionalState(emotionalState);
     
-    // Directly set the initial message and initialize the chat session
-    const initialAiMessage: ChatMessage = { sender: 'ai', text: newWaifu.initialChatMessage[language] };
-    const initialHistory: ChatMessage[] = [initialAiMessage];
-    setChatHistory(initialHistory);
-    updateChatSession(newWaifu, initialHistory, emotionalState, language);
+    if (isChatEnabled) {
+      const initialAiMessage: ChatMessage = { sender: 'ai', text: newWaifu.initialChatMessage[language] };
+      const initialHistory: ChatMessage[] = [initialAiMessage];
+      setChatHistory(initialHistory);
+      updateChatSession(newWaifu, initialHistory, emotionalState, language);
+    } else {
+      setChatHistory([]);
+      setChatSession(null);
+    }
 
     const newDeck = shuffleDeck(createDeck());
     const newBriscola = newDeck[newDeck.length - 1];
@@ -275,7 +311,7 @@ export function App() {
     setUnreadMessageCount(0);
     lastResolvedTrick.current = [];
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
-  }, [language, T, updateChatSession, posthog, gameplayMode]);
+  }, [language, T, updateChatSession, posthog, gameplayMode, isChatEnabled]);
   
   const handleConfirmLeave = () => {
     posthog.capture('game_left', {
@@ -304,13 +340,13 @@ export function App() {
 
   // Re-create chat session when emotional state changes
   useEffect(() => {
-    if (currentWaifu && phase === 'playing' && chatSession && gameMode === 'online') {
+    if (currentWaifu && phase === 'playing' && chatSession && gameMode === 'online' && isChatEnabled) {
       updateChatSession(currentWaifu, chatHistory, aiEmotionalState, language);
     }
-  }, [aiEmotionalState, chatHistory, chatSession, currentWaifu, language, updateChatSession, gameMode]);
+  }, [aiEmotionalState, chatHistory, chatSession, currentWaifu, language, updateChatSession, gameMode, isChatEnabled]);
 
   const handleSendChatMessage = async (userMessage: string) => {
-      if (isQuotaExceeded || !chatSession || gameMode === 'fallback') return;
+      if (isQuotaExceeded || !chatSession || gameMode === 'fallback' || !isChatEnabled) return;
       
       posthog.capture('chat_message_sent', {
         waifu_name: aiName,
@@ -442,7 +478,7 @@ export function App() {
       const winner = getTrickWinner(cardsOnTable, trickStarter, briscolaSuit);
       const points = POINTS[cardsOnTable[0].value] + POINTS[cardsOnTable[1].value];
       
-      if (winner === 'ai') {
+      if (winner === 'ai' && isChatEnabled) {
         const humanPlayedCard = trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1];
         const aiPlayedCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
         
@@ -545,7 +581,7 @@ export function App() {
   }, [
     T, aiEmotionalState, aiName, briscolaCard, briscolaSuit, cardsOnTable,
     currentWaifu, deck, gameMode, language, isResolvingTrick, trickStarter,
-    posthog, usedFallbackMessages, isChatModalOpen
+    posthog, usedFallbackMessages, isChatModalOpen, isChatEnabled
   ]);
   
   // The end of the game logic
@@ -572,7 +608,7 @@ export function App() {
           coinsEarned = 45;
         }
       } else { // Loss or Tie
-        coinsEarned = 5;
+        coinsEarned = 20;
       }
       
       setLastGameWinnings(coinsEarned);
@@ -590,9 +626,10 @@ export function App() {
           waifu_name: currentWaifu?.name,
           total_tokens_used: tokenCount,
           coins_earned: coinsEarned,
+          is_chat_enabled: isChatEnabled,
       });
     }
-  }, [phase, humanHand.length, aiHand.length, deck.length, cardsOnTable.length, humanScore, aiScore, isResolvingTrick, posthog, currentWaifu, tokenCount, waifuCoins]);
+  }, [phase, humanHand.length, aiHand.length, deck.length, cardsOnTable.length, humanScore, aiScore, isResolvingTrick, posthog, currentWaifu, tokenCount, waifuCoins, isChatEnabled]);
   
   // Handle switching to fallback mode
   useEffect(() => {
@@ -625,8 +662,9 @@ export function App() {
 
   const handleGachaRoll = useCallback(() => {
     const GACHA_COST = 100;
+    const isFirstRoll = !hasRolledGacha;
 
-    if (waifuCoins < GACHA_COST) {
+    if (!isFirstRoll && waifuCoins < GACHA_COST) {
         setSnackbar({ message: T.gallery.gachaNotEnoughCoins, type: 'warning' });
         return;
     }
@@ -637,12 +675,14 @@ export function App() {
       return;
     }
 
-    const newTotalCoins = waifuCoins - GACHA_COST;
-    setWaifuCoins(newTotalCoins);
-    localStorage.setItem('waifu_coins', newTotalCoins.toString());
+    if (!isFirstRoll) {
+        const newTotalCoins = waifuCoins - GACHA_COST;
+        setWaifuCoins(newTotalCoins);
+        localStorage.setItem('waifu_coins', newTotalCoins.toString());
+    }
 
-    // 50% chance to win a background
-    if (Math.random() < 0.50) { 
+    // 100% chance to win on first roll, 50% otherwise
+    if (isFirstRoll || Math.random() < 0.50) { 
         const rand = Math.random();
         let rarityToPull: 'R' | 'SR' | 'SSR';
 
@@ -670,8 +710,6 @@ export function App() {
             }
         }
         
-        // Final check, if pool is still empty, just use all locked items.
-        // This ensures the player always gets something if the 50% roll succeeds and items are available.
         if (pool.length === 0) {
             pool = locked;
         }
@@ -685,17 +723,23 @@ export function App() {
             posthog.capture('gacha_success', { 
                 unlocked_background: toUnlock.url,
                 rarity: toUnlock.rarity,
-                unlocked_count: newUnlocked.length 
+                unlocked_count: newUnlocked.length,
+                is_first_roll: isFirstRoll,
             });
         } else {
              setSnackbar({ message: T.gallery.gachaFailure, type: 'success' });
-             posthog.capture('gacha_failure', { reason: 'pity_system_failed' });
+             posthog.capture('gacha_failure', { reason: 'pity_system_failed', is_first_roll: isFirstRoll });
         }
     } else {
       setSnackbar({ message: T.gallery.gachaFailure, type: 'success' });
       posthog.capture('gacha_failure', { reason: '50_percent_roll_failed' });
     }
-  }, [unlockedBackgrounds, T, posthog, waifuCoins]);
+    
+    if (isFirstRoll) {
+        setHasRolledGacha(true);
+        localStorage.setItem('has_rolled_gacha', 'true');
+    }
+  }, [unlockedBackgrounds, T, posthog, waifuCoins, hasRolledGacha]);
 
   const handleImageSelect = (url: string) => {
     setFullscreenImage(url);
@@ -718,10 +762,12 @@ export function App() {
         <Menu
           language={language}
           gameplayMode={gameplayMode}
+          isChatEnabled={isChatEnabled}
           backgroundUrl={menuBackgroundUrl}
           waifuCoins={waifuCoins}
           onLanguageChange={setLanguage}
           onGameplayModeChange={setGameplayMode}
+          onChatEnabledChange={setIsChatEnabled}
           onWaifuSelected={startGame}
           onShowRules={() => setIsRulesModalOpen(true)}
           onShowPrivacy={() => setIsPrivacyModalOpen(true)}
@@ -742,6 +788,7 @@ export function App() {
           waifuCoins={waifuCoins}
           onGachaRoll={handleGachaRoll}
           onImageSelect={handleImageSelect}
+          hasRolledGacha={hasRolledGacha}
         />
         {isSupportModalOpen && (
             <SupportModal
@@ -768,7 +815,7 @@ export function App() {
   }
 
   return (
-    <div className={`app-container ${isChatModalOpen ? 'chat-open-mobile' : ''}`}>
+    <div className={`app-container ${isChatModalOpen ? 'chat-open-mobile' : ''} ${!isChatEnabled ? 'chat-disabled' : ''}`}>
       <GameBoard
         aiName={aiName}
         aiScore={aiScore}
@@ -790,7 +837,7 @@ export function App() {
         animatingCard={animatingCard}
         drawingCards={drawingCards}
       />
-      {currentWaifu &&
+      {isChatEnabled && currentWaifu &&
         <ChatPanel
           history={chatHistory}
           aiName={aiName}
@@ -807,16 +854,15 @@ export function App() {
         />
       }
 
-      <button className="chat-fab" onClick={handleOpenChat} aria-label={T.chatWith(aiName)}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
-              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2zM-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-          </svg>
-          {isAiTyping ? (
-            <span className="chat-fab-badge typing"></span>
-          ) : unreadMessageCount > 0 && (
-            <span className="chat-fab-badge">{unreadMessageCount}</span>
-          )}
-      </button>
+      {isChatEnabled && 
+        <button className="chat-fab" onClick={handleOpenChat} aria-label={T.chatWith(aiName)}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+            </svg>
+            {unreadMessageCount > 0 && !isAiTyping && <span className="chat-fab-badge">{unreadMessageCount}</span>}
+            {isAiTyping && <span className="chat-fab-badge typing"></span>}
+        </button>
+      }
 
       {phase === 'gameOver' && gameResult && (
         <GameOverModal
@@ -829,26 +875,17 @@ export function App() {
           winnings={lastGameWinnings}
         />
       )}
-      
-      {isQuotaExceeded && gameMode === 'online' && (
-        <QuotaExceededModal
-          language={language}
-          onContinue={handleContinueFromQuotaModal}
-        />
+      {isQuotaExceeded && gameMode === 'online' && ( // Mostra solo se la modalità non è già fallback
+        <QuotaExceededModal language={language} onContinue={handleContinueFromQuotaModal} />
       )}
-
-      {isConfirmLeaveModalOpen && (
-          <ConfirmationModal
-            isOpen={isConfirmLeaveModalOpen}
-            onClose={() => setIsConfirmLeaveModalOpen(false)}
-            onConfirm={handleConfirmLeave}
-            title={T.confirmLeave.title}
-            message={T.confirmLeave.message}
-            confirmText={T.confirmLeave.confirm}
-            cancelText={T.confirmLeave.cancel}
+      {currentWaifu && (
+          <WaifuDetailsModal 
+            isOpen={isWaifuModalOpen}
+            onClose={() => setIsWaifuModalOpen(false)}
+            waifu={currentWaifu}
+            language={language}
           />
       )}
-      
       {isSupportModalOpen && (
         <SupportModal
             isOpen={isSupportModalOpen}
@@ -857,29 +894,21 @@ export function App() {
             language={language}
         />
       )}
-
-      {currentWaifu && (
-          <WaifuDetailsModal
-            isOpen={isWaifuModalOpen}
-            onClose={() => setIsWaifuModalOpen(false)}
-            waifu={currentWaifu}
-            language={language}
-          />
-      )}
-      
-      <FullscreenImageModal
-        isOpen={!!fullscreenImage}
-        imageUrl={fullscreenImage}
-        onClose={handleCloseFullscreen}
-        language={language}
+      <ConfirmationModal
+        isOpen={isConfirmLeaveModalOpen}
+        onClose={() => setIsConfirmLeaveModalOpen(false)}
+        onConfirm={handleConfirmLeave}
+        title={T.confirmLeave.title}
+        message={T.confirmLeave.message}
+        confirmText={T.confirmLeave.confirm}
+        cancelText={T.confirmLeave.cancel}
       />
       <Snackbar
-        message={snackbar.message}
-        onClose={() => setSnackbar({ message: '', type: 'success' })}
-        lang={language}
-        type={snackbar.type}
-      />
-
+          message={snackbar.message}
+          onClose={() => setSnackbar({ message: '', type: 'success' })}
+          lang={language}
+          type={snackbar.type}
+        />
     </div>
   );
 }

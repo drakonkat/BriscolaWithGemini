@@ -116,8 +116,16 @@ export const GameBoard = ({
             </button>
             
             {briscolaCard && (
-                <div className="briscola-indicator" title={`${T.briscolaLabel}: ${getCardId(briscolaCard, language)}`}>
-                    <CardView card={briscolaCard} lang={language} />
+                <div className="deck-container" title={`${T.briscolaLabel}: ${getCardId(briscolaCard, language)}`}>
+                    {/* The deck pile is visible as long as there are cards in the deck state, which means deckSize > 1 */}
+                    {deckSize > 1 && (
+                        <div className="deck-pile-card">
+                            <CardView card={{ suit: 'Spade', value: '2' }} isFaceDown lang={language} />
+                        </div>
+                    )}
+                    <div className="briscola-card-rotated">
+                        <CardView card={briscolaCard} lang={language} />
+                    </div>
                 </div>
             )}
 
