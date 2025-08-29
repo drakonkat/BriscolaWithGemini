@@ -263,7 +263,7 @@ body {
 }
 .ai-area {
   justify-content: flex-start;
-  padding-top: 6.5rem!important; /* Add more padding to not overlap with score */
+  padding-top: 8.2rem; /* Adjusted to avoid overlap with new compact score */
 }
 .table-area {
   flex: 2;
@@ -288,36 +288,43 @@ body {
   top: calc(15px + env(safe-area-inset-top));
   right: 15px;
   right: calc(15px + env(safe-area-inset-right));
-  background: rgba(0, 0, 0, 0.5);
-  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 0.5rem 0.75rem;
   border-radius: 8px;
   z-index: 20;
   text-align: left;
   color: white;
-  min-width: 180px;
+  min-width: 190px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 .score-summary .score-line {
-  font-size: 1.1rem;
-  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  font-weight: bold;
+  gap: 0.5rem;
 }
-.score-summary .score-line:first-child {
-  margin-bottom: 0.25rem;
+.score-summary .game-info {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 0.4rem;
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.score-summary .game-info strong {
+  color: #ccc;
 }
 .score-summary .turn-message {
-  margin-top: 0.5rem;
-  padding-top: 0.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
-  font-size: 1rem;
+  padding-top: 0.4rem;
+  font-size: 0.9rem;
   font-weight: normal;
   font-style: italic;
   min-height: 1.2em; /* Prevents layout shifts */
-}
-.score-summary .token-summary {
-  margin-top: 0.5rem;
-  font-size: 0.8rem;
-  color: #ddd;
-  opacity: 0.8;
 }
 
 .card {
@@ -351,40 +358,6 @@ body {
   height: 100%;
   object-fit: cover;
   border-radius: 8px;
-}
-
-.deck-pile {
-  position: absolute;
-  left: 2rem;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 200px;
-  min-height: 155px;
-}
-/* Style the briscola card (the one face up) to be horizontal, on top, and aligned left */
-.deck-pile .card:not(.card-back) {
-  transform: rotate(90deg) translateY(35px) translateX(-33px);
-  position: absolute;
-  z-index: 2; /* On top */
-}
-/* Style the deck (face down) to be vertical and underneath */
-.deck-pile .card.card-back {
-  position: absolute;
-  z-index: 1; /* Underneath */
-}
-
-.deck-count {
-  position: absolute;
-  bottom: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.2rem;
-  background-color: rgba(0,0,0,0.5);
-  padding: 2px 8px;
-  border-radius: 5px;
 }
 
 .played-cards {
@@ -1032,6 +1005,9 @@ body {
     min-height: 180px;
     padding: 0.5rem;
   }
+  .ai-area {
+      padding-top: 6rem;
+  }
   .hand {
     gap: 8px;
     min-height: 145px;
@@ -1040,18 +1016,14 @@ body {
     width: 75px;
     height: 133px;
   }
-  .deck-pile {
-    width: 150px;
-    left: 1rem;
-  }
   .played-cards {
     min-width: 160px;
   }
   .score-summary {
     padding: 0.4rem 0.8rem;
-    min-width: 150px;
+    min-width: 160px;
   }
-  .score-summary .score-line, .score-summary .turn-message {
+  .score-summary .score-line, .score-summary .turn-message, .score-summary .briscola-info {
     font-size: 0.9rem;
   }
 
@@ -1083,7 +1055,7 @@ body {
     min-height: 200px;
   }
   .ai-area {
-      padding-top: 8rem;
+      padding-top: 7rem;
   }
   .hand {
     gap: 6px;
@@ -1099,19 +1071,8 @@ body {
     justify-content: center;
     gap: 0;
   }
-  .deck-pile {
-    position: absolute;
-    left: 7.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    order: 1;
-    width: auto;
-  }
   .played-cards {
     order: 2;
-  }
-  .deck-count {
-    bottom: -20px;
   }
 
   .chat-fab {

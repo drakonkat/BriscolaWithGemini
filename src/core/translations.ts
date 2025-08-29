@@ -35,6 +35,8 @@ export const translations = {
     backToMenu: "Torna al Menu",
     cardBack: "Retro della carta",
     tokensUsed: "Token Usati",
+    briscolaLabel: "Briscola",
+    remainingCardsLabel: "Carte Rimanenti",
     // Game Over
     gameOverTitle: "Partita Terminata",
     finalScore: "Punteggio Finale:",
@@ -131,6 +133,8 @@ La risposta deve essere in italiano.
     backToMenu: "Back to Menu",
     cardBack: "Card back",
     tokensUsed: "Tokens Used",
+    briscolaLabel: "Trump",
+    remainingCardsLabel: "Cards Remaining",
     // Game Over
     gameOverTitle: "Game Over",
     finalScore: "Final Score:",

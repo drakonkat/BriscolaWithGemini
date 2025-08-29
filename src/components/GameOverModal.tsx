@@ -9,13 +9,26 @@ interface GameOverModalProps {
     humanScore: number;
     aiScore: number;
     aiName: string;
+    winner: 'human' | 'ai' | 'tie';
     onPlayAgain: () => void;
     language: Language;
 }
 
-export const GameOverModal = ({ humanScore, aiScore, aiName, onPlayAgain, language }: GameOverModalProps) => {
+export const GameOverModal = ({ humanScore, aiScore, aiName, winner, onPlayAgain, language }: GameOverModalProps) => {
     const T = translations[language];
-    const finalMessage = humanScore > 60 ? T.youWin : (aiScore > 60 ? T.aiWins(aiName) : (humanScore === 60 ? T.tie : `${T.scoreYou}: ${humanScore} - ${aiName}: ${aiScore}`));
+
+    let finalMessage: string;
+    switch (winner) {
+        case 'human':
+            finalMessage = T.youWin;
+            break;
+        case 'ai':
+            finalMessage = T.aiWins(aiName);
+            break;
+        case 'tie':
+            finalMessage = T.tie;
+            break;
+    }
 
     return (
         <div className="game-over-overlay">

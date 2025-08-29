@@ -13,8 +13,8 @@ interface GameBoardProps {
     aiHand: Card[];
     humanScore: number;
     humanHand: Card[];
-    deck: Card[];
     briscolaCard: Card | null;
+    deckSize: number;
     cardsOnTable: Card[];
     message: string;
     isProcessing: boolean;
@@ -24,7 +24,6 @@ interface GameBoardProps {
     onGoToMenu: () => void;
     language: Language;
     backgroundUrl: string;
-    tokenCount: number;
     animatingCard: { card: Card; player: Player } | null;
     drawingCards: { destination: Player }[] | null;
 }
@@ -35,8 +34,8 @@ export const GameBoard = ({
     aiHand,
     humanScore,
     humanHand,
-    deck,
     briscolaCard,
+    deckSize,
     cardsOnTable,
     message,
     isProcessing,
@@ -46,7 +45,6 @@ export const GameBoard = ({
     onGoToMenu,
     language,
     backgroundUrl,
-    tokenCount,
     animatingCard,
     drawingCards,
 }: GameBoardProps) => {
@@ -85,12 +83,21 @@ export const GameBoard = ({
             )}
 
             <div className="score-summary">
-                <div className="score-line">{aiName}: {aiScore}</div>
-                <div className="score-line">{T.scoreYou}: {humanScore}</div>
-                <div className="turn-message" aria-live="polite">{message}</div>
-                <div className="token-summary" aria-live="polite">
-                    {T.tokensUsed}: {tokenCount}
+                <div className="score-line">
+                    <span>{T.scoreYou}: {humanScore}</span>
+                    <span>{aiName}: {aiScore}</span>
                 </div>
+                <div className="game-info">
+                    {briscolaCard && (
+                        <div>
+                            <strong>{T.briscolaLabel}:</strong> {getCardId(briscolaCard, language)}
+                        </div>
+                    )}
+                    <div>
+                        <strong>{T.remainingCardsLabel}:</strong> {deckSize}
+                    </div>
+                </div>
+                <div className="turn-message" aria-live="polite">{message}</div>
             </div>
 
             <button className="back-button" onClick={onGoToMenu} aria-label={T.backToMenu}>
@@ -107,11 +114,6 @@ export const GameBoard = ({
             </div>
 
             <div className="table-area">
-                <div className="deck-pile">
-                    {deck.length > 0 && <CardView card={{ suit: 'Spade', value: '2' }} isFaceDown lang={language} />}
-                    {briscolaCard && <CardView card={briscolaCard} lang={language} />}
-                    <span className="deck-count" aria-live="polite">{deck.length}</span>
-                </div>
                 <div className="played-cards">
                     {cardsOnTable.map((card) => <CardView key={getCardId(card, language)} card={card} lang={language} />)}
                     {isAiThinkingMove && <div className="spinner" aria-label="L'IA sta pensando"></div>}

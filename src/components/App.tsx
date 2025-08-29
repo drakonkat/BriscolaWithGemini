@@ -73,6 +73,7 @@ export function App() {
   const [isQuotaExceeded, setIsQuotaExceeded] = useState(false);
   const [gameMode, setGameMode] = useState<GameMode>('online');
   const [usedFallbackMessages, setUsedFallbackMessages] = useState<string[]>([]);
+  const [gameResult, setGameResult] = useState<'human' | 'ai' | 'tie' | null>(null);
 
 
   // Stato derivato per disabilitare l'input dell'utente
@@ -196,6 +197,7 @@ export function App() {
     setGameMode('online');
     setUsedFallbackMessages([]); // Reset used fallback messages for new game
     setTokenCount(0);
+    setGameResult(null);
     lastResolvedTrick.current = [];
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
   }, [language, T, updateChatSession, posthog]);
@@ -470,24 +472,26 @@ export function App() {
 
     // This condition ensures we only check for game over after the last trick is resolved
     if (deck.length === 0 && !briscolaCard) {
+      let finalWinner: 'human' | 'ai' | 'tie';
       if (humanScore > 60) {
+        finalWinner = 'human';
         playSound('game-win');
       } else if (aiScore > 60) {
+        finalWinner = 'ai';
         playSound('game-lose');
-      } else {
+      } else { // This implies humanScore === 60 and aiScore === 60
+        finalWinner = 'tie';
         playSound('trick-win'); // Neutral-positive sound for a tie
       }
+      
+      setGameResult(finalWinner);
       setPhase('gameOver');
       
-      let winner = 'tie';
-      if (humanScore > 60) winner = 'human';
-      else if (aiScore > 60) winner = 'ai';
-
       posthog.capture('game_over', {
           waifu_name: aiName,
           human_score: humanScore,
           ai_score: aiScore,
-          winner: winner,
+          winner: finalWinner,
           language: language,
           total_tokens_used: tokenCount
       });
@@ -528,8 +532,8 @@ export function App() {
             aiHand={aiHand}
             humanScore={humanScore}
             humanHand={humanHand}
-            deck={deck}
             briscolaCard={briscolaCard}
+            deckSize={deck.length}
             cardsOnTable={cardsOnTable}
             message={message}
             isProcessing={isProcessing}
@@ -539,16 +543,16 @@ export function App() {
             onGoToMenu={() => setIsConfirmLeaveModalOpen(true)}
             language={language}
             backgroundUrl={backgroundUrl}
-            tokenCount={tokenCount}
             animatingCard={animatingCard}
             drawingCards={drawingCards}
         />
         
-        {phase === 'gameOver' && (
+        {phase === 'gameOver' && gameResult && (
             <GameOverModal
                 humanScore={humanScore}
                 aiScore={aiScore}
                 aiName={aiName}
+                winner={gameResult}
                 onPlayAgain={() => startGame(currentWaifu)}
                 language={language}
             />
