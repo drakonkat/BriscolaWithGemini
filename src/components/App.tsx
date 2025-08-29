@@ -52,6 +52,42 @@ const BACKGROUNDS: BackgroundItem[] = [
     { url: 'https://s3.tebi.io/waifubriscola/background/background1.png', rarity: 'SSR' },
     { url: 'https://s3.tebi.io/waifubriscola/background/background2.png', rarity: 'SR' },
     { url: 'https://s3.tebi.io/waifubriscola/background/background3.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape4.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape5.png', rarity: 'SR' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape6.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape7.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape8.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape9.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape10.png', rarity: 'SSR' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape11.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape12.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape13.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape14.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape15.png', rarity: 'SR' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape16.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape17.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape18.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape19.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape20.png', rarity: 'SSR' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/landscape21.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background4.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background5.png', rarity: 'SR' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background6.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background7.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background8.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background9.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background10.png', rarity: 'SSR' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background11.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background12.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background13.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background14.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background15.png', rarity: 'SR' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background16.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background17.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background18.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background19.png', rarity: 'R' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background20.png', rarity: 'SSR' },
+    { url: 'https://s3.tebi.io/waifubriscola/background/background21.png', rarity: 'R' },
 ];
 
 export function App() {
@@ -125,7 +161,7 @@ export function App() {
 
   useEffect(() => {
       setMessage(T.welcomeMessage);
-      const bgIndex = Math.floor(Math.random() * 3) + 1;
+      const bgIndex = Math.floor(Math.random() * 19) + 3; // Generates a number from 3 to 21
       setMenuBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/landscape${bgIndex}.png`);
   }, [T]);
   
@@ -220,7 +256,7 @@ export function App() {
   }, []);
 
   const refreshMenuBackground = useCallback(() => {
-    const bgIndex = Math.floor(Math.random() * 3) + 1;
+    const bgIndex = Math.floor(Math.random() * 19) + 3; // Generates a number from 3 to 21
     setMenuBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/landscape${bgIndex}.png`);
   }, []);
 
@@ -287,7 +323,7 @@ export function App() {
   }, [isChatEnabled]);
 
   const startGame = useCallback((selectedWaifu: Waifu | null) => {
-    const bgIndex = Math.floor(Math.random() * 3) + 1;
+    const bgIndex = Math.floor(Math.random() * 21) + 1;
     const isDesktop = window.innerWidth > 1024;
     const backgroundPrefix = isDesktop ? 'landscape' : 'background';
     setBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/${backgroundPrefix}${bgIndex}.png`);
