@@ -1716,6 +1716,10 @@ input:checked + .slider:before {
     --card-width-clamp: clamp(70px, 18vw, 90px);
   }
 
+  .menu-title-container {
+    flex-wrap: wrap;
+  }
+
   .rules-modal {
     max-height: 85vh;
     overflow-y: auto;
