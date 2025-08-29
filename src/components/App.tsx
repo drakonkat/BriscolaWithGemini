@@ -30,6 +30,8 @@ import { RulesModal } from './RulesModal';
 import { WaifuDetailsModal } from './WaifuDetailsModal';
 import { ConfirmationModal } from './ConfirmationModal';
 import { SupportModal } from './SupportModal';
+import { PrivacyPolicyModal } from './PrivacyPolicyModal';
+import { TermsAndConditionsModal } from './TermsAndConditionsModal';
 
 const SCORE_THRESHOLD = 15; // Point difference to trigger personality change
 type GameMode = 'online' | 'fallback';
@@ -66,6 +68,8 @@ export function App() {
   const [isWaifuModalOpen, setIsWaifuModalOpen] = useState(false);
   const [isConfirmLeaveModalOpen, setIsConfirmLeaveModalOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [aiEmotionalState, setAiEmotionalState] = useState<GameEmotionalState>('neutral');
   const [backgroundUrl, setBackgroundUrl] = useState('');
@@ -547,8 +551,12 @@ export function App() {
           onLanguageChange={setLanguage}
           onWaifuSelected={startGame}
           onShowRules={() => setIsRulesModalOpen(true)}
+          onShowPrivacy={() => setIsPrivacyModalOpen(true)}
+          onShowTerms={() => setIsTermsModalOpen(true)}
         />
         <RulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} language={language} />
+        <PrivacyPolicyModal isOpen={isPrivacyModalOpen} onClose={() => setIsPrivacyModalOpen(false)} language={language} />
+        <TermsAndConditionsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} language={language} />
       </>
     );
   }
@@ -646,6 +654,8 @@ export function App() {
             language={language}
         />
       )}
+      <PrivacyPolicyModal isOpen={isPrivacyModalOpen} onClose={() => setIsPrivacyModalOpen(false)} language={language} />
+      <TermsAndConditionsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} language={language} />
     </div>
   );
 }

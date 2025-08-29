@@ -210,6 +210,26 @@ body {
   font-size: 1.4rem;
 }
 
+.menu-footer {
+  margin-top: 2.5rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+.menu-footer button.link-button {
+  background: none;
+  border: none;
+  color: #ccc;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+.menu-footer button.link-button:hover {
+  color: white;
+  text-decoration: underline;
+}
 
 .app-container {
   display: flex;
@@ -976,6 +996,39 @@ body {
     transform: translate(-50%, -50%) rotate(-180deg) scale(0.5);
     opacity: 0;
   }
+}
+
+/* Legal & Rules Modal additions */
+.rules-modal.legal-modal {
+    max-height: 80vh;
+    max-width: 90%;
+    width: 800px;
+    overflow-y: auto;
+    text-align: left;
+}
+.legal-modal h3 {
+    font-size: 1.3rem;
+    color: #a0d8a2;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+.legal-modal p, .legal-modal li {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+.legal-modal ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+.legal-modal a {
+    color: #66bb6a;
+    text-decoration: underline;
+}
+.legal-modal a:hover {
+    color: #81c784;
+}
+.legal-modal p, .legal-modal ul {
+    margin-bottom: 1rem;
 }
 
 /* --- Responsive Design --- */

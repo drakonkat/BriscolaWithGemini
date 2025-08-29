@@ -12,9 +12,11 @@ interface MenuProps {
     onLanguageChange: (lang: Language) => void;
     onWaifuSelected: (waifu: Waifu | null) => void;
     onShowRules: () => void;
+    onShowPrivacy: () => void;
+    onShowTerms: () => void;
 }
 
-export const Menu = ({ language, backgroundUrl, onLanguageChange, onWaifuSelected, onShowRules }: MenuProps) => {
+export const Menu = ({ language, backgroundUrl, onLanguageChange, onWaifuSelected, onShowRules, onShowPrivacy, onShowTerms }: MenuProps) => {
     const T = translations[language];
 
     return (
@@ -40,6 +42,12 @@ export const Menu = ({ language, backgroundUrl, onLanguageChange, onWaifuSelecte
                         <option value="en">English</option>
                     </select>
                 </div>
+
+                <footer className="menu-footer">
+                    <button className="link-button" onClick={onShowPrivacy}>{T.privacyPolicy.linkText}</button>
+                    <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+                    <button className="link-button" onClick={onShowTerms}>{T.termsAndConditions.linkText}</button>
+                </footer>
             </div>
         </div>
     );

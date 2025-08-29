@@ -109,6 +109,92 @@ La risposta deve essere in italiano.
         donateButton: "Dona su Ko-fi",
         subscriptionButton: "Pagherei per un abbonamento"
     },
+    // Legal Modals
+    privacyPolicy: {
+        linkText: "Privacy Policy",
+        title: "Privacy Policy di Waifu Briscola",
+        lastUpdatedPrefix: "Ultimo aggiornamento:",
+        lastUpdatedDate: "25 Maggio 2024",
+        contactPrefix: "Referente:",
+        contactName: "Mauro Mazzocchetti",
+        intro: "Questa Privacy Policy descrive come le tue informazioni vengono gestite quando utilizzi l'applicazione Waifu Briscola ('Servizio').",
+        collection: {
+            title: "Informazioni che raccogliamo",
+            intro: "Per migliorare la tua esperienza, utilizziamo servizi di terze parti che possono raccogliere informazioni:",
+            posthog: {
+                title: "Dati di utilizzo (PostHog):",
+                text: "Raccogliamo dati di analisi anonimi o pseudonimi su come interagisci con il gioco. Questo include eventi come l'inizio di una partita, le carte giocate e i risultati finali. Questi dati ci aiutano a capire come viene utilizzato il gioco e come possiamo migliorarlo. Non raccogliamo informazioni di identificazione personale (PII) attraverso PostHog."
+            },
+            gemini: {
+                title: "Interazioni con l'IA (Google Gemini):",
+                text: "I messaggi di chat che invii e le informazioni sullo stato del gioco (come le carte nella tua mano e sul tavolo) vengono inviati all'API di Google Gemini per generare le risposte e le mosse dell'IA. Queste interazioni sono soggette alla <a href='https://policies.google.com/privacy' target='_blank' rel='noopener noreferrer'>Privacy Policy di Google</a>. Non inviamo alcuna informazione personale a Google oltre al contenuto delle tue interazioni di gioco."
+            }
+        },
+        usage: {
+            title: "Come utilizziamo le tue informazioni",
+            intro: "Utilizziamo le informazioni raccolte per:",
+            points: [
+                "Fornire, operare e mantenere il nostro Servizio.",
+                "Migliorare, personalizzare ed espandere il nostro Servizio.",
+                "Comprendere e analizzare come utilizzi il nostro Servizio.",
+                "Prevenire abusi e garantire la sicurezza."
+            ]
+        },
+        sharing: {
+            title: "Condivisione delle informazioni",
+            text: "Non condividiamo le tue informazioni personali con nessuno, ad eccezione dei fornitori di servizi di terze parti (PostHog, Google) necessari per il funzionamento dell'applicazione, come descritto sopra."
+        },
+        security: {
+            title: "Sicurezza dei dati",
+            text: "La sicurezza delle tue informazioni è importante per noi, ma ricorda che nessun metodo di trasmissione su Internet o metodo di archiviazione elettronica è sicuro al 100%."
+        },
+        changes: {
+            title: "Modifiche a questa Privacy Policy",
+            text: "Potremmo aggiornare la nostra Privacy Policy di volta in volta. Ti informeremo di eventuali modifiche pubblicando la nuova Privacy Policy su questa pagina."
+        },
+        contact: {
+            title: "Contattaci",
+            text: "Se hai domande su questa Privacy Policy, puoi contattare il referente Mauro Mazzocchetti."
+        }
+    },
+    termsAndConditions: {
+        linkText: "Termini e Condizioni",
+        title: "Termini e Condizioni di Waifu Briscola",
+        lastUpdatedPrefix: "Ultimo aggiornamento:",
+        lastUpdatedDate: "25 Maggio 2024",
+        contactPrefix: "Referente:",
+        contactName: "Mauro Mazzocchetti",
+        intro: "Benvenuto in Waifu Briscola! Questi termini e condizioni delineano le regole per l'utilizzo dell'applicazione Waifu Briscola ('Servizio').",
+        acceptance: {
+            title: "Accettazione dei Termini",
+            text: "Accedendo e utilizzando questo Servizio, accetti di essere vincolato da questi Termini. Se non sei d'accordo con qualsiasi parte dei termini, non puoi utilizzare il Servizio."
+        },
+        usage: {
+            title: "Utilizzo del Servizio",
+            text: "Accetti di non utilizzare il Servizio per scopi illegali o non autorizzati. Sei responsabile della tua condotta e di qualsiasi contenuto che fornisci durante l'utilizzo del Servizio, inclusi i messaggi di chat."
+        },
+        aiContent: {
+            title: "Contenuti Generati dall'IA",
+            intro: "Il Servizio utilizza modelli di intelligenza artificiale (Google Gemini) per generare risposte, commenti e mosse di gioco. Riconosci che:",
+            points: [
+                "I contenuti generati dall'IA sono prodotti da un modello e potrebbero non essere sempre accurati, appropriati o coerenti.",
+                "Non siamo responsabili per i contenuti generati dall'IA.",
+                "Le interazioni con l'IA sono pensate solo per scopi di intrattenimento."
+            ]
+        },
+        liability: {
+            title: "Limitazione di Responsabilità",
+            text: "In nessun caso Mauro Mazzocchetti, né i suoi partner, saranno responsabili per eventuali danni indiretti, incidentali, speciali, consequenziali o punitivi, inclusi, senza limitazione, la perdita di profitti, dati, avviamento o altre perdite immateriali, derivanti da (i) il tuo accesso o utilizzo o incapacità di accedere o utilizzare il Servizio; (ii) qualsiasi contenuto ottenuto dal Servizio."
+        },
+        changes: {
+            title: "Modifiche ai Termini",
+            text: "Ci riserviamo il diritto, a nostra esclusiva discrezione, di modificare o sostituire questi Termini in qualsiasi momento. Continuando ad accedere o utilizzare il nostro Servizio dopo che tali revisioni diventano efficaci, accetti di essere vincolato dai termini rivisti."
+        },
+        governingLaw: {
+            title: "Legge Applicabile",
+            text: "Questi Termini saranno regolati e interpretati in conformità con le leggi italiane, senza riguardo alle sue disposizioni sul conflitto di leggi."
+        }
+    },
   },
   en: {
     // Menu
@@ -213,6 +299,92 @@ The response must be in English.
         message: "Waifu Briscola is a free project. Your donations help cover the AI costs for everyone. Alternatively, let us know if you'd be interested in a personal subscription for unlimited access!",
         donateButton: "Donate on Ko-fi",
         subscriptionButton: "I'd Pay for a Subscription"
+    },
+    // Legal Modals
+    privacyPolicy: {
+        linkText: "Privacy Policy",
+        title: "Waifu Briscola Privacy Policy",
+        lastUpdatedPrefix: "Last updated:",
+        lastUpdatedDate: "May 25, 2024",
+        contactPrefix: "Contact Person:",
+        contactName: "Mauro Mazzocchetti",
+        intro: "This Privacy Policy describes how your information is handled when you use the Waifu Briscola application ('Service').",
+        collection: {
+            title: "Information We Collect",
+            intro: "To improve your experience, we use third-party services that may collect information:",
+            posthog: {
+                title: "Usage Data (PostHog):",
+                text: "We collect anonymous or pseudonymous analytics data about how you interact with the game. This includes events like starting a game, cards played, and final results. This data helps us understand how the game is used and how we can improve it. We do not collect Personally Identifiable Information (PII) through PostHog."
+            },
+            gemini: {
+                title: "AI Interactions (Google Gemini):",
+                text: "The chat messages you send and game state information (like cards in your hand and on the table) are sent to the Google Gemini API to generate AI responses and moves. These interactions are subject to the <a href='https://policies.google.com/privacy' target='_blank' rel='noopener noreferrer'>Google Privacy Policy</a>. We do not send any personal information to Google beyond the content of your game interactions."
+            }
+        },
+        usage: {
+            title: "How We Use Your Information",
+            intro: "We use the collected information to:",
+            points: [
+                "Provide, operate, and maintain our Service.",
+                "Improve, personalize, and expand our Service.",
+                "Understand and analyze how you use our Service.",
+                "Prevent abuse and ensure security."
+            ]
+        },
+        sharing: {
+            title: "Information Sharing",
+            text: "We do not share your personal information with anyone except for the third-party service providers (PostHog, Google) necessary for the application to function, as described above."
+        },
+        security: {
+            title: "Data Security",
+            text: "The security of your information is important to us, but remember that no method of transmission over the Internet or method of electronic storage is 100% secure."
+        },
+        changes: {
+            title: "Changes to This Privacy Policy",
+            text: "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page."
+        },
+        contact: {
+            title: "Contact Us",
+            text: "If you have any questions about this Privacy Policy, you can contact the person in charge, Mauro Mazzocchetti."
+        }
+    },
+    termsAndConditions: {
+        linkText: "Terms & Conditions",
+        title: "Waifu Briscola Terms and Conditions",
+        lastUpdatedPrefix: "Last updated:",
+        lastUpdatedDate: "May 25, 2024",
+        contactPrefix: "Contact Person:",
+        contactName: "Mauro Mazzocchetti",
+        intro: "Welcome to Waifu Briscola! These terms and conditions outline the rules for using the Waifu Briscola application ('Service').",
+        acceptance: {
+            title: "Acceptance of Terms",
+            text: "By accessing and using this Service, you agree to be bound by these Terms. If you disagree with any part of the terms, you may not use the Service."
+        },
+        usage: {
+            title: "Use of the Service",
+            text: "You agree not to use the Service for any illegal or unauthorized purpose. You are responsible for your conduct and any content you provide while using the Service, including chat messages."
+        },
+        aiContent: {
+            title: "AI-Generated Content",
+            intro: "The Service uses artificial intelligence models (Google Gemini) to generate responses, commentary, and game moves. You acknowledge that:",
+            points: [
+                "AI-generated content is produced by a model and may not always be accurate, appropriate, or consistent.",
+                "We are not responsible for the content generated by the AI.",
+                "Interactions with the AI are for entertainment purposes only."
+            ]
+        },
+        liability: {
+            title: "Limitation of Liability",
+            text: "In no event shall Mauro Mazzocchetti, nor his partners, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, goodwill, or other intangible losses, resulting from (i) your access to or use of or inability to access or use the Service; (ii) any content obtained from the Service."
+        },
+        changes: {
+            title: "Changes to Terms",
+            text: "We reserve the right, at our sole discretion, to modify or replace these Terms at any time. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms."
+        },
+        governingLaw: {
+            title: "Governing Law",
+            text: "These Terms shall be governed and construed in accordance with the laws of Italy, without regard to its conflict of law provisions."
+        }
     },
   }
 };
