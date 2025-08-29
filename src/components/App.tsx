@@ -251,6 +251,15 @@ export function App() {
         const aiMessage: ChatMessage = { sender: 'ai', text: response.text };
         const tokensUsed = response.usageMetadata?.totalTokenCount ?? 0;
         setTokenCount(prev => prev + tokensUsed);
+        
+        posthog.capture('gemini_request_completed', {
+            source: 'chat_message',
+            tokens_used: tokensUsed,
+            waifu_name: aiName,
+            emotional_state: aiEmotionalState,
+            language: language,
+        });
+
         setChatHistory(prev => [...prev, aiMessage]);
         playSound('chat-notify');
       } catch (error: any) {
@@ -366,10 +375,13 @@ export function App() {
           setIsAiGeneratingMessage(true);
           try {
             const { message: waifuMsg, tokens: tokensUsed } = await getAIWaifuTrickMessage(currentWaifu, aiEmotionalState, humanPlayedCard, aiPlayedCard, points, language);
-            posthog.capture('waifu_trick_comment', {
+            posthog.capture('gemini_request_completed', {
+                source: 'trick_comment',
+                tokens_used: tokensUsed,
                 waifu_name: aiName,
                 emotional_state: aiEmotionalState,
-                points_won: points
+                language: language,
+                points_won_trick: points,
             });
             setTokenCount(prev => prev + tokensUsed);
             setChatHistory(prev => [...prev, { sender: 'ai', text: waifuMsg }]);
