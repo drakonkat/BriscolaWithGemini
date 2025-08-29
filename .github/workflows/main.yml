@@ -62,10 +62,9 @@ jobs:
       - name: Build debug APK
         run: npm run android:apk
 
-      - name: Install AWS CLI
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y awscli
+      - name: Install AWS CLI v2
+        uses: aws-actions/setup-aws-cli@v2
+
       - name: Upload APKs to Tebi (S3-compatible)
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TEBI_S3_ACCESS_KEY_ID }}
