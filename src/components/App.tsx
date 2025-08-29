@@ -5,7 +5,7 @@
 // FIX: The 'Suit' type is not exported from '@google/genai'. It has been removed from this import.
 // 'Chat' is only used as a type, so using 'import type' is more accurate.
 import type {Chat} from '@google/genai';
-import {useEffect, useState, useMemo, useCallback} from 'react';
+import {useEffect, useState, useMemo, useCallback, useRef} from 'react';
 import { Capacitor } from '@capacitor/core';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 
@@ -52,6 +52,8 @@ export function App() {
   const [isAiThinkingMove, setIsAiThinkingMove] = useState(false);
   const [isResolvingTrick, setIsResolvingTrick] = useState(false);
   const [isAiGeneratingMessage, setIsAiGeneratingMessage] = useState(false);
+  const [animatingCard, setAnimatingCard] = useState<{ card: Card; player: Player } | null>(null);
+  const [drawingCards, setDrawingCards] = useState<{ destination: Player }[] | null>(null);
 
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatSession, setChatSession] = useState<Chat | null>(null);
@@ -64,6 +66,7 @@ export function App() {
   const [aiEmotionalState, setAiEmotionalState] = useState<GameEmotionalState>('neutral');
   const [backgroundUrl, setBackgroundUrl] = useState('');
   const [menuBackgroundUrl, setMenuBackgroundUrl] = useState('');
+  const [tokenCount, setTokenCount] = useState(0);
   
   // Gestione modalità di gioco e quota API
   const [isQuotaExceeded, setIsQuotaExceeded] = useState(false);
@@ -73,6 +76,7 @@ export function App() {
 
   // Stato derivato per disabilitare l'input dell'utente
   const isProcessing = isAiThinkingMove || isResolvingTrick;
+  const lastResolvedTrick = useRef<string[]>([]);
 
   const T = useMemo(() => translations[language], [language]);
   const aiName = useMemo(() => currentWaifu?.name ?? '', [currentWaifu]);
@@ -183,6 +187,8 @@ export function App() {
     setIsQuotaExceeded(false);
     setGameMode('online');
     setUsedFallbackMessages([]); // Reset used fallback messages for new game
+    setTokenCount(0);
+    lastResolvedTrick.current = [];
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
   }, [language, T, updateChatSession]);
   
@@ -224,6 +230,8 @@ export function App() {
       try {
         const response = await chatSession.sendMessage({ message: userMessage });
         const aiMessage: ChatMessage = { sender: 'ai', text: response.text };
+        const tokensUsed = response.usageMetadata?.totalTokenCount ?? 0;
+        setTokenCount(prev => prev + tokensUsed);
         setChatHistory(prev => [...prev, aiMessage]);
         playSound('chat-notify');
       } catch (error: any) {
@@ -240,19 +248,27 @@ export function App() {
     };
 
   const handlePlayCard = (card: Card) => {
-    if (turn !== 'human' || isProcessing) return;
+    if (turn !== 'human' || isProcessing || animatingCard) return;
     
-    playSound('card-place');
-    setHumanHand(prev => prev.filter(c => getCardId(c, language) !== getCardId(card, language)));
-    setCardsOnTable(prev => [...prev, card]);
-    
-    if (trickStarter === 'human') {
-      setTurn('ai');
-    }
+    const playCardAsync = async () => {
+      playSound('card-place');
+      setHumanHand(prev => prev.filter(c => getCardId(c, language) !== getCardId(card, language)));
+      setAnimatingCard({ card, player: 'human' });
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      setCardsOnTable(prev => [...prev, card]);
+      setAnimatingCard(null);
+
+      if (trickStarter === 'human') {
+        setTurn('ai');
+      }
+    };
+    playCardAsync();
   };
   
   useEffect(() => {
-    if (turn === 'ai' && !isProcessing && phase === 'playing' && cardsOnTable.length < 2 && aiHand.length > 0) {
+    if (turn === 'ai' && !isProcessing && phase === 'playing' && cardsOnTable.length < 2 && aiHand.length > 0 && !animatingCard) {
       const performAiMove = async () => {
         setIsAiThinkingMove(true);
         setMessage(T.aiThinking(aiName));
@@ -262,14 +278,18 @@ export function App() {
             return; // Safeguard
           }
           
-          // Always use the local AI for card selection, with a delay to simulate thinking.
           const aiCardToPlay = await new Promise<Card>(resolve =>
             setTimeout(() => resolve(getLocalAIMove(aiHand, briscolaSuit, cardsOnTable)), 750)
           );
 
           playSound('card-place');
           setAiHand(prev => prev.filter(c => getCardId(c, language) !== getCardId(aiCardToPlay, language)));
+          setAnimatingCard({ card: aiCardToPlay, player: 'ai' });
+          
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
           setCardsOnTable(prev => [...prev, aiCardToPlay]);
+          setAnimatingCard(null);
 
           if (trickStarter === 'ai') {
             setTurn('human');
@@ -286,7 +306,7 @@ export function App() {
       performAiMove();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [turn, isProcessing, phase, cardsOnTable, aiHand]);
+  }, [turn, isProcessing, phase, cardsOnTable, aiHand, animatingCard]);
 
   useEffect(() => {
     if (cardsOnTable.length !== 2 || phase !== 'playing' || isResolvingTrick) {
@@ -295,6 +315,14 @@ export function App() {
 
     const resolveTrick = async () => {
       setIsResolvingTrick(true);
+      
+      const currentTrickCardIds = cardsOnTable.map(c => getCardId(c, language)).sort();
+      if (JSON.stringify(currentTrickCardIds) === JSON.stringify(lastResolvedTrick.current)) {
+          console.warn("Attempted to resolve the same trick twice. Aborting.");
+          setIsResolvingTrick(false);
+          return;
+      }
+
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       if (!briscolaSuit || !currentWaifu) {
@@ -317,7 +345,8 @@ export function App() {
         } else {
           setIsAiGeneratingMessage(true);
           try {
-            const waifuMsg = await getAIWaifuTrickMessage(currentWaifu, aiEmotionalState, humanPlayedCard, aiPlayedCard, points, language);
+            const { message: waifuMsg, tokens: tokensUsed } = await getAIWaifuTrickMessage(currentWaifu, aiEmotionalState, humanPlayedCard, aiPlayedCard, points, language);
+            setTokenCount(prev => prev + tokensUsed);
             setChatHistory(prev => [...prev, { sender: 'ai', text: waifuMsg }]);
             playSound('chat-notify');
           } catch (error) {
@@ -348,6 +377,23 @@ export function App() {
         }
       }
 
+      // Start visual updates: clear table, then animate drawing
+      setCardsOnTable([]);
+      
+      if (drawnCards.length > 0) {
+        playSound('card-place'); // Re-use sound for drawing
+        const drawAnimations = [];
+        drawAnimations.push({ destination: winner });
+        if (drawnCards.length > 1) {
+            drawAnimations.push({ destination: winner === 'human' ? 'ai' : 'human' });
+        }
+        setDrawingCards(drawAnimations);
+        
+        await new Promise(resolve => setTimeout(resolve, 600)); // Wait for animation
+        setDrawingCards(null);
+      }
+      
+      // Now update game state after animations
       const newHumanCard = winner === 'human' ? drawnCards[0] : drawnCards[1];
       const newAiCard = winner === 'human' ? drawnCards[1] : drawnCards[0];
 
@@ -364,7 +410,7 @@ export function App() {
         if (newHumanCard) setHumanHand(prev => [...prev, newHumanCard]);
       }
       
-      setCardsOnTable([]);
+      lastResolvedTrick.current = currentTrickCardIds;
       setTurn(winner);
       setTrickStarter(winner);
       setMessage(`${trickMessage} ${winner === 'human' ? T.yourTurnMessage : T.aiTurnMessage(aiName)}`);
@@ -436,6 +482,9 @@ export function App() {
             onGoToMenu={() => setIsConfirmLeaveModalOpen(true)}
             language={language}
             backgroundUrl={backgroundUrl}
+            tokenCount={tokenCount}
+            animatingCard={animatingCard}
+            drawingCards={drawingCards}
         />
         
         {phase === 'gameOver' && (

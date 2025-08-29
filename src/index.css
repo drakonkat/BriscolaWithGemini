@@ -313,6 +313,12 @@ body {
   font-style: italic;
   min-height: 1.2em; /* Prevents layout shifts */
 }
+.score-summary .token-summary {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #ddd;
+  opacity: 0.8;
+}
 
 .card {
   width: 84px; /* Aspect ratio 9:16 (1080x1920) */
@@ -832,6 +838,103 @@ body {
 
 .chat-fab {
     display: none; /* Hidden on desktop */
+}
+
+/* --- Card Playing Animation --- */
+.animating-card-container {
+  position: absolute;
+  left: 50%;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.animating-card-container .card, .drawing-card-container .card {
+  opacity: 0; /* Hide card until animation starts */
+  animation: fade-in 0.1s forwards;
+}
+@keyframes fade-in { to { opacity: 1; } }
+
+.animating-card-container.player-human.position-0 { animation: play-human-p0 0.5s ease-in-out forwards; }
+.animating-card-container.player-human.position-1 { animation: play-human-p1 0.5s ease-in-out forwards; }
+.animating-card-container.player-ai.position-0 { animation: play-ai-p0 0.5s ease-in-out forwards; }
+.animating-card-container.player-ai.position-1 { animation: play-ai-p1 0.5s ease-in-out forwards; }
+
+/* Note: 50px = (84px card width / 2) + (16px gap / 2) = 42px + 8px */
+@keyframes play-human-p0 {
+  from { top: 85%; transform: translateX(-50%) scale(1.1); }
+  to { top: 50%; transform: translate(calc(-50% - 50px), -50%) scale(1); }
+}
+@keyframes play-human-p1 {
+  from { top: 85%; transform: translateX(-50%) scale(1.1); }
+  to { top: 50%; transform: translate(calc(-50% + 50px), -50%) scale(1); }
+}
+@keyframes play-ai-p0 {
+  from { top: 15%; transform: translateX(-50%) scale(1); }
+  to { top: 50%; transform: translate(calc(-50% - 50px), -50%) scale(1); }
+}
+@keyframes play-ai-p1 {
+  from { top: 15%; transform: translateX(-50%) scale(1); }
+  to { top: 50%; transform: translate(calc(-50% + 50px), -50%) scale(1); }
+}
+
+/* --- Card Drawing Animation --- */
+.drawing-card-container {
+  position: absolute;
+  /* Start near the deck pile area */
+  top: 50%;
+  left: 10%; 
+  transform: translateY(-50%);
+  z-index: 40;
+  pointer-events: none;
+}
+
+.drawing-card-container.destination-human {
+  animation-name: draw-to-human;
+  animation-duration: 0.5s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+.drawing-card-container.destination-ai {
+  animation-name: draw-to-ai;
+  animation-duration: 0.5s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+/* Stagger the second card's draw slightly */
+.drawing-card-container.order-1 {
+  animation-delay: 0.15s;
+}
+
+@keyframes draw-to-human {
+  from {
+    top: 50%;
+    left: 10%;
+    transform: translateY(-50%) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  to {
+    top: 90%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(180deg) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes draw-to-ai {
+  from {
+    top: 50%;
+    left: 10%;
+    transform: translateY(-50%) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  to {
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-180deg) scale(0.5);
+    opacity: 0;
+  }
 }
 
 /* --- Responsive Design --- */

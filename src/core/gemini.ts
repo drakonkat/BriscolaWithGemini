@@ -121,7 +121,7 @@ export const getAIWaifuTrickMessage = async (
   aiCard: Card,
   points: number,
   lang: Language
-): Promise<string> => {
+): Promise<{ message: string, tokens: number }> => {
   const T = translations[lang];
   const humanCardId = getCardId(humanCard, lang);
   const aiCardId = getCardId(aiCard, lang);
@@ -144,7 +144,9 @@ export const getAIWaifuTrickMessage = async (
         topP: 1,
       }
     });
-    return response.text.trim();
+    const message = response.text.trim();
+    const tokens = response.usageMetadata?.totalTokenCount ?? 0;
+    return { message, tokens };
   };
 
   try {
@@ -154,6 +156,6 @@ export const getAIWaifuTrickMessage = async (
         throw error; // Re-throw to be caught by App.tsx
     }
     console.error("Errore durante la generazione del messaggio della waifu:", error);
-    return T.chatFallback;
+    return { message: T.chatFallback, tokens: 0 };
   }
 };

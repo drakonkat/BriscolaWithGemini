@@ -34,6 +34,7 @@ export const translations = {
     offlineModeActive: "Limite API raggiunto. Si continua con l'IA locale.",
     backToMenu: "Torna al Menu",
     cardBack: "Retro della carta",
+    tokensUsed: "Token Usati",
     // Game Over
     gameOverTitle: "Partita Terminata",
     finalScore: "Punteggio Finale:",
@@ -129,6 +130,7 @@ La risposta deve essere in italiano.
     offlineModeActive: "API limit reached. Continuing with local AI.",
     backToMenu: "Back to Menu",
     cardBack: "Card back",
+    tokensUsed: "Tokens Used",
     // Game Over
     gameOverTitle: "Game Over",
     finalScore: "Final Score:",
