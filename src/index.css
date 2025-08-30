@@ -378,6 +378,7 @@ input:checked + .slider:before {
   margin-top: 2.5rem;
   font-size: 0.9rem;
   opacity: 0.8;
+  text-align: center;
 }
 .menu-footer button.link-button {
   background: none;
@@ -393,6 +394,12 @@ input:checked + .slider:before {
 .menu-footer button.link-button:hover {
   color: white;
   text-decoration: underline;
+}
+
+.app-version {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: #888;
 }
 
 .app-container {

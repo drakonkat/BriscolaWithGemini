@@ -639,10 +639,10 @@ export function App() {
           if (humanCardElement === 'water') aiCardPoints = Math.floor(aiCardPoints / 2);
           if (aiCardElement === 'water') humanCardPoints = Math.floor(humanCardPoints / 2);
   
-          // Earth Power (gives points back to the loser, happens separately from trick points)
-          if (winner === 'ai' && aiCardElement === 'earth') {
+          // Earth Power (gives points back to the loser if their card was Earth)
+          if (winner === 'ai' && humanCardElement === 'earth') { // Human lost with an Earth card
               setHumanScore(s => s + humanCardPoints);
-          } else if (winner === 'human' && humanCardElement === 'earth') {
+          } else if (winner === 'human' && aiCardElement === 'earth') { // AI lost with an Earth card
               setAiScore(s => s + aiCardPoints);
           }
   

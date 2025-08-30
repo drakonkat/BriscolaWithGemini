@@ -137,9 +137,12 @@ export const Menu = ({
                 </div>
 
                 <footer className="menu-footer">
-                    <button className="link-button" onClick={onShowPrivacy}>{T.privacyPolicy.linkText}</button>
-                    <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
-                    <button className="link-button" onClick={onShowTerms}>{T.termsAndConditions.linkText}</button>
+                    <div>
+                        <button className="link-button" onClick={onShowPrivacy}>{T.privacyPolicy.linkText}</button>
+                        <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+                        <button className="link-button" onClick={onShowTerms}>{T.termsAndConditions.linkText}</button>
+                    </div>
+                    {process.env.APP_VERSION && <div className="app-version">v{process.env.APP_VERSION}</div>}
                 </footer>
             </div>
         </div>
