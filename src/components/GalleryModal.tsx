@@ -38,11 +38,19 @@ export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedB
     return (
         <div className="game-over-overlay" onClick={onClose}>
             <div className="gallery-modal" onClick={(e) => e.stopPropagation()}>
-                <h2>{T.gallery.title}</h2>
+                <div className="gallery-header">
+                    <h2>{T.gallery.title}</h2>
+                    <div className="modal-actions">
+                        <button onClick={onGachaRoll} disabled={allUnlocked || (!isFirstRoll && !canAfford)}>
+                            {buttonText}
+                        </button>
+                        <button onClick={onClose} className="button-secondary">{T.close}</button>
+                    </div>
+                </div>
                 <div className="gallery-grid">
                     {backgrounds.map((item, index) => {
                         const isUnlocked = unlockedBackgrounds.includes(item.url);
-                        const rarityClass = isUnlocked ? `rarity-${item.rarity.toLowerCase()}` : '';
+                        const rarityClass = `rarity-${item.rarity.toLowerCase()}`;
 
                         return (
                             <div 
@@ -52,7 +60,7 @@ export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedB
                                 onKeyDown={isUnlocked ? (e) => (e.key === 'Enter' || e.key === ' ') && onImageSelect(item.url) : undefined}
                                 role={isUnlocked ? 'button' : 'img'}
                                 tabIndex={isUnlocked ? 0 : -1}
-                                aria-label={isUnlocked ? `${T.gallery.backgroundAlt} ${index + 1} (${item.rarity}). ${T.gallery.fullscreenView}` : T.gallery.locked}
+                                aria-label={isUnlocked ? `${T.gallery.backgroundAlt} ${index + 1} (${item.rarity}). ${T.gallery.fullscreenView}` : `${T.gallery.locked} (${item.rarity})`}
                             >
                                 {isUnlocked ? (
                                     <CachedImage imageUrl={item.url} alt={`${T.gallery.backgroundAlt} ${index + 1}`} loading="lazy" />
@@ -66,12 +74,6 @@ export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedB
                             </div>
                         );
                     })}
-                </div>
-                <div className="modal-actions">
-                    <button onClick={onGachaRoll} disabled={allUnlocked || (!isFirstRoll && !canAfford)}>
-                        {buttonText}
-                    </button>
-                    <button onClick={onClose} className="button-secondary">{T.close}</button>
                 </div>
             </div>
         </div>

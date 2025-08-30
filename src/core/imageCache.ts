@@ -67,7 +67,7 @@ export const getCachedImageSrc = async (url: string): Promise<string> => {
         return dataUrl;
 
     } catch (error) {
-        console.error(`Failed to fetch and cache image: ${url}`, error);
+        console.warn(`Failed to fetch and cache image: ${url}`, error);
         return url; // Fallback to the original network URL
     }
 };

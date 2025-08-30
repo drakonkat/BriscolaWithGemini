@@ -48,7 +48,7 @@ export const FullscreenImageModal = ({ isOpen, imageUrl, onClose, language }: Fu
             a.click();
             document.body.removeChild(a);
         } catch (error) {
-            console.error('Error downloading image:', error);
+            console.warn('Error downloading image:', error);
             // TODO: Optionally, show an error message to the user via snackbar or alert.
         } finally {
             setIsDownloading(false);
