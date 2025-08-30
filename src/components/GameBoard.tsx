@@ -24,6 +24,13 @@ const abilityToElement: Record<AbilityType, Element> = {
     'fortify': 'earth',
 };
 
+const elementToAbility: Record<Element, AbilityType> = {
+    'fire': 'incinerate',
+    'water': 'tide',
+    'air': 'cyclone',
+    'earth': 'fortify',
+};
+
 const AbilityIndicator = ({ player, ability, charges, onActivate, lang }: { player: Player, ability: AbilityType, charges: number, onActivate?: () => void, lang: Language }) => {
     const T = translations[lang];
     const isReady = charges >= 2;
@@ -94,6 +101,7 @@ interface GameBoardProps {
     abilityTargetingState: 'incinerate' | 'fortify' | 'cyclone' | null;
     onTargetCard: (card: Card) => void;
     revealedAiHand: Card[] | null;
+    activeElements: Element[] | null;
 }
 
 export const GameBoard = ({
@@ -133,11 +141,16 @@ export const GameBoard = ({
     abilityTargetingState,
     onTargetCard,
     revealedAiHand,
+    activeElements,
 }: GameBoardProps) => {
 
     const T = translations[language];
     const [isLegendExpanded, setIsLegendExpanded] = useState(true);
-    const elements: Element[] = ['fire', 'water', 'air', 'earth'];
+    
+    const allElements: Element[] = ['fire', 'water', 'air', 'earth'];
+    const elementsToShow = activeElements || allElements;
+    const abilitiesToShow = elementsToShow.map(el => elementToAbility[el]);
+
 
     // Calcola il livello di sfocatura in base al punteggio del giocatore
     const winningScore = 60;
@@ -224,7 +237,7 @@ export const GameBoard = ({
                             <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
                         </svg>
                     </button>
-                    {elements.map(element => {
+                    {elementsToShow.map(element => {
                         const descriptionKey = `${element}Description` as 'fireDescription' | 'waterDescription' | 'airDescription' | 'earthDescription';
                         return (
                             <div key={element} className="elemental-power-row">
@@ -233,6 +246,20 @@ export const GameBoard = ({
                                    <strong>{T[element]}:</strong>
                                    <span>{T[descriptionKey]}</span>
                                </div>
+                            </div>
+                        );
+                    })}
+                    <div className="elemental-power-divider"></div>
+                    {abilitiesToShow.map(ability => {
+                        const descriptionKey = `${ability}Description` as 'incinerateDescription' | 'tideDescription' | 'cycloneDescription' | 'fortifyDescription';
+                        const element = abilityToElement[ability];
+                        return (
+                            <div key={ability} className="elemental-power-row">
+                                <ElementIcon element={element} />
+                                <div className="elemental-power-description">
+                                    <strong>{T[ability]}:</strong>
+                                    <span>{T[descriptionKey]}</span>
+                                </div>
                             </div>
                         );
                     })}
@@ -288,7 +315,7 @@ export const GameBoard = ({
                             key={card.id}
                             card={card}
                             isPlayable={
-                                (turn === 'human' && !isProcessing && !animatingCard && !drawingCards && !abilityTargetingState) ||
+                                (turn === 'human' && !isProcessing && !animatingCard && !abilityTargetingState) ||
                                 (abilityTargetingState !== null && abilityTargetingState !== 'incinerate')
                             }
                             onClick={() => {
