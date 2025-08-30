@@ -15,7 +15,7 @@ import { POINTS } from '../core/constants';
 import { translations } from '../core/translations';
 import { createDeck, shuffleDeck, getTrickWinner } from '../core/gameLogic';
 import { getCardId } from '../core/utils';
-import { QuotaExceededError, ai, getAIWaifuTrickMessage } from '../core/gemini';
+import { QuotaExceededError, ai, getAIWaifuTrickMessage, getAIGenericTeasingMessage } from '../core/gemini';
 import { getLocalAIMove, getFallbackWaifuMessage } from '../core/localAI';
 import { WAIFUS } from '../core/waifus';
 // FIX: The 'Suit' type is now correctly imported from the local types definition file.
@@ -153,6 +153,7 @@ export function App() {
   // FIX: Replaced NodeJS.Timeout with ReturnType<typeof setTimeout> to resolve a TypeScript error where Node.js types are not available in the browser environment.
   const bubbleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastResolvedTrick = useRef<string[]>([]);
+  const trickCounter = useRef(0);
   const posthog = usePostHog();
 
   // Stato derivato per disabilitare l'input dell'utente
@@ -381,6 +382,7 @@ export function App() {
     setLastGameWinnings(0);
     setUnreadMessageCount(0);
     lastResolvedTrick.current = [];
+    trickCounter.current = 0;
     setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
   }, [language, T, updateChatSession, posthog, gameplayMode, isChatEnabled, showWaifuBubble, difficulty]);
   
@@ -546,10 +548,50 @@ export function App() {
         setIsResolvingTrick(false);
         return;
       }
-  
+      
+      trickCounter.current += 1;
+
       const winner = getTrickWinner(cardsOnTable, trickStarter, briscolaSuit);
       const points = POINTS[cardsOnTable[0].value] + POINTS[cardsOnTable[1].value];
   
+      const generateTeasingMessage = async () => {
+          if (!currentWaifu) return;
+          setIsAiGeneratingMessage(true);
+          try {
+              const { message: teaseMessage, tokens: tokensUsed } = await getAIGenericTeasingMessage(
+                  currentWaifu,
+                  aiEmotionalState,
+                  aiScore,
+                  humanScore,
+                  language
+              );
+              posthog.capture('gemini_request_completed', {
+                  source: 'generic_tease',
+                  tokens_used: tokensUsed,
+                  waifu_name: aiName,
+                  emotional_state: aiEmotionalState,
+                  language: language,
+              });
+              setTokenCount(prev => prev + tokensUsed);
+              const aiMessage: ChatMessage = { sender: 'ai', text: teaseMessage };
+              setChatHistory(prev => [...prev, aiMessage]);
+              showWaifuBubble(teaseMessage);
+              if (!isChatModalOpen) {
+                  setUnreadMessageCount(prev => prev + 1);
+              }
+              playSound('chat-notify');
+          } catch (error) {
+              if (error instanceof QuotaExceededError) {
+                  posthog.capture('api_quota_exceeded', { source: 'generic_tease' });
+                  setIsQuotaExceeded(true);
+              } else {
+                  console.error("Error generating waifu teasing message:", error);
+              }
+          } finally {
+              setIsAiGeneratingMessage(false);
+          }
+      };
+
       const proceedToNextTurn = async () => {
         const trickMessage = winner === 'human' ? T.youWonTrick(points) : T.aiWonTrick(aiName, points);
         const soundToPlay = winner === 'human' ? 'trick-win' : 'trick-lose';
@@ -603,6 +645,12 @@ export function App() {
         setTrickStarter(winner);
         setMessage(`${trickMessage} ${winner === 'human' ? T.yourTurnMessage : T.aiTurnMessage(aiName)}`);
         setIsResolvingTrick(false);
+
+        const shouldTease = !waitForWaifuResponse && isChatEnabled && gameMode === 'online' && trickCounter.current > 0 && trickCounter.current % 3 === 0;
+
+        if (shouldTease) {
+            generateTeasingMessage();
+        }
       };
 
       const generateWaifuMessage = async () => {
@@ -651,15 +699,10 @@ export function App() {
         playSound('chat-notify');
       };
 
-      if (winner === 'ai' && isChatEnabled) {
-        if (waitForWaifuResponse) {
-          await generateWaifuMessage();
-          await new Promise(resolve => setTimeout(resolve, 500)); 
-          proceedToNextTurn();
-        } else {
-          generateWaifuMessage();
-          proceedToNextTurn();
-        }
+      if (winner === 'ai' && isChatEnabled && waitForWaifuResponse) {
+        await generateWaifuMessage();
+        await new Promise(resolve => setTimeout(resolve, 500)); 
+        proceedToNextTurn();
       } else {
         proceedToNextTurn();
       }
@@ -669,7 +712,8 @@ export function App() {
   }, [
     T, aiEmotionalState, aiName, briscolaCard, briscolaSuit, cardsOnTable,
     currentWaifu, deck, gameMode, language, isResolvingTrick, trickStarter,
-    posthog, usedFallbackMessages, isChatModalOpen, isChatEnabled, waitForWaifuResponse, showWaifuBubble
+    posthog, usedFallbackMessages, isChatModalOpen, isChatEnabled, waitForWaifuResponse, showWaifuBubble,
+    aiScore, humanScore
   ]);
   
   // The end of the game logic

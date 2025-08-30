@@ -22,6 +22,7 @@ export const translations = {
     toggleWaitForWaifuLabel: "Attendi Risposta Waifu",
     fastModeEnabled: "Modalità veloce attivata: il gioco non attenderà più la risposta della Waifu.",
     gameModeClassic: "Briscola Classica",
+    // FIX: Corrected typo 'Rogelike' to 'Roguelike' to match the English translation key.
     gameModeRoguelike: "Modalità Roguelike",
     comingSoon: " (Prossimamente)",
     comingSoonTooltip: "Questa modalità sarà presto disponibile!",
@@ -125,6 +126,12 @@ Hai appena vinto un turno a Briscola contro senpai.
 Basandoti sulla tua personalità e sui punti che hai vinto, genera una risposta breve e caratteristica per senpai (1-2 frasi).
 Sii maliziosa, un po' stuzzicante e leggermente allusiva, specialmente se i punti sono alti. Sii creativa e unica.
 La risposta deve essere in italiano.
+`,
+    waifuGenericTeasePrompt: (waifuName: string, personality: string, aiScore: number, humanScore: number) => `
+Sei ${waifuName}. La tua personalità è: "${personality}".
+Stai giocando a Briscola contro senpai. Il punteggio è Tu: ${aiScore}, Senpai: ${humanScore}.
+Fai un commento generico, stuzzicante e con un doppio senso sensuale, in linea con la tua personalità, sulla partita in corso. Non fare riferimento alle ultime carte giocate.
+Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) e in italiano.
 `,
     // Quota Exceeded
     quotaExceeded: {
@@ -369,6 +376,12 @@ You just won a trick in a game of Briscola against senpai.
 Based on your personality and the points you won, generate a short, in-character response to senpai (1-2 sentences).
 Make it flirty, a bit teasing, and slightly suggestive, especially if the points are high. Be creative and unique.
 The response must be in English.
+`,
+    waifuGenericTeasePrompt: (waifuName: string, personality: string, aiScore: number, humanScore: number) => `
+You are ${waifuName}. Your personality is: "${personality}".
+You are playing Briscola against senpai. The score is You: ${aiScore}, Senpai: ${humanScore}.
+Make a generic, teasing comment about the ongoing game with a sensual double entendre that fits your personality. Do not refer to the last cards played.
+Be creative, unique, and in character. The response must be short (1-2 sentences) and in English.
 `,
     // Quota Exceeded
     quotaExceeded: {

@@ -159,3 +159,45 @@ export const getAIWaifuTrickMessage = async (
     return { message: T.chatFallback, tokens: 0 };
   }
 };
+
+export const getAIGenericTeasingMessage = async (
+  waifu: Waifu,
+  emotionalState: GameEmotionalState,
+  aiScore: number,
+  humanScore: number,
+  lang: Language
+): Promise<{ message: string, tokens: number }> => {
+  const T = translations[lang];
+  const personality = waifu.systemInstructions[lang][emotionalState];
+
+  const prompt = T.waifuGenericTeasePrompt(
+      waifu.name,
+      personality,
+      aiScore,
+      humanScore
+  );
+
+  const performApiCall = async () => {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        temperature: 0.9,
+        topP: 1,
+      }
+    });
+    const message = response.text.trim();
+    const tokens = response.usageMetadata?.totalTokenCount ?? 0;
+    return { message, tokens };
+  };
+
+  try {
+    return await withRetry(performApiCall);
+  } catch (error) {
+    if (error instanceof QuotaExceededError) {
+        throw error; // Re-throw to be caught by App.tsx
+    }
+    console.error("Errore durante la generazione del messaggio generico della waifu:", error);
+    return { message: T.chatFallback, tokens: 0 };
+  }
+};
