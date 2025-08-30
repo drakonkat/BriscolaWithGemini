@@ -15,8 +15,7 @@ export type Card = {
   element?: Element;
 };
 export type Player = 'human' | 'ai';
-export type GamePhase = 'menu' | 'playing' | 'gameOver' | 'roguelikeMap';
-export type GameResult = 'human' | 'ai' | 'tie' | 'stageWon';
+export type GamePhase = 'menu' | 'playing' | 'gameOver';
 export type ChatMessage = { sender: 'human' | 'ai'; text: string; };
 export type Language = 'it' | 'en';
 export type Waifu = WaifuType;

@@ -4,17 +4,16 @@
 */
 import { translations } from '../core/translations';
 import { VALUES_IT } from '../core/constants';
-import type { Language, Difficulty, GameplayMode } from '../core/types';
+import type { Language, Difficulty } from '../core/types';
 
 interface RulesModalProps {
     isOpen: boolean;
     onClose: () => void;
     language: Language;
     difficulty: Difficulty;
-    gameplayMode: GameplayMode;
 }
 
-export const RulesModal = ({ isOpen, onClose, language, difficulty, gameplayMode }: RulesModalProps) => {
+export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModalProps) => {
     if (!isOpen) {
         return null;
     }
@@ -34,28 +33,12 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty, gameplayMode
     } else if (difficulty === 'hard') {
         difficultyMultiplier = 1.5;
     }
-    
-    const classicRewards = {
-        loss: 20,
-        win61: 45,
-        win81: 70,
-        win101: 100,
-    };
-    
-    const roguelikeRewards = {
-        loss: 25,
-        win61: 50,
-        win81: 80,
-        win101: 120,
-    };
-    
-    const baseRewards = gameplayMode === 'roguelike' ? roguelikeRewards : classicRewards;
 
     const rewards = {
-        loss: Math.round(baseRewards.loss * difficultyMultiplier),
-        win61: Math.round(baseRewards.win61 * difficultyMultiplier),
-        win81: Math.round(baseRewards.win81 * difficultyMultiplier),
-        win101: Math.round(baseRewards.win101 * difficultyMultiplier),
+        loss: Math.round(20 * difficultyMultiplier),
+        win61: Math.round(45 * difficultyMultiplier),
+        win81: Math.round(70 * difficultyMultiplier),
+        win101: Math.round(100 * difficultyMultiplier),
     };
 
     return (
