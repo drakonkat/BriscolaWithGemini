@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { SUITS_IT, VALUES_IT, valueToFileNumber } from './constants';
+import { SUITS_IT, VALUES_IT, valueToFileNumber, POINTS } from './constants';
 import { translations } from './translations';
 import type { Card, Language } from './types';
 
@@ -18,4 +18,16 @@ export const getCardImagePath = (card: Card): string => {
   const suit = card.suit.toLowerCase();
   const number = valueToFileNumber[card.value];
   return `https://s3.tebi.io/waifubriscola/classic/${suit}${number}.png`;
+};
+
+/**
+ * Calculates the points of a card, considering status effects like being burned.
+ * @param card The card to evaluate.
+ * @returns The number of points the card is worth.
+ */
+export const getCardPoints = (card: Card): number => {
+  if (card.isBurned) {
+    return 0;
+  }
+  return POINTS[card.value];
 };

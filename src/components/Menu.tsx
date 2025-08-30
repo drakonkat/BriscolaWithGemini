@@ -124,9 +124,7 @@ export const Menu = ({
                         <label htmlFor="game-mode-select">{T.gameModeLabel}:</label>
                         <select id="game-mode-select" value={gameplayMode} onChange={(e) => onGameplayModeChange(e.target.value as GameplayMode)}>
                             <option value="classic">{T.gameModeClassic}</option>
-                            <option value="roguelike" disabled title={T.comingSoonTooltip}>
-                                {T.gameModeRoguelike}{T.comingSoon}
-                            </option>
+                            <option value="roguelike">{T.gameModeRoguelike}</option>
                         </select>
                     </div>
                      <div className="settings-selector">

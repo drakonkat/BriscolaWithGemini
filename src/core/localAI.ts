@@ -2,8 +2,62 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { RANK, POINTS } from './constants';
-import type { Card, Suit, Language, Waifu, GameEmotionalState, Difficulty } from './types';
+import { RANK } from './constants';
+import type { Card, Suit, Language, Waifu, GameEmotionalState, Difficulty, Element, AbilityType } from './types';
+import { getCardPoints } from './utils';
+
+type AIAbilityDecision = {
+    useAbility: false;
+} | {
+    useAbility: true;
+    ability: AbilityType;
+    targetCardId?: string; // ID of the card to target (for Incinerate/Fortify/Cyclone)
+};
+
+export const getAIAbilityDecision = (
+    aiAbility: AbilityType,
+    aiHand: Card[],
+    humanHand: Card[] | null,
+    deckSize: number
+): AIAbilityDecision => {
+    switch (aiAbility) {
+        case 'incinerate': {
+            // Use Incinerate if the AI knows the human has a high-value card (Asso or 3)
+            if (humanHand) {
+                const highValueCard = humanHand.find(c => getCardPoints(c) >= 10);
+                if (highValueCard) {
+                    return { useAbility: true, ability: 'incinerate', targetCardId: highValueCard.id };
+                }
+            }
+            // Fallback: If AI doesn't know the hand but wants to guess, it could use it randomly.
+            // For now, let's make it more conservative and only use it with knowledge.
+            return { useAbility: false };
+        }
+        case 'tide':
+            // Always use Tide as soon as it's available to gain information
+            return { useAbility: true, ability: 'tide' };
+        
+        case 'cyclone': {
+            // Use Cyclone if the AI has a low-value, non-briscola card and the deck is reasonably full
+            const hasBadCard = aiHand.some(c => getCardPoints(c) === 0);
+            if (hasBadCard && deckSize > 10) {
+                const cardToSwap = aiHand.sort((a,b) => RANK[a.value] - RANK[b.value])[0];
+                return { useAbility: true, ability: 'cyclone', targetCardId: cardToSwap.id };
+            }
+            return { useAbility: false };
+        }
+        case 'fortify':
+            // Use Fortify if the AI has a high-point card (Asso/3) it wants to protect and win
+            // This is a simple heuristic; more complex logic could check if it's necessary to win a trick.
+            const highPointCard = aiHand.find(c => getCardPoints(c) >= 10);
+            if (highPointCard) {
+                return { useAbility: true, ability: 'fortify', targetCardId: highPointCard.id };
+            }
+            return { useAbility: false };
+    }
+    return { useAbility: false };
+};
+
 
 /**
  * Logica per la mossa dell'IA in modalità offline/fallback.
@@ -24,13 +78,12 @@ export const getLocalAIMove = (
         return aiHand[Math.floor(Math.random() * aiHand.length)];
     }
 
-    const sortedHand = [...aiHand].sort((a, b) => (POINTS[a.value] - POINTS[b.value]) || (RANK[a.value] - RANK[b.value]));
+    const sortedHand = [...aiHand].sort((a, b) => (getCardPoints(a) - getCardPoints(b)) || (RANK[a.value] - RANK[b.value]));
 
     // Se l'IA è il secondo giocatore
     if (cardsOnTable.length > 0) {
         const humanCard = cardsOnTable[0];
-        const trickPoints = POINTS[humanCard.value];
-
+        
         const winningCards = sortedHand.filter(aiCard => {
             const aiIsBriscola = aiCard.suit === briscolaSuit;
             const humanIsBriscola = humanCard.suit === briscolaSuit;
@@ -44,14 +97,46 @@ export const getLocalAIMove = (
 
         // Se l'IA può vincere
         if (winningCards.length > 0) {
+            // Logica per la modalità Roguelike (controlla se le carte hanno un elemento)
+            if (winningCards[0].element) {
+                // Scegli la carta vincente che massimizza i punti, considerando i poteri
+                let bestCard = winningCards[0];
+                let maxPotentialPoints = -1;
+
+                for (const card of winningCards) {
+                    let humanCardPoints = getCardPoints(humanCard);
+                    let aiCardPoints = getCardPoints(card);
+
+                    // Applica potere Acqua
+                    if (humanCard.element === 'water') aiCardPoints = Math.floor(aiCardPoints / 2);
+                    if (card.element === 'water') humanCardPoints = Math.floor(humanCardPoints / 2);
+                    
+                    let potentialPoints = humanCardPoints + aiCardPoints;
+
+                    // Applica potere Fuoco
+                    if (card.element === 'fire') potentialPoints += 3;
+
+                    // Considera potere Aria (evita di sprecare carte buone per 0 punti)
+                    if (humanCard.element === 'air' || card.element === 'air') {
+                        potentialPoints = 0;
+                    }
+
+                    if (potentialPoints > maxPotentialPoints) {
+                        maxPotentialPoints = potentialPoints;
+                        bestCard = card;
+                    }
+                }
+                return bestCard;
+            }
+
             // Difficoltà Difficile: strategia più conservativa con le briscole di valore
             if (difficulty === 'hard') {
                 const bestWinningCard = winningCards[0];
-                const totalTrickPoints = trickPoints + POINTS[bestWinningCard.value];
+                const totalTrickPoints = getCardPoints(humanCard) + getCardPoints(bestWinningCard);
                 const isUsingBriscola = bestWinningCard.suit === briscolaSuit;
                 
                 // Non usare un Asso o un 3 di briscola per un turno con pochi punti
-                if (isUsingBriscola && POINTS[bestWinningCard.value] >= 10 && totalTrickPoints < 10) {
+                if (isUsingBriscola && getCardPoints(bestWinningCard) >= 10 && totalTrickPoints < 10) {
                     const nonBriscolaLosingCards = sortedHand.filter(c => c.suit !== briscolaSuit && !winningCards.includes(c));
                     if (nonBriscolaLosingCards.length > 0) {
                         return nonBriscolaLosingCards[0]; // Scarta un liscio
@@ -75,7 +160,7 @@ export const getLocalAIMove = (
              if (nonBriscolaInHand.length === 0) {
                  return briscolaInHand[0]; // Costretto a giocare briscola
              }
-             const lowPointNonBriscola = nonBriscolaInHand.filter(c => POINTS[c.value] < 2);
+             const lowPointNonBriscola = nonBriscolaInHand.filter(c => getCardPoints(c) < 2);
              if (lowPointNonBriscola.length > 0) {
                  return lowPointNonBriscola[0]; // Gioca un liscio non di briscola
              }

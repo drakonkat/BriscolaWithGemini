@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { getCardId, getCardImagePath } from '../core/utils';
-import type { Card, Language } from '../core/types';
+import type { Card, Language, Element } from '../core/types';
 import { translations } from '../core/translations';
 import { CachedImage } from './CachedImage';
+import { ElementIcon } from './ElementIcon';
 
-export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language }) => {
+// FIX: Added `className` to the component's props to allow for custom styling from parent components.
+export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, element }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, element?: Element }) => {
   const T = translations[lang];
 
   if (isFaceDown) {
@@ -24,13 +26,18 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang }: { card
 
   return (
     <div
-      className={`card ${isPlayable ? 'playable' : ''}`}
+      className={`card ${isPlayable ? 'playable' : ''} ${className || ''}`}
       onClick={onClick}
       role="button"
       aria-label={cardId}
       tabIndex={isPlayable ? 0 : -1}
     >
       <CachedImage imageUrl={imagePath} alt={cardId} />
+      {element && !isFaceDown && (
+          <div className="card-element-icon" title={T[element]}>
+              <ElementIcon element={element} />
+          </div>
+      )}
     </div>
   );
 };
