@@ -18,7 +18,7 @@ import { QuotaExceededError, ai, getAIWaifuTrickMessage, getAIGenericTeasingMess
 import { getLocalAIMove, getFallbackWaifuMessage, getAIAbilityDecision } from '../core/localAI';
 import { WAIFUS } from '../core/waifus';
 // FIX: The 'Suit' type is now correctly imported from the local types definition file.
-import type { GamePhase, Language, Card, Player, ChatMessage, Waifu, GameEmotionalState, Suit, GameplayMode, Difficulty, Soundtrack, Element, AbilityType, GameResult } from '../core/types';
+import type { GamePhase, Language, Card, Player, ChatMessage, Waifu, GameEmotionalState, Suit, GameplayMode, Difficulty, Soundtrack, Element, AbilityType } from '../core/types';
 
 import { Menu } from './Menu';
 import { GameBoard } from './GameBoard';
@@ -34,8 +34,6 @@ import { TermsAndConditionsModal } from './TermsAndConditionsModal';
 import { Snackbar } from './Snackbar';
 import { GalleryModal } from './GalleryModal';
 import { FullscreenImageModal } from './FullscreenImageModal';
-import { RoguelikeMap } from './RoguelikeMap';
-import { SUITS_IT } from '../core/constants';
 
 const SCORE_THRESHOLD = 15; // Point difference to trigger personality change
 type GameMode = 'online' | 'fallback';
@@ -143,11 +141,9 @@ export function App() {
   const [isQuotaExceeded, setIsQuotaExceeded] = useState(false);
   const [gameMode, setGameMode] = useState<GameMode>('online');
   const [usedFallbackMessages, setUsedFallbackMessages] = useState<string[]>([]);
-  const [gameResult, setGameResult] = useState<GameResult | null>(null);
+  const [gameResult, setGameResult] = useState<'human' | 'ai' | 'tie' | null>(null);
   
   // Roguelike state
-  const [roguelikeStage, setRoguelikeStage] = useState(1);
-  const [activeElements, setActiveElements] = useState<Element[] | null>(null);
   const [powerAnimation, setPowerAnimation] = useState<{type: Element, player: Player} | null>(null);
   const [humanAbility, setHumanAbility] = useState<AbilityType | null>(null);
   const [aiAbility, setAiAbility] = useState<AbilityType | null>(null);
@@ -161,7 +157,6 @@ export function App() {
   // Valuta di gioco
   const [waifuCoins, setWaifuCoins] = useState<number>(0);
   const [lastGameWinnings, setLastGameWinnings] = useState<number>(0);
-  const [lastBonusWinnings, setLastBonusWinnings] = useState<number>(0);
   const [hasRolledGacha, setHasRolledGacha] = useState(false);
   const [waifuBubbleMessage, setWaifuBubbleMessage] = useState<string>('');
   
@@ -209,11 +204,6 @@ export function App() {
         setDifficulty(savedDifficulty as Difficulty);
       }
       
-      const savedGameplayMode = localStorage.getItem('gameplay_mode');
-      if (savedGameplayMode && ['classic', 'roguelike'].includes(savedGameplayMode)) {
-        setGameplayMode(savedGameplayMode as GameplayMode);
-      }
-      
     } catch (error) {
       console.error("Failed to load settings from localStorage", error);
     }
@@ -250,14 +240,6 @@ export function App() {
         console.error("Failed to save difficulty setting to localStorage", error);
     }
   }, [difficulty]);
-
-  useEffect(() => {
-    try {
-        localStorage.setItem('gameplay_mode', gameplayMode);
-    } catch (error) {
-        console.error("Failed to save gameplay mode setting to localStorage", error);
-    }
-  }, [gameplayMode]);
 
   useEffect(() => {
     const lockOrientation = async () => {
@@ -352,31 +334,33 @@ export function App() {
     setChatSession(newChat);
   }, [isChatEnabled]);
 
-  const startGame = useCallback((waifu: Waifu, stage?: number) => {
+  const startGame = useCallback((selectedWaifu: Waifu | null) => {
     const bgIndex = Math.floor(Math.random() * 21) + 1;
     const isDesktop = window.innerWidth > 1024;
     const backgroundPrefix = isDesktop ? 'landscape' : 'background';
     setBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/${backgroundPrefix}${bgIndex}.png`);
     
     playSound('game-start');
+    const newWaifu = selectedWaifu ?? WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
+    setCurrentWaifu(newWaifu);
     
     posthog.capture('game_started', {
-        waifu_name: waifu.name,
+        waifu_name: newWaifu.name,
         language: language,
+        selection_mode: selectedWaifu ? 'specific' : 'random',
         gameplay_mode: gameplayMode,
         difficulty: difficulty,
         is_chat_enabled: isChatEnabled,
-        roguelike_stage: stage,
     });
 
     const emotionalState = 'neutral';
     setAiEmotionalState(emotionalState);
     
     if (isChatEnabled) {
-      const initialAiMessage: ChatMessage = { sender: 'ai', text: waifu.initialChatMessage[language] };
+      const initialAiMessage: ChatMessage = { sender: 'ai', text: newWaifu.initialChatMessage[language] };
       const initialHistory: ChatMessage[] = [initialAiMessage];
       setChatHistory(initialHistory);
-      updateChatSession(waifu, initialHistory, emotionalState, language);
+      updateChatSession(newWaifu, initialHistory, emotionalState, language);
       showWaifuBubble(initialAiMessage.text);
     } else {
       setChatHistory([]);
@@ -391,29 +375,19 @@ export function App() {
     setRevealedAiHand(null);
     setAiKnowledgeOfHumanHand(null);
 
-    if (gameplayMode === 'roguelike' && stage) {
-        const allElements: Element[] = ['fire', 'water', 'air', 'earth'];
-        const activeElementsForStage = shuffleDeck(allElements).slice(0, stage);
-        setActiveElements(activeElementsForStage);
 
-        const suitToElementMap: Partial<Record<Suit, Element>> = {};
-        const shuffledSuits = shuffleDeck(SUITS_IT as Suit[]);
-        
-        activeElementsForStage.forEach((elem, i) => {
-            suitToElementMap[shuffledSuits[i]] = elem;
-        });
-        
+    if (gameplayMode === 'roguelike') {
+        const elements: Element[] = ['fire', 'water', 'air', 'earth'];
         newDeck = newDeck.map(card => ({
             ...card,
-            element: suitToElementMap[card.suit]
+            element: elements[Math.floor(Math.random() * elements.length)]
         }));
-
+        
         const abilities: AbilityType[] = ['incinerate', 'tide', 'cyclone', 'fortify'];
         const shuffledAbilities = shuffleDeck([...abilities]);
         setHumanAbility(shuffledAbilities[0]);
         setAiAbility(shuffledAbilities[1]);
     } else {
-        setActiveElements(null);
         setHumanAbility(null);
         setAiAbility(null);
     }
@@ -436,45 +410,16 @@ export function App() {
     setHasChattedThisTurn(false);
     setIsQuotaExceeded(false);
     setGameMode('online');
-    setUsedFallbackMessages([]);
+    setUsedFallbackMessages([]); // Reset used fallback messages for new game
     setTokenCount(0);
     setGameResult(null);
     setLastGameWinnings(0);
-    setLastBonusWinnings(0);
     setUnreadMessageCount(0);
     lastResolvedTrick.current = [];
     trickCounter.current = 0;
-    setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(waifu.name));
+    setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
   }, [language, T, updateChatSession, posthog, gameplayMode, isChatEnabled, showWaifuBubble, difficulty]);
   
-  const handleWaifuSelection = (selectedWaifu: Waifu | null) => {
-    const newWaifu = selectedWaifu ?? WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
-    setCurrentWaifu(newWaifu);
-
-    if (gameplayMode === 'roguelike') {
-        setRoguelikeStage(1);
-        setPhase('roguelikeMap');
-    } else {
-        startGame(newWaifu);
-    }
-  };
-
-  const handleStartStage = () => {
-    if (currentWaifu) {
-        startGame(currentWaifu, roguelikeStage);
-    }
-  };
-
-  const handleAbandonRun = () => {
-    setPhase('menu');
-    setSnackbar({ message: T.runAbandoned, type: 'success' });
-  };
-
-  const handleContinueRun = () => {
-    setRoguelikeStage(prev => prev + 1);
-    setPhase('roguelikeMap');
-  };
-
   const handleConfirmLeave = () => {
     posthog.capture('game_left', {
         human_score: humanScore,
@@ -895,91 +840,59 @@ export function App() {
   // The end of the game logic
   useEffect(() => {
     if (phase === 'playing' && humanHand.length === 0 && aiHand.length === 0 && deck.length === 0 && cardsOnTable.length === 0 && !isResolvingTrick) {
-        
-        const humanWonMatch = humanScore > aiScore;
-        let winner: 'human' | 'ai' | 'tie' = humanScore > aiScore ? 'human' : (aiScore > humanScore ? 'ai' : 'tie');
-        playSound(humanWonMatch ? 'game-win' : 'game-lose');
+      let winner: 'human' | 'ai' | 'tie';
+      if (humanScore > aiScore) {
+        winner = 'human';
+        playSound('game-win');
+      } else if (aiScore > humanScore) {
+        winner = 'ai';
+        playSound('game-lose');
+      } else {
+        winner = 'tie';
+      }
 
-        let baseCoinsEarned = 0;
-        const rewardsConfig = gameplayMode === 'roguelike' ? {
-            win101: 120, win81: 80, win61: 50, loss: 25
-        } : {
-            win101: 100, win81: 70, win61: 45, loss: 20
-        };
-
-        if (humanWonMatch) {
-            if (humanScore > 101) baseCoinsEarned = rewardsConfig.win101;
-            else if (humanScore >= 81) baseCoinsEarned = rewardsConfig.win81;
-            else baseCoinsEarned = rewardsConfig.win61;
-        } else {
-            baseCoinsEarned = rewardsConfig.loss;
+      let baseCoinsEarned = 0;
+      if (winner === 'human') {
+        if (humanScore > 101) {
+          baseCoinsEarned = 100;
+        } else if (humanScore >= 81) {
+          baseCoinsEarned = 70;
+        } else if (humanScore >= 61) {
+          baseCoinsEarned = 45;
         }
+      } else { // Loss or Tie
+        baseCoinsEarned = 20;
+      }
+      
+      let difficultyMultiplier = 1.0;
+      if (difficulty === 'easy') {
+          difficultyMultiplier = 0.5;
+      } else if (difficulty === 'hard') {
+          difficultyMultiplier = 1.5;
+      }
+      const coinsEarned = Math.round(baseCoinsEarned * difficultyMultiplier);
+      
+      setLastGameWinnings(coinsEarned);
+      const newTotalCoins = waifuCoins + coinsEarned;
+      setWaifuCoins(newTotalCoins);
+      localStorage.setItem('waifu_coins', newTotalCoins.toString());
 
-        let difficultyMultiplier = 1.0;
-        if (difficulty === 'easy') difficultyMultiplier = 0.5;
-        else if (difficulty === 'hard') difficultyMultiplier = 1.5;
-
-        const matchCoinsEarned = Math.round(baseCoinsEarned * difficultyMultiplier);
-        
-        if (gameplayMode === 'roguelike') {
-            if (humanWonMatch) {
-                if (roguelikeStage === 4) { // Run complete
-                    const bonusTiers = [0, 50, 125, 250, 500];
-                    const bonus = bonusTiers[roguelikeStage];
-                    setLastGameWinnings(matchCoinsEarned);
-                    setLastBonusWinnings(bonus);
-                    const newTotalCoins = waifuCoins + matchCoinsEarned + bonus;
-                    setWaifuCoins(newTotalCoins);
-                    localStorage.setItem('waifu_coins', newTotalCoins.toString());
-                    setGameResult('human');
-                    setPhase('gameOver');
-                    setRoguelikeStage(1); 
-                } else { // Stage complete
-                    setLastGameWinnings(matchCoinsEarned);
-                    setLastBonusWinnings(0);
-                    setWaifuCoins(prev => prev + matchCoinsEarned); // Save intermediate coins
-                    localStorage.setItem('waifu_coins', (waifuCoins + matchCoinsEarned).toString());
-                    setGameResult('stageWon');
-                    setPhase('gameOver');
-                }
-            } else { // Run failed
-                const bonusTiers = [0, 50, 125, 250];
-                const bonus = bonusTiers[roguelikeStage - 1];
-                setLastGameWinnings(matchCoinsEarned);
-                setLastBonusWinnings(bonus);
-                const newTotalCoins = waifuCoins + matchCoinsEarned + bonus;
-                setWaifuCoins(newTotalCoins);
-                localStorage.setItem('waifu_coins', newTotalCoins.toString());
-                setGameResult(winner); // 'ai' or 'tie'
-                setPhase('gameOver');
-                setRoguelikeStage(1);
-            }
-        } else { // Classic mode
-            setLastGameWinnings(matchCoinsEarned);
-            setLastBonusWinnings(0);
-            const newTotalCoins = waifuCoins + matchCoinsEarned;
-            setWaifuCoins(newTotalCoins);
-            localStorage.setItem('waifu_coins', newTotalCoins.toString());
-            setGameResult(winner);
-            setPhase('gameOver');
-        }
-
-        posthog.capture('game_over', {
-            winner,
-            human_score: humanScore,
-            ai_score: aiScore,
-            score_difference: Math.abs(humanScore - aiScore),
-            waifu_name: currentWaifu?.name,
-            total_tokens_used: tokenCount,
-            coins_earned: matchCoinsEarned,
-            bonus_coins: lastBonusWinnings,
-            is_chat_enabled: isChatEnabled,
-            difficulty,
-            gameplay_mode: gameplayMode,
-            roguelike_stage_reached: gameplayMode === 'roguelike' ? roguelikeStage : undefined,
-        });
+      setGameResult(winner);
+      setPhase('gameOver');
+      posthog.capture('game_over', {
+          winner,
+          human_score: humanScore,
+          ai_score: aiScore,
+          score_difference: Math.abs(humanScore - aiScore),
+          waifu_name: currentWaifu?.name,
+          total_tokens_used: tokenCount,
+          coins_earned: coinsEarned,
+          is_chat_enabled: isChatEnabled,
+          difficulty,
+          gameplay_mode: gameplayMode,
+      });
     }
-  }, [phase, humanHand.length, aiHand.length, deck.length, cardsOnTable.length, humanScore, aiScore, isResolvingTrick, posthog, currentWaifu, tokenCount, waifuCoins, isChatEnabled, difficulty, gameplayMode, roguelikeStage, lastBonusWinnings]);
+  }, [phase, humanHand.length, aiHand.length, deck.length, cardsOnTable.length, humanScore, aiScore, isResolvingTrick, posthog, currentWaifu, tokenCount, waifuCoins, isChatEnabled, difficulty, gameplayMode]);
   
   // Handle switching to fallback mode
   useEffect(() => {
@@ -1176,7 +1089,7 @@ export function App() {
           onDifficultyChange={setDifficulty}
           onChatEnabledChange={setIsChatEnabled}
           onWaitForWaifuResponseChange={handleWaitForWaifuResponseChange}
-          onWaifuSelected={handleWaifuSelection}
+          onWaifuSelected={startGame}
           onShowRules={() => setIsRulesModalOpen(true)}
           onShowPrivacy={() => setIsPrivacyModalOpen(true)}
           onShowTerms={() => setIsTermsModalOpen(true)}
@@ -1184,7 +1097,7 @@ export function App() {
           onRefreshBackground={refreshMenuBackground}
           onShowGallery={() => setIsGalleryModalOpen(true)}
         />
-        <RulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} language={language} difficulty={difficulty} gameplayMode={gameplayMode} />
+        <RulesModal isOpen={isRulesModalOpen} onClose={() => setIsRulesModalOpen(false)} language={language} difficulty={difficulty} />
         <PrivacyPolicyModal isOpen={isPrivacyModalOpen} onClose={() => setIsPrivacyModalOpen(false)} language={language} />
         <TermsAndConditionsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} language={language} />
         <GalleryModal
@@ -1220,18 +1133,6 @@ export function App() {
         />
       </>
     );
-  }
-
-  if (phase === 'roguelikeMap') {
-      return (
-        <RoguelikeMap 
-            language={language}
-            currentStage={roguelikeStage}
-            onStartStage={handleStartStage}
-            onAbandonRun={handleAbandonRun}
-            backgroundUrl={menuBackgroundUrl}
-        />
-      );
   }
 
   return (
@@ -1273,7 +1174,6 @@ export function App() {
         abilityTargetingState={abilityTargetingState}
         onTargetCard={handleTargetCardForAbility}
         revealedAiHand={revealedAiHand}
-        activeElements={activeElements}
       />
       {isChatEnabled && currentWaifu &&
         <ChatPanel
@@ -1297,16 +1197,11 @@ export function App() {
           humanScore={humanScore}
           aiScore={aiScore}
           aiName={aiName}
-          winner={gameResult === 'stageWon' ? 'human' : gameResult}
-          gameResult={gameResult}
-          onPlayAgain={() => currentWaifu && handleWaifuSelection(currentWaifu)}
+          winner={gameResult}
+          onPlayAgain={() => startGame(currentWaifu)}
           onGoToMenu={() => setPhase('menu')}
-          onContinueRun={handleContinueRun}
           language={language}
           winnings={lastGameWinnings}
-          bonusWinnings={lastBonusWinnings}
-          gameplayMode={gameplayMode}
-          roguelikeStage={roguelikeStage}
         />
       )}
       {isQuotaExceeded && gameMode === 'online' && ( // Mostra solo se la modalità non è già fallback
