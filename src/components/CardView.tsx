@@ -8,12 +8,12 @@ import { translations } from '../core/translations';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
 
-// FIX: Added `className` to the component's props to allow for custom styling from parent components.
-export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, elementalEffectStatus?: 'active' | 'inactive' }) => {
+type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
+
+export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, elementalEffectStatus?: ElementalEffectStatus }) => {
   const T = translations[lang];
 
   if (isFaceDown) {
-    // Render the card back using an <img> tag to ensure the full image is visible.
     return (
         <div className="card card-back" aria-label={T.cardBack}>
             <CachedImage imageUrl="https://s3.tebi.io/waifubriscola/background/cardback1.png" alt={T.cardBack} />
@@ -23,12 +23,19 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, classNam
 
   const cardId = getCardId(card, lang);
   const imagePath = getCardImagePath(card);
-  const elementClass = card.element ? `element-${card.element}` : '';
-  const effectClass = elementalEffectStatus ? `effect-${elementalEffectStatus}` : '';
+  
+  const stateClasses = [
+    isPlayable ? 'playable' : '',
+    card.element ? `element-${card.element}` : '',
+    elementalEffectStatus && elementalEffectStatus !== 'unset' ? `effect-${elementalEffectStatus}` : '',
+    card.isFortified ? 'fortified' : '',
+    card.isBurned ? 'burned' : '',
+    className || ''
+  ].filter(Boolean).join(' ');
 
   return (
     <div
-      className={`card ${isPlayable ? 'playable' : ''} ${elementClass} ${effectClass} ${className || ''}`}
+      className={`card ${stateClasses}`}
       onClick={onClick}
       role="button"
       aria-label={cardId}
@@ -39,6 +46,11 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, classNam
           <div className="card-element-icon" title={T[card.element]}>
               <ElementIcon element={card.element} />
           </div>
+      )}
+      {card.isBurned && (
+        <div className="incinerate-particles">
+            {[...Array(15)].map((_, i) => <div key={i} className="particle" />)}
+        </div>
       )}
     </div>
   );

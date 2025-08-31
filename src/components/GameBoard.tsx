@@ -27,7 +27,7 @@ const abilityToElement: Record<AbilityType, Element> = {
 
 type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
 
-const AbilityIndicator = ({ player, ability, charges, onActivate, lang }: { player: Player, ability: AbilityType, charges: number, onActivate?: () => void, lang: Language }) => {
+const AbilityIndicator = ({ player, ability, charges, onActivate, lang, disabled = false }: { player: Player, ability: AbilityType, charges: number, onActivate?: () => void, lang: Language, disabled?: boolean }) => {
     const T = translations[lang];
     const isReady = charges >= 2;
     const element = abilityToElement[ability];
@@ -35,18 +35,18 @@ const AbilityIndicator = ({ player, ability, charges, onActivate, lang }: { play
     const title = `${T.ability}: ${T[ability]}\n${T[`${ability}Description`]}${isReady ? ` (${T.abilityReady})` : ''}`;
 
     const handleClick = () => {
-        if (player === 'human' && isReady && onActivate) {
+        if (player === 'human' && isReady && onActivate && !disabled) {
             onActivate();
         }
     };
 
     return (
         <div 
-            className={`ability-indicator player-${player} ${isReady ? 'ready' : ''}`}
+            className={`ability-indicator player-${player} ${isReady ? 'ready' : ''} ${disabled ? 'disabled' : ''}`}
             onClick={handleClick}
             title={title}
             role={player === 'human' && isReady ? 'button' : undefined}
-            tabIndex={player === 'human' && isReady ? 0 : -1}
+            tabIndex={player === 'human' && isReady && !disabled ? 0 : -1}
         >
             <div className="ability-icon">
                 <ElementIcon element={element} />
@@ -80,6 +80,7 @@ interface GameBoardProps {
     onGoToMenu: () => void;
     onOpenSupportModal: () => void;
     onOpenHistoryModal: () => void;
+    onCloseElementalClash: () => void;
     language: Language;
     backgroundUrl: string;
     animatingCard: { card: Card; player: Player } | null;
@@ -99,7 +100,11 @@ interface GameBoardProps {
     aiAbilityCharges: number;
     onActivateHumanAbility: () => void;
     abilityTargetingState: 'incinerate' | 'fortify' | 'cyclone' | null;
-    onTargetCard: (card: Card) => void;
+    abilityUsedThisTurn: { ability: AbilityType; originalCard: Card } | null;
+    onTargetCardInHand: (card: Card) => void;
+    onTargetCardOnTable: () => void;
+    onCancelAbility: () => void;
+    onUndoAbilityUse: () => void;
     revealedAiHand: Card[] | null;
     cardForElementalChoice: Card | null;
     elementalClash: ElementalClashResult | null;
@@ -127,6 +132,7 @@ export const GameBoard = ({
     onGoToMenu,
     onOpenSupportModal,
     onOpenHistoryModal,
+    onCloseElementalClash,
     language,
     backgroundUrl,
     animatingCard,
@@ -146,7 +152,11 @@ export const GameBoard = ({
     aiAbilityCharges,
     onActivateHumanAbility,
     abilityTargetingState,
-    onTargetCard,
+    abilityUsedThisTurn,
+    onTargetCardInHand,
+    onTargetCardOnTable,
+    onCancelAbility,
+    onUndoAbilityUse,
     revealedAiHand,
     cardForElementalChoice,
     elementalClash,
@@ -159,10 +169,8 @@ export const GameBoard = ({
     const [isLegendExpanded, setIsLegendExpanded] = useState(true);
     const elements: Element[] = ['fire', 'water', 'air', 'earth'];
 
-    // Calcola il livello di sfocatura in base al punteggio del giocatore
     const winningScore = 60;
-    const maxBlur = 25; // px
-    // La sfocatura diminuisce linearmente da maxBlur a 0 man mano che il punteggio del giocatore si avvicina a winningScore
+    const maxBlur = 25;
     const blurValue = Math.max(0, maxBlur * (1 - Math.min(humanScore, winningScore) / winningScore));
 
     const backgroundStyle = {
@@ -171,9 +179,14 @@ export const GameBoard = ({
 
     const waifuIconAriaLabel = isChatEnabled ? T.chatWith(aiName) : T.waifuDetails(aiName);
     
-    // Determine cards on table for the clash modal
     const humanCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     const aiCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
+
+    const isAbilityUnusable = isProcessing || !!abilityTargetingState || !!abilityUsedThisTurn;
+    let isFireAbilityDisabled = true;
+    if (humanAbility === 'incinerate') {
+        isFireAbilityDisabled = (cardsOnTable.length !== 1 || trickStarter === 'human');
+    }
 
     return (
         <main className="game-board">
@@ -201,22 +214,25 @@ export const GameBoard = ({
             )}
             
             <div className="top-bar">
-                <div className="player-score ai-score">
+                 <div className="player-info-group">
+                    <div className="player-score ai-score">
+                        <span>{aiName}: {aiScore}</span>
+                    </div>
                     {aiAbility && (
                         <AbilityIndicator player="ai" ability={aiAbility} charges={aiAbilityCharges} lang={language} />
                     )}
-                    <span>{aiName}: {aiScore}</span>
                 </div>
-                <div className="waifu-status-container">
-                    {currentWaifu && (
-                        <button className="waifu-status-button" onClick={onWaifuIconClick} aria-label={waifuIconAriaLabel}>
-                            <CachedImage imageUrl={currentWaifu.avatar} alt={aiName} className="waifu-status-avatar" />
-                            {isChatEnabled && unreadMessageCount > 0 && !isAiTyping && <span className="waifu-status-badge">{unreadMessageCount}</span>}
-                            {isChatEnabled && isAiTyping && <span className="waifu-status-badge typing"></span>}
-                        </button>
-                    )}
-                </div>
-                {waifuBubbleMessage && (
+            </div>
+
+            <div className="waifu-status-container">
+                {currentWaifu && (
+                    <button className="waifu-status-button" onClick={onWaifuIconClick} aria-label={waifuIconAriaLabel}>
+                        <CachedImage imageUrl={currentWaifu.avatar} alt={aiName} className="waifu-status-avatar" />
+                        {isChatEnabled && unreadMessageCount > 0 && !isAiTyping && <span className="waifu-status-badge">{unreadMessageCount}</span>}
+                        {isChatEnabled && isAiTyping && <span className="waifu-status-badge typing"></span>}
+                    </button>
+                )}
+                 {waifuBubbleMessage && (
                     <div className="waifu-message-bubble">
                         {waifuBubbleMessage}
                         <button className="bubble-close-button" onClick={onCloseBubble} aria-label={T.close}>
@@ -255,7 +271,6 @@ export const GameBoard = ({
                                <ElementIcon element={element} />
                                <div className="elemental-power-description">
                                    <strong>{T[element]}:</strong>
-                                   {/* FIX: The type of T[descriptionKey] was too broad for ReactNode. Cast to string to fix. */}
                                    <span>{T[descriptionKey] as string}</span>
                                </div>
                             </div>
@@ -270,7 +285,6 @@ export const GameBoard = ({
                                     <ElementIcon element={abilityToElement[humanAbility]} />
                                     <div className="elemental-power-description">
                                         <strong>{T.scoreYou}:</strong>
-                                        {/* FIX: The type was too broad for ReactNode. Cast to string to fix. */}
                                         <span> {T[`${humanAbility}Description` as keyof typeof T] as string}</span>
                                     </div>
                                 </div>
@@ -280,7 +294,6 @@ export const GameBoard = ({
                                     <ElementIcon element={abilityToElement[aiAbility]} />
                                     <div className="elemental-power-description">
                                         <strong>{aiName}:</strong>
-                                        {/* FIX: The type was too broad for ReactNode. Cast to string to fix. */}
                                         <span> {T[`${aiAbility}Description` as keyof typeof T] as string}</span>
                                     </div>
                                 </div>
@@ -294,7 +307,6 @@ export const GameBoard = ({
                 {briscolaCard && (
                     <div className="deck-container" title={`${T.briscolaLabel}: ${getCardId(briscolaCard, language)}`}>
                         <div className="deck-pile-wrapper">
-                            {/* The deck pile is visible as long as there are cards left to draw before the briscola */}
                             {deckSize > 1 && (
                                 <CardView card={{ id: 'facedown', suit: 'Spade', value: '2' }} isFaceDown lang={language} />
                             )}
@@ -316,25 +328,33 @@ export const GameBoard = ({
                             card={card} 
                             isFaceDown={!revealedAiHand} 
                             lang={language}
-                            isPlayable={abilityTargetingState === 'incinerate'}
-                            onClick={abilityTargetingState === 'incinerate' ? () => onTargetCard(card) : undefined}
-                            className={abilityTargetingState === 'incinerate' ? 'targeting' : ''}
                         />
                     )}
                 </div>
             </div>
 
             <div className="table-area">
+                {abilityTargetingState === 'incinerate' && (
+                    <div className="incinerate-cancel-container">
+                        <button className="cancel-ability-button" onClick={onCancelAbility}>
+                            {T.cancelAbility}
+                        </button>
+                    </div>
+                )}
                 <div className="played-cards">
                     {cardsOnTable.map((card, index) => {
                         const owner = index === 0 ? trickStarter : (trickStarter === 'human' ? 'ai' : 'human');
                         const status = lastTrickHighlights[owner];
+                        const isTargetForIncinerate = abilityTargetingState === 'incinerate' && index === 0;
                         return (
                             <CardView 
                                 key={card.id} 
                                 card={card} 
                                 lang={language} 
                                 elementalEffectStatus={status === 'unset' ? undefined : status}
+                                className={isTargetForIncinerate ? 'targeting' : ''}
+                                onClick={isTargetForIncinerate ? onTargetCardOnTable : undefined}
+                                isPlayable={isTargetForIncinerate}
                             />
                         );
                     })}
@@ -349,40 +369,57 @@ export const GameBoard = ({
                             key={card.id}
                             card={card}
                             isPlayable={
-                                (turn === 'human' && !isProcessing && !animatingCard && !drawingCards && !abilityTargetingState) ||
+                                (turn === 'human' && !isProcessing && !abilityTargetingState && !abilityUsedThisTurn) ||
                                 (abilityTargetingState !== null && abilityTargetingState !== 'incinerate')
                             }
                             onClick={() => {
                                 if (abilityTargetingState) {
-                                    onTargetCard(card);
+                                    onTargetCardInHand(card);
                                 } else {
                                     onSelectCardForPlay(card);
                                 }
                             }}
                             lang={language}
-                            className={
-                                `${card.isFortified ? 'fortified' : ''} 
-                                 ${abilityTargetingState && abilityTargetingState !== 'incinerate' ? 'targeting' : ''}
-                                 ${card.isBurned ? 'burned' : ''}`
-                            }
+                            className={abilityTargetingState && abilityTargetingState !== 'incinerate' ? 'targeting' : ''}
                         />
                     ))}
                 </div>
             </div>
             
             <div className="bottom-bar">
-                <div className="player-score human-score">
-                    <span>{T.scoreYou}: {humanScore}</span>
+                <div className="player-info-group">
+                    <div className="player-score human-score">
+                        <span>{T.scoreYou}: {humanScore}</span>
+                    </div>
                     {humanAbility && (
-                        <AbilityIndicator player="human" ability={humanAbility} charges={humanAbilityCharges} onActivate={onActivateHumanAbility} lang={language} />
+                        <AbilityIndicator 
+                            player="human" 
+                            ability={humanAbility} 
+                            charges={humanAbilityCharges} 
+                            onActivate={onActivateHumanAbility} 
+                            lang={language} 
+                            disabled={isAbilityUnusable || (humanAbility === 'incinerate' && isFireAbilityDisabled)}
+                        />
                     )}
                 </div>
 
-                {lastTrick && (
+                {lastTrick && !abilityUsedThisTurn && (
                     <button className="last-trick-recap" onClick={onOpenHistoryModal} title={T.history.lastTrick}>
                         <CardView card={lastTrick.humanCard} lang={language} />
                         <CardView card={lastTrick.aiCard} lang={language} />
                         <span>{lastTrick.winner === 'human' ? T.scoreYou : aiName} +{lastTrick.points}</span>
+                    </button>
+                )}
+                
+                {abilityTargetingState && abilityTargetingState !== 'incinerate' && (
+                    <button className="cancel-ability-button" onClick={onCancelAbility}>
+                        {T.cancelAbility}
+                    </button>
+                )}
+
+                {abilityUsedThisTurn?.ability === 'incinerate' && (
+                    <button className="undo-ability-button" onClick={onUndoAbilityUse}>
+                        {T.undoIncinerate}
                     </button>
                 )}
 
@@ -404,6 +441,11 @@ export const GameBoard = ({
                 <div className="elemental-clash-overlay">
                     {elementalClash.type === 'dice' ? (
                         <div className="elemental-clash-modal">
+                             <button className="modal-close-button" onClick={onCloseElementalClash} aria-label={T.close}>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
                             <h2>{TC.title}</h2>
                             <div className="clash-results">
                                 <div className={`clash-player-result ${elementalClash.winner === 'human' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
@@ -423,6 +465,11 @@ export const GameBoard = ({
                         </div>
                     ) : (
                          <div className="elemental-clash-modal weakness">
+                             <button className="modal-close-button" onClick={onCloseElementalClash} aria-label={T.close}>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
                             <h2>{TC.weaknessTitle}</h2>
                             <div className="weakness-indicator">
                                 <ElementIcon element={elementalClash.winningElement} />

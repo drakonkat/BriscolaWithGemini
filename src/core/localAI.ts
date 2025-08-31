@@ -18,19 +18,18 @@ export const getAIAbilityDecision = (
     aiAbility: AbilityType,
     aiHand: Card[],
     humanHand: Card[] | null,
-    deckSize: number
+    deckSize: number,
+    cardsOnTable: Card[]
 ): AIAbilityDecision => {
     switch (aiAbility) {
         case 'incinerate': {
-            // Use Incinerate if the AI knows the human has a high-value card (Asso or 3)
-            if (humanHand) {
-                const highValueCard = humanHand.find(c => getCardPoints(c) >= 10);
-                if (highValueCard) {
-                    return { useAbility: true, ability: 'incinerate', targetCardId: highValueCard.id };
+            // Use Incinerate only if AI is second to play and the card on table is valuable
+            if (cardsOnTable.length === 1) {
+                const humanCardOnTable = cardsOnTable[0];
+                if (getCardPoints(humanCardOnTable) >= 10) {
+                    return { useAbility: true, ability: 'incinerate', targetCardId: humanCardOnTable.id };
                 }
             }
-            // Fallback: If AI doesn't know the hand but wants to guess, it could use it randomly.
-            // For now, let's make it more conservative and only use it with knowledge.
             return { useAbility: false };
         }
         case 'tide':

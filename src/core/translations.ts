@@ -163,6 +163,9 @@ export const translations = {
     tideDescription: "Marea: Vedi la mano del tuo avversario per 5 secondi.",
     cycloneDescription: "Ciclone: Scambia una tua carta con una dal mazzo.",
     fortifyDescription: "Fortificare: Aumenta la forza di una tua carta per un turno.",
+    cancelAbility: "Annulla",
+    undoIncinerate: "Annulla Incenerire",
+    confirmOrUndoMessage: "Gioca una carta per confermare o annulla l'effetto.",
     // Game Over
     gameOverTitle: "Partita Terminata",
     finalScore: "Punteggio Finale:",
@@ -506,6 +509,9 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
     tideDescription: "Tide: See your opponent's hand for 5 seconds.",
     cycloneDescription: "Cyclone: Swap a card from your hand with one from the deck.",
     fortifyDescription: "Fortify: Increase the strength of one of your cards for one trick.",
+    cancelAbility: "Cancel",
+    undoIncinerate: "Undo Incinerate",
+    confirmOrUndoMessage: "Play a card to confirm or undo the effect.",
     // Game Over
     gameOverTitle: "Game Over",
     finalScore: "Final Score:",

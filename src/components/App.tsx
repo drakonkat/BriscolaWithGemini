@@ -22,7 +22,6 @@ import { RoguelikeMap } from './RoguelikeMap';
 
 export function App() {
   const { settings, setters } = useGameSettings();
-  // FIX: Reordered hook calls and passed required arguments to initialize them correctly.
   const { uiState, uiActions } = useUIState(settings.language);
   const { gachaState, gachaActions } = useGachaAndGallery(
     uiActions.showSnackbar,
@@ -132,6 +131,7 @@ export function App() {
         onGoToMenu={() => uiActions.openModal('confirmLeave')}
         onOpenSupportModal={() => uiActions.openModal('support')}
         onOpenHistoryModal={() => uiActions.openModal('history')}
+        onCloseElementalClash={gameActions.forceCloseClashModal}
         language={settings.language}
         backgroundUrl={gameState.backgroundUrl}
         animatingCard={uiState.animatingCard}
@@ -151,7 +151,11 @@ export function App() {
         aiAbilityCharges={gameState.aiAbilityCharges}
         onActivateHumanAbility={gameActions.activateHumanAbility}
         abilityTargetingState={gameState.abilityTargetingState}
-        onTargetCard={gameActions.targetCardForAbility}
+        onTargetCardInHand={gameActions.targetCardInHandForAbility}
+        onTargetCardOnTable={gameActions.targetCardOnTableForAbility}
+        onCancelAbility={gameActions.cancelAbilityTargeting}
+        onUndoAbilityUse={gameActions.onUndoAbilityUse}
+        abilityUsedThisTurn={gameState.abilityUsedThisTurn}
         revealedAiHand={gameState.revealedAiHand}
         cardForElementalChoice={gameState.cardForElementalChoice}
         elementalClash={gameState.elementalClash}

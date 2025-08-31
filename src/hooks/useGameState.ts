@@ -81,6 +81,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     const [humanAbilityCharges, setHumanAbilityCharges] = useState(0);
     const [aiAbilityCharges, setAiAbilityCharges] = useState(0);
     const [abilityTargetingState, setAbilityTargetingState] = useState<'incinerate' | 'fortify' | 'cyclone' | null>(null);
+    const [abilityUsedThisTurn, setAbilityUsedThisTurn] = useState<{ ability: AbilityType; originalCard: Card } | null>(null);
     const [revealedAiHand, setRevealedAiHand] = useState<Card[] | null>(null);
     const [aiKnowledgeOfHumanHand, setAiKnowledgeOfHumanHand] = useState<Card[] | null>(null);
 
@@ -91,6 +92,8 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     const isProcessing = isAiThinkingMove || isResolvingTrick;
     const lastResolvedTrick = useRef<string[]>([]);
     const trickCounter = useRef(0);
+    const clashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const resolveTrickCallbackRef = useRef<(() => void) | null>(null);
     
     useEffect(() => {
         const lockOrientation = async () => {
@@ -194,7 +197,6 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
             waifu_name: newWaifu.name, language, gameplayMode, difficulty, is_chat_enabled: isChatEnabled,
         });
         
-        // Reset common states
         setAiEmotionalState('neutral');
         setCardsOnTable([]);
         setHumanScore(0);
@@ -209,11 +211,12 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         setAiAbilityCharges(0);
         setTrickHistory([]);
         setLastTrick(null);
+        setAbilityUsedThisTurn(null);
         
         if (gameplayMode === 'classic') {
             setCurrentWaifu(newWaifu);
             startClassicGame(newWaifu);
-        } else { // Roguelike
+        } else {
             startRoguelikeRun(newWaifu);
         }
 
@@ -237,6 +240,10 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     const selectCardForPlay = (card: Card) => {
         if (turn !== 'human' || isProcessing || abilityTargetingState) return;
     
+        if (abilityUsedThisTurn) {
+            setAbilityUsedThisTurn(null); // Confirm the action, lock it in
+        }
+
         if (gameplayMode === 'roguelike' && card.element) {
             setCardForElementalChoice(card);
         } else {
@@ -256,8 +263,13 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
 
     const activateHumanAbility = () => {
         if (!roguelikeState.humanAbility || humanAbilityCharges < 2 || turn !== 'human' || isProcessing) return;
-        setMessage(T.abilityUsed(T.scoreYou, T[roguelikeState.humanAbility]));
+
+        if (roguelikeState.humanAbility === 'incinerate' && (cardsOnTable.length !== 1 || trickStarter === 'human')) {
+            return; 
+        }
+
         if (roguelikeState.humanAbility === 'tide') {
+            setMessage(T.abilityUsed(T.scoreYou, T.tide));
             setRevealedAiHand([...aiHand]);
             setTimeout(() => setRevealedAiHand(null), 5000);
             setHumanAbilityCharges(0);
@@ -266,27 +278,48 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         }
     };
 
-    const targetCardForAbility = (card: Card) => {
-        if (!abilityTargetingState) return;
-        switch(abilityTargetingState) {
-            case 'incinerate':
-                setAiHand(prev => prev.map(c => c.id === card.id ? {...c, isBurned: true} : c));
-                break;
-            case 'fortify':
-                setHumanHand(prev => prev.map(c => c.id === card.id ? {...c, isFortified: true} : c));
-                break;
-            case 'cyclone':
-                if (deck.length > 0) {
-                    const newDeck = [...deck, card];
-                    const shuffled = shuffleDeck(newDeck);
-                    const newCard = shuffled.shift()!;
-                    setHumanHand(prev => [...prev.filter(c => c.id !== card.id), newCard]);
-                    setDeck(shuffled);
-                }
-                break;
+    const cancelAbilityTargeting = () => {
+        setAbilityTargetingState(null);
+    };
+
+    const targetCardInHandForAbility = (card: Card) => {
+        if (!abilityTargetingState || abilityTargetingState === 'incinerate') return;
+        
+        if (abilityTargetingState === 'fortify') {
+            setHumanHand(prev => prev.map(c => c.id === card.id ? {...c, isFortified: true} : c));
+        } else if (abilityTargetingState === 'cyclone') {
+            if (deck.length > 0) {
+                const newDeck = [...deck, card];
+                const shuffled = shuffleDeck(newDeck);
+                const newCard = shuffled.shift()!;
+                setHumanHand(prev => [...prev.filter(c => c.id !== card.id), newCard]);
+                setDeck(shuffled);
+            }
         }
         setAbilityTargetingState(null);
         setHumanAbilityCharges(0);
+    };
+
+    const targetCardOnTableForAbility = () => {
+        if (abilityTargetingState !== 'incinerate' || cardsOnTable.length !== 1) return;
+        const cardToBurn = cardsOnTable[0];
+        
+        setAbilityUsedThisTurn({ ability: 'incinerate', originalCard: cardToBurn });
+        setCardsOnTable([{ ...cardToBurn, isBurned: true }]);
+        
+        setMessage(T.confirmOrUndoMessage);
+        
+        setAbilityTargetingState(null);
+        setHumanAbilityCharges(0);
+    };
+
+    const onUndoAbilityUse = () => {
+        if (!abilityUsedThisTurn) return;
+
+        setCardsOnTable([abilityUsedThisTurn.originalCard]);
+        setHumanAbilityCharges(2); // Refund charges
+        setAbilityUsedThisTurn(null);
+        setMessage(T.yourTurnMessage); // Reset message
     };
     
     const confirmLeaveGame = () => {
@@ -297,6 +330,17 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     const goToMenu = () => setPhase('menu');
     const handleQuotaExceeded = () => setIsQuotaExceeded(true);
     const continueFromQuotaModal = () => setIsQuotaExceeded(false);
+
+    const forceCloseClashModal = useCallback(() => {
+        if (clashTimeoutRef.current) {
+            clearTimeout(clashTimeoutRef.current);
+            clashTimeoutRef.current = null;
+        }
+        if (resolveTrickCallbackRef.current) {
+            resolveTrickCallbackRef.current();
+            resolveTrickCallbackRef.current = null;
+        }
+    }, []);
 
     useEffect(() => {
         const scoreDiff = aiScore - humanScore;
@@ -313,12 +357,17 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                 setMessage(T.aiThinking(currentWaifu.name));
 
                 if (gameplayMode === 'roguelike' && roguelikeState.aiAbility && aiAbilityCharges >= 2) {
-                    const decision = getAIAbilityDecision(roguelikeState.aiAbility, aiHand, aiKnowledgeOfHumanHand, deck.length);
+                    const decision = getAIAbilityDecision(roguelikeState.aiAbility, aiHand, aiKnowledgeOfHumanHand, deck.length, cardsOnTable);
                     if (decision.useAbility) {
                         setMessage(T.abilityUsed(currentWaifu.name, T[decision.ability]));
                         await new Promise(r => setTimeout(r, 1000));
-                        // ... (AI ability logic remains the same)
+                        
+                        if (decision.ability === 'incinerate' && cardsOnTable.length === 1) {
+                            setCardsOnTable([{ ...cardsOnTable[0], isBurned: true }]);
+                        }
+                        
                         setAiAbilityCharges(0);
+                        await new Promise(r => setTimeout(r, 750));
                     }
                 }
 
@@ -337,13 +386,13 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
             };
             performAiMove();
         }
-    }, [turn, isProcessing, phase, cardsOnTable.length, aiHand, briscolaSuit, difficulty, T, currentWaifu, trickStarter, gameplayMode, roguelikeState.aiAbility, aiAbilityCharges, aiKnowledgeOfHumanHand, deck.length]);
+    }, [turn, isProcessing, phase, cardsOnTable.length, cardsOnTable, aiHand, briscolaSuit, difficulty, T, currentWaifu, trickStarter, gameplayMode, roguelikeState.aiAbility, aiAbilityCharges, aiKnowledgeOfHumanHand, deck.length]);
 
     // Trick Resolution Logic
     useEffect(() => {
         if (cardsOnTable.length !== 2 || phase !== 'playing' || isResolvingTrick) return;
         
-        const resolveTrick = async () => {
+        const resolveTrick = () => {
             setIsResolvingTrick(true);
 
             const currentTrickIds = cardsOnTable.map(c => c.id).sort();
@@ -381,7 +430,6 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                         setElementalClash(currentClashResult);
                         clashDelay = 5000;
                     } else {
-                        // Same element or no weakness, roll dice
                         const humanRoll = Math.floor(Math.random() * 100) + 1;
                         const aiRoll = Math.floor(Math.random() * 100) + 1;
                         const rollWinner = humanRoll > aiRoll ? 'human' : aiRoll > humanRoll ? 'ai' : 'tie';
@@ -404,7 +452,13 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                 setLastTrickHighlights({ human: humanStatus, ai: aiStatus });
             }
 
-            setTimeout(() => {
+            const proceed = () => {
+                if (clashTimeoutRef.current) {
+                    clearTimeout(clashTimeoutRef.current);
+                    clashTimeoutRef.current = null;
+                }
+                resolveTrickCallbackRef.current = null;
+
                 trickCounter.current++;
                 if (revealedAiHand && trickCounter.current > 3) {
                     setRevealedAiHand(null);
@@ -449,7 +503,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                 setTrickHistory(prev => [...prev, newHistoryEntry]);
                 setLastTrick(newHistoryEntry);
 
-                const proceed = () => {
+                const continueAfterMessage = () => {
                     setLastTrickHighlights({ human: 'unset', ai: 'unset' });
                     setCardsOnTable([]);
                     setElementalClash(null);
@@ -481,20 +535,22 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                     setIsResolvingTrick(false);
                 }
 
-                // FIX: Use a strict boolean check that correctly handles legacy string values from localStorage.
-                if (winner === 'ai' && isChatEnabled && String(waitForWaifuResponse) === 'true') {
+                if (winner === 'ai' && isChatEnabled && waitForWaifuResponse === true) {
                     setIsAiGeneratingMessage(true);
                     getAIWaifuTrickMessage(currentWaifu, aiEmotionalState, humanCard, aiCard, pointsForTrick, language)
                         .then(({ message }) => showWaifuBubble(message))
                         .catch(console.error)
                         .finally(() => {
                             setIsAiGeneratingMessage(false);
-                            proceed();
+                            continueAfterMessage();
                         });
                 } else {
-                    proceed();
+                    continueAfterMessage();
                 }
-            }, clashDelay);
+            };
+
+            resolveTrickCallbackRef.current = proceed;
+            clashTimeoutRef.current = setTimeout(proceed, clashDelay);
         };
         resolveTrick();
     }, [cardsOnTable, phase, isResolvingTrick, T, aiEmotionalState, briscolaCard, briscolaSuit, currentWaifu, deck, difficulty, isChatEnabled, language, trickStarter, waitForWaifuResponse, showWaifuBubble, gameplayMode, revealedAiHand]);
@@ -564,13 +620,13 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
             humanAbility: roguelikeState.humanAbility, 
             aiAbility: roguelikeState.aiAbility, 
             humanAbilityCharges, aiAbilityCharges,
-            abilityTargetingState, revealedAiHand, roguelikeState,
+            abilityTargetingState, abilityUsedThisTurn, revealedAiHand, roguelikeState,
             cardForElementalChoice,
             trickHistory, lastTrick,
         },
         gameActions: {
-            startGame, activateHumanAbility, targetCardForAbility, confirmLeaveGame, goToMenu, handleQuotaExceeded, continueFromQuotaModal, startRoguelikeLevel, setRoguelikeState, setPhase,
-            selectCardForPlay, confirmCardPlay, cancelCardPlay,
+            startGame, activateHumanAbility, targetCardInHandForAbility, targetCardOnTableForAbility, cancelAbilityTargeting, onUndoAbilityUse, confirmLeaveGame, goToMenu, handleQuotaExceeded, continueFromQuotaModal, startRoguelikeLevel, setRoguelikeState, setPhase,
+            selectCardForPlay, confirmCardPlay, cancelCardPlay, forceCloseClashModal
         }
     };
 };
