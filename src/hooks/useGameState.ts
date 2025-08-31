@@ -14,7 +14,7 @@ import { initializeRoguelikeDeck, assignAbilities, getRoguelikeTrickWinner, calc
 import { getCardPoints, shuffleDeck } from '../core/utils';
 import { QuotaExceededError, getAIWaifuTrickMessage, getAIGenericTeasingMessage } from '../core/gemini';
 import { getLocalAIMove, getFallbackWaifuMessage, getAIAbilityDecision } from '../core/localAI';
-import { WAIFUS } from '../core/waifus';
+import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
 import type { GamePhase, Card, Player, Waifu, GameEmotionalState, Suit, Element, AbilityType, RoguelikeState, RoguelikeEvent } from '../core/types';
 import type { useGameSettings } from './useGameSettings';
 
@@ -29,6 +29,7 @@ const INITIAL_ROGUELIKE_STATE: RoguelikeState = {
     events: [],
     humanAbility: null,
     aiAbility: null,
+    encounteredWaifus: [],
 };
 
 const ROGUELIKE_LEVEL_REWARDS = [0, 25, 50, 75, 150];
@@ -104,16 +105,37 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         setPhase('playing');
     }, []);
 
-    const startRoguelikeRun = useCallback((newWaifu: Waifu) => {
-        posthog.capture('roguelike_run_started', { waifu_name: newWaifu.name, difficulty });
+    const startRoguelikeRun = useCallback((firstWaifu: Waifu) => {
+        posthog.capture('roguelike_run_started', { waifu_name: firstWaifu.name, difficulty });
+        setCurrentWaifu(firstWaifu);
         const { humanAbility, aiAbility } = assignAbilities();
-        setRoguelikeState({ ...INITIAL_ROGUELIKE_STATE, currentLevel: 1, humanAbility, aiAbility });
+        setRoguelikeState({
+            ...INITIAL_ROGUELIKE_STATE,
+            currentLevel: 1,
+            humanAbility,
+            aiAbility,
+            encounteredWaifus: [firstWaifu.name],
+        });
         setPhase('roguelike-map');
     }, [difficulty, posthog]);
     
     const startRoguelikeLevel = useCallback(() => {
         const level = roguelikeState.currentLevel;
-        if (level === 0 || !currentWaifu) return;
+        if (level === 0) return;
+
+        let nextWaifu: Waifu;
+        if (level >= 4) {
+            nextWaifu = BOSS_WAIFU;
+        } else {
+            const availableWaifus = WAIFUS.filter(w => !roguelikeState.encounteredWaifus.includes(w.name));
+            const pool = availableWaifus.length > 0 ? availableWaifus : WAIFUS;
+            nextWaifu = pool[Math.floor(Math.random() * pool.length)];
+        }
+        setCurrentWaifu(nextWaifu);
+        setRoguelikeState(prev => ({
+            ...prev,
+            encounteredWaifus: [...prev.encounteredWaifus, nextWaifu.name]
+        }));
     
         let newDeck = shuffleDeck(createDeck());
         newDeck = initializeRoguelikeDeck(newDeck, level);
@@ -148,9 +170,9 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         const starter: Player = Math.random() < 0.5 ? 'human' : 'ai';
         setTurn(starter);
         setTrickStarter(starter);
-        setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(currentWaifu.name));
+        setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(nextWaifu.name));
         setPhase('playing');
-    }, [roguelikeState, currentWaifu, T]);
+    }, [roguelikeState, T]);
 
     const startGame = useCallback((selectedWaifu: Waifu | null) => {
         const bgIndex = Math.floor(Math.random() * 21) + 1;
@@ -160,7 +182,6 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         
         playSound('game-start');
         const newWaifu = selectedWaifu ?? WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
-        setCurrentWaifu(newWaifu);
         
         posthog.capture('game_started', {
             waifu_name: newWaifu.name, language, gameplayMode, difficulty, is_chat_enabled: isChatEnabled,
@@ -179,9 +200,9 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         trickCounter.current = 0;
         setHumanAbilityCharges(0);
         setAiAbilityCharges(0);
-        setRoguelikeState(INITIAL_ROGUELIKE_STATE);
         
         if (gameplayMode === 'classic') {
+            setCurrentWaifu(newWaifu);
             startClassicGame(newWaifu);
         } else { // Roguelike
             startRoguelikeRun(newWaifu);

@@ -49,4 +49,5 @@ export type RoguelikeState = {
     events: RoguelikeEvent[];
     humanAbility: AbilityType | null;
     aiAbility: AbilityType | null;
+    encounteredWaifus: string[];
 };

@@ -95,7 +95,7 @@ export const useChat = ({
             }
         }
         
-        // FIX: The `ai.chats.create` method was called without arguments, causing an error. It has been updated to pass the required configuration object, including the model, system instructions, and chat history.
+        // FIX: The `ai.chats.create` method expects a configuration object as its argument.
         const newChat = ai.chats.create({
             model: 'gemini-2.5-flash',
             config: { systemInstruction },

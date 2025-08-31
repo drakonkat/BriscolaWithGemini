@@ -163,6 +163,14 @@ body {
   margin-right: auto;
 }
 
+.menu-primary-settings {
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
 .menu-settings {
   margin-top: 2rem;
   display: flex;
@@ -297,6 +305,24 @@ input:checked + .slider:before {
   box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
+.waifu-card.selected, .random-waifu-card.selected {
+  transform: translateY(-10px) scale(1.05);
+  background-color: rgba(76, 175, 80, 0.2);
+  box-shadow: 0 0 15px var(--primary-accent), 0 8px 20px rgba(0,0,0,0.3);
+  border-color: var(--primary-accent);
+}
+
+.waifu-card.disabled, .random-waifu-card.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    filter: grayscale(80%);
+}
+.waifu-card.disabled:hover, .random-waifu-card.disabled:hover {
+    transform: none;
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+}
+
 .waifu-card img {
   width: 120px;
   height: 120px;
@@ -329,6 +355,37 @@ input:checked + .slider:before {
 .random-waifu-card h3 {
   font-size: 1.4rem;
 }
+
+.start-game-container {
+    margin-top: 2.5rem;
+}
+
+.start-game-button {
+    font-size: 1.8rem;
+    padding: 1rem 3rem;
+    border-radius: 12px;
+    border: none;
+    background-color: var(--primary-accent);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.start-game-button:hover:not(:disabled) {
+    background-color: var(--primary-accent-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.start-game-button:disabled {
+    background-color: #555;
+    color: #999;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
 
 .gallery-promo-container {
   margin: 2.5rem 0;

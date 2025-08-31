@@ -73,7 +73,7 @@ export function App() {
               uiActions.showSnackbar(T.fastModeEnabled, 'success');
             }
           }}
-          onWaifuSelected={gameActions.startGame}
+          onStartGame={gameActions.startGame}
           onShowRules={() => uiActions.openModal('rules')}
           onShowPrivacy={() => uiActions.openModal('privacy')}
           onShowTerms={() => uiActions.openModal('terms')}

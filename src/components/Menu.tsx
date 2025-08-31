@@ -2,6 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
+import { useState } from 'react';
 import { translations } from '../core/translations';
 import type { Language, Waifu, GameplayMode, Difficulty } from '../core/types';
 import { WaifuSelector } from './WaifuSelector';
@@ -20,7 +21,7 @@ interface MenuProps {
     onDifficultyChange: (difficulty: Difficulty) => void;
     onChatEnabledChange: (enabled: boolean) => void;
     onWaitForWaifuResponseChange: (enabled: boolean) => void;
-    onWaifuSelected: (waifu: Waifu | null) => void;
+    onStartGame: (waifu: Waifu | null) => void;
     onShowRules: () => void;
     onShowPrivacy: () => void;
     onShowTerms: () => void;
@@ -42,7 +43,7 @@ export const Menu = ({
     onDifficultyChange,
     onChatEnabledChange,
     onWaitForWaifuResponseChange,
-    onWaifuSelected, 
+    onStartGame, 
     onShowRules, 
     onShowPrivacy, 
     onShowTerms, 
@@ -51,6 +52,23 @@ export const Menu = ({
     onShowGallery,
 }: MenuProps) => {
     const T = translations[language];
+    const [selectedWaifu, setSelectedWaifu] = useState<Waifu | null>(null);
+    const [isRandomCardSelected, setIsRandomCardSelected] = useState(false);
+
+    const handleWaifuSelection = (waifu: Waifu | null) => {
+        if (waifu === null) { // Random selected
+            setSelectedWaifu(null);
+            setIsRandomCardSelected(true);
+        } else {
+            setSelectedWaifu(waifu);
+            setIsRandomCardSelected(false);
+        }
+    };
+
+    const handleStartGame = () => {
+        onStartGame(selectedWaifu);
+    };
+
 
     return (
         <div className="menu">
@@ -95,7 +113,51 @@ export const Menu = ({
                     </button>
                 </div>
                 
-                <WaifuSelector language={language} onWaifuSelected={onWaifuSelected} />
+                 <div className="menu-primary-settings">
+                    <div className="settings-selector">
+                        <label htmlFor="game-mode-select">{T.gameModeLabel}:</label>
+                        <select 
+                            id="game-mode-select" 
+                            value={gameplayMode} 
+                            onChange={(e) => {
+                                const newMode = e.target.value as GameplayMode;
+                                onGameplayModeChange(newMode);
+                                if (newMode === 'roguelike') {
+                                    handleWaifuSelection(null); // Autoselect Random
+                                }
+                            }}
+                        >
+                            <option value="classic">{T.gameModeClassic}</option>
+                            <option value="roguelike">{T.gameModeRoguelike}</option>
+                        </select>
+                    </div>
+                     <div className="settings-selector">
+                        <label htmlFor="difficulty-select">{T.difficultyLabel}:</label>
+                        <select id="difficulty-select" value={difficulty} onChange={(e) => onDifficultyChange(e.target.value as Difficulty)}>
+                            <option value="easy">{T.difficultyEasy}</option>
+                            <option value="medium">{T.difficultyMedium}</option>
+                            <option value="hard">{T.difficultyHard}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <WaifuSelector 
+                    language={language}
+                    onWaifuSelected={handleWaifuSelection}
+                    selectedWaifu={selectedWaifu}
+                    isRandomSelected={isRandomCardSelected}
+                    disabled={gameplayMode === 'roguelike'}
+                />
+
+                <div className="start-game-container">
+                    <button 
+                        className="start-game-button" 
+                        onClick={handleStartGame} 
+                        disabled={!selectedWaifu && !isRandomCardSelected}
+                    >
+                        {T.startGame}
+                    </button>
+                </div>
 
                 <div className="menu-settings">
                     <div className="settings-selector">
@@ -111,21 +173,6 @@ export const Menu = ({
                             <input id="wait-toggle" type="checkbox" checked={waitForWaifuResponse} onChange={(e) => onWaitForWaifuResponseChange(e.target.checked)} disabled={!isChatEnabled} />
                             <span className="slider"></span>
                         </label>
-                    </div>
-                     <div className="settings-selector">
-                        <label htmlFor="difficulty-select">{T.difficultyLabel}:</label>
-                        <select id="difficulty-select" value={difficulty} onChange={(e) => onDifficultyChange(e.target.value as Difficulty)}>
-                            <option value="easy">{T.difficultyEasy}</option>
-                            <option value="medium">{T.difficultyMedium}</option>
-                            <option value="hard">{T.difficultyHard}</option>
-                        </select>
-                    </div>
-                     <div className="settings-selector">
-                        <label htmlFor="game-mode-select">{T.gameModeLabel}:</label>
-                        <select id="game-mode-select" value={gameplayMode} onChange={(e) => onGameplayModeChange(e.target.value as GameplayMode)}>
-                            <option value="classic">{T.gameModeClassic}</option>
-                            <option value="roguelike">{T.gameModeRoguelike}</option>
-                        </select>
                     </div>
                      <div className="settings-selector">
                         <label htmlFor="language-select">{T.language}:</label>
