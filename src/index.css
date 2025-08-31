@@ -2307,6 +2307,10 @@ input:checked + .slider:before {
 }
 
 /* Event Modal */
+.event-modal {
+    max-height: 85vh;
+    overflow-y: auto;
+}
 .event-modal p {
     font-size: 1.1rem;
     color: #ccc;
