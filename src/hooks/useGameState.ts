@@ -407,6 +407,8 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
 
             const humanCard = trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1];
             const aiCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
+            
+            const winner = gameplayMode === 'roguelike' ? getRoguelikeTrickWinner(cardsOnTable, trickStarter, briscolaSuit) : getClassicTrickWinner(cardsOnTable, trickStarter, briscolaSuit);
 
             let clashDelay = 1000;
             let humanPowerActive = false;
@@ -463,12 +465,10 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                 if (revealedAiHand && trickCounter.current > 3) {
                     setRevealedAiHand(null);
                 }
-
-                const winner = gameplayMode === 'roguelike' ? getRoguelikeTrickWinner(cardsOnTable, trickStarter, briscolaSuit) : getClassicTrickWinner(cardsOnTable, trickStarter, briscolaSuit);
                 
                 let pointsForTrick = 0;
                 if (gameplayMode === 'roguelike') {
-                    const { pointsForTrick: roguelikePoints, humanCardPoints, aiCardPoints } = calculateRoguelikeTrickPoints(humanCard, aiCard, humanPowerActive, aiPowerActive);
+                    const { pointsForTrick: roguelikePoints, humanCardPoints, aiCardPoints } = calculateRoguelikeTrickPoints(humanCard, aiCard, humanPowerActive, aiPowerActive, winner);
                     pointsForTrick = roguelikePoints;
                     
                     if (winner === 'ai' && humanPowerActive && humanCard.element === 'earth') setHumanScore(s => s + humanCardPoints);

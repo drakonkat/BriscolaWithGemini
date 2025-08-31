@@ -134,7 +134,7 @@ export const translations = {
     earth: "Terra",
     suitIs: (suit: string, element: string) => `${suit} è ${element}`,
     fireDescription: "Vinci il turno con una carta Fuoco per +3 punti bonus.",
-    waterDescription: "Dimezza i punti della carta avversaria in questo turno.",
+    waterDescription: "Se perdi il turno, l'effetto dimezza i punti della carta vincente.",
     airDescription: "Gioca una carta Aria per annullare i punti di questo turno.",
     earthDescription: "Se perdi il turno, recupera i punti della tua carta Terra.",
     elementalClash: {
@@ -480,7 +480,7 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
     earth: "Earth",
     suitIs: (suit: string, element: string) => `${suit} is ${element}`,
     fireDescription: "Win the trick with a Fire card for +3 bonus points.",
-    waterDescription: "Halves the opponent's card points for this trick.",
+    waterDescription: "If you lose the trick, the effect halves the winning card's points.",
     airDescription: "Play an Air card to nullify this trick's points.",
     earthDescription: "If you lose the trick, recover your Earth card's points.",
     elementalClash: {

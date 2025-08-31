@@ -107,15 +107,20 @@ export const determineWeaknessWinner = (humanElement: Element, aiElement: Elemen
  * @param aiCard The card played by the AI.
  * @param humanPowerActive Whether the human player's elemental power is active.
  * @param aiPowerActive Whether the AI player's elemental power is active.
+ * @param winner The winner of the trick.
  * @returns An object with the total points for the trick and the individual card points after modifications.
  */
-export const calculateRoguelikeTrickPoints = (humanCard: Card, aiCard: Card, humanPowerActive: boolean, aiPowerActive: boolean) => {
+export const calculateRoguelikeTrickPoints = (humanCard: Card, aiCard: Card, humanPowerActive: boolean, aiPowerActive: boolean, winner: Player) => {
     let humanCardPoints = getCardPoints(humanCard);
     let aiCardPoints = getCardPoints(aiCard);
 
-    // Water Power: Halves opponent's card points
-    if (humanPowerActive && humanCard.element === 'water') aiCardPoints = Math.floor(aiCardPoints / 2);
-    if (aiPowerActive && aiCard.element === 'water') humanCardPoints = Math.floor(humanCardPoints / 2);
+    // Water Power: Halves opponent's card points only if the user of the power loses the trick
+    if (humanPowerActive && humanCard.element === 'water' && winner === 'ai') {
+        aiCardPoints = Math.floor(aiCardPoints / 2);
+    }
+    if (aiPowerActive && aiCard.element === 'water' && winner === 'human') {
+        humanCardPoints = Math.floor(humanCardPoints / 2);
+    }
 
     let pointsForTrick = humanCardPoints + aiCardPoints;
 
