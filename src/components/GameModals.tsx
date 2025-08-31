@@ -116,7 +116,11 @@ export const GameModals = ({
                     <div className="game-over-modal">
                         <h2>{gameState.gameResult === 'human' ? TR.runCompleted : TR.runFailed}</h2>
                         <p>{gameState.gameResult === 'human' ? TR.runCompletedMessage(gameState.lastGameWinnings) : TR.runFailedMessage(gameState.lastGameWinnings)}</p>
-                        <button onClick={() => gameActions.setPhase('roguelike-map')}>{TR.backToMap}</button>
+                        {gameState.gameResult === 'ai' ? (
+                            <button onClick={gameActions.goToMenu}>{T.backToMenu}</button>
+                        ) : (
+                            <button onClick={() => gameActions.setPhase('roguelike-map')}>{TR.backToMap}</button>
+                        )}
                     </div>
                 </div>
             )}

@@ -595,7 +595,23 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                         setPhase('gameOver'); // Special Game Over for roguelike win
                     }
                 } else { // Lost the level
-                    const consolationCoins = Math.round(roguelikeState.runCoins * 0.25);
+                    let consolationCoins = 0;
+                    if (roguelikeState.currentLevel === 1) {
+                        switch (difficulty) {
+                            case 'easy':
+                                consolationCoins = 10;
+                                break;
+                            case 'medium':
+                                consolationCoins = 20;
+                                break;
+                            case 'hard':
+                                consolationCoins = 30;
+                                break;
+                        }
+                    } else {
+                        consolationCoins = Math.round(roguelikeState.runCoins * 0.25);
+                    }
+                    
                     onGameEnd(consolationCoins);
                     setLastGameWinnings(consolationCoins);
                     setGameResult('ai'); // A loss for the run
