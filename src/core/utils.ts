@@ -31,3 +31,18 @@ export const getCardPoints = (card: Card): number => {
   }
   return POINTS[card.value];
 };
+
+/**
+ * Shuffles an array in place using the Fisher-Yates algorithm.
+ * This function is generic and can be used for any array type.
+ * @param array The array to shuffle.
+ * @returns A new shuffled array.
+ */
+export const shuffleDeck = <T>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};

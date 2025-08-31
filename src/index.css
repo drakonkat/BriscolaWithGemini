@@ -733,6 +733,7 @@ input:checked + .slider:before {
   max-width: 90%;
   width: 500px;
   cursor: default;
+  position: relative;
 }
 .game-over-modal h2, .rules-modal h2 {
   font-size: 2rem;
@@ -2175,4 +2176,60 @@ input:checked + .slider:before {
     min-width: 90%;
     font-size: 0.9rem;
   }
+}
+
+/* --- Modal Close Button --- */
+.modal-close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0.5rem;
+  line-height: 0;
+  transition: color 0.2s, transform 0.2s;
+  z-index: 10;
+}
+.modal-close-button:hover, .modal-close-button:focus {
+  color: white;
+  transform: scale(1.1);
+  outline: none;
+}
+.modal-close-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* --- Support Modal Poll --- */
+.support-modal-poll {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #444;
+}
+.support-modal-poll h3 {
+  font-size: 1.3rem;
+  color: #a0d8a2;
+  margin-bottom: 0.75rem;
+}
+.support-modal-poll p {
+  font-size: 0.95rem;
+  color: #ccc;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+.support-modal-poll .poll-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+.support-modal-poll .poll-actions button {
+  min-width: 100px;
+  margin-top: 0;
+}
+.support-modal-poll .poll-thanks {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--primary-accent);
 }

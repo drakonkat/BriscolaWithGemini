@@ -174,8 +174,13 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
     supportModal: {
         title: "Supporta il Progetto",
         message: "Waifu Briscola è un progetto gratuito. Le tue donazioni aiutano a coprire i costi dell'IA per tutti. In alternativa, facci sapere se saresti interessato a un abbonamento personale per un accesso illimitato!",
-        subscriptionButton: "Pagherei per un abbonamento",
-        subscriptionInterestThanks: "Grazie per il tuo feedback!",
+        subscriptionPoll: {
+            title: "Saresti interessato a un abbonamento?",
+            description: "La tua risposta è anonima e ci aiuta a capire l'interesse per un futuro abbonamento con accesso illimitato, per sostenere il progetto. Per favore, rispondi onestamente!",
+            yes: "Sì",
+            no: "No",
+            thanks: "Grazie mille per il tuo prezioso feedback!"
+        }
     },
     // Gallery
     gallery: {
@@ -448,8 +453,13 @@ Be creative, unique, and in character. The response must be short (1-2 sentences
     supportModal: {
         title: "Support the Project",
         message: "Waifu Briscola is a free project. Your donations help cover the AI costs for everyone. Alternatively, let us know if you'd be interested in a personal subscription for unlimited access!",
-        subscriptionButton: "I'd Pay for a Subscription",
-        subscriptionInterestThanks: "Thanks for your feedback!",
+        subscriptionPoll: {
+            title: "Would you be interested in a subscription?",
+            description: "Your answer is anonymous and helps us gauge interest in a future subscription with unlimited access to support the project. Please answer honestly!",
+            yes: "Yes",
+            no: "No",
+            thanks: "Thank you very much for your valuable feedback!"
+        }
     },
     // Gallery
     gallery: {

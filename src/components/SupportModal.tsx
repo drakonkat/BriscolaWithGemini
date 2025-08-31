@@ -8,11 +8,12 @@ import type { Language } from '../core/types';
 interface SupportModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubscriptionInterest: () => void;
+    onVote: (vote: boolean) => void;
+    hasVoted: boolean;
     language: Language;
 }
 
-export const SupportModal = ({ isOpen, onClose, onSubscriptionInterest, language }: SupportModalProps) => {
+export const SupportModal = ({ isOpen, onClose, onVote, hasVoted, language }: SupportModalProps) => {
     if (!isOpen) {
         return null;
     }
@@ -26,6 +27,11 @@ export const SupportModal = ({ isOpen, onClose, onSubscriptionInterest, language
     return (
         <div className="game-over-overlay" onClick={onClose}>
             <div className="game-over-modal" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-close-button" onClick={onClose} aria-label={T_common.close}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
                 <h2>{T.title}</h2>
                 <p>{T.message}</p>
                 <div className="modal-actions">
@@ -37,9 +43,21 @@ export const SupportModal = ({ isOpen, onClose, onSubscriptionInterest, language
                     >
                         <img src={imageUrl} alt={T_common.buyWaifuCoffee} />
                     </a>
-                    <button onClick={onSubscriptionInterest}>
-                        {T.subscriptionButton}
-                    </button>
+                </div>
+                
+                <div className="support-modal-poll">
+                    {!hasVoted ? (
+                        <>
+                            <h3>{T.subscriptionPoll.title}</h3>
+                            <p>{T.subscriptionPoll.description}</p>
+                            <div className="poll-actions">
+                                <button className="button-secondary" onClick={() => onVote(false)}>{T.subscriptionPoll.no}</button>
+                                <button onClick={() => onVote(true)}>{T.subscriptionPoll.yes}</button>
+                            </div>
+                        </>
+                    ) : (
+                        <p className="poll-thanks">{T.subscriptionPoll.thanks}</p>
+                    )}
                 </div>
             </div>
         </div>
