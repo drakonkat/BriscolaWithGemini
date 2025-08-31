@@ -21,8 +21,8 @@ import type { useGameSettings } from './useGameSettings';
 const SCORE_THRESHOLD = 15;
 type GameMode = 'online' | 'fallback';
 type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
+type ArmedAbility = 'fortify' | 'sakura_blessing' | 'rei_analysis' | 'kasumi_gambit';
 
-// FIX: Added missing properties 'followers' and 'followerAbilitiesUsedThisMatch' to INITIAL_ROGUELIKE_STATE to match the RoguelikeState type definition.
 const INITIAL_ROGUELIKE_STATE: RoguelikeState = {
     currentLevel: 0,
     runCoins: 0,
@@ -83,10 +83,12 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     const [lastTrickHighlights, setLastTrickHighlights] = useState<{ human: ElementalEffectStatus, ai: ElementalEffectStatus }>({ human: 'unset', ai: 'unset' });
     const [humanAbilityCharges, setHumanAbilityCharges] = useState(0);
     const [aiAbilityCharges, setAiAbilityCharges] = useState(0);
-    const [abilityTargetingState, setAbilityTargetingState] = useState<'incinerate' | 'fortify' | 'cyclone' | null>(null);
+    const [abilityTargetingState, setAbilityTargetingState] = useState<'incinerate' | 'cyclone' | null>(null);
+    const [abilityArmed, setAbilityArmed] = useState<ArmedAbility | null>(null);
     const [abilityUsedThisTurn, setAbilityUsedThisTurn] = useState<{ ability: AbilityType; originalCard: Card } | null>(null);
     const [revealedAiHand, setRevealedAiHand] = useState<Card[] | null>(null);
-    const [aiKnowledgeOfHumanHand, setAiKnowledgeOfHumanHand] = useState<Card[] | null>(null);
+    const [guaranteedClashWinner, setGuaranteedClashWinner] = useState<Player | null>(null);
+    const [isKasumiModalOpen, setIsKasumiModalOpen] = useState(false);
     const [activeElements, setActiveElements] = useState<Element[]>([]);
 
     // History State
@@ -98,6 +100,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     const trickCounter = useRef(0);
     const clashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const resolveTrickCallbackRef = useRef<(() => void) | null>(null);
+    const aiMoveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     
     useEffect(() => {
         const lockOrientation = async () => {
@@ -116,12 +119,18 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         setDeck(newDeck.slice(6, -1));
         setBriscolaCard(newBriscola);
         setBriscolaSuit(newBriscola.suit);
+
+        // FIX: Randomly assign the starting player for classic mode to prevent the game from getting stuck.
+        const starter: Player = Math.random() < 0.5 ? 'human' : 'ai';
+        setTurn(starter);
+        setTrickStarter(starter);
+        setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
+
         setPhase('playing');
-    }, []);
+    }, [T]);
 
     const startRoguelikeRun = useCallback((firstWaifu: Waifu) => {
         posthog.capture('roguelike_run_started', { waifu_name: firstWaifu.name, difficulty });
-        setCurrentWaifu(firstWaifu);
         const { humanAbility, aiAbility } = assignAbilities();
         setRoguelikeState({
             ...INITIAL_ROGUELIKE_STATE,
@@ -136,6 +145,20 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     const startRoguelikeLevel = useCallback(() => {
         const level = roguelikeState.currentLevel;
         if (level === 0) return;
+
+        // Reset per-match state for a clean start
+        setCardsOnTable([]);
+        setTrickHistory([]);
+        setLastTrick(null);
+        trickCounter.current = 0;
+        lastResolvedTrick.current = [];
+        setAbilityUsedThisTurn(null);
+        setAbilityTargetingState(null);
+        setAbilityArmed(null);
+        setElementalClash(null);
+        setLastTrickHighlights({ human: 'unset', ai: 'unset' });
+        setGuaranteedClashWinner(null);
+        setRoguelikeState(p => ({...p, followerAbilitiesUsedThisMatch: []}));
 
         let nextWaifu: Waifu;
         if (level >= 4) {
@@ -219,6 +242,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         setLastTrick(null);
         setAbilityUsedThisTurn(null);
         setActiveElements([]);
+        setRoguelikeState(INITIAL_ROGUELIKE_STATE);
         
         if (gameplayMode === 'classic') {
             setCurrentWaifu(newWaifu);
@@ -246,17 +270,25 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     
     const selectCardForPlay = (card: Card) => {
         if (turn !== 'human' || isProcessing || abilityTargetingState) return;
-    
+
+        let cardToPlay = card;
+        if (abilityArmed === 'fortify') {
+            cardToPlay = { ...card, isTemporaryBriscola: true };
+            setAbilityArmed(null);
+            setHumanAbilityCharges(0);
+            setMessage(T.yourTurnMessage);
+        }
+
         if (abilityUsedThisTurn) {
             setAbilityUsedThisTurn(null); // Confirm the action, lock it in
         }
 
-        if (gameplayMode === 'roguelike' && card.element) {
-            setCardForElementalChoice(card);
+        if (gameplayMode === 'roguelike' && card.element && !card.isTemporaryBriscola) {
+            setCardForElementalChoice(cardToPlay);
         } else {
             playSound('card-place');
-            setHumanHand(prev => prev.filter(c => c.id !== card.id));
-            setCardsOnTable(prev => [...prev, card]);
+            setHumanHand(prev => prev.filter(c => c.id !== cardToPlay.id));
+            setCardsOnTable(prev => [...prev, cardToPlay]);
     
             if (trickStarter === 'human') {
                 setTurn('ai');
@@ -280,8 +312,10 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
             setRevealedAiHand([...aiHand]);
             setTimeout(() => setRevealedAiHand(null), 5000);
             setHumanAbilityCharges(0);
+        } else if (roguelikeState.humanAbility === 'fortify') {
+            setAbilityArmed('fortify');
         } else {
-            setAbilityTargetingState(roguelikeState.humanAbility);
+            setAbilityTargetingState(roguelikeState.humanAbility as 'incinerate' | 'cyclone');
         }
     };
 
@@ -292,9 +326,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     const targetCardInHandForAbility = (card: Card) => {
         if (!abilityTargetingState || abilityTargetingState === 'incinerate') return;
         
-        if (abilityTargetingState === 'fortify') {
-            setHumanHand(prev => prev.map(c => c.id === card.id ? {...c, isFortified: true} : c));
-        } else if (abilityTargetingState === 'cyclone') {
+        if (abilityTargetingState === 'cyclone') {
             if (deck.length > 0) {
                 const newDeck = [...deck, card];
                 const shuffled = shuffleDeck(newDeck);
@@ -329,6 +361,71 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         setMessage(T.yourTurnMessage); // Reset message
     };
     
+    const activateFollowerAbility = (waifuName: string) => {
+        const T = translations[language];
+        let abilityArmed: ArmedAbility | null = null;
+        let abilityName = '';
+        switch(waifuName) {
+            case 'Sakura': 
+                abilityArmed = 'sakura_blessing'; 
+                abilityName = T.sakura_blessing;
+                break;
+            case 'Rei':
+                 if (aiScore >= 5) {
+                    abilityArmed = 'rei_analysis';
+                    abilityName = T.rei_analysis;
+                }
+                break;
+            case 'Kasumi':
+                abilityArmed = 'kasumi_gambit';
+                abilityName = T.kasumi_gambit;
+                break;
+        }
+
+        if (!abilityArmed) return;
+
+        setAbilityArmed(abilityArmed);
+        setMessage(T.followerAbilityArmed(waifuName, abilityName));
+        
+        // Instant abilities
+        if (abilityArmed === 'rei_analysis') {
+            setHumanScore(p => p + 5);
+            setAiScore(p => p - 5);
+            setRoguelikeState(p => ({...p, followerAbilitiesUsedThisMatch: [...p.followerAbilitiesUsedThisMatch, waifuName]}));
+            setAbilityArmed(null);
+            setMessage(T.yourTurnMessage);
+        } else if (abilityArmed === 'kasumi_gambit') {
+            setIsKasumiModalOpen(true);
+        } else if (abilityArmed === 'sakura_blessing') {
+            setGuaranteedClashWinner('human');
+            setRoguelikeState(p => ({...p, followerAbilitiesUsedThisMatch: [...p.followerAbilitiesUsedThisMatch, waifuName]}));
+            setAbilityArmed(null);
+            setMessage(T.yourTurnMessage);
+        }
+    };
+    
+    const cancelFollowerAbility = () => {
+        setAbilityArmed(null);
+        setMessage(T.yourTurnMessage);
+    };
+
+    const closeKasumiModal = () => {
+        setIsKasumiModalOpen(false);
+        setAbilityArmed(null);
+        setMessage(T.yourTurnMessage);
+    };
+
+    const handleKasumiCardSwap = (cardFromHand: Card) => {
+        if (briscolaCard) {
+            setBriscolaCard(cardFromHand);
+            setBriscolaSuit(cardFromHand.suit);
+            setHumanHand(p => [...p.filter(c => c.id !== cardFromHand.id), briscolaCard]);
+            setRoguelikeState(p => ({...p, followerAbilitiesUsedThisMatch: [...p.followerAbilitiesUsedThisMatch, 'Kasumi']}));
+        }
+        closeKasumiModal();
+    };
+
+
     const confirmLeaveGame = () => {
         posthog.capture('game_left', { human_score: humanScore, ai_score: aiScore });
         setPhase('menu');
@@ -339,318 +436,355 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     const continueFromQuotaModal = () => setIsQuotaExceeded(false);
 
     const forceCloseClashModal = useCallback(() => {
-        if (clashTimeoutRef.current) {
+        if (clashTimeoutRef.current && resolveTrickCallbackRef.current) {
             clearTimeout(clashTimeoutRef.current);
-            clashTimeoutRef.current = null;
-        }
-        if (resolveTrickCallbackRef.current) {
             resolveTrickCallbackRef.current();
+            clashTimeoutRef.current = null;
             resolveTrickCallbackRef.current = null;
         }
     }, []);
 
-    useEffect(() => {
-        const scoreDiff = aiScore - humanScore;
-        let newState: GameEmotionalState = scoreDiff > SCORE_THRESHOLD ? 'winning' : scoreDiff < -SCORE_THRESHOLD ? 'losing' : 'neutral';
-        if (newState !== aiEmotionalState) setAiEmotionalState(newState);
-    }, [humanScore, aiScore, aiEmotionalState]);
-    
-    // AI Move Logic
-    useEffect(() => {
-        if (turn === 'ai' && !isProcessing && phase === 'playing' && cardsOnTable.length < 2 && aiHand.length > 0) {
-            const performAiMove = async () => {
-                if (!briscolaSuit || !currentWaifu) return;
-                setIsAiThinkingMove(true);
-                setMessage(T.aiThinking(currentWaifu.name));
+    const resolveTrick = useCallback(async (humanCard: Card, aiCard: Card, trickWinner: Player) => {
+        const humanCardFinal = cardsOnTable.find(c => c.id === humanCard.id) || humanCard;
+        const aiCardFinal = cardsOnTable.find(c => c.id === aiCard.id) || aiCard;
 
-                if (gameplayMode === 'roguelike' && roguelikeState.aiAbility && aiAbilityCharges >= 2) {
-                    const decision = getAIAbilityDecision(roguelikeState.aiAbility, aiHand, aiKnowledgeOfHumanHand, deck.length, cardsOnTable);
-                    if (decision.useAbility) {
-                        setMessage(T.abilityUsed(currentWaifu.name, T[decision.ability]));
-                        await new Promise(r => setTimeout(r, 1000));
-                        
-                        if (decision.ability === 'incinerate' && cardsOnTable.length === 1) {
-                            setCardsOnTable([{ ...cardsOnTable[0], isBurned: true }]);
-                        }
-                        
-                        setAiAbilityCharges(0);
-                        await new Promise(r => setTimeout(r, 750));
-                    }
+        let points = getCardPoints(humanCardFinal) + getCardPoints(aiCardFinal);
+        
+        let humanPowerActive = humanCardFinal.elementalEffectActivated ?? false;
+        let aiPowerActive = aiCardFinal.elementalEffectActivated ?? false;
+        
+        if (gameplayMode === 'roguelike') {
+            const result = calculateRoguelikeTrickPoints(humanCardFinal, aiCardFinal, humanPowerActive, aiPowerActive, trickWinner);
+            points = result.pointsForTrick;
+
+            if (trickWinner === 'human' && humanPowerActive && humanCardFinal.element === 'fire') {
+                points += 3;
+                setPowerAnimation({type: 'fire', player: 'human'});
+                setTimeout(() => setPowerAnimation(null), 1500);
+            }
+            if (trickWinner === 'ai' && aiPowerActive && aiCardFinal.element === 'fire') {
+                points += 3;
+                setPowerAnimation({type: 'fire', player: 'ai'});
+                setTimeout(() => setPowerAnimation(null), 1500);
+            }
+
+            if (trickWinner === 'ai' && humanPowerActive && humanCardFinal.element === 'earth') {
+                 setHumanScore(prev => prev + result.humanCardPoints);
+            }
+             if (trickWinner === 'human' && aiPowerActive && aiCardFinal.element === 'earth') {
+                 setAiScore(prev => prev + result.aiCardPoints);
+            }
+            if (humanPowerActive) setHumanAbilityCharges(c => Math.min(2, c + 1));
+            if (aiPowerActive) setAiAbilityCharges(c => Math.min(2, c + 1));
+        }
+
+        trickCounter.current += 1;
+        const newTrickHistoryEntry: TrickHistoryEntry = {
+            trickNumber: trickCounter.current,
+            humanCard: humanCardFinal,
+            aiCard: aiCardFinal,
+            winner: trickWinner,
+            points,
+            clashResult: elementalClash ?? undefined,
+        };
+        setTrickHistory(prev => [...prev, newTrickHistoryEntry]);
+        setLastTrick(newTrickHistoryEntry);
+
+        if (trickWinner === 'human') {
+            setHumanScore(prev => prev + points);
+            playSound('trick-win');
+            setMessage(T.youWonTrick(points));
+        } else {
+            setAiScore(prev => prev + points);
+            playSound('trick-lose');
+            setMessage(T.aiWonTrick(currentWaifu?.name ?? 'AI', points));
+        }
+        
+        setTurn(trickWinner);
+        setTrickStarter(trickWinner);
+        setElementalClash(null);
+        setLastTrickHighlights({ human: 'unset', ai: 'unset' });
+
+        if (isChatEnabled && !isQuotaExceeded && gameMode === 'online' && currentWaifu) {
+            if (trickWinner === 'ai' && waitForWaifuResponse) {
+                setIsAiGeneratingMessage(true);
+                try {
+                    const { message } = await getAIWaifuTrickMessage(currentWaifu, aiEmotionalState, humanCardFinal, aiCardFinal, points, language);
+                    showWaifuBubble(message);
+                } catch (e) {
+                    if (e instanceof QuotaExceededError) handleQuotaExceeded();
+                } finally {
+                    setIsAiGeneratingMessage(false);
+                }
+            } else if (trickCounter.current > 1 && Math.random() < 0.25) { // 25% chance for random tease after trick 1
+                getAIGenericTeasingMessage(currentWaifu, aiEmotionalState, aiScore, humanScore, language)
+                    .then(({message}) => showWaifuBubble(message))
+                    .catch(e => { if (e instanceof QuotaExceededError) handleQuotaExceeded(); });
+            }
+        }
+        
+        // Wait for message to display, then draw cards
+        setTimeout(() => {
+            const newDeck = [...deck];
+            let newHumanHand = [...humanHand];
+            let newAiHand = [...aiHand];
+            let newBriscolaCard = briscolaCard;
+
+            const drawOrder: Player[] = trickWinner === 'human' ? ['human', 'ai'] : ['ai', 'human'];
+
+            for (const player of drawOrder) {
+                let cardDrawn = null;
+                if (newDeck.length > 0) {
+                    cardDrawn = newDeck.shift()!;
+                } else if (newBriscolaCard) {
+                    cardDrawn = newBriscolaCard;
+                    newBriscolaCard = null; // Briscola card is taken
                 }
 
-                const aiCardToPlay = await new Promise<Card>(r => setTimeout(() => r(getLocalAIMove(aiHand, briscolaSuit, cardsOnTable, difficulty)), 750));
-                
-                playSound('card-place');
-                setAiHand(prev => prev.filter(c => c.id !== aiCardToPlay.id));
-                setCardsOnTable(prev => [...prev, aiCardToPlay]);
+                if (cardDrawn) {
+                    if (player === 'human') {
+                        newHumanHand.push(cardDrawn);
+                    } else {
+                        newAiHand.push(cardDrawn);
+                    }
+                }
+            }
+            
+            setHumanHand(newHumanHand);
+            setAiHand(newAiHand);
+            setDeck(newDeck);
+            setBriscolaCard(newBriscolaCard);
+            setCardsOnTable([]);
+            setIsResolvingTrick(false);
 
+            if(trickWinner === 'human') {
+                setMessage(T.yourTurnMessage);
+            }
+
+        }, 1500);
+
+    }, [T, currentWaifu, deck, humanHand, aiHand, briscolaCard, isChatEnabled, gameMode, isQuotaExceeded, aiEmotionalState, language, gameplayMode, elementalClash, waitForWaifuResponse, showWaifuBubble, aiScore, humanScore, cardsOnTable]);
+
+    useEffect(() => {
+        if (phase !== 'playing') return;
+    
+        const scoreDiff = humanScore - aiScore;
+        let newState: GameEmotionalState = 'neutral';
+        if (scoreDiff > SCORE_THRESHOLD) newState = 'losing';
+        else if (scoreDiff < -SCORE_THRESHOLD) newState = 'winning';
+        setAiEmotionalState(newState);
+    
+    }, [humanScore, aiScore, phase]);
+
+    useEffect(() => {
+        if (phase !== 'playing' || cardsOnTable.length < 2) return;
+        
+        // Prevent re-resolving the same trick if state updates trigger re-renders
+        const trickId = cardsOnTable.map(c => c.id).sort().join('-');
+        if (lastResolvedTrick.current.includes(trickId)) return;
+        lastResolvedTrick.current.push(trickId);
+    
+        setIsResolvingTrick(true);
+        const humanCard = trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1];
+        const aiCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
+        
+        const resolve = () => {
+            let getTrickWinner = gameplayMode === 'classic' ? getClassicTrickWinner : getRoguelikeTrickWinner;
+            const trickWinner = getTrickWinner(cardsOnTable, trickStarter, briscolaSuit!);
+            resolveTrick(humanCard, aiCard, trickWinner);
+        };
+
+        if (gameplayMode === 'roguelike' && humanCard.element && aiCard.element) {
+            let clashWinner: 'human' | 'ai' | 'tie' | null = null;
+            let finalClashResult: ElementalClashResult | null = null;
+            
+            if (guaranteedClashWinner) {
+                clashWinner = guaranteedClashWinner;
+                setGuaranteedClashWinner(null);
+            } else {
+                clashWinner = determineWeaknessWinner(humanCard.element, aiCard.element);
+            }
+            if (clashWinner) { 
+                finalClashResult = {
+                    type: 'weakness',
+                    winner: clashWinner,
+                    winningElement: clashWinner === 'human' ? humanCard.element! : aiCard.element!,
+                    losingElement: clashWinner === 'human' ? aiCard.element! : humanCard.element!,
+                };
+            } else { // Dice roll
+                const humanRoll = Math.floor(Math.random() * 100) + 1;
+                const aiRoll = Math.floor(Math.random() * 100) + 1;
+                clashWinner = humanRoll > aiRoll ? 'human' : aiRoll > humanRoll ? 'ai' : 'tie';
+                finalClashResult = { type: 'dice', humanRoll, aiRoll, winner: clashWinner };
+            }
+            
+            setElementalClash(finalClashResult);
+            setLastTrickHighlights({
+                human: clashWinner === 'human' ? 'active' : 'inactive',
+                ai: clashWinner === 'ai' ? 'active' : 'inactive'
+            });
+
+            resolveTrickCallbackRef.current = resolve;
+            clashTimeoutRef.current = setTimeout(() => {
+                resolve();
+                clashTimeoutRef.current = null;
+                resolveTrickCallbackRef.current = null;
+            }, 5000);
+
+        } else {
+            // No clash, highlight based on player choice
+            setLastTrickHighlights({
+                human: humanCard.elementalEffectActivated ? 'active' : (humanCard.element ? 'inactive' : 'unset'),
+                ai: aiCard.elementalEffectActivated ? 'active' : (aiCard.element ? 'inactive' : 'unset')
+            });
+            setTimeout(resolve, 500); // Short delay to see cards
+        }
+    
+    }, [cardsOnTable, phase, trickStarter, briscolaSuit, resolveTrick, gameplayMode, guaranteedClashWinner]);
+
+    useEffect(() => {
+        // Cleanup function to clear any pending AI move when the effect re-runs or unmounts
+        const cleanup = () => {
+            if (aiMoveTimeoutRef.current) {
+                clearTimeout(aiMoveTimeoutRef.current);
+                aiMoveTimeoutRef.current = null;
+            }
+        };
+
+        if (phase !== 'playing' || turn !== 'ai') {
+            cleanup();
+            return;
+        }
+        
+        const performAiMove = async () => {
+            if (cardsOnTable.length >= 2 || isProcessing) return;
+
+            if (!currentWaifu) return;
+            
+            setIsAiThinkingMove(true);
+            setMessage(T.aiThinking(currentWaifu.name));
+    
+            let chosenCard: Card;
+            if (isQuotaExceeded || gameMode === 'fallback') {
+                chosenCard = getLocalAIMove(aiHand, briscolaSuit!, cardsOnTable, difficulty);
+            } else {
+                try {
+                    // Gemini AI logic here
+                    chosenCard = getLocalAIMove(aiHand, briscolaSuit!, cardsOnTable, difficulty); // Placeholder
+                } catch (e) {
+                    if (e instanceof QuotaExceededError) handleQuotaExceeded();
+                    chosenCard = getLocalAIMove(aiHand, briscolaSuit!, cardsOnTable, difficulty);
+                }
+            }
+            
+            if (chosenCard.element) {
+                chosenCard = { ...chosenCard, elementalEffectActivated: true };
+            }
+
+            aiMoveTimeoutRef.current = setTimeout(() => {
+                playSound('card-place');
+                setIsAiThinkingMove(false);
+                setMessage(T.aiPlayedYourTurn(currentWaifu.name));
+                setAiHand(prev => prev.filter(c => c.id !== chosenCard.id));
+                setCardsOnTable(prev => [...prev, chosenCard]);
+    
                 if (trickStarter === 'ai') {
                     setTurn('human');
-                    setAiKnowledgeOfHumanHand(null);
-                    setMessage(T.aiPlayedYourTurn(currentWaifu.name));
                 }
-                setIsAiThinkingMove(false);
-            };
-            performAiMove();
-        }
-    }, [turn, isProcessing, phase, cardsOnTable.length, cardsOnTable, aiHand, briscolaSuit, difficulty, T, currentWaifu, trickStarter, gameplayMode, roguelikeState.aiAbility, aiAbilityCharges, aiKnowledgeOfHumanHand, deck.length]);
-
-    // Trick Resolution Logic
-    useEffect(() => {
-        if (cardsOnTable.length !== 2 || phase !== 'playing' || isResolvingTrick) return;
-        
-        const resolveTrick = () => {
-            setIsResolvingTrick(true);
-
-            const currentTrickIds = cardsOnTable.map(c => c.id).sort();
-            if (JSON.stringify(currentTrickIds) === JSON.stringify(lastResolvedTrick.current)) {
-                setIsResolvingTrick(false);
-                return;
-            }
-            if (!briscolaSuit || !currentWaifu) {
-                setIsResolvingTrick(false);
-                return;
-            }
-
-            const humanCard = trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1];
-            const aiCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
-            
-            const winner = gameplayMode === 'roguelike' ? getRoguelikeTrickWinner(cardsOnTable, trickStarter, briscolaSuit) : getClassicTrickWinner(cardsOnTable, trickStarter, briscolaSuit);
-
-            let clashDelay = 1000;
-            let humanPowerActive = false;
-            let aiPowerActive = false;
-            let currentClashResult: ElementalClashResult | null = null;
-
-            if (gameplayMode === 'roguelike') {
-                const isClash = humanCard.element && aiCard.element;
-                let clashWinner: Player | null = null;
-
-                if (isClash) {
-                    const weaknessWinner = determineWeaknessWinner(humanCard.element!, aiCard.element!);
-                    if (weaknessWinner) {
-                        clashWinner = weaknessWinner;
-                        currentClashResult = {
-                            type: 'weakness',
-                            winner: weaknessWinner,
-                            winningElement: weaknessWinner === 'human' ? humanCard.element! : aiCard.element!,
-                            losingElement: weaknessWinner === 'human' ? aiCard.element! : humanCard.element!,
-                        };
-                        setElementalClash(currentClashResult);
-                        clashDelay = 5000;
-                    } else {
-                        const humanRoll = Math.floor(Math.random() * 100) + 1;
-                        const aiRoll = Math.floor(Math.random() * 100) + 1;
-                        const rollWinner = humanRoll > aiRoll ? 'human' : aiRoll > humanRoll ? 'ai' : 'tie';
-                        if(rollWinner !== 'tie') clashWinner = rollWinner;
-                        currentClashResult = { type: 'dice', humanRoll, aiRoll, winner: rollWinner };
-                        setElementalClash(currentClashResult);
-                        clashDelay = 5000;
-                    }
-                } else if (humanCard.element) {
-                    clashWinner = 'human';
-                } else if (aiCard.element) {
-                    clashWinner = 'ai';
-                }
-
-                humanPowerActive = (clashWinner === 'human' && humanCard.elementalEffectActivated !== false);
-                aiPowerActive = (clashWinner === 'ai');
-                
-                const humanStatus = humanCard.element ? (humanPowerActive ? 'active' : 'inactive') : 'unset';
-                const aiStatus = aiCard.element ? (aiPowerActive ? 'active' : 'inactive') : 'unset';
-                setLastTrickHighlights({ human: humanStatus, ai: aiStatus });
-            }
-
-            const proceed = () => {
-                if (clashTimeoutRef.current) {
-                    clearTimeout(clashTimeoutRef.current);
-                    clashTimeoutRef.current = null;
-                }
-                resolveTrickCallbackRef.current = null;
-
-                trickCounter.current++;
-                if (revealedAiHand && trickCounter.current > 3) {
-                    setRevealedAiHand(null);
-                }
-                
-                let pointsForTrick = 0;
-                if (gameplayMode === 'roguelike') {
-                    const { pointsForTrick: roguelikePoints, humanCardPoints, aiCardPoints } = calculateRoguelikeTrickPoints(humanCard, aiCard, humanPowerActive, aiPowerActive, winner);
-                    pointsForTrick = roguelikePoints;
-                    
-                    if (winner === 'ai' && humanPowerActive && humanCard.element === 'earth') setHumanScore(s => s + humanCardPoints);
-                    if (winner === 'human' && aiPowerActive && aiCard.element === 'earth') setAiScore(s => s + aiCardPoints);
-                    
-                    if (winner === 'human' && humanPowerActive && humanCard.element === 'fire') {
-                        setHumanScore(s => s + 3);
-                        setPowerAnimation({ type: 'fire', player: 'human' });
-                    }
-                    if (winner === 'ai' && aiPowerActive && aiCard.element === 'fire') {
-                        setAiScore(s => s + 3);
-                        setPowerAnimation({ type: 'fire', player: 'ai' });
-                    }
-                    setTimeout(() => setPowerAnimation(null), 1500);
-                } else {
-                    pointsForTrick = getCardPoints(humanCard) + getCardPoints(aiCard);
-                }
-
-                if (winner === 'human') setHumanScore(s => s + pointsForTrick);
-                else setAiScore(s => s + pointsForTrick);
-                
-                playSound(winner === 'human' ? 'trick-win' : 'trick-lose');
-
-                const newHistoryEntry: TrickHistoryEntry = {
-                    trickNumber: trickCounter.current,
-                    humanCard,
-                    aiCard,
-                    winner,
-                    points: pointsForTrick,
-                    clashResult: currentClashResult || undefined,
-                };
-                setTrickHistory(prev => [...prev, newHistoryEntry]);
-                setLastTrick(newHistoryEntry);
-
-                const continueAfterMessage = () => {
-                    setLastTrickHighlights({ human: 'unset', ai: 'unset' });
-                    setCardsOnTable([]);
-                    setElementalClash(null);
-                    const tempDeck = [...deck];
-                    let tempBriscola = briscolaCard;
-                    const drawn: Card[] = [];
-                    if (tempDeck.length > 0) drawn.push(tempDeck.shift()!);
-                    else if (tempBriscola) { drawn.push(tempBriscola); tempBriscola = null; }
-                    if (tempDeck.length > 0) drawn.push(tempDeck.shift()!);
-                    else if (tempBriscola) { drawn.push(tempBriscola); tempBriscola = null; }
-                    
-                    setDeck(tempDeck);
-                    setBriscolaCard(tempBriscola);
-                    
-                    if (winner === 'human') {
-                        if (drawn[0]) setHumanHand(p => [...p.map(c => ({ ...c, isFortified: false })), drawn[0]]);
-                        if (drawn[1]) setAiHand(p => [...p.map(c => ({ ...c, isFortified: false })), drawn[1]]);
-                    } else {
-                        if (drawn[0]) setAiHand(p => [...p.map(c => ({ ...c, isFortified: false })), drawn[0]]);
-                        if (drawn[1]) setHumanHand(p => [...p.map(c => ({ ...c, isFortified: false })), drawn[1]]);
-                    }
-
-                    setHumanAbilityCharges(c => Math.min(2, c + 1));
-                    setAiAbilityCharges(c => Math.min(2, c + 1));
-                    lastResolvedTrick.current = currentTrickIds;
-                    setTurn(winner);
-                    setTrickStarter(winner);
-                    setMessage(`${winner === 'human' ? T.youWonTrick(pointsForTrick) : T.aiWonTrick(currentWaifu.name, pointsForTrick)} ${winner === 'human' ? T.yourTurnMessage : T.aiTurnMessage(currentWaifu.name)}`);
-                    setIsResolvingTrick(false);
-                }
-
-                if (winner === 'ai' && isChatEnabled && waitForWaifuResponse === true) {
-                    setIsAiGeneratingMessage(true);
-                    getAIWaifuTrickMessage(currentWaifu, aiEmotionalState, humanCard, aiCard, pointsForTrick, language)
-                        .then(({ message }) => showWaifuBubble(message))
-                        .catch(console.error)
-                        .finally(() => {
-                            setIsAiGeneratingMessage(false);
-                            continueAfterMessage();
-                        });
-                } else {
-                    continueAfterMessage();
-                }
-            };
-
-            resolveTrickCallbackRef.current = proceed;
-            clashTimeoutRef.current = setTimeout(proceed, clashDelay);
+                aiMoveTimeoutRef.current = null;
+            }, 1000 + Math.random() * 1000);
         };
-        resolveTrick();
-    }, [cardsOnTable, phase, isResolvingTrick, T, aiEmotionalState, briscolaCard, briscolaSuit, currentWaifu, deck, difficulty, isChatEnabled, language, trickStarter, waitForWaifuResponse, showWaifuBubble, gameplayMode, revealedAiHand]);
     
-    // Game Over Logic
+        performAiMove();
+    
+        return cleanup;
+    
+    }, [turn, phase, aiHand, briscolaSuit, cardsOnTable, T, currentWaifu, isQuotaExceeded, gameMode, difficulty, trickStarter, isProcessing]);
+
     useEffect(() => {
-        if (phase === 'playing' && humanHand.length === 0 && aiHand.length === 0 && !isResolvingTrick) {
-            const winner: 'human' | 'ai' | 'tie' = humanScore > aiScore ? 'human' : aiScore > humanScore ? 'ai' : 'tie';
-            
+        if (phase === 'playing' && humanHand.length === 0 && aiHand.length === 0 && !isProcessing) {
+            let winner: 'human' | 'ai' | 'tie' = 'tie';
+            if (humanScore > aiScore) winner = 'human';
+            if (aiScore > humanScore) winner = 'ai';
+            if (humanScore === 60 && aiScore === 60) winner = 'tie';
+            if (humanScore === aiScore && humanScore > 60) winner = 'human';
+
+            let winnings = 0;
+            let difficultyMultiplier = 1.0;
+            if (difficulty === 'easy') difficultyMultiplier = 0.5;
+            else if (difficulty === 'hard') difficultyMultiplier = 1.5;
+
+            posthog.capture('game_over', {
+                human_score: humanScore, ai_score: aiScore, winner, winnings,
+            });
+
             if (gameplayMode === 'classic') {
-                playSound(winner === 'human' ? 'game-win' : 'game-lose');
-                const baseCoins = winner === 'human' ? (humanScore > 101 ? 100 : humanScore >= 81 ? 70 : 45) : 20;
-                const multiplier = difficulty === 'easy' ? 0.5 : difficulty === 'hard' ? 1.5 : 1.0;
-                const coinsEarned = Math.round(baseCoins * multiplier);
-    
-                onGameEnd(coinsEarned);
-                setLastGameWinnings(coinsEarned);
+                if (winner === 'human') {
+                    if (humanScore >= 101) winnings = Math.round(100 * difficultyMultiplier);
+                    else if (humanScore >= 81) winnings = Math.round(70 * difficultyMultiplier);
+                    else winnings = Math.round(45 * difficultyMultiplier);
+                } else {
+                    winnings = Math.round(20 * difficultyMultiplier);
+                }
+                onGameEnd(winnings);
+                setLastGameWinnings(winnings);
                 setGameResult(winner);
                 setPhase('gameOver');
-                posthog.capture('game_over', { winner, human_score: humanScore, ai_score: aiScore, coins_earned: coinsEarned, difficulty, gameplay_mode: gameplayMode });
-            } else { // Roguelike End of Level
+            } else { // Roguelike
                 if (winner === 'human') {
-                    const level = roguelikeState.currentLevel;
-                    const reward = ROGUELIKE_LEVEL_REWARDS[level];
-                    let completedChallenge = false;
-                    if (roguelikeState.challenge?.type === 'score_above_80' && humanScore > 80) {
-                        completedChallenge = true;
-                    }
-                    setRoguelikeState(prev => ({
-                        ...prev,
-                        runCoins: prev.runCoins + reward + (completedChallenge ? prev.challenge!.reward : 0),
-                        currentLevel: prev.currentLevel + 1,
-                        challenge: null,
+                    const levelJustWon = roguelikeState.currentLevel;
+                    winnings = ROGUELIKE_LEVEL_REWARDS[levelJustWon];
+                    const newRunCoins = roguelikeState.runCoins + winnings;
+
+                    setRoguelikeState(p => ({
+                        ...p,
+                        runCoins: newRunCoins,
+                        currentLevel: p.currentLevel + 1,
+                        followers: p.currentLevel <= 3 && currentWaifu ? [...p.followers, currentWaifu] : p.followers,
+                        followerAbilitiesUsedThisMatch: [], // Recharge on win
                     }));
-                    if (level < 4) {
-                        setPhase('roguelike-crossroads');
-                    } else { // Completed the run
-                        const finalWinnings = roguelikeState.runCoins + reward;
-                        onGameEnd(finalWinnings);
-                        setLastGameWinnings(finalWinnings);
-                        setGameResult('human'); // A win for the run
-                        setPhase('gameOver'); // Special Game Over for roguelike win
-                    }
-                } else { // Lost the level
-                    let consolationCoins = 0;
-                    if (roguelikeState.currentLevel === 1) {
-                        switch (difficulty) {
-                            case 'easy':
-                                consolationCoins = 10;
-                                break;
-                            case 'medium':
-                                consolationCoins = 20;
-                                break;
-                            case 'hard':
-                                consolationCoins = 30;
-                                break;
-                        }
+
+                    if (levelJustWon >= 4) {
+                        onGameEnd(newRunCoins);
+                        setLastGameWinnings(newRunCoins);
+                        setGameResult(winner);
+                        setPhase('gameOver');
                     } else {
-                        consolationCoins = Math.round(roguelikeState.runCoins * 0.25);
+                        setPhase('roguelike-crossroads');
                     }
-                    
-                    onGameEnd(consolationCoins);
-                    setLastGameWinnings(consolationCoins);
-                    setGameResult('ai'); // A loss for the run
-                    setPhase('gameOver'); // Special Game Over for roguelike loss
+                } else { // Lost roguelike level
+                    if (roguelikeState.currentLevel === 1) {
+                         const consolation = difficulty === 'easy' ? 10 : difficulty === 'hard' ? 30 : 20;
+                         winnings = consolation;
+                    } else {
+                        winnings = Math.round(roguelikeState.runCoins / 2);
+                    }
+                    onGameEnd(winnings);
+                    setLastGameWinnings(winnings);
+                    setGameResult(winner);
+                    setPhase('gameOver');
                 }
             }
         }
-    }, [phase, humanHand.length, aiHand.length, isResolvingTrick, humanScore, aiScore, onGameEnd, difficulty, gameplayMode, posthog, roguelikeState]);
-
-    useEffect(() => {
-        if (isQuotaExceeded) setGameMode('fallback');
-    }, [isQuotaExceeded]);
+    }, [humanHand.length, aiHand.length, phase, isProcessing, humanScore, aiScore, onGameEnd, posthog, difficulty, gameplayMode, roguelikeState, currentWaifu]);
 
     return {
         gameState: {
-            phase, deck, humanHand, aiHand, briscolaCard, briscolaSuit, cardsOnTable, turn, humanScore, aiScore,
-            trickStarter, message, backgroundUrl, isProcessing, isAiThinkingMove, isAiGeneratingMessage, currentWaifu,
-            aiEmotionalState, gameResult, lastGameWinnings, isQuotaExceeded, gameMode,
-            powerAnimation, 
-            elementalClash,
-            lastTrickHighlights,
-            humanAbility: roguelikeState.humanAbility, 
-            aiAbility: roguelikeState.aiAbility, 
-            humanAbilityCharges, aiAbilityCharges,
-            abilityTargetingState, abilityUsedThisTurn, revealedAiHand, roguelikeState,
-            cardForElementalChoice,
-            trickHistory, lastTrick,
-            activeElements,
+            phase, currentWaifu, deck, humanHand, aiHand, briscolaCard, briscolaSuit, cardsOnTable,
+            turn, humanScore, aiScore, trickStarter, message, backgroundUrl, isProcessing, isAiThinkingMove,
+            isAiGeneratingMessage, aiEmotionalState, gameResult, lastGameWinnings, isQuotaExceeded, gameMode,
+            powerAnimation, humanAbility: roguelikeState.humanAbility, aiAbility: roguelikeState.aiAbility,
+            humanAbilityCharges, aiAbilityCharges, abilityTargetingState, abilityUsedThisTurn,
+            revealedAiHand, cardForElementalChoice, elementalClash, lastTrickHighlights, trickHistory, lastTrick,
+            activeElements, roguelikeState, abilityArmed, isKasumiModalOpen,
         },
         gameActions: {
-            startGame, activateHumanAbility, targetCardInHandForAbility, targetCardOnTableForAbility, cancelAbilityTargeting, onUndoAbilityUse, confirmLeaveGame, goToMenu, handleQuotaExceeded, continueFromQuotaModal, startRoguelikeLevel, setRoguelikeState, setPhase,
-            selectCardForPlay, confirmCardPlay, cancelCardPlay, forceCloseClashModal
+            setPhase,
+            startGame, selectCardForPlay, confirmCardPlay, cancelCardPlay, goToMenu, handleQuotaExceeded,
+            continueFromQuotaModal, forceCloseClashModal, activateHumanAbility, cancelAbilityTargeting,
+            targetCardInHandForAbility, targetCardOnTableForAbility, onUndoAbilityUse, confirmLeaveGame,
+            startRoguelikeLevel, setRoguelikeState, activateFollowerAbility, cancelFollowerAbility,
+            closeKasumiModal, handleKasumiCardSwap,
         }
     };
 };

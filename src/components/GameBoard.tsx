@@ -6,17 +6,10 @@ import { useState } from 'react';
 import { CardView } from './CardView';
 import { getCardId } from '../core/utils';
 import { translations } from '../core/translations';
-import type { Card, Element, ElementalClashResult, GameplayMode, Language, Player, Suit, Waifu, AbilityType, TrickHistoryEntry } from '../core/types';
+import type { Card, Element, ElementalClashResult, GameplayMode, Language, Player, Suit, Waifu, AbilityType, TrickHistoryEntry, RoguelikeState } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
 import { ElementalChoiceModal } from './ElementalChoiceModal';
-
-const suitIcons: Record<Suit, string> = {
-    'Bastoni': 'https://s3.tebi.io/waifubriscola/suits/bastoni.png',
-    'Coppe': 'https://s3.tebi.io/waifubriscola/suits/coppe.png',
-    'Spade': 'https://s3.tebi.io/waifubriscola/suits/spade.png',
-    'denara': 'https://s3.tebi.io/waifubriscola/suits/denara.png',
-};
 
 const abilityToElement: Record<AbilityType, Element> = {
     'incinerate': 'fire',
@@ -111,6 +104,10 @@ interface GameBoardProps {
     lastTrickHighlights: { human: ElementalEffectStatus, ai: ElementalEffectStatus };
     lastTrick: TrickHistoryEntry | null;
     activeElements: Element[];
+    roguelikeState: RoguelikeState;
+    onActivateFollowerAbility: (waifuName: string) => void;
+    onCancelFollowerAbility: () => void;
+    abilityArmed: 'fortify' | 'sakura_blessing' | 'rei_analysis' | 'kasumi_gambit' | null;
 }
 
 export const GameBoard = ({
@@ -164,6 +161,10 @@ export const GameBoard = ({
     lastTrickHighlights,
     lastTrick,
     activeElements,
+    roguelikeState,
+    onActivateFollowerAbility,
+    onCancelFollowerAbility,
+    abilityArmed,
 }: GameBoardProps) => {
 
     const T = translations[language];
@@ -183,7 +184,7 @@ export const GameBoard = ({
     const humanCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     const aiCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
 
-    const isAbilityUnusable = isProcessing || !!abilityTargetingState || !!abilityUsedThisTurn;
+    const isAbilityUnusable = isProcessing || !!abilityTargetingState || !!abilityUsedThisTurn || !!abilityArmed;
     let isFireAbilityDisabled = true;
     if (humanAbility === 'incinerate') {
         isFireAbilityDisabled = (cardsOnTable.length !== 1 || trickStarter === 'human');
@@ -320,6 +321,32 @@ export const GameBoard = ({
                 )}
             </div>
 
+            {gameplayMode === 'roguelike' && roguelikeState.followers.length > 0 && (
+                <div className="followers-container">
+                    {roguelikeState.followers.map(follower => {
+                        const isUsed = roguelikeState.followerAbilitiesUsedThisMatch.includes(follower.name);
+                        const abilityKey = `${follower.name.toLowerCase()}_${isUsed ? 'used' : 'ready'}`;
+                        const abilityName = T[`${follower.name.toLowerCase()}_blessing` as keyof typeof T] || T[`${follower.name.toLowerCase()}_analysis` as keyof typeof T] || T[`${follower.name.toLowerCase()}_gambit` as keyof typeof T];
+                        const abilityDesc = T[`${follower.name.toLowerCase()}_blessing_desc` as keyof typeof T] || T[`${follower.name.toLowerCase()}_analysis_desc` as keyof typeof T] || T[`${follower.name.toLowerCase()}_gambit_desc` as keyof typeof T];
+
+                        return (
+                            <div
+                                key={follower.name}
+                                className={`follower-waifu ${isUsed ? 'disabled' : ''} ${abilityArmed?.startsWith(follower.name.toLowerCase()) ? 'armed' : ''}`}
+                                title={`${abilityName}: ${abilityDesc}`}
+                                onClick={() => !isUsed && onActivateFollowerAbility(follower.name)}
+                            >
+                                {/* FIX: Changed the `src` prop to `imageUrl` to match the CachedImage component's expected props. */}
+                                <CachedImage imageUrl={follower.avatar} alt={follower.name} className="follower-waifu-avatar" />
+                            </div>
+                        );
+                    })}
+                    {abilityArmed && ['sakura_blessing', 'rei_analysis', 'kasumi_gambit'].includes(abilityArmed) && (
+                         <button className="cancel-follower-ability-button" onClick={onCancelFollowerAbility}>{T.cancelFollowerAbility}</button>
+                    )}
+                </div>
+            )}
+
 
             <div className="player-area ai-area">
                 <div className="hand">
@@ -369,10 +396,7 @@ export const GameBoard = ({
                         <CardView
                             key={card.id}
                             card={card}
-                            isPlayable={
-                                (turn === 'human' && !isProcessing && !abilityTargetingState && !abilityUsedThisTurn) ||
-                                (abilityTargetingState !== null && abilityTargetingState !== 'incinerate')
-                            }
+                            isPlayable={turn === 'human' && !isProcessing && !abilityTargetingState && !abilityUsedThisTurn}
                             onClick={() => {
                                 if (abilityTargetingState) {
                                     onTargetCardInHand(card);
@@ -404,7 +428,7 @@ export const GameBoard = ({
                     )}
                 </div>
 
-                {lastTrick && !abilityUsedThisTurn && (
+                {lastTrick && !abilityUsedThisTurn && !abilityArmed && (
                     <button className="last-trick-recap" onClick={onOpenHistoryModal} title={T.history.lastTrick}>
                         <CardView card={lastTrick.humanCard} lang={language} />
                         <CardView card={lastTrick.aiCard} lang={language} />

@@ -175,6 +175,9 @@ export const translations = {
     kasumi_gambit: "Azzardo di Kasumi",
     kasumi_gambit_desc: "Scambia la Briscola con una carta dalla tua mano.",
     followerAbilityArmed: (waifuName: string, abilityName: string) => `Abilità di ${waifuName} (${abilityName}) pronta!`,
+    cancelFollowerAbility: "Annulla Abilità Compagna",
+    kasumiSwapTitle: "Azzardo di Kasumi",
+    kasumiSwapMessage: "Scegli una carta dalla tua mano per scambiarla con la Briscola.",
     // Game Over
     gameOverTitle: "Partita Terminata",
     finalScore: "Punteggio Finale:",
@@ -530,6 +533,9 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
     kasumi_gambit: "Kasumi's Gambit",
     kasumi_gambit_desc: "Swap the Trump card with a card from your hand.",
     followerAbilityArmed: (waifuName: string, abilityName: string) => `${waifuName}'s Ability (${abilityName}) is ready!`,
+    cancelFollowerAbility: "Cancel Follower Ability",
+    kasumiSwapTitle: "Kasumi's Gambit",
+    kasumiSwapMessage: "Choose a card from your hand to swap with the Trump.",
     // Game Over
     gameOverTitle: "Game Over",
     finalScore: "Final Score:",

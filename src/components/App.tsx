@@ -162,6 +162,10 @@ export function App() {
         lastTrickHighlights={gameState.lastTrickHighlights}
         lastTrick={gameState.lastTrick}
         activeElements={gameState.activeElements}
+        roguelikeState={gameState.roguelikeState}
+        onActivateFollowerAbility={gameActions.activateFollowerAbility}
+        onCancelFollowerAbility={gameActions.cancelFollowerAbility}
+        abilityArmed={gameState.abilityArmed}
       />
       
       {settings.isChatEnabled && gameState.currentWaifu &&

@@ -14,6 +14,7 @@ import { GalleryModal } from './GalleryModal';
 import { FullscreenImageModal } from './FullscreenImageModal';
 import { EventModal } from './EventModal';
 import { HistoryModal } from './HistoryModal';
+import { KasumiSwapModal } from './KasumiSwapModal';
 
 import { useGameSettings } from '../hooks/useGameSettings';
 import { useGachaAndGallery } from '../hooks/useGachaAndGallery';
@@ -197,6 +198,15 @@ export const GameModals = ({
                 history={gameState.trickHistory}
                 language={settings.language}
                 aiName={gameState.currentWaifu?.name ?? ''}
+            />
+            
+            <KasumiSwapModal
+                isOpen={gameState.isKasumiModalOpen}
+                onClose={gameActions.closeKasumiModal}
+                onCardSelect={gameActions.handleKasumiCardSwap}
+                briscolaCard={gameState.briscolaCard}
+                hand={gameState.humanHand}
+                language={settings.language}
             />
         </>
     );

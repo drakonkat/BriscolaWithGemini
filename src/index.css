@@ -709,7 +709,6 @@ input:checked + .slider:before {
   min-height: calc(var(--card-height) + 1rem);
   min-width: calc(var(--card-width) * 2 + 1rem);
   position: relative;
-  transform: translateX(20%);
 }
 .played-cards .card {
   transition: transform 0.5s ease-in-out;
@@ -854,7 +853,7 @@ input:checked + .slider:before {
   cursor: pointer;
 }
 
-.game-over-modal, .rules-modal, .waifu-details-modal, .confirmation-modal, .gallery-modal, .event-modal, .history-modal {
+.game-over-modal, .rules-modal, .waifu-details-modal, .confirmation-modal, .gallery-modal, .event-modal, .history-modal, .kasumi-swap-modal {
   background-color: var(--ui-bg);
   padding: 2rem 3rem;
   border-radius: 12px;
@@ -866,7 +865,7 @@ input:checked + .slider:before {
   cursor: default;
   position: relative;
 }
-.game-over-modal h2, .rules-modal h2, .event-modal h2, .history-modal h2 {
+.game-over-modal h2, .rules-modal h2, .event-modal h2, .history-modal h2, .kasumi-swap-modal h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
   color: var(--primary-accent);
@@ -887,7 +886,7 @@ input:checked + .slider:before {
   margin: 0.5rem 0 1.5rem;
   color: #a0d8a2;
 }
-.game-over-modal button, .rules-modal button, .history-modal button {
+.game-over-modal button, .rules-modal button, .history-modal button, .kasumi-swap-modal button {
   font-size: 1.2rem;
   padding: 0.7rem 2rem;
   border-radius: 8px;
@@ -900,7 +899,8 @@ input:checked + .slider:before {
 }
 .game-over-modal button:hover, .game-over-modal button:focus,
 .rules-modal button:hover, .rules-modal button:focus,
-.history-modal button:hover, .history-modal button:focus {
+.history-modal button:hover, .history-modal button:focus,
+.kasumi-swap-modal button:hover, .kasumi-swap-modal button:focus {
   background-color: var(--primary-accent-hover);
 }
 
@@ -1419,7 +1419,6 @@ input:checked + .slider:before {
   left: 50%;
   z-index: 50;
   pointer-events: none;
-  transform: translateX(10%);
 }
 
 .animating-card-container .card, .drawing-card-container .card {
@@ -1433,20 +1432,20 @@ input:checked + .slider:before {
 .animating-card-container.player-ai.position-1 { animation: play-ai-p1 0.5s ease-in-out forwards; }
 
 @keyframes play-human-p0 {
-  from { top: 85%; transform: translateX(calc(-50% + 10%)) scale(1.1); }
-  to { top: 50%; transform: translate(calc(-50% - var(--played-card-offset) + 10%), -50%) scale(1); }
+  from { top: 85%; transform: translateX(calc(-50%)) scale(1.1); }
+  to { top: 50%; transform: translate(calc(-50% - var(--played-card-offset)), -50%) scale(1); }
 }
 @keyframes play-human-p1 {
-  from { top: 85%; transform: translateX(calc(-50% + 10%)) scale(1.1); }
-  to { top: 50%; transform: translate(calc(-50% + var(--played-card-offset) + 10%), -50%) scale(1); }
+  from { top: 85%; transform: translateX(calc(-50%)) scale(1.1); }
+  to { top: 50%; transform: translate(calc(-50% + var(--played-card-offset)), -50%) scale(1); }
 }
 @keyframes play-ai-p0 {
-  from { top: 15%; transform: translateX(calc(-50% + 10%)) scale(1); }
-  to { top: 50%; transform: translate(calc(-50% - var(--played-card-offset) + 10%), -50%) scale(1); }
+  from { top: 15%; transform: translateX(calc(-50%)) scale(1); }
+  to { top: 50%; transform: translate(calc(-50% - var(--played-card-offset)), -50%) scale(1); }
 }
 @keyframes play-ai-p1 {
-  from { top: 15%; transform: translateX(calc(-50% + 10%)) scale(1); }
-  to { top: 50%; transform: translate(calc(-50% + var(--played-card-offset) + 10%), -50%) scale(1); }
+  from { top: 15%; transform: translateX(calc(-50%)) scale(1); }
+  to { top: 50%; transform: translate(calc(-50% + var(--played-card-offset)), -50%) scale(1); }
 }
 
 /* --- Card Drawing Animation --- */
@@ -2519,6 +2518,98 @@ input:checked + .slider:before {
     font-weight: bold;
 }
 
+/* --- Follower UI --- */
+.followers-container {
+  position: absolute;
+  top: 50%;
+  left: calc(15px + env(safe-area-inset-left));
+  transform: translateY(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.follower-waifu {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.follower-waifu-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 3px solid var(--primary-accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.follower-waifu:hover:not(.disabled) {
+  transform: scale(1.1);
+}
+
+.follower-waifu.disabled {
+  cursor: not-allowed;
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.follower-waifu.armed {
+  transform: scale(1.1);
+  box-shadow: 0 0 15px #ffd700;
+}
+
+.cancel-follower-ability-button {
+  background: var(--red-suit);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  margin-top: 1rem;
+}
+.cancel-follower-ability-button:hover {
+  background: #e53e3e;
+}
+
+/* Kasumi Swap Modal */
+.kasumi-swap-modal .modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+}
+.kasumi-swap-modal p {
+    font-size: 1.1rem;
+    margin: 0;
+}
+.kasumi-swap-cards {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+.kasumi-swap-cards .card {
+  pointer-events: none;
+}
+.kasumi-swap-modal .hand {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.kasumi-swap-modal .hand .card {
+  cursor: pointer;
+}
+.kasumi-swap-modal .hand .card:hover {
+  transform: translateY(-10px);
+}
+.kasumi-swap-modal .modal-actions button {
+  margin-top: 0;
+}
+
+
 /* --- Responsive Design --- */
 @media (max-width: 1024px) {
   .menu {
@@ -2624,6 +2715,23 @@ input:checked + .slider:before {
   .deck-container {
     height: var(--card-height);
   }
+  .followers-container {
+    top: auto;
+    bottom: calc(var(--bottom-bar-height) + env(safe-area-inset-bottom) + 1rem);
+    left: calc(15px + env(safe-area-inset-left));
+    transform: none;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  .follower-waifu-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  .deck-area-wrapper {
+      top: 15%;
+      left: calc(15px + env(safe-area-inset-left));
+      transform: none;
+  }
 }
 
 @media (max-width: 768px) {
@@ -2637,10 +2745,9 @@ input:checked + .slider:before {
   }
 
   .table-area {
-    justify-content: flex-end;
-    padding-right: 1.5rem;
+    justify-content: center;
   }
-
+  
   .game-board {
     border-width: 5px;
     border-right-width: 5px;
@@ -2741,7 +2848,7 @@ input:checked + .slider:before {
   }
   
   .table-area {
-    justify-content: flex-end;
+    justify-content: center;
     gap: 0;
   }
   .played-cards {
@@ -2758,7 +2865,7 @@ input:checked + .slider:before {
       width: 70px;
       height: 70px;
   }
-  .rules-modal, .waifu-details-modal, .confirmation-modal, .gallery-modal, .event-modal, .elemental-clash-modal, .history-modal {
+  .rules-modal, .waifu-details-modal, .confirmation-modal, .gallery-modal, .event-modal, .elemental-clash-modal, .history-modal, .kasumi-swap-modal {
       padding: 1.5rem 1rem;
       min-width: 90%;
       width: 95%;
