@@ -2345,7 +2345,7 @@ input:checked + .slider:before {
 
 /* --- History Modal --- */
 .history-modal {
-    width: 600px;
+    width: 700px;
     max-width: 95%;
     display: flex;
     flex-direction: column;
@@ -2359,7 +2359,7 @@ input:checked + .slider:before {
 }
 .history-header {
     display: grid;
-    grid-template-columns: 0.5fr 1fr 1fr 1fr 0.7fr;
+    grid-template-columns: 0.5fr 1fr 1fr 1.2fr 0.8fr 0.8fr;
     gap: 1rem;
     font-weight: bold;
     color: #ccc;
@@ -2374,7 +2374,7 @@ input:checked + .slider:before {
 }
 .history-entry {
     display: grid;
-    grid-template-columns: 0.5fr 1fr 1fr 1fr 0.7fr;
+    grid-template-columns: 0.5fr 1fr 1fr 1.2fr 0.8fr 0.8fr;
     gap: 1rem;
     align-items: center;
     text-align: center;
@@ -2388,11 +2388,23 @@ input:checked + .slider:before {
     margin: 0 auto;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
-.history-winner.human {
+.history-clash-result {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+.history-clash-result .element-icon {
+    width: 20px;
+    height: 20px;
+}
+.history-points.human {
     color: #a0d8a2;
     font-weight: bold;
 }
-.history-winner.ai {
+.history-points.ai {
     color: #e57373;
     font-weight: bold;
 }
@@ -2684,7 +2696,7 @@ input:checked + .slider:before {
   }
   .history-header, .history-entry {
     font-size: 0.8rem;
-    grid-template-columns: 0.5fr 1fr 1fr 0.8fr 0.6fr;
+    grid-template-columns: 0.4fr 1fr 1fr 1fr 0.5fr 0.5fr;
     gap: 0.5rem;
   }
   .history-entry .card {

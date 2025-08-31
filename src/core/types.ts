@@ -70,4 +70,5 @@ export type TrickHistoryEntry = {
   aiCard: Card;
   winner: Player;
   points: number;
+  clashResult?: ElementalClashResult;
 };

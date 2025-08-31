@@ -5,6 +5,7 @@
 import { translations } from '../core/translations';
 import type { Language, TrickHistoryEntry } from '../core/types';
 import { CardView } from './CardView';
+import { ElementIcon } from './ElementIcon';
 
 interface HistoryModalProps {
     isOpen: boolean;
@@ -37,8 +38,9 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName }: His
                         <span>{TH.trick}</span>
                         <span>{TH.you}</span>
                         <span>{TH.opponent}</span>
-                        <span>{TH.winner}</span>
-                        <span>{TH.points}</span>
+                        <span>{TH.clash}</span>
+                        <span>{TH.pointsYou}</span>
+                        <span>{TH.pointsOpponent}</span>
                     </div>
                     <div className="history-list">
                         {[...history].reverse().map(entry => (
@@ -46,10 +48,27 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName }: His
                                 <span>{entry.trickNumber}</span>
                                 <div><CardView card={entry.humanCard} lang={language} /></div>
                                 <div><CardView card={entry.aiCard} lang={language} /></div>
-                                <span className={`history-winner ${entry.winner}`}>
-                                    {entry.winner === 'human' ? T.scoreYou : aiName}
+                                <div className="history-clash-result">
+                                    {entry.clashResult ? (
+                                        entry.clashResult.type === 'dice' ? (
+                                            <span>{`${entry.clashResult.humanRoll} vs ${entry.clashResult.aiRoll}`}</span>
+                                        ) : (
+                                            <>
+                                                <ElementIcon element={entry.clashResult.winningElement} />
+                                                &gt;
+                                                <ElementIcon element={entry.clashResult.losingElement} />
+                                            </>
+                                        )
+                                    ) : (
+                                        <span>-</span>
+                                    )}
+                                </div>
+                                <span className={`history-points ${entry.winner === 'human' ? 'human' : ''}`}>
+                                    {entry.winner === 'human' ? entry.points : 0}
                                 </span>
-                                <span>{entry.points}</span>
+                                <span className={`history-points ${entry.winner === 'ai' ? 'ai' : ''}`}>
+                                    {entry.winner === 'ai' ? entry.points : 0}
+                                </span>
                             </div>
                         ))}
                     </div>

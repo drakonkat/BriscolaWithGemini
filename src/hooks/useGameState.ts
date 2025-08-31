@@ -362,6 +362,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
             let clashDelay = 1000;
             let humanPowerActive = false;
             let aiPowerActive = false;
+            let currentClashResult: ElementalClashResult | null = null;
 
             if (gameplayMode === 'roguelike') {
                 const isClash = humanCard.element && aiCard.element;
@@ -371,12 +372,13 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                     const weaknessWinner = determineWeaknessWinner(humanCard.element!, aiCard.element!);
                     if (weaknessWinner) {
                         clashWinner = weaknessWinner;
-                        setElementalClash({
+                        currentClashResult = {
                             type: 'weakness',
                             winner: weaknessWinner,
                             winningElement: weaknessWinner === 'human' ? humanCard.element! : aiCard.element!,
                             losingElement: weaknessWinner === 'human' ? aiCard.element! : humanCard.element!,
-                        });
+                        };
+                        setElementalClash(currentClashResult);
                         clashDelay = 5000;
                     } else {
                         // Same element or no weakness, roll dice
@@ -384,7 +386,8 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                         const aiRoll = Math.floor(Math.random() * 100) + 1;
                         const rollWinner = humanRoll > aiRoll ? 'human' : aiRoll > humanRoll ? 'ai' : 'tie';
                         if(rollWinner !== 'tie') clashWinner = rollWinner;
-                        setElementalClash({ type: 'dice', humanRoll, aiRoll, winner: rollWinner });
+                        currentClashResult = { type: 'dice', humanRoll, aiRoll, winner: rollWinner };
+                        setElementalClash(currentClashResult);
                         clashDelay = 5000;
                     }
                 } else if (humanCard.element) {
@@ -441,6 +444,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                     aiCard,
                     winner,
                     points: pointsForTrick,
+                    clashResult: currentClashResult || undefined,
                 };
                 setTrickHistory(prev => [...prev, newHistoryEntry]);
                 setLastTrick(newHistoryEntry);

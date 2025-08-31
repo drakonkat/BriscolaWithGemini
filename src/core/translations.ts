@@ -81,8 +81,9 @@ export const translations = {
       trick: "Turno",
       you: "Tu",
       opponent: "Avversaria",
-      winner: "Vincitore",
-      points: "Punti",
+      clash: "Scontro",
+      pointsYou: "Tuo Pti",
+      pointsOpponent: "Pti Avv.",
     },
     // Roguelike Mode
     roguelike: {
@@ -423,8 +424,9 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
       trick: "Trick",
       you: "You",
       opponent: "Opponent",
-      winner: "Winner",
-      points: "Points",
+      clash: "Clash",
+      pointsYou: "Your Pts",
+      pointsOpponent: "Opp. Pts",
     },
      // Roguelike Mode
     roguelike: {
