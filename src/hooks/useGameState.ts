@@ -10,7 +10,7 @@ import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { playSound } from '../core/soundManager';
 import { translations } from '../core/translations';
 import { createDeck, getTrickWinner as getClassicTrickWinner } from '../core/classicGameLogic';
-import { initializeRoguelikeDeck, assignAbilities, getRoguelikeTrickWinner, calculateRoguelikeTrickPoints } from '../core/roguelikeGameLogic';
+import { initializeRoguelikeDeck, assignAbilities, getRoguelikeTrickWinner, calculateRoguelikeTrickPoints, determineWeaknessWinner } from '../core/roguelikeGameLogic';
 import { getCardPoints, shuffleDeck } from '../core/utils';
 import { QuotaExceededError, getAIWaifuTrickMessage, getAIGenericTeasingMessage } from '../core/gemini';
 import { getLocalAIMove, getFallbackWaifuMessage, getAIAbilityDecision } from '../core/localAI';
@@ -354,27 +354,41 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
             const aiCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
 
             let clashDelay = 1000;
-            let clashOutcome: 'human' | 'ai' | 'tie' | null = null;
             let humanPowerActive = false;
             let aiPowerActive = false;
 
             if (gameplayMode === 'roguelike') {
                 const isClash = humanCard.element && aiCard.element;
+                let clashWinner: Player | null = null;
+
                 if (isClash) {
-                    const humanRoll = Math.floor(Math.random() * 100) + 1;
-                    const aiRoll = Math.floor(Math.random() * 100) + 1;
-                    const winner = humanRoll > aiRoll ? 'human' : aiRoll > humanRoll ? 'ai' : 'tie';
-                    clashOutcome = winner;
-                    setElementalClash({ humanRoll, aiRoll, winner });
-                    clashDelay = 3000;
+                    const weaknessWinner = determineWeaknessWinner(humanCard.element!, aiCard.element!);
+                    if (weaknessWinner) {
+                        clashWinner = weaknessWinner;
+                        setElementalClash({
+                            type: 'weakness',
+                            winner: weaknessWinner,
+                            winningElement: weaknessWinner === 'human' ? humanCard.element! : aiCard.element!,
+                            losingElement: weaknessWinner === 'human' ? aiCard.element! : humanCard.element!,
+                        });
+                        clashDelay = 3000;
+                    } else {
+                        // Same element or no weakness, roll dice
+                        const humanRoll = Math.floor(Math.random() * 100) + 1;
+                        const aiRoll = Math.floor(Math.random() * 100) + 1;
+                        const rollWinner = humanRoll > aiRoll ? 'human' : aiRoll > humanRoll ? 'ai' : 'tie';
+                        if(rollWinner !== 'tie') clashWinner = rollWinner;
+                        setElementalClash({ type: 'dice', humanRoll, aiRoll, winner: rollWinner });
+                        clashDelay = 3000;
+                    }
                 } else if (humanCard.element) {
-                    clashOutcome = 'human';
+                    clashWinner = 'human';
                 } else if (aiCard.element) {
-                    clashOutcome = 'ai';
+                    clashWinner = 'ai';
                 }
 
-                humanPowerActive = (clashOutcome === 'human' && humanCard.elementalEffectActivated !== false) || (clashOutcome === null && humanCard.element && humanCard.elementalEffectActivated !== false);
-                aiPowerActive = (clashOutcome === 'ai') || (clashOutcome === null && aiCard.element);
+                humanPowerActive = (clashWinner === 'human' && humanCard.elementalEffectActivated !== false);
+                aiPowerActive = (clashWinner === 'ai');
                 
                 const humanStatus = humanCard.element ? (humanPowerActive ? 'active' : 'inactive') : 'unset';
                 const aiStatus = aiCard.element ? (aiPowerActive ? 'active' : 'inactive') : 'unset';

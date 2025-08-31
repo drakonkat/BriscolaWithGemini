@@ -53,7 +53,13 @@ export type RoguelikeState = {
 };
 
 export type ElementalClashResult = {
+    type: 'dice';
     humanRoll: number;
     aiRoll: number;
     winner: 'human' | 'ai' | 'tie';
+} | {
+    type: 'weakness';
+    winner: 'human' | 'ai';
+    winningElement: Element;
+    losingElement: Element;
 };

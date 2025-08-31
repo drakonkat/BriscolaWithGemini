@@ -389,24 +389,48 @@ export const GameBoard = ({
 
             {elementalClash && humanCardOnTable && aiCardOnTable && (
                 <div className="elemental-clash-overlay">
-                    <div className="elemental-clash-modal">
-                        <h2>{TC.title}</h2>
-                        <div className="clash-results">
-                            <div className={`clash-player-result ${elementalClash.winner === 'human' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
-                                <CardView card={humanCardOnTable} lang={language} />
-                                <h3>{TC.yourRoll}</h3>
-                                <div className="clash-roll">{elementalClash.humanRoll}</div>
+                    {elementalClash.type === 'dice' ? (
+                        <div className="elemental-clash-modal">
+                            <h2>{TC.title}</h2>
+                            <div className="clash-results">
+                                <div className={`clash-player-result ${elementalClash.winner === 'human' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
+                                    <CardView card={humanCardOnTable} lang={language} />
+                                    <h3>{TC.yourRoll}</h3>
+                                    <div className="clash-roll">{elementalClash.humanRoll}</div>
+                                </div>
+                                <div className={`clash-player-result ${elementalClash.winner === 'ai' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
+                                    <CardView card={aiCardOnTable} lang={language} />
+                                    <h3>{TC.opponentRoll}</h3>
+                                    <div className="clash-roll">{elementalClash.aiRoll}</div>
+                                </div>
                             </div>
-                            <div className={`clash-player-result ${elementalClash.winner === 'ai' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
-                                <CardView card={aiCardOnTable} lang={language} />
-                                <h3>{TC.opponentRoll}</h3>
-                                <div className="clash-roll">{elementalClash.aiRoll}</div>
+                            <div className="clash-outcome">
+                                {elementalClash.winner !== 'tie' ? TC.winner : TC.tie}
                             </div>
                         </div>
-                        <div className="clash-outcome">
-                            {elementalClash.winner !== 'tie' ? TC.winner : TC.tie}
+                    ) : (
+                         <div className="elemental-clash-modal weakness">
+                            <h2>{TC.weaknessTitle}</h2>
+                            <div className="weakness-indicator">
+                                <ElementIcon element={elementalClash.winningElement} />
+                                <span>{TC.beats}</span>
+                                <ElementIcon element={elementalClash.losingElement} />
+                            </div>
+                            <div className="clash-results">
+                                <div className={`clash-player-result ${elementalClash.winner === 'human' ? 'winner' : ''}`}>
+                                    <CardView card={humanCardOnTable} lang={language} />
+                                    <h3>{T.scoreYou}</h3>
+                                </div>
+                                <div className={`clash-player-result ${elementalClash.winner === 'ai' ? 'winner' : ''}`}>
+                                    <CardView card={aiCardOnTable} lang={language} />
+                                    <h3>{aiName}</h3>
+                                </div>
+                            </div>
+                            <div className="clash-outcome">
+                                {TC.winner}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             )}
         </main>

@@ -129,10 +129,12 @@ export const translations = {
     earthDescription: "Se perdi il turno, recupera i punti della tua carta Terra.",
     elementalClash: {
         title: "Scontro Elementale!",
+        weaknessTitle: "Debolezza Elementale!",
         yourRoll: "Tuo Lancio",
         opponentRoll: "Lancio Avversaria",
         winner: "Vincitore!",
-        tie: "Pareggio!"
+        tie: "Pareggio!",
+        beats: "batte",
     },
     // Elemental Choice
     elementalChoiceTitle: "Come vuoi giocare questa carta?",
@@ -460,10 +462,12 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
     earthDescription: "If you lose the trick, recover your Earth card's points.",
     elementalClash: {
         title: "Elemental Clash!",
+        weaknessTitle: "Elemental Weakness!",
         yourRoll: "Your Roll",
         opponentRoll: "Opponent's Roll",
         winner: "Winner!",
-        tie: "Tie!"
+        tie: "Tie!",
+        beats: "beats",
     },
     // Elemental Choice
     elementalChoiceTitle: "How do you want to play this card?",

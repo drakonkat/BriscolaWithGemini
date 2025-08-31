@@ -2247,6 +2247,13 @@ input:checked + .slider:before {
   text-transform: uppercase;
   letter-spacing: 2px;
 }
+.elemental-clash-modal.weakness {
+  border-color: #9b59b6; /* Purple */
+  box-shadow: 0 0 30px rgba(155, 89, 182, 0.5);
+}
+.elemental-clash-modal.weakness h2 {
+  color: #9b59b6;
+}
 .clash-results {
   display: flex;
   justify-content: space-around;
@@ -2282,6 +2289,22 @@ input:checked + .slider:before {
   font-size: 4rem;
   font-weight: bold;
   color: white;
+}
+.weakness-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.weakness-indicator .element-icon {
+  width: 48px;
+  height: 48px;
+}
+.weakness-indicator span {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ccc;
 }
 .clash-outcome {
   font-size: 1.8rem;

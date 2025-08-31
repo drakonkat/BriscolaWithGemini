@@ -82,6 +82,25 @@ export const getRoguelikeTrickWinner = (playedCards: Card[], starter: Player, br
     return starter;
 };
 
+const WEAKNESS_MAP: Partial<Record<Element, Element>> = {
+    water: 'fire',
+    fire: 'air',
+    air: 'earth',
+    earth: 'water',
+};
+
+/**
+ * Determines the winner of an elemental clash based on weaknesses.
+ * @param humanElement The element of the human's card.
+ * @param aiElement The element of the AI's card.
+ * @returns The winning player ('human' or 'ai'), or null if no weakness relationship exists.
+ */
+export const determineWeaknessWinner = (humanElement: Element, aiElement: Element): 'human' | 'ai' | null => {
+    if (WEAKNESS_MAP[humanElement] === aiElement) return 'human';
+    if (WEAKNESS_MAP[aiElement] === humanElement) return 'ai';
+    return null;
+};
+
 /**
  * Calculates the points for a trick in Roguelike mode, applying elemental power effects.
  * @param humanCard The card played by the human.
