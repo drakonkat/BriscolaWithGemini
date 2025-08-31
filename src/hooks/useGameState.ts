@@ -447,8 +447,8 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                     setIsResolvingTrick(false);
                 }
 
-                // FIX: Use a strict boolean check to avoid type errors with legacy string values from localStorage.
-                if (winner === 'ai' && isChatEnabled && waitForWaifuResponse === true) {
+                // FIX: Use a strict boolean check that correctly handles legacy string values from localStorage.
+                if (winner === 'ai' && isChatEnabled && String(waitForWaifuResponse) === 'true') {
                     setIsAiGeneratingMessage(true);
                     getAIWaifuTrickMessage(currentWaifu, aiEmotionalState, humanCard, aiCard, pointsForTrick, language)
                         .then(({ message }) => showWaifuBubble(message))
