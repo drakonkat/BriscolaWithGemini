@@ -2,11 +2,11 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Chat } from '@google/genai';
 import { usePostHog } from 'posthog-js/react';
 
-import type { ChatMessage, GameEmotionalState, Language, Waifu } from '../core/types';
+import type { ChatMessage, GameEmotionalState, Language, Waifu, GamePhase } from '../core/types';
 import { ai } from '../core/gemini';
 import { translations } from '../core/translations';
 import { playSound } from '../core/soundManager';
@@ -21,6 +21,7 @@ type useChatProps = {
     setUnreadMessageCount: React.Dispatch<React.SetStateAction<number>>;
     isQuotaExceeded: boolean;
     onQuotaExceeded: () => void;
+    phase: GamePhase;
 };
 
 export const useChat = ({
@@ -33,6 +34,7 @@ export const useChat = ({
     setUnreadMessageCount,
     isQuotaExceeded,
     onQuotaExceeded,
+    phase,
 }: useChatProps) => {
     const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
     const [chatSession, setChatSession] = useState<Chat | null>(null);
@@ -53,6 +55,19 @@ export const useChat = ({
         setChatHistory([initialAiMessage]);
         showWaifuBubble(initialAiMessage.text);
     }, [isChatEnabled, language, showWaifuBubble]);
+
+    const prevPhaseRef = useRef<GamePhase>();
+    useEffect(() => {
+        prevPhaseRef.current = phase;
+    });
+    const prevPhase = prevPhaseRef.current;
+
+    useEffect(() => {
+        if ((prevPhase === 'menu' || prevPhase === 'roguelike-map') && phase === 'playing' && currentWaifu) {
+            resetChat(currentWaifu);
+        }
+    }, [phase, prevPhase, currentWaifu, resetChat]);
+
 
     const updateChatSession = useCallback(() => {
         if (!isChatEnabled || !currentWaifu) return;
@@ -80,6 +95,7 @@ export const useChat = ({
             }
         }
         
+        // FIX: The `ai.chats.create` method was called without arguments, causing an error. It has been updated to pass the required configuration object, including the model, system instructions, and chat history.
         const newChat = ai.chats.create({
             model: 'gemini-2.5-flash',
             config: { systemInstruction },

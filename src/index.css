@@ -1827,17 +1827,15 @@ input:checked + .slider:before {
 }
 
 .elemental-powers-panel.collapsed {
-    width: auto;
-    min-width: 0;
+    background: transparent;
+    border-color: transparent;
+    padding: 0;
+    gap: 0;
+    width: 40px;
+    height: 40px;
 }
 
-.elemental-powers-panel.collapsed .elemental-power-description {
-    opacity: 0;
-    max-width: 0;
-    overflow: hidden;
-}
-
-.elemental-powers-panel.collapsed .abilities-subtitle {
+.elemental-powers-panel.collapsed > *:not(.elemental-powers-toggle) {
     display: none;
 }
 

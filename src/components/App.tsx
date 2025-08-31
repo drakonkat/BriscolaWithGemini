@@ -46,6 +46,7 @@ export function App() {
       setUnreadMessageCount: uiActions.setUnreadMessageCount,
       isQuotaExceeded: gameState.isQuotaExceeded,
       onQuotaExceeded: gameActions.handleQuotaExceeded,
+      phase: gameState.phase,
   });
 
   const T = useMemo(() => translations[settings.language], [settings.language]);

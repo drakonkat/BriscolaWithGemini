@@ -129,14 +129,14 @@ export const getLocalAIMove = (
                 return bestCard;
             }
 
-            // Difficoltà Difficile: strategia più conservativa con le briscole di valore
+            // Difficoltà Difficile: strategia più conservativa con le briscole
             if (difficulty === 'hard') {
                 const bestWinningCard = winningCards[0];
                 const totalTrickPoints = getCardPoints(humanCard) + getCardPoints(bestWinningCard);
                 const isUsingBriscola = bestWinningCard.suit === briscolaSuit;
                 
-                // Non usare un Asso o un 3 di briscola per un turno con pochi punti
-                if (isUsingBriscola && getCardPoints(bestWinningCard) >= 10 && totalTrickPoints < 10) {
+                // Non usare NESSUNA briscola per un turno con pochi punti (<10), se possibile.
+                if (isUsingBriscola && totalTrickPoints < 10) {
                     const nonBriscolaLosingCards = sortedHand.filter(c => c.suit !== briscolaSuit && !winningCards.includes(c));
                     if (nonBriscolaLosingCards.length > 0) {
                         return nonBriscolaLosingCards[0]; // Scarta un liscio
