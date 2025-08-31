@@ -18,6 +18,7 @@ import { GameBoard } from './GameBoard';
 import { ChatPanel } from './ChatPanel';
 import { GameModals } from './GameModals';
 import { Snackbar } from './Snackbar';
+import { RoguelikeMap } from './RoguelikeMap';
 
 export function App() {
   const { settings, setters } = useGameSettings();
@@ -99,6 +100,15 @@ export function App() {
     );
   }
 
+  if (gameState.phase === 'roguelike-map') {
+      return <RoguelikeMap
+          roguelikeState={gameState.roguelikeState}
+          onStartLevel={gameActions.startRoguelikeLevel}
+          language={settings.language}
+          backgroundUrl={uiState.menuBackgroundUrl}
+      />;
+  }
+
   return (
     <div className={`app-container ${uiState.isChatModalOpen ? 'chat-open-mobile' : ''} ${!settings.isChatEnabled ? 'chat-disabled' : ''}`}>
       <GameBoard
@@ -114,7 +124,9 @@ export function App() {
         isProcessing={gameState.isProcessing}
         isAiThinkingMove={gameState.isAiThinkingMove}
         turn={gameState.turn}
-        onPlayCard={gameActions.playCard}
+        onSelectCardForPlay={gameActions.selectCardForPlay}
+        onConfirmCardPlay={gameActions.confirmCardPlay}
+        onCancelCardPlay={gameActions.cancelCardPlay}
         onGoToMenu={() => uiActions.openModal('confirmLeave')}
         onOpenSupportModal={() => uiActions.openModal('support')}
         language={settings.language}
@@ -138,6 +150,7 @@ export function App() {
         abilityTargetingState={gameState.abilityTargetingState}
         onTargetCard={gameActions.targetCardForAbility}
         revealedAiHand={gameState.revealedAiHand}
+        cardForElementalChoice={gameState.cardForElementalChoice}
       />
       
       {settings.isChatEnabled && gameState.currentWaifu &&

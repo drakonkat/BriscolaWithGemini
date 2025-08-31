@@ -12,6 +12,7 @@ import { PrivacyPolicyModal } from './PrivacyPolicyModal';
 import { TermsAndConditionsModal } from './TermsAndConditionsModal';
 import { GalleryModal } from './GalleryModal';
 import { FullscreenImageModal } from './FullscreenImageModal';
+import { EventModal } from './EventModal';
 
 import { useGameSettings } from '../hooks/useGameSettings';
 import { useGachaAndGallery } from '../hooks/useGachaAndGallery';
@@ -20,6 +21,8 @@ import { useChat } from '../hooks/useChat';
 import { useGameState } from '../hooks/useGameState';
 
 import { translations } from '../core/translations';
+import { shuffleDeck } from '../core/utils';
+import type { RoguelikeState, RoguelikeEvent } from '../core/types';
 
 type GameModalsProps = {
     uiState: ReturnType<typeof useUIState>['uiState'];
@@ -43,10 +46,58 @@ export const GameModals = ({
     settings,
 }: GameModalsProps) => {
     const T = translations[settings.language];
+    const TR = T.roguelike;
+
+    const handleEventChoice = (choice: () => void) => {
+        choice();
+        gameActions.setPhase('roguelike-map');
+    }
+
+    const generateEvents = (): RoguelikeEvent[] => {
+        const allEventGenerators = [
+            (): RoguelikeEvent => ({
+                type: 'market',
+                title: TR.marketTitle,
+                description: TR.marketDescription,
+                choices: [
+                    { text: TR.fortuneAmulet, description: TR.fortuneAmuletDesc, action: () => gameActions.setRoguelikeState((p: RoguelikeState) => ({ ...p, activePowerUp: 'fortune_amulet' })) },
+                    { text: TR.insightPotion, description: TR.insightPotionDesc, action: () => gameActions.setRoguelikeState((p: RoguelikeState) => ({ ...p, activePowerUp: 'insight_potion' })) },
+                    { text: TR.coinPouch, description: TR.coinPouchDesc, action: () => gachaActions.addCoins(50) }
+                ]
+            }),
+            (): RoguelikeEvent => ({
+                type: 'witch_hut',
+                title: TR.witchHutTitle,
+                description: TR.witchHutDescription,
+                choices: [
+                    { text: TR.powerUpAbility(T[gameState.humanAbility!]), description: TR.powerUpAbilityDesc, action: () => {} },
+                    { text: TR.swapAbility, description: TR.swapAbilityDesc, action: () => {} }
+                ]
+            }),
+            (): RoguelikeEvent => ({
+                type: 'healing_fountain',
+                title: TR.healingFountainTitle,
+                description: TR.healingFountainDescription,
+                choices: [
+                    { text: TR.startWith10Points, description: TR.startWith10PointsDesc, action: () => gameActions.setRoguelikeState((p: RoguelikeState) => ({...p, activePowerUp: 'healing_fountain'})) }
+                ]
+            }),
+            (): RoguelikeEvent => ({
+                type: 'challenge_altar',
+                title: TR.challengeAltarTitle,
+                description: TR.challengeAltarDescription,
+                choices: [
+                    { text: TR.acceptChallenge, description: TR.challengeScoreAbove80(100), action: () => gameActions.setRoguelikeState((p: RoguelikeState) => ({...p, challenge: {type: 'score_above_80', reward: 100, completed: false}})) },
+                    { text: TR.skipEvent, action: () => {} }
+                ]
+            }),
+        ];
+        return shuffleDeck(allEventGenerators).slice(0, 3).map(gen => gen());
+    }
 
     return (
         <>
-            {gameState.phase === 'gameOver' && gameState.gameResult && (
+            {gameState.phase === 'gameOver' && gameState.gameResult && settings.gameplayMode === 'classic' &&(
                 <GameOverModal
                     humanScore={gameState.humanScore}
                     aiScore={gameState.aiScore}
@@ -56,6 +107,24 @@ export const GameModals = ({
                     onGoToMenu={gameActions.goToMenu}
                     language={settings.language}
                     winnings={gameState.lastGameWinnings}
+                />
+            )}
+            
+            {gameState.phase === 'gameOver' && gameState.gameResult && settings.gameplayMode === 'roguelike' && (
+                 <div className="game-over-overlay">
+                    <div className="game-over-modal">
+                        <h2>{gameState.gameResult === 'human' ? TR.runCompleted : TR.runFailed}</h2>
+                        <p>{gameState.gameResult === 'human' ? TR.runCompletedMessage(gameState.lastGameWinnings) : TR.runFailedMessage(gameState.lastGameWinnings)}</p>
+                        <button onClick={() => gameActions.setPhase('roguelike-map')}>{TR.backToMap}</button>
+                    </div>
+                </div>
+            )}
+
+            {gameState.phase === 'roguelike-crossroads' && (
+                <EventModal 
+                    events={generateEvents()}
+                    onChoiceSelected={handleEventChoice}
+                    language={settings.language}
                 />
             )}
 

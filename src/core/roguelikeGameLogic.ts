@@ -7,16 +7,28 @@ import { getCardPoints, shuffleDeck } from './utils';
 import type { Card, Suit, Player, Element, AbilityType } from './types';
 
 /**
- * Initializes a deck for Roguelike mode by assigning a random element to each card.
+ * Initializes a deck for Roguelike mode by assigning elements to cards based on the current level.
  * @param deck The initial deck of cards.
- * @returns A new deck with elements assigned to each card.
+ * @param level The current level of the roguelike run (1-4).
+ * @returns A new deck with elements assigned to cards.
  */
-export const initializeRoguelikeDeck = (deck: Card[]): Card[] => {
-    const elements: Element[] = ['fire', 'water', 'air', 'earth'];
-    return deck.map(card => ({
-        ...card,
-        element: elements[Math.floor(Math.random() * elements.length)]
-    }));
+export const initializeRoguelikeDeck = (deck: Card[], level: number): Card[] => {
+    const allElements: Element[] = ['fire', 'water', 'air', 'earth'];
+    const activeElements = shuffleDeck(allElements).slice(0, level);
+
+    // Probability of a card having an element increases with the level
+    const elementProbabilities = [0, 0.5, 0.65, 0.8, 1.0]; // level 1-4
+    const probability = elementProbabilities[level];
+
+    return deck.map(card => {
+        if (Math.random() < probability) {
+            return {
+                ...card,
+                element: activeElements[Math.floor(Math.random() * activeElements.length)]
+            };
+        }
+        return card; // No element assigned
+    });
 };
 
 /**
@@ -80,14 +92,17 @@ export const calculateRoguelikeTrickPoints = (humanCard: Card, aiCard: Card) => 
     let humanCardPoints = getCardPoints(humanCard);
     let aiCardPoints = getCardPoints(aiCard);
 
+    const humanPowerActive = humanCard.elementalEffectActivated !== false;
+    const aiPowerActive = true; // AI always uses its power for now
+
     // Water Power: Halves opponent's card points
-    if (humanCard.element === 'water') aiCardPoints = Math.floor(aiCardPoints / 2);
-    if (aiCard.element === 'water') humanCardPoints = Math.floor(humanCardPoints / 2);
+    if (humanPowerActive && humanCard.element === 'water') aiCardPoints = Math.floor(aiCardPoints / 2);
+    if (aiPowerActive && aiCard.element === 'water') humanCardPoints = Math.floor(humanCardPoints / 2);
 
     let pointsForTrick = humanCardPoints + aiCardPoints;
 
     // Air Power: Nullifies trick points
-    if (humanCard.element === 'air' || aiCard.element === 'air') {
+    if ((humanPowerActive && humanCard.element === 'air') || (aiPowerActive && aiCard.element === 'air')) {
         pointsForTrick = 0;
     }
 

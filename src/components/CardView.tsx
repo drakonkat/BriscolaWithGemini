@@ -9,7 +9,7 @@ import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
 
 // FIX: Added `className` to the component's props to allow for custom styling from parent components.
-export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, element }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, element?: Element }) => {
+export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string }) => {
   const T = translations[lang];
 
   if (isFaceDown) {
@@ -23,19 +23,20 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, classNam
 
   const cardId = getCardId(card, lang);
   const imagePath = getCardImagePath(card);
+  const elementClass = card.element ? `element-${card.element}` : '';
 
   return (
     <div
-      className={`card ${isPlayable ? 'playable' : ''} ${className || ''}`}
+      className={`card ${isPlayable ? 'playable' : ''} ${elementClass} ${className || ''}`}
       onClick={onClick}
       role="button"
       aria-label={cardId}
       tabIndex={isPlayable ? 0 : -1}
     >
       <CachedImage imageUrl={imagePath} alt={cardId} />
-      {element && !isFaceDown && (
-          <div className="card-element-icon" title={T[element]}>
-              <ElementIcon element={element} />
+      {card.element && !isFaceDown && (
+          <div className="card-element-icon" title={T[card.element]}>
+              <ElementIcon element={card.element} />
           </div>
       )}
     </div>

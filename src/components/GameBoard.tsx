@@ -9,6 +9,7 @@ import { translations } from '../core/translations';
 import type { Card, Element, GameplayMode, Language, Player, Suit, Waifu, AbilityType } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
+import { ElementalChoiceModal } from './ElementalChoiceModal';
 
 const suitIcons: Record<Suit, string> = {
     'Bastoni': 'https://s3.tebi.io/waifubriscola/suits/bastoni.png',
@@ -70,7 +71,9 @@ interface GameBoardProps {
     isProcessing: boolean;
     isAiThinkingMove: boolean; // Nuovo prop
     turn: Player;
-    onPlayCard: (card: Card) => void;
+    onSelectCardForPlay: (card: Card) => void;
+    onConfirmCardPlay: (activate: boolean) => void;
+    onCancelCardPlay: () => void;
     onGoToMenu: () => void;
     onOpenSupportModal: () => void;
     language: Language;
@@ -94,6 +97,7 @@ interface GameBoardProps {
     abilityTargetingState: 'incinerate' | 'fortify' | 'cyclone' | null;
     onTargetCard: (card: Card) => void;
     revealedAiHand: Card[] | null;
+    cardForElementalChoice: Card | null;
 }
 
 export const GameBoard = ({
@@ -109,7 +113,9 @@ export const GameBoard = ({
     isProcessing,
     isAiThinkingMove,
     turn,
-    onPlayCard,
+    onSelectCardForPlay,
+    onConfirmCardPlay,
+    onCancelCardPlay,
     onGoToMenu,
     onOpenSupportModal,
     language,
@@ -133,6 +139,7 @@ export const GameBoard = ({
     abilityTargetingState,
     onTargetCard,
     revealedAiHand,
+    cardForElementalChoice,
 }: GameBoardProps) => {
 
     const T = translations[language];
@@ -172,7 +179,7 @@ export const GameBoard = ({
 
             {animatingCard && (
                 <div className={`animating-card-container player-${animatingCard.player} position-${cardsOnTable.length}`}>
-                    <CardView card={animatingCard.card} lang={language} element={animatingCard.card.element} />
+                    <CardView card={animatingCard.card} lang={language} />
                 </div>
             )}
             
@@ -231,11 +238,38 @@ export const GameBoard = ({
                                <ElementIcon element={element} />
                                <div className="elemental-power-description">
                                    <strong>{T[element]}:</strong>
-                                   <span>{T[descriptionKey]}</span>
+                                   {/* FIX: The type of T[descriptionKey] was too broad for ReactNode. Cast to string to fix. */}
+                                   <span>{T[descriptionKey] as string}</span>
                                </div>
                             </div>
                         );
                     })}
+
+                    {(humanAbility || aiAbility) && (
+                        <>
+                            <h3 className="abilities-subtitle">{T.abilitiesTitle}</h3>
+                            {humanAbility && (
+                                <div className="elemental-power-row">
+                                    <ElementIcon element={abilityToElement[humanAbility]} />
+                                    <div className="elemental-power-description">
+                                        <strong>{T.scoreYou}:</strong>
+                                        {/* FIX: The type was too broad for ReactNode. Cast to string to fix. */}
+                                        <span> {T[`${humanAbility}Description` as keyof typeof T] as string}</span>
+                                    </div>
+                                </div>
+                            )}
+                            {aiAbility && (
+                                <div className="elemental-power-row">
+                                    <ElementIcon element={abilityToElement[aiAbility]} />
+                                    <div className="elemental-power-description">
+                                        <strong>{aiName}:</strong>
+                                        {/* FIX: The type was too broad for ReactNode. Cast to string to fix. */}
+                                        <span> {T[`${aiAbility}Description` as keyof typeof T] as string}</span>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
             
@@ -250,7 +284,7 @@ export const GameBoard = ({
                             {deckSize > 0 && <span className="deck-size-indicator">{deckSize}</span>}
                         </div>
                         <div className="briscola-card-rotated">
-                            <CardView card={briscolaCard} lang={language} element={briscolaCard.element} />
+                            <CardView card={briscolaCard} lang={language} />
                         </div>
                     </div>
                 )}
@@ -268,7 +302,6 @@ export const GameBoard = ({
                             isPlayable={abilityTargetingState === 'incinerate'}
                             onClick={abilityTargetingState === 'incinerate' ? () => onTargetCard(card) : undefined}
                             className={abilityTargetingState === 'incinerate' ? 'targeting' : ''}
-                            element={card.element}
                         />
                     )}
                 </div>
@@ -276,7 +309,7 @@ export const GameBoard = ({
 
             <div className="table-area">
                 <div className="played-cards">
-                    {cardsOnTable.map((card) => <CardView key={card.id} card={card} lang={language} element={card.element} />)}
+                    {cardsOnTable.map((card) => <CardView key={card.id} card={card} lang={language} />)}
                     {isAiThinkingMove && <div className="spinner" aria-label="L'IA sta pensando"></div>}
                 </div>
             </div>
@@ -295,7 +328,7 @@ export const GameBoard = ({
                                 if (abilityTargetingState) {
                                     onTargetCard(card);
                                 } else {
-                                    onPlayCard(card);
+                                    onSelectCardForPlay(card);
                                 }
                             }}
                             lang={language}
@@ -304,7 +337,6 @@ export const GameBoard = ({
                                  ${abilityTargetingState && abilityTargetingState !== 'incinerate' ? 'targeting' : ''}
                                  ${card.isBurned ? 'burned' : ''}`
                             }
-                            element={card.element}
                         />
                     ))}
                 </div>
@@ -321,6 +353,15 @@ export const GameBoard = ({
                     {message}
                 </div>
             </div>
+
+            {cardForElementalChoice && (
+                <ElementalChoiceModal 
+                    card={cardForElementalChoice}
+                    onConfirm={onConfirmCardPlay}
+                    onCancel={onCancelCardPlay}
+                    lang={language}
+                />
+            )}
         </main>
     );
 };
