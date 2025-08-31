@@ -15,7 +15,7 @@ import { getCardPoints, shuffleDeck } from '../core/utils';
 import { QuotaExceededError, getAIWaifuTrickMessage, getAIGenericTeasingMessage } from '../core/gemini';
 import { getLocalAIMove, getFallbackWaifuMessage, getAIAbilityDecision } from '../core/localAI';
 import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
-import type { GamePhase, Card, Player, Waifu, GameEmotionalState, Suit, Element, AbilityType, RoguelikeState, RoguelikeEvent, ElementalClashResult } from '../core/types';
+import type { GamePhase, Card, Player, Waifu, GameEmotionalState, Suit, Element, AbilityType, RoguelikeState, RoguelikeEvent, ElementalClashResult, TrickHistoryEntry } from '../core/types';
 import type { useGameSettings } from './useGameSettings';
 
 const SCORE_THRESHOLD = 15;
@@ -83,6 +83,10 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     const [abilityTargetingState, setAbilityTargetingState] = useState<'incinerate' | 'fortify' | 'cyclone' | null>(null);
     const [revealedAiHand, setRevealedAiHand] = useState<Card[] | null>(null);
     const [aiKnowledgeOfHumanHand, setAiKnowledgeOfHumanHand] = useState<Card[] | null>(null);
+
+    // History State
+    const [trickHistory, setTrickHistory] = useState<TrickHistoryEntry[]>([]);
+    const [lastTrick, setLastTrick] = useState<TrickHistoryEntry | null>(null);
 
     const isProcessing = isAiThinkingMove || isResolvingTrick;
     const lastResolvedTrick = useRef<string[]>([]);
@@ -203,6 +207,8 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         trickCounter.current = 0;
         setHumanAbilityCharges(0);
         setAiAbilityCharges(0);
+        setTrickHistory([]);
+        setLastTrick(null);
         
         if (gameplayMode === 'classic') {
             setCurrentWaifu(newWaifu);
@@ -371,7 +377,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                             winningElement: weaknessWinner === 'human' ? humanCard.element! : aiCard.element!,
                             losingElement: weaknessWinner === 'human' ? aiCard.element! : humanCard.element!,
                         });
-                        clashDelay = 3000;
+                        clashDelay = 5000;
                     } else {
                         // Same element or no weakness, roll dice
                         const humanRoll = Math.floor(Math.random() * 100) + 1;
@@ -379,7 +385,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                         const rollWinner = humanRoll > aiRoll ? 'human' : aiRoll > humanRoll ? 'ai' : 'tie';
                         if(rollWinner !== 'tie') clashWinner = rollWinner;
                         setElementalClash({ type: 'dice', humanRoll, aiRoll, winner: rollWinner });
-                        clashDelay = 3000;
+                        clashDelay = 5000;
                     }
                 } else if (humanCard.element) {
                     clashWinner = 'human';
@@ -428,6 +434,16 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                 else setAiScore(s => s + pointsForTrick);
                 
                 playSound(winner === 'human' ? 'trick-win' : 'trick-lose');
+
+                const newHistoryEntry: TrickHistoryEntry = {
+                    trickNumber: trickCounter.current,
+                    humanCard,
+                    aiCard,
+                    winner,
+                    points: pointsForTrick,
+                };
+                setTrickHistory(prev => [...prev, newHistoryEntry]);
+                setLastTrick(newHistoryEntry);
 
                 const proceed = () => {
                     setLastTrickHighlights({ human: 'unset', ai: 'unset' });
@@ -546,6 +562,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
             humanAbilityCharges, aiAbilityCharges,
             abilityTargetingState, revealedAiHand, roguelikeState,
             cardForElementalChoice,
+            trickHistory, lastTrick,
         },
         gameActions: {
             startGame, activateHumanAbility, targetCardForAbility, confirmLeaveGame, goToMenu, handleQuotaExceeded, continueFromQuotaModal, startRoguelikeLevel, setRoguelikeState, setPhase,

@@ -131,6 +131,7 @@ export function App() {
         onCancelCardPlay={gameActions.cancelCardPlay}
         onGoToMenu={() => uiActions.openModal('confirmLeave')}
         onOpenSupportModal={() => uiActions.openModal('support')}
+        onOpenHistoryModal={() => uiActions.openModal('history')}
         language={settings.language}
         backgroundUrl={gameState.backgroundUrl}
         animatingCard={uiState.animatingCard}
@@ -155,6 +156,7 @@ export function App() {
         cardForElementalChoice={gameState.cardForElementalChoice}
         elementalClash={gameState.elementalClash}
         lastTrickHighlights={gameState.lastTrickHighlights}
+        lastTrick={gameState.lastTrick}
       />
       
       {settings.isChatEnabled && gameState.currentWaifu &&

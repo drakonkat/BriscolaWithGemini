@@ -63,3 +63,11 @@ export type ElementalClashResult = {
     winningElement: Element;
     losingElement: Element;
 };
+
+export type TrickHistoryEntry = {
+  trickNumber: number;
+  humanCard: Card;
+  aiCard: Card;
+  winner: Player;
+  points: number;
+};

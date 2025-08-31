@@ -75,6 +75,15 @@ export const translations = {
     tokensUsed: "Token Usati",
     briscolaLabel: "Briscola",
     remainingCardsLabel: "Carte Rimanenti",
+    history: {
+      title: "Storico Turni",
+      lastTrick: "Ultimo Turno",
+      trick: "Turno",
+      you: "Tu",
+      opponent: "Avversaria",
+      winner: "Vincitore",
+      points: "Punti",
+    },
     // Roguelike Mode
     roguelike: {
       mapTitle: "Mappa Roguelike",
@@ -408,6 +417,15 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
     tokensUsed: "Tokens Used",
     briscolaLabel: "Trump",
     remainingCardsLabel: "Cards Remaining",
+    history: {
+      title: "Turn History",
+      lastTrick: "Last Trick",
+      trick: "Trick",
+      you: "You",
+      opponent: "Opponent",
+      winner: "Winner",
+      points: "Points",
+    },
      // Roguelike Mode
     roguelike: {
       mapTitle: "Roguelike Map",

@@ -10,7 +10,7 @@ import type { Language } from '../core/types';
 import { useLocalStorage } from './useLocalStorage';
 
 type SnackbarType = 'success' | 'warning';
-type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat';
+type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history';
 
 export const useUIState = (language: Language) => {
     const posthog = usePostHog();
@@ -25,6 +25,7 @@ export const useUIState = (language: Language) => {
     const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
     const [isConfirmLeaveModalOpen, setIsConfirmLeaveModalOpen] = useState(false);
     const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
     const [isQuotaExceededModalOpen, setIsQuotaExceededModalOpen] = useState(false);
     const [hasVotedForSubscription, setHasVotedForSubscription] = useLocalStorage<boolean>('has_voted_subscription', false);
 
@@ -49,6 +50,7 @@ export const useUIState = (language: Language) => {
             case 'waifuDetails': setIsWaifuModalOpen(true); break;
             case 'support': setIsSupportModalOpen(true); break;
             case 'confirmLeave': setIsConfirmLeaveModalOpen(true); break;
+            case 'history': setIsHistoryModalOpen(true); break;
             case 'chat': 
                 setIsChatModalOpen(true); 
                 setUnreadMessageCount(0);
@@ -65,6 +67,7 @@ export const useUIState = (language: Language) => {
             case 'waifuDetails': setIsWaifuModalOpen(false); break;
             case 'support': setIsSupportModalOpen(false); break;
             case 'confirmLeave': setIsConfirmLeaveModalOpen(false); break;
+            case 'history': setIsHistoryModalOpen(false); break;
             case 'chat': setIsChatModalOpen(false); break;
         }
     }, []);
@@ -101,6 +104,7 @@ export const useUIState = (language: Language) => {
         uiState: {
             isRulesModalOpen, isPrivacyModalOpen, isTermsModalOpen, isGalleryModalOpen,
             isWaifuModalOpen, isSupportModalOpen, isConfirmLeaveModalOpen, isChatModalOpen,
+            isHistoryModalOpen,
             isQuotaExceededModalOpen,
             menuBackgroundUrl, snackbar, waifuBubbleMessage, unreadMessageCount,
             animatingCard, drawingCards,

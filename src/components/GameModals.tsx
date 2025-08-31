@@ -13,6 +13,7 @@ import { TermsAndConditionsModal } from './TermsAndConditionsModal';
 import { GalleryModal } from './GalleryModal';
 import { FullscreenImageModal } from './FullscreenImageModal';
 import { EventModal } from './EventModal';
+import { HistoryModal } from './HistoryModal';
 
 import { useGameSettings } from '../hooks/useGameSettings';
 import { useGachaAndGallery } from '../hooks/useGachaAndGallery';
@@ -184,6 +185,14 @@ export const GameModals = ({
                 confirmText={T.confirmLeave.confirm}
                 cancelText={T.confirmLeave.cancel}
                 language={settings.language}
+            />
+
+            <HistoryModal
+                isOpen={uiState.isHistoryModalOpen}
+                onClose={() => uiActions.closeModal('history')}
+                history={gameState.trickHistory}
+                language={settings.language}
+                aiName={gameState.currentWaifu?.name ?? ''}
             />
         </>
     );

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { CardView } from './CardView';
 import { getCardId } from '../core/utils';
 import { translations } from '../core/translations';
-import type { Card, Element, ElementalClashResult, GameplayMode, Language, Player, Suit, Waifu, AbilityType } from '../core/types';
+import type { Card, Element, ElementalClashResult, GameplayMode, Language, Player, Suit, Waifu, AbilityType, TrickHistoryEntry } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
 import { ElementalChoiceModal } from './ElementalChoiceModal';
@@ -79,6 +79,7 @@ interface GameBoardProps {
     onCancelCardPlay: () => void;
     onGoToMenu: () => void;
     onOpenSupportModal: () => void;
+    onOpenHistoryModal: () => void;
     language: Language;
     backgroundUrl: string;
     animatingCard: { card: Card; player: Player } | null;
@@ -103,6 +104,7 @@ interface GameBoardProps {
     cardForElementalChoice: Card | null;
     elementalClash: ElementalClashResult | null;
     lastTrickHighlights: { human: ElementalEffectStatus, ai: ElementalEffectStatus };
+    lastTrick: TrickHistoryEntry | null;
 }
 
 export const GameBoard = ({
@@ -124,6 +126,7 @@ export const GameBoard = ({
     onCancelCardPlay,
     onGoToMenu,
     onOpenSupportModal,
+    onOpenHistoryModal,
     language,
     backgroundUrl,
     animatingCard,
@@ -148,6 +151,7 @@ export const GameBoard = ({
     cardForElementalChoice,
     elementalClash,
     lastTrickHighlights,
+    lastTrick,
 }: GameBoardProps) => {
 
     const T = translations[language];
@@ -168,8 +172,8 @@ export const GameBoard = ({
     const waifuIconAriaLabel = isChatEnabled ? T.chatWith(aiName) : T.waifuDetails(aiName);
     
     // Determine cards on table for the clash modal
-    const humanCardOnTable = cardsOnTable.length === 2 ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
-    const aiCardOnTable = cardsOnTable.length === 2 ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
+    const humanCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
+    const aiCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
 
     return (
         <main className="game-board">
@@ -373,6 +377,15 @@ export const GameBoard = ({
                         <AbilityIndicator player="human" ability={humanAbility} charges={humanAbilityCharges} onActivate={onActivateHumanAbility} lang={language} />
                     )}
                 </div>
+
+                {lastTrick && (
+                    <button className="last-trick-recap" onClick={onOpenHistoryModal} title={T.history.lastTrick}>
+                        <CardView card={lastTrick.humanCard} lang={language} />
+                        <CardView card={lastTrick.aiCard} lang={language} />
+                        <span>{lastTrick.winner === 'human' ? T.scoreYou : aiName} +{lastTrick.points}</span>
+                    </button>
+                )}
+
                 <div className="turn-message" aria-live="polite">
                     {message}
                 </div>
