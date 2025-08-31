@@ -552,7 +552,7 @@ input:checked + .slider:before {
   box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.1);
   position: relative;
   user-select: none;
-  transition: transform 0.2s ease-out, box-shadow 0.2s;
+  transition: transform 0.2s ease-out, box-shadow 0.2s, filter 0.2s;
   overflow: hidden;
   background-color: var(--card-bg); /* Fallback while image loads */
 }
@@ -603,6 +603,27 @@ input:checked + .slider:before {
     cursor: crosshair;
     outline: 2px dashed var(--red-suit);
     transform: scale(1.05);
+}
+
+/* Elemental Effect Activation Highlights */
+@keyframes pulse-cyan {
+  0% {
+    box-shadow: 0 0 12px 4px #00e5ff, 0 4px 8px rgba(0,0,0,0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px 8px #00e5ff, 0 4px 8px rgba(0,0,0,0.2);
+  }
+  100% {
+    box-shadow: 0 0 12px 4px #00e5ff, 0 4px 8px rgba(0,0,0,0.2);
+  }
+}
+
+.card.effect-active {
+  animation: pulse-cyan 1.5s infinite;
+}
+
+.card.effect-inactive {
+  filter: grayscale(50%) opacity(0.7);
 }
 
 .card-element-icon {
@@ -2195,6 +2216,86 @@ input:checked + .slider:before {
     color: #bbb;
 }
 
+/* --- Elemental Clash UI --- */
+.elemental-clash-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(4px);
+}
+.elemental-clash-modal {
+  background-color: var(--ui-bg);
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 2px solid #ffd700;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+  animation: fade-in 0.3s ease-out;
+  min-width: 400px;
+}
+.elemental-clash-modal h2 {
+  font-size: 2.5rem;
+  color: #ffd700;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.clash-results {
+  display: flex;
+  justify-content: space-around;
+  gap: 3rem;
+  margin-bottom: 2rem;
+}
+.clash-player-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+.clash-player-result .card {
+  pointer-events: none;
+}
+.clash-player-result.winner {
+  transform: scale(1.1);
+  background-color: rgba(76, 175, 80, 0.2);
+  box-shadow: 0 0 15px var(--primary-accent);
+}
+.clash-player-result.tie {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.clash-player-result h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0;
+  color: #ccc;
+}
+.clash-roll {
+  font-size: 4rem;
+  font-weight: bold;
+  color: white;
+}
+.clash-outcome {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #a0d8a2;
+  animation: pulse-outcome 1s infinite;
+  min-height: 2.2rem;
+}
+@keyframes pulse-outcome {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
 
 /* --- Responsive Design --- */
 @media (max-width: 1024px) {
@@ -2435,8 +2536,9 @@ input:checked + .slider:before {
       width: 70px;
       height: 70px;
   }
-  .rules-modal, .waifu-details-modal, .confirmation-modal, .gallery-modal, .event-modal {
+  .rules-modal, .waifu-details-modal, .confirmation-modal, .gallery-modal, .event-modal, .elemental-clash-modal {
       padding: 1.5rem 1rem;
+      min-width: 90%;
   }
   .rules-points-list {
       grid-template-columns: 1fr;
@@ -2469,6 +2571,15 @@ input:checked + .slider:before {
   .map-node {
     width: 80px;
     height: 80px;
+  }
+  .elemental-clash-modal h2 {
+    font-size: 1.8rem;
+  }
+  .clash-results {
+    gap: 1rem;
+  }
+  .clash-roll {
+    font-size: 3rem;
   }
 }
 

@@ -51,3 +51,9 @@ export type RoguelikeState = {
     aiAbility: AbilityType | null;
     encounteredWaifus: string[];
 };
+
+export type ElementalClashResult = {
+    humanRoll: number;
+    aiRoll: number;
+    winner: 'human' | 'ai' | 'tie';
+};

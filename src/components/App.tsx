@@ -125,6 +125,7 @@ export function App() {
         isProcessing={gameState.isProcessing}
         isAiThinkingMove={gameState.isAiThinkingMove}
         turn={gameState.turn}
+        trickStarter={gameState.trickStarter}
         onSelectCardForPlay={gameActions.selectCardForPlay}
         onConfirmCardPlay={gameActions.confirmCardPlay}
         onCancelCardPlay={gameActions.cancelCardPlay}
@@ -152,6 +153,8 @@ export function App() {
         onTargetCard={gameActions.targetCardForAbility}
         revealedAiHand={gameState.revealedAiHand}
         cardForElementalChoice={gameState.cardForElementalChoice}
+        elementalClash={gameState.elementalClash}
+        lastTrickHighlights={gameState.lastTrickHighlights}
       />
       
       {settings.isChatEnabled && gameState.currentWaifu &&

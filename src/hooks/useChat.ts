@@ -56,7 +56,8 @@ export const useChat = ({
         showWaifuBubble(initialAiMessage.text);
     }, [isChatEnabled, language, showWaifuBubble]);
 
-    const prevPhaseRef = useRef<GamePhase>();
+    // FIX: Explicitly initialize useRef with undefined to satisfy rules requiring an argument.
+    const prevPhaseRef = useRef<GamePhase | undefined>(undefined);
     useEffect(() => {
         prevPhaseRef.current = phase;
     });
@@ -66,7 +67,8 @@ export const useChat = ({
         if ((prevPhase === 'menu' || prevPhase === 'roguelike-map') && phase === 'playing' && currentWaifu) {
             resetChat(currentWaifu);
         }
-    }, [phase, prevPhase, currentWaifu, resetChat]);
+    // FIX: Removed `prevPhase` from the dependency array as it's a derived value from a ref and not a state or prop.
+    }, [phase, currentWaifu, resetChat]);
 
 
     const updateChatSession = useCallback(() => {
@@ -121,6 +123,7 @@ export const useChat = ({
         setHasChattedThisTurn(true);
     
         try {
+            // FIX: The chat.sendMessage method in the Gemini SDK expects an object with a 'message' property.
             const response = await chatSession.sendMessage({ message: userMessage });
             const aiMessage: ChatMessage = { sender: 'ai', text: response.text };
             const tokensUsed = response.usageMetadata?.totalTokenCount ?? 0;

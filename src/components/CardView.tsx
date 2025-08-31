@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { getCardId, getCardImagePath } from '../core/utils';
-import type { Card, Language, Element } from '../core/types';
+import type { Card, Language } from '../core/types';
 import { translations } from '../core/translations';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
 
 // FIX: Added `className` to the component's props to allow for custom styling from parent components.
-export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string }) => {
+export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, elementalEffectStatus?: 'active' | 'inactive' }) => {
   const T = translations[lang];
 
   if (isFaceDown) {
@@ -24,10 +24,11 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, classNam
   const cardId = getCardId(card, lang);
   const imagePath = getCardImagePath(card);
   const elementClass = card.element ? `element-${card.element}` : '';
+  const effectClass = elementalEffectStatus ? `effect-${elementalEffectStatus}` : '';
 
   return (
     <div
-      className={`card ${isPlayable ? 'playable' : ''} ${elementClass} ${className || ''}`}
+      className={`card ${isPlayable ? 'playable' : ''} ${elementClass} ${effectClass} ${className || ''}`}
       onClick={onClick}
       role="button"
       aria-label={cardId}

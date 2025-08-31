@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { CardView } from './CardView';
 import { getCardId } from '../core/utils';
 import { translations } from '../core/translations';
-import type { Card, Element, GameplayMode, Language, Player, Suit, Waifu, AbilityType } from '../core/types';
+import type { Card, Element, ElementalClashResult, GameplayMode, Language, Player, Suit, Waifu, AbilityType } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
 import { ElementalChoiceModal } from './ElementalChoiceModal';
@@ -24,6 +24,8 @@ const abilityToElement: Record<AbilityType, Element> = {
     'cyclone': 'air',
     'fortify': 'earth',
 };
+
+type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
 
 const AbilityIndicator = ({ player, ability, charges, onActivate, lang }: { player: Player, ability: AbilityType, charges: number, onActivate?: () => void, lang: Language }) => {
     const T = translations[lang];
@@ -71,6 +73,7 @@ interface GameBoardProps {
     isProcessing: boolean;
     isAiThinkingMove: boolean; // Nuovo prop
     turn: Player;
+    trickStarter: Player;
     onSelectCardForPlay: (card: Card) => void;
     onConfirmCardPlay: (activate: boolean) => void;
     onCancelCardPlay: () => void;
@@ -98,6 +101,8 @@ interface GameBoardProps {
     onTargetCard: (card: Card) => void;
     revealedAiHand: Card[] | null;
     cardForElementalChoice: Card | null;
+    elementalClash: ElementalClashResult | null;
+    lastTrickHighlights: { human: ElementalEffectStatus, ai: ElementalEffectStatus };
 }
 
 export const GameBoard = ({
@@ -113,6 +118,7 @@ export const GameBoard = ({
     isProcessing,
     isAiThinkingMove,
     turn,
+    trickStarter,
     onSelectCardForPlay,
     onConfirmCardPlay,
     onCancelCardPlay,
@@ -140,9 +146,12 @@ export const GameBoard = ({
     onTargetCard,
     revealedAiHand,
     cardForElementalChoice,
+    elementalClash,
+    lastTrickHighlights,
 }: GameBoardProps) => {
 
     const T = translations[language];
+    const TC = T.elementalClash;
     const [isLegendExpanded, setIsLegendExpanded] = useState(true);
     const elements: Element[] = ['fire', 'water', 'air', 'earth'];
 
@@ -157,6 +166,10 @@ export const GameBoard = ({
     };
 
     const waifuIconAriaLabel = isChatEnabled ? T.chatWith(aiName) : T.waifuDetails(aiName);
+    
+    // Determine cards on table for the clash modal
+    const humanCardOnTable = cardsOnTable.length === 2 ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
+    const aiCardOnTable = cardsOnTable.length === 2 ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
 
     return (
         <main className="game-board">
@@ -309,7 +322,18 @@ export const GameBoard = ({
 
             <div className="table-area">
                 <div className="played-cards">
-                    {cardsOnTable.map((card) => <CardView key={card.id} card={card} lang={language} />)}
+                    {cardsOnTable.map((card, index) => {
+                        const owner = index === 0 ? trickStarter : (trickStarter === 'human' ? 'ai' : 'human');
+                        const status = lastTrickHighlights[owner];
+                        return (
+                            <CardView 
+                                key={card.id} 
+                                card={card} 
+                                lang={language} 
+                                elementalEffectStatus={status === 'unset' ? undefined : status}
+                            />
+                        );
+                    })}
                     {isAiThinkingMove && <div className="spinner" aria-label="L'IA sta pensando"></div>}
                 </div>
             </div>
@@ -361,6 +385,29 @@ export const GameBoard = ({
                     onCancel={onCancelCardPlay}
                     lang={language}
                 />
+            )}
+
+            {elementalClash && humanCardOnTable && aiCardOnTable && (
+                <div className="elemental-clash-overlay">
+                    <div className="elemental-clash-modal">
+                        <h2>{TC.title}</h2>
+                        <div className="clash-results">
+                            <div className={`clash-player-result ${elementalClash.winner === 'human' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
+                                <CardView card={humanCardOnTable} lang={language} />
+                                <h3>{TC.yourRoll}</h3>
+                                <div className="clash-roll">{elementalClash.humanRoll}</div>
+                            </div>
+                            <div className={`clash-player-result ${elementalClash.winner === 'ai' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
+                                <CardView card={aiCardOnTable} lang={language} />
+                                <h3>{TC.opponentRoll}</h3>
+                                <div className="clash-roll">{elementalClash.aiRoll}</div>
+                            </div>
+                        </div>
+                        <div className="clash-outcome">
+                            {elementalClash.winner !== 'tie' ? TC.winner : TC.tie}
+                        </div>
+                    </div>
+                </div>
             )}
         </main>
     );

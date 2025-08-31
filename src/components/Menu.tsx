@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { translations } from '../core/translations';
 import type { Language, Waifu, GameplayMode, Difficulty } from '../core/types';
 import { WaifuSelector } from './WaifuSelector';
@@ -54,6 +54,20 @@ export const Menu = ({
     const T = translations[language];
     const [selectedWaifu, setSelectedWaifu] = useState<Waifu | null>(null);
     const [isRandomCardSelected, setIsRandomCardSelected] = useState(false);
+
+    useEffect(() => {
+        if (gameplayMode === 'roguelike') {
+            // In Roguelike mode, the opponent is always random.
+            // Pre-select it so the "Start Game" button is enabled on load.
+            setSelectedWaifu(null);
+            setIsRandomCardSelected(true);
+        } else {
+            // When in Classic mode (or switching to it), reset the selection.
+            // The user must explicitly choose an opponent.
+            setSelectedWaifu(null);
+            setIsRandomCardSelected(false);
+        }
+    }, [gameplayMode]);
 
     const handleWaifuSelection = (waifu: Waifu | null) => {
         if (waifu === null) { // Random selected
@@ -119,13 +133,7 @@ export const Menu = ({
                         <select 
                             id="game-mode-select" 
                             value={gameplayMode} 
-                            onChange={(e) => {
-                                const newMode = e.target.value as GameplayMode;
-                                onGameplayModeChange(newMode);
-                                if (newMode === 'roguelike') {
-                                    handleWaifuSelection(null); // Autoselect Random
-                                }
-                            }}
+                            onChange={(e) => onGameplayModeChange(e.target.value as GameplayMode)}
                         >
                             <option value="classic">{T.gameModeClassic}</option>
                             <option value="roguelike">{T.gameModeRoguelike}</option>

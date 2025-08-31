@@ -127,6 +127,13 @@ export const translations = {
     waterDescription: "Dimezza i punti della carta avversaria in questo turno.",
     airDescription: "Gioca una carta Aria per annullare i punti di questo turno.",
     earthDescription: "Se perdi il turno, recupera i punti della tua carta Terra.",
+    elementalClash: {
+        title: "Scontro Elementale!",
+        yourRoll: "Tuo Lancio",
+        opponentRoll: "Lancio Avversaria",
+        winner: "Vincitore!",
+        tie: "Pareggio!"
+    },
     // Elemental Choice
     elementalChoiceTitle: "Come vuoi giocare questa carta?",
     activatePower: "Attiva Potere",
@@ -451,6 +458,13 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
     waterDescription: "Halves the opponent's card points for this trick.",
     airDescription: "Play an Air card to nullify this trick's points.",
     earthDescription: "If you lose the trick, recover your Earth card's points.",
+    elementalClash: {
+        title: "Elemental Clash!",
+        yourRoll: "Your Roll",
+        opponentRoll: "Opponent's Roll",
+        winner: "Winner!",
+        tie: "Tie!"
+    },
     // Elemental Choice
     elementalChoiceTitle: "How do you want to play this card?",
     activatePower: "Activate Power",

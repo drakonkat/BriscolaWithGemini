@@ -86,14 +86,13 @@ export const getRoguelikeTrickWinner = (playedCards: Card[], starter: Player, br
  * Calculates the points for a trick in Roguelike mode, applying elemental power effects.
  * @param humanCard The card played by the human.
  * @param aiCard The card played by the AI.
+ * @param humanPowerActive Whether the human player's elemental power is active.
+ * @param aiPowerActive Whether the AI player's elemental power is active.
  * @returns An object with the total points for the trick and the individual card points after modifications.
  */
-export const calculateRoguelikeTrickPoints = (humanCard: Card, aiCard: Card) => {
+export const calculateRoguelikeTrickPoints = (humanCard: Card, aiCard: Card, humanPowerActive: boolean, aiPowerActive: boolean) => {
     let humanCardPoints = getCardPoints(humanCard);
     let aiCardPoints = getCardPoints(aiCard);
-
-    const humanPowerActive = humanCard.elementalEffectActivated !== false;
-    const aiPowerActive = true; // AI always uses its power for now
 
     // Water Power: Halves opponent's card points
     if (humanPowerActive && humanCard.element === 'water') aiCardPoints = Math.floor(aiCardPoints / 2);
