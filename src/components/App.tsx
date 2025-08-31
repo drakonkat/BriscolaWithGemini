@@ -161,6 +161,7 @@ export function App() {
         elementalClash={gameState.elementalClash}
         lastTrickHighlights={gameState.lastTrickHighlights}
         lastTrick={gameState.lastTrick}
+        activeElements={gameState.activeElements}
       />
       
       {settings.isChatEnabled && gameState.currentWaifu &&

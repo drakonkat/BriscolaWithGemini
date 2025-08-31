@@ -84,6 +84,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     const [abilityUsedThisTurn, setAbilityUsedThisTurn] = useState<{ ability: AbilityType; originalCard: Card } | null>(null);
     const [revealedAiHand, setRevealedAiHand] = useState<Card[] | null>(null);
     const [aiKnowledgeOfHumanHand, setAiKnowledgeOfHumanHand] = useState<Card[] | null>(null);
+    const [activeElements, setActiveElements] = useState<Element[]>([]);
 
     // History State
     const [trickHistory, setTrickHistory] = useState<TrickHistoryEntry[]>([]);
@@ -147,9 +148,11 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
             encounteredWaifus: [...prev.encounteredWaifus, nextWaifu.name]
         }));
     
-        let newDeck = shuffleDeck(createDeck());
-        newDeck = initializeRoguelikeDeck(newDeck, level);
+        const initialDeck = shuffleDeck(createDeck());
+        const { deck: elementalDeck, activeElements: newActiveElements } = initializeRoguelikeDeck(initialDeck, level);
+        setActiveElements(newActiveElements);
     
+        let newDeck = elementalDeck;
         const newBriscola = newDeck[newDeck.length - 1];
     
         let newHumanHand = newDeck.slice(0, 3);
@@ -212,6 +215,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         setTrickHistory([]);
         setLastTrick(null);
         setAbilityUsedThisTurn(null);
+        setActiveElements([]);
         
         if (gameplayMode === 'classic') {
             setCurrentWaifu(newWaifu);
@@ -639,6 +643,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
             abilityTargetingState, abilityUsedThisTurn, revealedAiHand, roguelikeState,
             cardForElementalChoice,
             trickHistory, lastTrick,
+            activeElements,
         },
         gameActions: {
             startGame, activateHumanAbility, targetCardInHandForAbility, targetCardOnTableForAbility, cancelAbilityTargeting, onUndoAbilityUse, confirmLeaveGame, goToMenu, handleQuotaExceeded, continueFromQuotaModal, startRoguelikeLevel, setRoguelikeState, setPhase,

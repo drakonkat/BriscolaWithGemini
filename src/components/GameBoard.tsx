@@ -110,6 +110,7 @@ interface GameBoardProps {
     elementalClash: ElementalClashResult | null;
     lastTrickHighlights: { human: ElementalEffectStatus, ai: ElementalEffectStatus };
     lastTrick: TrickHistoryEntry | null;
+    activeElements: Element[];
 }
 
 export const GameBoard = ({
@@ -162,12 +163,12 @@ export const GameBoard = ({
     elementalClash,
     lastTrickHighlights,
     lastTrick,
+    activeElements,
 }: GameBoardProps) => {
 
     const T = translations[language];
     const TC = T.elementalClash;
     const [isLegendExpanded, setIsLegendExpanded] = useState(true);
-    const elements: Element[] = ['fire', 'water', 'air', 'earth'];
 
     const winningScore = 60;
     const maxBlur = 25;
@@ -257,14 +258,14 @@ export const GameBoard = ({
                 </button>
             </div>
             
-            {gameplayMode === 'roguelike' && (
+            {gameplayMode === 'roguelike' && activeElements.length > 0 && (
                 <div className={`elemental-powers-panel ${!isLegendExpanded ? 'collapsed' : ''}`} title={T.elementalPowersTitle}>
                     <button className="elemental-powers-toggle" onClick={() => setIsLegendExpanded(!isLegendExpanded)} title={T.toggleLegend}>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
                         </svg>
                     </button>
-                    {elements.map(element => {
+                    {activeElements.map(element => {
                         const descriptionKey = `${element}Description` as 'fireDescription' | 'waterDescription' | 'airDescription' | 'earthDescription';
                         return (
                             <div key={element} className="elemental-power-row">

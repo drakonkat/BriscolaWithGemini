@@ -10,25 +10,29 @@ import type { Card, Suit, Player, Element, AbilityType } from './types';
  * Initializes a deck for Roguelike mode by assigning elements to cards based on the current level.
  * @param deck The initial deck of cards.
  * @param level The current level of the roguelike run (1-4).
- * @returns A new deck with elements assigned to cards.
+ * @returns An object containing the new deck with elements assigned and a list of active elements.
  */
-export const initializeRoguelikeDeck = (deck: Card[], level: number): Card[] => {
+export const initializeRoguelikeDeck = (deck: Card[], level: number): { deck: Card[], activeElements: Element[] } => {
     const allElements: Element[] = ['fire', 'water', 'air', 'earth'];
-    const activeElements = shuffleDeck(allElements).slice(0, level);
+    const elementsForLevel = shuffleDeck(allElements).slice(0, level);
 
     // Probability of a card having an element increases with the level
     const elementProbabilities = [0, 0.5, 0.65, 0.8, 1.0]; // level 1-4
     const probability = elementProbabilities[level];
 
-    return deck.map(card => {
-        if (Math.random() < probability) {
+    const assignedElements = new Set<Element>();
+    const newDeck = deck.map(card => {
+        if (elementsForLevel.length > 0 && Math.random() < probability) {
+            const elementToAssign = elementsForLevel[Math.floor(Math.random() * elementsForLevel.length)];
+            assignedElements.add(elementToAssign);
             return {
                 ...card,
-                element: activeElements[Math.floor(Math.random() * activeElements.length)]
+                element: elementToAssign
             };
         }
         return card; // No element assigned
     });
+    return { deck: newDeck, activeElements: Array.from(assignedElements) };
 };
 
 /**
