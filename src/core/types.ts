@@ -14,6 +14,7 @@ export type Card = {
   isFortified?: boolean;
   element?: Element;
   elementalEffectActivated?: boolean;
+  isTemporaryBriscola?: boolean;
 };
 export type Player = 'human' | 'ai';
 export type GamePhase = 'menu' | 'playing' | 'gameOver' | 'roguelike-map' | 'roguelike-crossroads';
@@ -50,6 +51,8 @@ export type RoguelikeState = {
     humanAbility: AbilityType | null;
     aiAbility: AbilityType | null;
     encounteredWaifus: string[];
+    followers: Waifu[];
+    followerAbilitiesUsedThisMatch: string[];
 };
 
 export type ElementalClashResult = {

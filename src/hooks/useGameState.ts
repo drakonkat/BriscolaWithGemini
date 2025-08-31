@@ -22,6 +22,7 @@ const SCORE_THRESHOLD = 15;
 type GameMode = 'online' | 'fallback';
 type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
 
+// FIX: Added missing properties 'followers' and 'followerAbilitiesUsedThisMatch' to INITIAL_ROGUELIKE_STATE to match the RoguelikeState type definition.
 const INITIAL_ROGUELIKE_STATE: RoguelikeState = {
     currentLevel: 0,
     runCoins: 0,
@@ -31,6 +32,8 @@ const INITIAL_ROGUELIKE_STATE: RoguelikeState = {
     humanAbility: null,
     aiAbility: null,
     encounteredWaifus: [],
+    followers: [],
+    followerAbilitiesUsedThisMatch: [],
 };
 
 const ROGUELIKE_LEVEL_REWARDS = [0, 25, 50, 75, 150];

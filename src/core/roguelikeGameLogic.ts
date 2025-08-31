@@ -51,11 +51,7 @@ export const assignAbilities = (): { humanAbility: AbilityType, aiAbility: Abili
  * @returns The numerical rank of the card.
  */
 const getRoguelikeCardRank = (card: Card): number => {
-  const baseRank = RANK[card.value];
-  if (card.isFortified) {
-    return baseRank + 5;
-  }
-  return baseRank;
+  return RANK[card.value];
 };
 
 /**
@@ -69,20 +65,27 @@ export const getRoguelikeTrickWinner = (playedCards: Card[], starter: Player, br
     const card1 = playedCards[0];
     const card2 = playedCards[1];
     const follower: Player = starter === 'human' ? 'ai' : 'human';
-    const card1IsBriscola = card1.suit === briscola;
-    const card2IsBriscola = card2.suit === briscola;
+    
+    const card1IsBriscola = card1.suit === briscola || card1.isTemporaryBriscola;
+    const card2IsBriscola = card2.suit === briscola || card2.isTemporaryBriscola;
 
     const rank1 = getRoguelikeCardRank(card1);
     const rank2 = getRoguelikeCardRank(card2);
 
     if (card1IsBriscola && !card2IsBriscola) return starter;
     if (!card1IsBriscola && card2IsBriscola) return follower;
+    
+    // If both are considered briscola (real or temporary), the higher rank wins.
     if (card1IsBriscola && card2IsBriscola) {
       return rank1 > rank2 ? starter : follower;
     }
+    
+    // If they are of the same suit (but not briscola), the higher rank wins.
     if (card1.suit === card2.suit) {
         return rank1 > rank2 ? starter : follower;
     }
+    
+    // Otherwise, the starter of the trick wins.
     return starter;
 };
 
@@ -128,8 +131,11 @@ export const calculateRoguelikeTrickPoints = (humanCard: Card, aiCard: Card, hum
 
     let pointsForTrick = humanCardPoints + aiCardPoints;
 
-    // Air Power: Nullifies trick points
-    if ((humanPowerActive && humanCard.element === 'air') || (aiPowerActive && aiCard.element === 'air')) {
+    // Air Power: Nullifies trick points only if the user of the power loses the trick
+    if (humanPowerActive && humanCard.element === 'air' && winner === 'ai') {
+        pointsForTrick = 0;
+    }
+     if (aiPowerActive && aiCard.element === 'air' && winner === 'human') {
         pointsForTrick = 0;
     }
 
