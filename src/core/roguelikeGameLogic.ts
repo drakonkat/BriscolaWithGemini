@@ -115,9 +115,17 @@ export const determineWeaknessWinner = (humanElement: Element, aiElement: Elemen
  * @param humanPowerActive Whether the human player's elemental power is active.
  * @param aiPowerActive Whether the AI player's elemental power is active.
  * @param winner The winner of the trick.
+ * @param clashWinner The winner of the elemental clash, if one occurred.
  * @returns An object with the total points for the trick and the individual card points after modifications.
  */
-export const calculateRoguelikeTrickPoints = (humanCard: Card, aiCard: Card, humanPowerActive: boolean, aiPowerActive: boolean, winner: Player) => {
+export const calculateRoguelikeTrickPoints = (
+    humanCard: Card,
+    aiCard: Card,
+    humanPowerActive: boolean,
+    aiPowerActive: boolean,
+    winner: Player,
+    clashWinner: 'human' | 'ai' | 'tie' | null
+) => {
     let humanCardPoints = getCardPoints(humanCard);
     let aiCardPoints = getCardPoints(aiCard);
 
@@ -131,13 +139,20 @@ export const calculateRoguelikeTrickPoints = (humanCard: Card, aiCard: Card, hum
 
     let pointsForTrick = humanCardPoints + aiCardPoints;
 
-    // Air Power: Nullifies trick points only if the user of the power loses the trick
+    // Air Power: Nullifies trick points only if the user of the power loses the trick AND the clash (if one occurred).
+    const humanLostClash = clashWinner === 'ai' || clashWinner === 'tie';
     if (humanPowerActive && humanCard.element === 'air' && winner === 'ai') {
-        pointsForTrick = 0;
+        if (clashWinner === null || humanLostClash) {
+            pointsForTrick = 0;
+        }
     }
-     if (aiPowerActive && aiCard.element === 'air' && winner === 'human') {
-        pointsForTrick = 0;
+    const aiLostClash = clashWinner === 'human' || clashWinner === 'tie';
+    if (aiPowerActive && aiCard.element === 'air' && winner === 'human') {
+        if (clashWinner === null || aiLostClash) {
+            pointsForTrick = 0;
+        }
     }
+
 
     return {
         pointsForTrick,

@@ -17,7 +17,7 @@ export type Card = {
   isTemporaryBriscola?: boolean;
 };
 export type Player = 'human' | 'ai';
-export type GamePhase = 'menu' | 'playing' | 'gameOver' | 'roguelike-map' | 'roguelike-crossroads';
+export type GamePhase = 'menu' | 'playing' | 'gameOver' | 'roguelike-map';
 export type ChatMessage = { sender: 'human' | 'ai'; text: string; };
 export type Language = 'it' | 'en';
 export type Waifu = WaifuType;
@@ -47,12 +47,13 @@ export type RoguelikeState = {
     runCoins: number;
     activePowerUp: PlayerPowerUp | null;
     challenge: { type: 'score_above_80', reward: number, completed: boolean } | null;
-    events: RoguelikeEvent[];
     humanAbility: AbilityType | null;
     aiAbility: AbilityType | null;
     encounteredWaifus: string[];
     followers: Waifu[];
     followerAbilitiesUsedThisMatch: string[];
+    justWonLevel?: boolean;
+    eventTypesForCrossroads?: RoguelikeEvent['type'][];
 };
 
 export type ElementalClashResult = {

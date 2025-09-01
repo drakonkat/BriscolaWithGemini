@@ -23,7 +23,6 @@ import { useChat } from '../hooks/useChat';
 import { useGameState } from '../hooks/useGameState';
 
 import { translations } from '../core/translations';
-import { shuffleDeck } from '../core/utils';
 import type { RoguelikeState, RoguelikeEvent } from '../core/types';
 
 type GameModalsProps = {
@@ -52,12 +51,14 @@ export const GameModals = ({
 
     const handleEventChoice = (choice: () => void) => {
         choice();
-        gameActions.setPhase('roguelike-map');
+        uiActions.closeModal('event');
     }
 
-    const generateEvents = (): RoguelikeEvent[] => {
-        const allEventGenerators = [
-            (): RoguelikeEvent => ({
+    const generateEventsFromTypes = (types: RoguelikeEvent['type'][] = []): RoguelikeEvent[] => {
+        if (!types) return [];
+        
+        const allEventGenerators: Record<RoguelikeEvent['type'], () => RoguelikeEvent> = {
+            market: (): RoguelikeEvent => ({
                 type: 'market',
                 title: TR.marketTitle,
                 description: TR.marketDescription,
@@ -67,7 +68,7 @@ export const GameModals = ({
                     { text: TR.coinPouch, description: TR.coinPouchDesc, action: () => gachaActions.addCoins(50) }
                 ]
             }),
-            (): RoguelikeEvent => ({
+            witch_hut: (): RoguelikeEvent => ({
                 type: 'witch_hut',
                 title: TR.witchHutTitle,
                 description: TR.witchHutDescription,
@@ -76,7 +77,7 @@ export const GameModals = ({
                     { text: TR.swapAbility, description: TR.swapAbilityDesc, action: () => {} }
                 ]
             }),
-            (): RoguelikeEvent => ({
+            healing_fountain: (): RoguelikeEvent => ({
                 type: 'healing_fountain',
                 title: TR.healingFountainTitle,
                 description: TR.healingFountainDescription,
@@ -84,7 +85,7 @@ export const GameModals = ({
                     { text: TR.startWith10Points, description: TR.startWith10PointsDesc, action: () => gameActions.setRoguelikeState((p: RoguelikeState) => ({...p, activePowerUp: 'healing_fountain'})) }
                 ]
             }),
-            (): RoguelikeEvent => ({
+            challenge_altar: (): RoguelikeEvent => ({
                 type: 'challenge_altar',
                 title: TR.challengeAltarTitle,
                 description: TR.challengeAltarDescription,
@@ -93,9 +94,12 @@ export const GameModals = ({
                     { text: TR.skipEvent, action: () => {} }
                 ]
             }),
-        ];
-        return shuffleDeck(allEventGenerators).slice(0, 3).map(gen => gen());
-    }
+        };
+    
+        return types.map(type => allEventGenerators[type]());
+    };
+
+    const eventsForModal = generateEventsFromTypes(gameState.roguelikeState.eventTypesForCrossroads);
 
     return (
         <>
@@ -126,13 +130,13 @@ export const GameModals = ({
                 </div>
             )}
 
-            {gameState.phase === 'roguelike-crossroads' && (
-                <EventModal 
-                    events={generateEvents()}
-                    onChoiceSelected={handleEventChoice}
-                    language={settings.language}
-                />
-            )}
+            <EventModal 
+                isOpen={uiState.isEventModalOpen}
+                onClose={() => uiActions.closeModal('event')}
+                events={eventsForModal}
+                onChoiceSelected={handleEventChoice}
+                language={settings.language}
+            />
 
             {uiState.isQuotaExceededModalOpen && gameState.gameMode === 'online' && (
                 <QuotaExceededModal language={settings.language} onContinue={gameActions.continueFromQuotaModal} />

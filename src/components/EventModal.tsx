@@ -6,19 +6,31 @@ import { translations } from '../core/translations';
 import type { Language, RoguelikeEvent } from '../core/types';
 
 interface EventModalProps {
+    isOpen: boolean;
+    onClose: () => void;
     events: RoguelikeEvent[];
     onChoiceSelected: (choice: () => void) => void;
     language: Language;
 }
 
-export const EventModal = ({ events, onChoiceSelected, language }: EventModalProps) => {
-    const T = translations[language].roguelike;
+export const EventModal = ({ isOpen, onClose, events, onChoiceSelected, language }: EventModalProps) => {
+    if (!isOpen) {
+        return null;
+    }
+
+    const T = translations[language];
+    const TR = T.roguelike;
 
     return (
-        <div className="game-over-overlay">
+        <div className="game-over-overlay" onClick={onClose}>
             <div className="event-modal" onClick={(e) => e.stopPropagation()}>
-                <h2>{T.crossroadsTitle}</h2>
-                <p>{T.crossroadsMessage}</p>
+                <button className="modal-close-button" onClick={onClose} aria-label={T.close}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+                <h2>{TR.crossroadsTitle}</h2>
+                <p>{TR.crossroadsMessage}</p>
 
                 <div className="event-choices">
                     {events.map((event, index) => (

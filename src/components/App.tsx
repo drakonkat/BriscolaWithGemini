@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { translations } from '../core/translations';
 
 // Custom Hooks
@@ -19,6 +19,7 @@ import { ChatPanel } from './ChatPanel';
 import { GameModals } from './GameModals';
 import { Snackbar } from './Snackbar';
 import { RoguelikeMap } from './RoguelikeMap';
+import { playSound } from '../core/soundManager';
 
 export function App() {
   const { settings, setters } = useGameSettings();
@@ -28,11 +29,13 @@ export function App() {
     settings.language
   );
 
+  const onAiMessageGeneratedRef = useRef((_message: string) => {});
+
   const { gameState, gameActions } = useGameState({
       settings,
       onGameEnd: gachaActions.addCoins,
-      showWaifuBubble: uiActions.showWaifuBubble,
       closeWaifuBubble: uiActions.closeWaifuBubble,
+      onAiMessageGenerated: (message) => onAiMessageGeneratedRef.current(message),
   });
 
   const { chatState, chatActions } = useChat({
@@ -47,6 +50,24 @@ export function App() {
       onQuotaExceeded: gameActions.handleQuotaExceeded,
       phase: gameState.phase,
   });
+
+  useEffect(() => {
+    onAiMessageGeneratedRef.current = (message: string) => {
+      chatActions.addMessageToChat(message, 'ai');
+      uiActions.showWaifuBubble(message);
+      if (!uiState.isChatModalOpen) {
+        uiActions.setUnreadMessageCount(prev => prev + 1);
+        playSound('chat-notify');
+      }
+    };
+  }, [chatActions, uiActions, uiState.isChatModalOpen]);
+
+  useEffect(() => {
+    if (gameState.phase === 'roguelike-map' && gameState.roguelikeState.justWonLevel) {
+        uiActions.openModal('event');
+        gameActions.resetJustWonLevelFlag();
+    }
+  }, [gameState.phase, gameState.roguelikeState.justWonLevel, uiActions, gameActions]);
 
   const T = useMemo(() => translations[settings.language], [settings.language]);
   const aiName = useMemo(() => gameState.currentWaifu?.name ?? '', [gameState.currentWaifu]);
@@ -101,12 +122,26 @@ export function App() {
   }
 
   if (gameState.phase === 'roguelike-map') {
-      return <RoguelikeMap
-          roguelikeState={gameState.roguelikeState}
-          onStartLevel={gameActions.startRoguelikeLevel}
-          language={settings.language}
-          backgroundUrl={uiState.menuBackgroundUrl}
-      />;
+      return (
+        <>
+            <RoguelikeMap
+                roguelikeState={gameState.roguelikeState}
+                onStartLevel={gameActions.startRoguelikeLevel}
+                language={settings.language}
+                backgroundUrl={uiState.menuBackgroundUrl}
+            />
+            <GameModals
+              uiState={uiState}
+              uiActions={uiActions}
+              gameState={gameState}
+              gameActions={gameActions}
+              chatActions={chatActions}
+              gachaState={gachaState}
+              gachaActions={gachaActions}
+              settings={settings}
+            />
+        </>
+      );
   }
 
   return (

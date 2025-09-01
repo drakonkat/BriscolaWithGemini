@@ -12,7 +12,7 @@ import { translations } from '../core/translations';
 import { createDeck, getTrickWinner as getClassicTrickWinner } from '../core/classicGameLogic';
 import { initializeRoguelikeDeck, assignAbilities, getRoguelikeTrickWinner, calculateRoguelikeTrickPoints, determineWeaknessWinner } from '../core/roguelikeGameLogic';
 import { getCardPoints, shuffleDeck } from '../core/utils';
-import { QuotaExceededError, getAIWaifuTrickMessage, getAIGenericTeasingMessage } from '../core/gemini';
+import { getAIMove, QuotaExceededError, getAIWaifuTrickMessage, getAIGenericTeasingMessage } from '../core/gemini';
 import { getLocalAIMove, getFallbackWaifuMessage, getAIAbilityDecision } from '../core/localAI';
 import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
 import type { GamePhase, Card, Player, Waifu, GameEmotionalState, Suit, Element, AbilityType, RoguelikeState, RoguelikeEvent, ElementalClashResult, TrickHistoryEntry } from '../core/types';
@@ -28,7 +28,6 @@ const INITIAL_ROGUELIKE_STATE: RoguelikeState = {
     runCoins: 0,
     activePowerUp: null,
     challenge: null,
-    events: [],
     humanAbility: null,
     aiAbility: null,
     encounteredWaifus: [],
@@ -41,11 +40,11 @@ const ROGUELIKE_LEVEL_REWARDS = [0, 25, 50, 75, 150];
 type useGameStateProps = {
     settings: ReturnType<typeof useGameSettings>['settings'];
     onGameEnd: (winnings: number) => void;
-    showWaifuBubble: (message: string) => void;
     closeWaifuBubble: () => void;
+    onAiMessageGenerated: (message: string) => void;
 };
 
-export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameStateProps) => {
+export const useGameState = ({ settings, onGameEnd, onAiMessageGenerated, closeWaifuBubble }: useGameStateProps) => {
     const { language, gameplayMode, difficulty, isChatEnabled, waitForWaifuResponse } = settings;
     const posthog = usePostHog();
     const T = translations[language];
@@ -444,7 +443,11 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         }
     }, []);
 
-    const resolveTrick = useCallback(async (humanCard: Card, aiCard: Card, trickWinner: Player) => {
+    const resetJustWonLevelFlag = useCallback(() => {
+        setRoguelikeState(p => ({ ...p, justWonLevel: false }));
+    }, []);
+
+    const resolveTrick = useCallback(async (humanCard: Card, aiCard: Card, trickWinner: Player, clashResult: ElementalClashResult | null) => {
         const humanCardFinal = cardsOnTable.find(c => c.id === humanCard.id) || humanCard;
         const aiCardFinal = cardsOnTable.find(c => c.id === aiCard.id) || aiCard;
 
@@ -454,7 +457,8 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         let aiPowerActive = aiCardFinal.elementalEffectActivated ?? false;
         
         if (gameplayMode === 'roguelike') {
-            const result = calculateRoguelikeTrickPoints(humanCardFinal, aiCardFinal, humanPowerActive, aiPowerActive, trickWinner);
+            const clashWinner = clashResult?.winner ?? null;
+            const result = calculateRoguelikeTrickPoints(humanCardFinal, aiCardFinal, humanPowerActive, aiPowerActive, trickWinner, clashWinner);
             points = result.pointsForTrick;
 
             if (trickWinner === 'human' && humanPowerActive && humanCardFinal.element === 'fire') {
@@ -485,7 +489,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
             aiCard: aiCardFinal,
             winner: trickWinner,
             points,
-            clashResult: elementalClash ?? undefined,
+            clashResult: clashResult ?? undefined,
         };
         setTrickHistory(prev => [...prev, newTrickHistoryEntry]);
         setLastTrick(newTrickHistoryEntry);
@@ -510,7 +514,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                 setIsAiGeneratingMessage(true);
                 try {
                     const { message } = await getAIWaifuTrickMessage(currentWaifu, aiEmotionalState, humanCardFinal, aiCardFinal, points, language);
-                    showWaifuBubble(message);
+                    onAiMessageGenerated(message);
                 } catch (e) {
                     if (e instanceof QuotaExceededError) handleQuotaExceeded();
                 } finally {
@@ -518,7 +522,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                 }
             } else if (trickCounter.current > 1 && Math.random() < 0.25) { // 25% chance for random tease after trick 1
                 getAIGenericTeasingMessage(currentWaifu, aiEmotionalState, aiScore, humanScore, language)
-                    .then(({message}) => showWaifuBubble(message))
+                    .then(({message}) => onAiMessageGenerated(message))
                     .catch(e => { if (e instanceof QuotaExceededError) handleQuotaExceeded(); });
             }
         }
@@ -563,7 +567,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
 
         }, 1500);
 
-    }, [T, currentWaifu, deck, humanHand, aiHand, briscolaCard, isChatEnabled, gameMode, isQuotaExceeded, aiEmotionalState, language, gameplayMode, elementalClash, waitForWaifuResponse, showWaifuBubble, aiScore, humanScore, cardsOnTable]);
+    }, [T, currentWaifu, deck, humanHand, aiHand, briscolaCard, isChatEnabled, gameMode, isQuotaExceeded, aiEmotionalState, language, gameplayMode, waitForWaifuResponse, onAiMessageGenerated, aiScore, humanScore, cardsOnTable]);
 
     useEffect(() => {
         if (phase !== 'playing') return;
@@ -588,10 +592,10 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
         const humanCard = trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1];
         const aiCard = trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1];
         
-        const resolve = () => {
+        const resolve = (clashResult: ElementalClashResult | null) => {
             let getTrickWinner = gameplayMode === 'classic' ? getClassicTrickWinner : getRoguelikeTrickWinner;
             const trickWinner = getTrickWinner(cardsOnTable, trickStarter, briscolaSuit!);
-            resolveTrick(humanCard, aiCard, trickWinner);
+            resolveTrick(humanCard, aiCard, trickWinner, clashResult);
         };
 
         if (gameplayMode === 'roguelike' && humanCard.element && aiCard.element) {
@@ -619,14 +623,15 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
             }
             
             setElementalClash(finalClashResult);
+
             setLastTrickHighlights({
-                human: clashWinner === 'human' ? 'active' : 'inactive',
-                ai: clashWinner === 'ai' ? 'active' : 'inactive'
+                human: (clashWinner === 'human' && humanCard.elementalEffectActivated) ? 'active' : 'inactive',
+                ai: (clashWinner === 'ai' && aiCard.elementalEffectActivated) ? 'active' : 'inactive'
             });
 
-            resolveTrickCallbackRef.current = resolve;
+            resolveTrickCallbackRef.current = () => resolve(finalClashResult);
             clashTimeoutRef.current = setTimeout(() => {
-                resolve();
+                resolve(finalClashResult);
                 clashTimeoutRef.current = null;
                 resolveTrickCallbackRef.current = null;
             }, 5000);
@@ -637,7 +642,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                 human: humanCard.elementalEffectActivated ? 'active' : (humanCard.element ? 'inactive' : 'unset'),
                 ai: aiCard.elementalEffectActivated ? 'active' : (aiCard.element ? 'inactive' : 'unset')
             });
-            setTimeout(resolve, 500); // Short delay to see cards
+            setTimeout(() => resolve(null), 500); // Short delay to see cards
         }
     
     }, [cardsOnTable, phase, trickStarter, briscolaSuit, resolveTrick, gameplayMode, guaranteedClashWinner]);
@@ -669,10 +674,13 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                 chosenCard = getLocalAIMove(aiHand, briscolaSuit!, cardsOnTable, difficulty);
             } else {
                 try {
-                    // Gemini AI logic here
-                    chosenCard = getLocalAIMove(aiHand, briscolaSuit!, cardsOnTable, difficulty); // Placeholder
+                    chosenCard = await getAIMove(aiHand, briscolaSuit!, cardsOnTable, language);
                 } catch (e) {
-                    if (e instanceof QuotaExceededError) handleQuotaExceeded();
+                    if (e instanceof QuotaExceededError) {
+                        handleQuotaExceeded();
+                        setGameMode('fallback');
+                    }
+                    console.error("Error getting AI move from Gemini, using local fallback:", e);
                     chosenCard = getLocalAIMove(aiHand, briscolaSuit!, cardsOnTable, difficulty);
                 }
             }
@@ -699,7 +707,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
     
         return cleanup;
     
-    }, [turn, phase, aiHand, briscolaSuit, cardsOnTable, T, currentWaifu, isQuotaExceeded, gameMode, difficulty, trickStarter, isProcessing]);
+    }, [turn, phase, aiHand, briscolaSuit, cardsOnTable, T, currentWaifu, isQuotaExceeded, gameMode, difficulty, trickStarter, isProcessing, language]);
 
     useEffect(() => {
         if (phase === 'playing' && humanHand.length === 0 && aiHand.length === 0 && !isProcessing) {
@@ -736,22 +744,25 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
                     winnings = ROGUELIKE_LEVEL_REWARDS[levelJustWon];
                     const newRunCoins = roguelikeState.runCoins + winnings;
 
+                    const allEventTypes: RoguelikeEvent['type'][] = ['market', 'witch_hut', 'healing_fountain', 'challenge_altar'];
+                    const chosenEventTypes = shuffleDeck(allEventTypes).slice(0, 2);
+
                     setRoguelikeState(p => ({
                         ...p,
                         runCoins: newRunCoins,
                         currentLevel: p.currentLevel + 1,
                         followers: p.currentLevel <= 3 && currentWaifu ? [...p.followers, currentWaifu] : p.followers,
                         followerAbilitiesUsedThisMatch: [], // Recharge on win
+                        justWonLevel: true,
+                        eventTypesForCrossroads: chosenEventTypes,
                     }));
 
                     if (levelJustWon >= 4) {
                         onGameEnd(newRunCoins);
                         setLastGameWinnings(newRunCoins);
-                        setGameResult(winner);
-                        setPhase('gameOver');
-                    } else {
-                        setPhase('roguelike-crossroads');
                     }
+                    setGameResult(winner);
+                    setPhase('gameOver');
                 } else { // Lost roguelike level
                     if (roguelikeState.currentLevel === 1) {
                          const consolation = difficulty === 'easy' ? 10 : difficulty === 'hard' ? 30 : 20;
@@ -784,7 +795,7 @@ export const useGameState = ({ settings, onGameEnd, showWaifuBubble }: useGameSt
             continueFromQuotaModal, forceCloseClashModal, activateHumanAbility, cancelAbilityTargeting,
             targetCardInHandForAbility, targetCardOnTableForAbility, onUndoAbilityUse, confirmLeaveGame,
             startRoguelikeLevel, setRoguelikeState, activateFollowerAbility, cancelFollowerAbility,
-            closeKasumiModal, handleKasumiCardSwap,
+            closeKasumiModal, handleKasumiCardSwap, resetJustWonLevelFlag,
         }
     };
 };
