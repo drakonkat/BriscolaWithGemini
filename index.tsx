@@ -18,6 +18,7 @@ const options = {
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+if(process.env.VITE_PUBLIC_POSTHOG_HOST){
 root.render(
     <React.StrictMode>
         <PostHogProvider 
@@ -26,4 +27,9 @@ root.render(
             <App />
         </PostHogProvider>
     </React.StrictMode>
-);
+);}else{
+    root.render(
+    <React.StrictMode>
+            <App />
+    </React.StrictMode>
+}
