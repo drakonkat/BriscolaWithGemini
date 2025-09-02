@@ -33,6 +33,7 @@ export function App() {
 
   const { gameState, gameActions } = useGameState({
       settings,
+      setters,
       onGameEnd: gachaActions.addCoins,
       closeWaifuBubble: uiActions.closeWaifuBubble,
       onAiMessageGenerated: (message) => onAiMessageGeneratedRef.current(message),
@@ -83,6 +84,7 @@ export function App() {
           waitForWaifuResponse={settings.waitForWaifuResponse}
           backgroundUrl={uiState.menuBackgroundUrl}
           waifuCoins={gachaState.waifuCoins}
+          hasSavedGame={gameState.hasSavedGame}
           onLanguageChange={setters.setLanguage}
           onGameplayModeChange={setters.setGameplayMode}
           onDifficultyChange={setters.setDifficulty}
@@ -94,6 +96,7 @@ export function App() {
             }
           }}
           onStartGame={gameActions.startGame}
+          onResumeGame={gameActions.resumeGame}
           onShowRules={() => uiActions.openModal('rules')}
           onShowPrivacy={() => uiActions.openModal('privacy')}
           onShowTerms={() => uiActions.openModal('terms')}

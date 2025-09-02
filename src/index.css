@@ -358,6 +358,10 @@ input:checked + .slider:before {
 
 .start-game-container {
     margin-top: 2.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .start-game-button {

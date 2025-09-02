@@ -16,12 +16,14 @@ interface MenuProps {
     waitForWaifuResponse: boolean;
     backgroundUrl: string;
     waifuCoins: number;
+    hasSavedGame: boolean;
     onLanguageChange: (lang: Language) => void;
     onGameplayModeChange: (mode: GameplayMode) => void;
     onDifficultyChange: (difficulty: Difficulty) => void;
     onChatEnabledChange: (enabled: boolean) => void;
     onWaitForWaifuResponseChange: (enabled: boolean) => void;
     onStartGame: (waifu: Waifu | null) => void;
+    onResumeGame: () => void;
     onShowRules: () => void;
     onShowPrivacy: () => void;
     onShowTerms: () => void;
@@ -38,12 +40,14 @@ export const Menu = ({
     waitForWaifuResponse,
     backgroundUrl, 
     waifuCoins,
+    hasSavedGame,
     onLanguageChange, 
     onGameplayModeChange,
     onDifficultyChange,
     onChatEnabledChange,
     onWaitForWaifuResponseChange,
     onStartGame, 
+    onResumeGame,
     onShowRules, 
     onShowPrivacy, 
     onShowTerms, 
@@ -158,6 +162,14 @@ export const Menu = ({
                 />
 
                 <div className="start-game-container">
+                    {hasSavedGame && (
+                        <button
+                            className="start-game-button"
+                            onClick={onResumeGame}
+                        >
+                            {T.resumeGame}
+                        </button>
+                    )}
                     <button 
                         className="start-game-button" 
                         onClick={handleStartGame} 
