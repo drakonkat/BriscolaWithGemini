@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { getCardId, getCardImagePath } from '../core/utils';
+import { getCardId, getCardImagePath, getImageUrl } from '../core/utils';
 import type { Card, Language } from '../core/types';
 import { translations } from '../core/translations';
 import { CachedImage } from './CachedImage';
@@ -16,7 +16,7 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, classNam
   if (isFaceDown) {
     return (
         <div className="card card-back" aria-label={T.cardBack}>
-            <CachedImage imageUrl="https://s3.tebi.io/waifubriscola/background/cardback1.png" alt={T.cardBack} />
+            <CachedImage imageUrl={getImageUrl('/background/cardback1.png')} alt={T.cardBack} />
         </div>
     );
   }
