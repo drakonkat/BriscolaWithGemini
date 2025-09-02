@@ -4,7 +4,7 @@
 */
 import { useState } from 'react';
 import { CardView } from './CardView';
-import { getCardId } from '../core/utils';
+import { getCardId, getImageUrl } from '../core/utils';
 import { translations } from '../core/translations';
 import type { Card, Element, ElementalClashResult, GameplayMode, Language, Player, Suit, Waifu, AbilityType, TrickHistoryEntry, RoguelikeState } from '../core/types';
 import { CachedImage } from './CachedImage';
@@ -227,7 +227,7 @@ export const GameBoard = ({
             <div className="waifu-status-container">
                 {currentWaifu && (
                     <button className="waifu-status-button" onClick={onWaifuIconClick} aria-label={waifuIconAriaLabel}>
-                        <CachedImage imageUrl={currentWaifu.avatar} alt={aiName} className="waifu-status-avatar" />
+                        <CachedImage imageUrl={getImageUrl(currentWaifu.avatar)} alt={aiName} className="waifu-status-avatar" />
                         {isChatEnabled && unreadMessageCount > 0 && !isAiTyping && <span className="waifu-status-badge">{unreadMessageCount}</span>}
                         {isChatEnabled && isAiTyping && <span className="waifu-status-badge typing"></span>}
                     </button>
@@ -335,7 +335,7 @@ export const GameBoard = ({
                                 onClick={() => !isUsed && onActivateFollowerAbility(follower.name)}
                             >
                                 {/* FIX: Changed the `src` prop to `imageUrl` to match the CachedImage component's expected props. */}
-                                <CachedImage imageUrl={follower.avatar} alt={follower.name} className="follower-waifu-avatar" />
+                                <CachedImage imageUrl={getImageUrl(follower.avatar)} alt={follower.name} className="follower-waifu-avatar" />
                             </div>
                         );
                     })}

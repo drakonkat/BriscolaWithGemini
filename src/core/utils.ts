@@ -6,6 +6,17 @@ import { SUITS_IT, VALUES_IT, valueToFileNumber, POINTS } from './constants';
 import { translations } from './translations';
 import type { Card, Language } from './types';
 
+const WEB_IMAGE_BASE_URL = 'https://s3.tebi.io/waifubriscola';
+const LOCAL_IMAGE_BASE_URL = 'assets'; 
+
+const useWebImages = !(process.env.FETCH_IMAGE_FROM_WEB === '1');
+const IMAGE_BASE_URL = useWebImages ? WEB_IMAGE_BASE_URL : LOCAL_IMAGE_BASE_URL;
+
+export const getImageUrl = (path: string): string => {
+    // path should start with a `/`, e.g., `/classic/spade1.png`
+    return `${IMAGE_BASE_URL}${path}`;
+}
+
 export const getCardId = (card: Card, lang: Language): string => {
   const valueIndex = VALUES_IT.indexOf(card.value);
   const suitIndex = SUITS_IT.indexOf(card.suit);
@@ -17,7 +28,7 @@ export const getCardId = (card: Card, lang: Language): string => {
 export const getCardImagePath = (card: Card): string => {
   const suit = card.suit.toLowerCase();
   const number = valueToFileNumber[card.value];
-  return `https://s3.tebi.io/waifubriscola/classic/${suit}${number}.png`;
+  return getImageUrl(`/classic/${suit}${number}.png`);
 };
 
 /**

@@ -6,6 +6,7 @@ import { useState, useCallback, useRef } from 'react';
 import { usePostHog } from 'posthog-js/react';
 import type { Player, Card } from '../core/types';
 import { translations } from '../core/translations';
+import { getImageUrl } from '../core/utils';
 import type { Language } from '../core/types';
 import { useLocalStorage } from './useLocalStorage';
 
@@ -32,7 +33,7 @@ export const useUIState = (language: Language) => {
 
 
     // UI Element States
-    const [menuBackgroundUrl, setMenuBackgroundUrl] = useState(`https://s3.tebi.io/waifubriscola/background/landscape${Math.floor(Math.random() * 19) + 3}.png`);
+    const [menuBackgroundUrl, setMenuBackgroundUrl] = useState(getImageUrl(`/background/landscape${Math.floor(Math.random() * 19) + 3}.png`));
     const [snackbar, setSnackbar] = useState<{ message: string; type: SnackbarType }>({ message: '', type: 'success' });
     const [waifuBubbleMessage, setWaifuBubbleMessage] = useState<string>('');
     const bubbleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -77,7 +78,7 @@ export const useUIState = (language: Language) => {
 
     const refreshMenuBackground = useCallback(() => {
         const bgIndex = Math.floor(Math.random() * 19) + 3;
-        setMenuBackgroundUrl(`https://s3.tebi.io/waifubriscola/background/landscape${bgIndex}.png`);
+        setMenuBackgroundUrl(getImageUrl(`/background/landscape${bgIndex}.png`));
     }, []);
     
     const showSnackbar = (message: string, type: SnackbarType) => setSnackbar({ message, type });

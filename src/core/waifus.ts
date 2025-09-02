@@ -34,7 +34,7 @@ export interface Waifu {
 export const WAIFUS: Waifu[] = [
   {
     name: 'Sakura',
-    avatar: 'https://s3.tebi.io/waifubriscola/waifus/sakura.png',
+    avatar: '/waifus/sakura.png',
     personality: {
       it: 'La fidanzata dolce e un po\' goffa.',
       en: 'The sweet and slightly clumsy girlfriend.',
@@ -76,7 +76,7 @@ export const WAIFUS: Waifu[] = [
   },
   {
     name: 'Rei',
-    avatar: 'https://s3.tebi.io/waifubriscola/waifus/rei.png',
+    avatar: '/waifus/rei.png',
     personality: {
       it: 'L\'analista calma e calcolatrice.',
       en: 'The calm and calculating analyst.',
@@ -118,7 +118,7 @@ export const WAIFUS: Waifu[] = [
   },
   {
     name: 'Kasumi',
-    avatar: 'https://s3.tebi.io/waifubriscola/waifus/kasumi.png',
+    avatar: '/waifus/kasumi.png',
     personality: {
       it: 'La tsundere orgogliosa e competitiva.',
       en: 'The proud and competitive tsundere.',
@@ -162,7 +162,7 @@ export const WAIFUS: Waifu[] = [
 
 export const BOSS_WAIFU: Waifu = {
   name: 'Lilith',
-  avatar: 'https://s3.tebi.io/waifubriscola/waifus/lilith.png',
+  avatar: '/waifus/lilith.png',
   personality: {
     it: 'La misteriosa regina della Briscola.',
     en: 'The mysterious queen of Briscola.',

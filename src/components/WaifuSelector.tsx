@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { translations } from '../core/translations';
+import { getImageUrl } from '../core/utils';
 import type { Language, Waifu } from '../core/types';
 import { WAIFUS } from '../core/waifus';
 import { CachedImage } from './CachedImage';
@@ -33,7 +34,7 @@ export const WaifuSelector = ({ language, onWaifuSelected, selectedWaifu, isRand
                         aria-pressed={selectedWaifu?.name === waifu.name}
                         aria-disabled={disabled}
                     >
-                        <CachedImage imageUrl={waifu.avatar} alt={T.waifuAvatarAlt(waifu.name)} />
+                        <CachedImage imageUrl={getImageUrl(waifu.avatar)} alt={T.waifuAvatarAlt(waifu.name)} />
                         <div>
                             <h3>{waifu.name}</h3>
                             <p>{waifu.personality[language]}</p>
