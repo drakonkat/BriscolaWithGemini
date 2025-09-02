@@ -7,7 +7,8 @@ import { translations } from './translations';
 import type { Card, Language } from './types';
 
 const WEB_IMAGE_BASE_URL = 'https://s3.tebi.io/waifubriscola';
-const LOCAL_IMAGE_BASE_URL = 'public/assets'; 
+// Evita 'public/'. Usa il base URL di Vite per funzionare sia in dev che in build (Capacitor incluso)
+const LOCAL_IMAGE_BASE_URL = `${import.meta.env.BASE_URL}assets`;
 
 const useWebImages = !(process.env.FETCH_IMAGE_FROM_WEB === '1');
 const IMAGE_BASE_URL = useWebImages ? WEB_IMAGE_BASE_URL : LOCAL_IMAGE_BASE_URL;
