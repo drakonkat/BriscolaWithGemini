@@ -64,7 +64,6 @@ interface GameBoardProps {
     cardsOnTable: Card[];
     message: string;
     isProcessing: boolean;
-    isAiThinkingMove: boolean; // Nuovo prop
     turn: Player;
     trickStarter: Player;
     onSelectCardForPlay: (card: Card) => void;
@@ -121,7 +120,6 @@ export const GameBoard = ({
     cardsOnTable,
     message,
     isProcessing,
-    isAiThinkingMove,
     turn,
     trickStarter,
     onSelectCardForPlay,
@@ -386,7 +384,6 @@ export const GameBoard = ({
                             />
                         );
                     })}
-                    {isAiThinkingMove && <div className="spinner" aria-label="L'IA sta pensando"></div>}
                 </div>
             </div>
 

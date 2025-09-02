@@ -157,7 +157,6 @@ export function App() {
         cardsOnTable={gameState.cardsOnTable}
         message={gameState.message}
         isProcessing={gameState.isProcessing}
-        isAiThinkingMove={gameState.isAiThinkingMove}
         turn={gameState.turn}
         trickStarter={gameState.trickStarter}
         onSelectCardForPlay={gameActions.selectCardForPlay}

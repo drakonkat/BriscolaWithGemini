@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePostHog } from 'posthog-js/react';
 import { Capacitor } from '@capacitor/core';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
@@ -12,8 +12,8 @@ import { translations } from '../core/translations';
 import { createDeck, getTrickWinner as getClassicTrickWinner } from '../core/classicGameLogic';
 import { initializeRoguelikeDeck, assignAbilities, getRoguelikeTrickWinner, calculateRoguelikeTrickPoints, determineWeaknessWinner } from '../core/roguelikeGameLogic';
 import { getCardPoints, shuffleDeck } from '../core/utils';
-import { getAIMove, QuotaExceededError, getAIWaifuTrickMessage, getAIGenericTeasingMessage } from '../core/gemini';
-import { getLocalAIMove, getFallbackWaifuMessage, getAIAbilityDecision } from '../core/localAI';
+import { QuotaExceededError, getAIWaifuTrickMessage, getAIGenericTeasingMessage } from '../core/gemini';
+import { getLocalAIMove, getAIAbilityDecision } from '../core/localAI';
 import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
 import type { GamePhase, Card, Player, Waifu, GameEmotionalState, Suit, Element, AbilityType, RoguelikeState, RoguelikeEvent, ElementalClashResult, TrickHistoryEntry } from '../core/types';
 import type { useGameSettings } from './useGameSettings';
@@ -47,7 +47,7 @@ type useGameStateProps = {
 export const useGameState = ({ settings, onGameEnd, onAiMessageGenerated, closeWaifuBubble }: useGameStateProps) => {
     const { language, gameplayMode, difficulty, isChatEnabled, waitForWaifuResponse } = settings;
     const posthog = usePostHog();
-    const T = translations[language];
+    const T = useMemo(() => translations[language], [language]);
     
     const [phase, setPhase] = useState<GamePhase>('menu');
     const [currentWaifu, setCurrentWaifu] = useState<Waifu | null>(null);
@@ -64,7 +64,6 @@ export const useGameState = ({ settings, onGameEnd, onAiMessageGenerated, closeW
     const [message, setMessage] = useState('');
     const [backgroundUrl, setBackgroundUrl] = useState('');
     
-    const [isAiThinkingMove, setIsAiThinkingMove] = useState(false);
     const [isResolvingTrick, setIsResolvingTrick] = useState(false);
     const [isAiGeneratingMessage, setIsAiGeneratingMessage] = useState(false);
     
@@ -94,12 +93,11 @@ export const useGameState = ({ settings, onGameEnd, onAiMessageGenerated, closeW
     const [trickHistory, setTrickHistory] = useState<TrickHistoryEntry[]>([]);
     const [lastTrick, setLastTrick] = useState<TrickHistoryEntry | null>(null);
 
-    const isProcessing = isAiThinkingMove || isResolvingTrick;
+    const isProcessing = isResolvingTrick;
     const lastResolvedTrick = useRef<string[]>([]);
     const trickCounter = useRef(0);
     const clashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const resolveTrickCallbackRef = useRef<(() => void) | null>(null);
-    const aiMoveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     
     useEffect(() => {
         const lockOrientation = async () => {
@@ -119,11 +117,11 @@ export const useGameState = ({ settings, onGameEnd, onAiMessageGenerated, closeW
         setBriscolaCard(newBriscola);
         setBriscolaSuit(newBriscola.suit);
 
-        // FIX: Randomly assign the starting player for classic mode to prevent the game from getting stuck.
-        const starter: Player = Math.random() < 0.5 ? 'human' : 'ai';
+        // Always have the human player start in classic mode to avoid hangs.
+        const starter: Player = 'human';
         setTurn(starter);
         setTrickStarter(starter);
-        setMessage(starter === 'human' ? T.yourTurn : T.aiStarts(newWaifu.name));
+        setMessage(T.yourTurn);
 
         setPhase('playing');
     }, [T]);
@@ -431,7 +429,10 @@ export const useGameState = ({ settings, onGameEnd, onAiMessageGenerated, closeW
     };
     
     const goToMenu = () => setPhase('menu');
-    const handleQuotaExceeded = () => setIsQuotaExceeded(true);
+    const handleQuotaExceeded = () => {
+        setIsQuotaExceeded(true);
+        setGameMode('fallback');
+    };
     const continueFromQuotaModal = () => setIsQuotaExceeded(false);
 
     const forceCloseClashModal = useCallback(() => {
@@ -648,67 +649,46 @@ export const useGameState = ({ settings, onGameEnd, onAiMessageGenerated, closeW
     }, [cardsOnTable, phase, trickStarter, briscolaSuit, resolveTrick, gameplayMode, guaranteedClashWinner]);
 
     useEffect(() => {
-        // Cleanup function to clear any pending AI move when the effect re-runs or unmounts
-        const cleanup = () => {
-            if (aiMoveTimeoutRef.current) {
-                clearTimeout(aiMoveTimeoutRef.current);
-                aiMoveTimeoutRef.current = null;
-            }
-        };
-
-        if (phase !== 'playing' || turn !== 'ai') {
-            cleanup();
+        if (phase !== 'playing' || turn !== 'ai' || isProcessing || cardsOnTable.length >= 2 || aiHand.length === 0) {
             return;
         }
-        
-        const performAiMove = async () => {
-            if (cardsOnTable.length >= 2 || isProcessing) return;
-
-            if (!currentWaifu) return;
-            
-            setIsAiThinkingMove(true);
-            setMessage(T.aiThinking(currentWaifu.name));
     
-            let chosenCard: Card;
-            if (isQuotaExceeded || gameMode === 'fallback') {
-                chosenCard = getLocalAIMove(aiHand, briscolaSuit!, cardsOnTable, difficulty);
-            } else {
-                try {
-                    chosenCard = await getAIMove(aiHand, briscolaSuit!, cardsOnTable, language);
-                } catch (e) {
-                    if (e instanceof QuotaExceededError) {
-                        handleQuotaExceeded();
-                        setGameMode('fallback');
+        const performAiMove = () => {
+            // Roguelike: AI Ability check
+            if (gameplayMode === 'roguelike' && roguelikeState.aiAbility && aiAbilityCharges >= 2) {
+                const decision = getAIAbilityDecision(roguelikeState.aiAbility, aiHand, null, deck.length, cardsOnTable);
+                if (decision.useAbility) {
+                    if (decision.ability === 'tide') {
+                        setMessage(T.abilityUsed(currentWaifu?.name ?? 'AI', T.tide));
+                        setRevealedAiHand([...humanHand]);
+                        setTimeout(() => setRevealedAiHand(null), 5000);
+                        setAiAbilityCharges(0);
                     }
-                    console.error("Error getting AI move from Gemini, using local fallback:", e);
-                    chosenCard = getLocalAIMove(aiHand, briscolaSuit!, cardsOnTable, difficulty);
                 }
             }
-            
+    
+            if (!currentWaifu) return;
+    
+            let chosenCard: Card = getLocalAIMove(aiHand, briscolaSuit!, cardsOnTable, difficulty);
+    
             if (chosenCard.element) {
                 chosenCard = { ...chosenCard, elementalEffectActivated: true };
             }
-
-            aiMoveTimeoutRef.current = setTimeout(() => {
-                playSound('card-place');
-                setIsAiThinkingMove(false);
-                setMessage(T.aiPlayedYourTurn(currentWaifu.name));
-                setAiHand(prev => prev.filter(c => c.id !== chosenCard.id));
-                setCardsOnTable(prev => [...prev, chosenCard]);
     
-                if (trickStarter === 'ai') {
-                    setTurn('human');
-                }
-                aiMoveTimeoutRef.current = null;
-            }, 1000 + Math.random() * 1000);
+            playSound('card-place');
+            setMessage(T.aiPlayedYourTurn(currentWaifu.name));
+            setAiHand(prev => prev.filter(c => c.id !== chosenCard.id));
+            setCardsOnTable(prev => [...prev, chosenCard]);
+    
+            if (trickStarter === 'ai') {
+                setTurn('human');
+            }
         };
     
         performAiMove();
     
-        return cleanup;
+    }, [T, aiAbilityCharges, aiHand, briscolaSuit, cardsOnTable, currentWaifu, deck.length, difficulty, gameplayMode, humanHand, isProcessing, phase, roguelikeState.aiAbility, trickStarter, turn]);
     
-    }, [turn, phase, aiHand, briscolaSuit, cardsOnTable, T, currentWaifu, isQuotaExceeded, gameMode, difficulty, trickStarter, isProcessing, language]);
-
     useEffect(() => {
         if (phase === 'playing' && humanHand.length === 0 && aiHand.length === 0 && !isProcessing) {
             let winner: 'human' | 'ai' | 'tie' = 'tie';
@@ -782,7 +762,7 @@ export const useGameState = ({ settings, onGameEnd, onAiMessageGenerated, closeW
     return {
         gameState: {
             phase, currentWaifu, deck, humanHand, aiHand, briscolaCard, briscolaSuit, cardsOnTable,
-            turn, humanScore, aiScore, trickStarter, message, backgroundUrl, isProcessing, isAiThinkingMove,
+            turn, humanScore, aiScore, trickStarter, message, backgroundUrl, isProcessing,
             isAiGeneratingMessage, aiEmotionalState, gameResult, lastGameWinnings, isQuotaExceeded, gameMode,
             powerAnimation, humanAbility: roguelikeState.humanAbility, aiAbility: roguelikeState.aiAbility,
             humanAbilityCharges, aiAbilityCharges, abilityTargetingState, abilityUsedThisTurn,

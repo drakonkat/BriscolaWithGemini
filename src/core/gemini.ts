@@ -2,11 +2,10 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 import { translations } from './translations';
 import { getCardId } from './utils';
-import { SUITS_IT } from './constants';
-import type { Card, GameEmotionalState, Language, Suit, Waifu } from './types';
+import type { Card, GameEmotionalState, Language, Waifu } from './types';
 
 export const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
 
@@ -48,70 +47,6 @@ const withRetry = async <T>(apiCall: () => Promise<T>, maxRetries = 3, initialDe
         }
     }
     throw new Error('Numero massimo di tentativi superato.');
-};
-
-
-export const getAIMove = async (
-  aiHand: Card[],
-  briscolaSuit: Suit,
-  cardsOnTable: Card[],
-  lang: Language
-): Promise<Card> => {
-    
-  const langStrings = translations[lang];
-  const aiHandIds = aiHand.map(card => getCardId(card, lang));
-  const humanCard = cardsOnTable.length > 0 ? cardsOnTable[0] : null;
-  const humanCardId = humanCard ? getCardId(humanCard, lang) : null;
-  const briscolaSuitId = langStrings.suits[SUITS_IT.indexOf(briscolaSuit)];
-  
-  const prompt = langStrings.aiMovePrompt(humanCardId, briscolaSuitId, aiHandIds);
-
-  const performApiCall = async () => {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            cardToPlay: {
-              type: Type.STRING,
-              description: langStrings.aiMoveSchemaDescription(aiHandIds),
-            },
-            reasoning: {
-              type: Type.STRING,
-              description: "A brief explanation of your choice."
-            }
-          },
-          required: ["cardToPlay"]
-        },
-        thinkingConfig: { thinkingBudget: 0 },
-      },
-    });
-
-    const result = JSON.parse(response.text);
-    const chosenCardId = result.cardToPlay;
-    const chosenCard = aiHand.find(card => getCardId(card, lang) === chosenCardId);
-
-    if (chosenCard) {
-      return chosenCard;
-    } else {
-      console.warn("L'IA ha scelto una carta non presente nella sua mano, gioca la prima carta valida.");
-      return aiHand[0];
-    }
-  };
-
-  try {
-      return await withRetry(performApiCall);
-  } catch (error) {
-      if (error instanceof QuotaExceededError) {
-        throw error; // Re-throw to be caught by App.tsx
-      }
-      console.error("Errore durante la scelta della mossa dell'IA:", error);
-      // Fallback in caso di errore API generico
-      return aiHand[Math.floor(Math.random() * aiHand.length)];
-  }
 };
 
 export const getAIWaifuTrickMessage = async (
@@ -170,6 +105,7 @@ export const getAIGenericTeasingMessage = async (
   const T = translations[lang];
   const personality = waifu.systemInstructions[lang][emotionalState];
 
+  // FIX: Corrected typo from waifuGenericTeasingMessage to waifuGenericTeasePrompt.
   const prompt = T.waifuGenericTeasePrompt(
       waifu.name,
       personality,
