@@ -30,6 +30,7 @@ interface MenuProps {
     onShowSupport: () => void;
     onRefreshBackground: () => void;
     onShowGallery: () => void;
+    onShowSoundEditor: () => void;
 }
 
 export const Menu = ({ 
@@ -54,6 +55,7 @@ export const Menu = ({
     onShowSupport, 
     onRefreshBackground,
     onShowGallery,
+    onShowSoundEditor,
 }: MenuProps) => {
     const T = translations[language];
     const [selectedWaifu, setSelectedWaifu] = useState<Waifu | null>(null);
@@ -115,6 +117,11 @@ export const Menu = ({
                             <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                         </svg>
                     </a>
+                    <button className="rules-button" onClick={onShowSoundEditor} aria-label={T.soundEditorTitle}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/>
+                        </svg>
+                    </button>
                     <button className="rules-button" onClick={onRefreshBackground} aria-label={T.refreshBackground}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>

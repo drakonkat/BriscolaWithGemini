@@ -4,6 +4,7 @@
 */
 import { useLocalStorage } from './useLocalStorage';
 import type { Language, GameplayMode, Difficulty, Soundtrack } from '../core/types';
+import { defaultSoundSettings, type SoundSettings } from '../core/soundManager';
 
 export const useGameSettings = () => {
     const [language, setLanguage] = useLocalStorage<Language>('language', 'it');
@@ -12,6 +13,8 @@ export const useGameSettings = () => {
     const [isChatEnabled, setIsChatEnabled] = useLocalStorage<boolean>('is_chat_enabled', true);
     const [waitForWaifuResponse, setWaitForWaifuResponse] = useLocalStorage<boolean>('wait_for_waifu_response', false);
     const [soundtrack, setSoundtrack] = useLocalStorage<Soundtrack>('soundtrack', 'epic');
+    const [isMusicEnabled, setIsMusicEnabled] = useLocalStorage<boolean>('is_music_enabled', false);
+    const [soundEditorSettings, setSoundEditorSettings] = useLocalStorage<SoundSettings>('sound_editor_settings', defaultSoundSettings);
 
     const settings = {
         language,
@@ -20,6 +23,8 @@ export const useGameSettings = () => {
         isChatEnabled,
         waitForWaifuResponse,
         soundtrack,
+        isMusicEnabled,
+        soundEditorSettings,
     };
 
     const setters = {
@@ -29,6 +34,8 @@ export const useGameSettings = () => {
         setIsChatEnabled,
         setWaitForWaifuResponse,
         setSoundtrack,
+        setIsMusicEnabled,
+        setSoundEditorSettings,
     };
 
     return { settings, setters };

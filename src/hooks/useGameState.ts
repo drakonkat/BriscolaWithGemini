@@ -477,25 +477,47 @@ export const useGameState = ({ settings, setters, onGameEnd, onAiMessageGenerate
         
         if (gameplayMode === 'roguelike') {
             const clashWinner = clashResult?.winner ?? null;
+
+            // --- Sound Logic Start ---
+            const humanLostClash = clashWinner === 'ai' || clashWinner === 'tie';
+            if (humanPowerActive && humanCardFinal.element === 'air' && trickWinner === 'ai' && (clashWinner === null || humanLostClash)) {
+                playSound('element-air');
+            }
+            const aiLostClash = clashWinner === 'human' || clashWinner === 'tie';
+            if (aiPowerActive && aiCardFinal.element === 'air' && trickWinner === 'human' && (clashWinner === null || aiLostClash)) {
+                playSound('element-air');
+            }
+            if (humanPowerActive && humanCardFinal.element === 'water' && trickWinner === 'ai') {
+                playSound('element-water');
+            }
+            if (aiPowerActive && aiCardFinal.element === 'water' && trickWinner === 'human') {
+                playSound('element-water');
+            }
+            // --- Sound Logic End ---
+
             const result = calculateRoguelikeTrickPoints(humanCardFinal, aiCardFinal, humanPowerActive, aiPowerActive, trickWinner, clashWinner);
             points = result.pointsForTrick;
 
             if (trickWinner === 'human' && humanPowerActive && humanCardFinal.element === 'fire') {
                 points += 3;
                 setPowerAnimation({type: 'fire', player: 'human'});
+                playSound('element-fire');
                 setTimeout(() => setPowerAnimation(null), 1500);
             }
             if (trickWinner === 'ai' && aiPowerActive && aiCardFinal.element === 'fire') {
                 points += 3;
                 setPowerAnimation({type: 'fire', player: 'ai'});
+                playSound('element-fire');
                 setTimeout(() => setPowerAnimation(null), 1500);
             }
 
             if (trickWinner === 'ai' && humanPowerActive && humanCardFinal.element === 'earth') {
                  setHumanScore(prev => prev + result.humanCardPoints);
+                 playSound('element-earth');
             }
              if (trickWinner === 'human' && aiPowerActive && aiCardFinal.element === 'earth') {
                  setAiScore(prev => prev + result.aiCardPoints);
+                 playSound('element-earth');
             }
         }
 

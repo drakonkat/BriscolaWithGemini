@@ -19,7 +19,7 @@ import { ChatPanel } from './ChatPanel';
 import { GameModals } from './GameModals';
 import { Snackbar } from './Snackbar';
 import { RoguelikeMap } from './RoguelikeMap';
-import { playSound } from '../core/soundManager';
+import { playSound, startMusic, stopMusic, updateSoundSettings } from '../core/soundManager';
 
 export function App() {
   const { settings, setters } = useGameSettings();
@@ -70,6 +70,18 @@ export function App() {
     }
   }, [gameState.phase, gameState.roguelikeState.justWonLevel, uiActions, gameActions]);
 
+    useEffect(() => {
+        updateSoundSettings(settings.soundEditorSettings);
+    }, [settings.soundEditorSettings]);
+
+  useEffect(() => {
+      if (settings.isMusicEnabled && (gameState.phase === 'playing' || gameState.phase === 'roguelike-map')) {
+          startMusic(settings.soundEditorSettings);
+      } else {
+          stopMusic();
+      }
+  }, [settings.isMusicEnabled, gameState.phase, settings.soundEditorSettings]);
+
   const T = useMemo(() => translations[settings.language], [settings.language]);
   const aiName = useMemo(() => gameState.currentWaifu?.name ?? '', [gameState.currentWaifu]);
 
@@ -103,6 +115,7 @@ export function App() {
           onShowSupport={() => uiActions.openModal('support')}
           onRefreshBackground={uiActions.refreshMenuBackground}
           onShowGallery={() => uiActions.openModal('gallery')}
+          onShowSoundEditor={() => uiActions.openModal('soundEditor')}
         />
         <GameModals
           uiState={uiState}
@@ -113,6 +126,7 @@ export function App() {
           gachaState={gachaState}
           gachaActions={gachaActions}
           settings={settings}
+          onSoundEditorSettingsChange={setters.setSoundEditorSettings}
         />
         <Snackbar
           message={uiState.snackbar.message}
@@ -142,6 +156,7 @@ export function App() {
               gachaState={gachaState}
               gachaActions={gachaActions}
               settings={settings}
+              onSoundEditorSettingsChange={setters.setSoundEditorSettings}
             />
         </>
       );
@@ -203,6 +218,8 @@ export function App() {
         onActivateFollowerAbility={gameActions.activateFollowerAbility}
         onCancelFollowerAbility={gameActions.cancelFollowerAbility}
         abilityArmed={gameState.abilityArmed}
+        isMusicEnabled={settings.isMusicEnabled}
+        onToggleMusic={() => setters.setIsMusicEnabled(p => !p)}
       />
       
       {settings.isChatEnabled && gameState.currentWaifu &&
@@ -231,6 +248,7 @@ export function App() {
         gachaState={gachaState}
         gachaActions={gachaActions}
         settings={settings}
+        onSoundEditorSettingsChange={setters.setSoundEditorSettings}
       />
       
       <Snackbar
