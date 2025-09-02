@@ -7,7 +7,7 @@ import { translations } from './translations';
 import type { Card, Language } from './types';
 
 const WEB_IMAGE_BASE_URL = 'https://s3.tebi.io/waifubriscola';
-const LOCAL_IMAGE_BASE_URL = 'assets'; 
+const LOCAL_IMAGE_BASE_URL = 'public/assets'; 
 
 const useWebImages = !(process.env.FETCH_IMAGE_FROM_WEB === '1');
 const IMAGE_BASE_URL = useWebImages ? WEB_IMAGE_BASE_URL : LOCAL_IMAGE_BASE_URL;
