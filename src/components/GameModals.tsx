@@ -15,6 +15,7 @@ import { FullscreenImageModal } from './FullscreenImageModal';
 import { EventModal } from './EventModal';
 import { HistoryModal } from './HistoryModal';
 import { KasumiSwapModal } from './KasumiSwapModal';
+import { SoundEditorModal } from './SoundEditorModal';
 
 import { useGameSettings } from '../hooks/useGameSettings';
 import { useGachaAndGallery } from '../hooks/useGachaAndGallery';
@@ -24,6 +25,7 @@ import { useGameState } from '../hooks/useGameState';
 
 import { translations } from '../core/translations';
 import type { RoguelikeState, RoguelikeEvent } from '../core/types';
+import type { SoundSettings } from '../core/soundManager';
 
 type GameModalsProps = {
     uiState: ReturnType<typeof useUIState>['uiState'];
@@ -34,6 +36,7 @@ type GameModalsProps = {
     gachaState: ReturnType<typeof useGachaAndGallery>['gachaState'];
     gachaActions: ReturnType<typeof useGachaAndGallery>['gachaActions'];
     settings: ReturnType<typeof useGameSettings>['settings'];
+    onSoundEditorSettingsChange: (value: SoundSettings | ((val: SoundSettings) => SoundSettings)) => void;
 };
 
 export const GameModals = ({
@@ -45,6 +48,7 @@ export const GameModals = ({
     gachaState,
     gachaActions,
     settings,
+    onSoundEditorSettingsChange,
 }: GameModalsProps) => {
     const T = translations[settings.language];
     const TR = T.roguelike;
@@ -210,6 +214,14 @@ export const GameModals = ({
                 onCardSelect={gameActions.handleKasumiCardSwap}
                 briscolaCard={gameState.briscolaCard}
                 hand={gameState.humanHand}
+                language={settings.language}
+            />
+
+            <SoundEditorModal
+                isOpen={uiState.isSoundEditorModalOpen}
+                onClose={() => uiActions.closeModal('soundEditor')}
+                settings={settings.soundEditorSettings}
+                onSettingsChange={onSoundEditorSettingsChange}
                 language={settings.language}
             />
         </>
