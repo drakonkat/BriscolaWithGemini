@@ -33,38 +33,33 @@ export const FullscreenImageModal = observer(({ isOpen, imageUrl, onClose, langu
         try {
             const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1) || 'waifu-briscola-background.png';
             
-            if (Capacitor.getPlatform() === 'android') {
-                // Use downloadFile for a more direct and robust download on Android
+            const platform = Capacitor.getPlatform();
+
+            if (platform === 'android') {
+                // Use Filesystem API for native download on Android
                 await Filesystem.downloadFile({
                     path: filename,
                     url: imageUrl,
-                    // FIX: Property 'Downloads' does not exist on type 'typeof Directory'. Replaced with 'Documents'.
                     directory: Directory.Documents,
                 });
                 uiStore.showSnackbar(T.gallery.imageSavedToDownloads, 'success');
-            } else {
-                // Keep the old logic for web and other platforms (like iOS)
+            } else if (platform === 'web') {
+                // Use the cached image data URL to bypass CORS issues.
                 const dataUrl = await getCachedImageSrc(imageUrl);
-                if (!dataUrl) {
-                    throw new Error('Image URL is empty or could not be retrieved from cache/network.');
-                }
-                
-                if (Capacitor.isNativePlatform()) {
-                    // Fallback for other native platforms like iOS
-                    window.open(imageUrl, '_system');
-                } else {
-                    // Web download logic
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = dataUrl;
-                    a.download = filename;
-                    
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }
+console.log("ASD",imageUrl,dataUrl)
+               const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download =filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(dataUrl);
+            } else {
+                // For other native platforms (like iOS), open in the system browser.
+                window.open(imageUrl, '_system');
             }
         } catch (error) {
+            // This will catch errors from the Android Filesystem API primarily
             console.warn('Error downloading image:', error);
             uiStore.showSnackbar(T.gallery.imageSaveFailed, 'warning');
         } finally {
