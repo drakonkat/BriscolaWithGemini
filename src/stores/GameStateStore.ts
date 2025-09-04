@@ -106,7 +106,7 @@ export class GameStateStore {
         reaction(() => ({humanScore: this.humanScore, aiScore: this.aiScore}), this.updateEmotionalState);
         reaction(() => ({phase: this.phase, cardsOnTable: this.cardsOnTable.length}), this.handleTrickResolution);
         reaction(() => ({phase: this.phase, turn: this.turn, cardsOnTable: this.cardsOnTable.length}), this.handleAiTurn);
-        reaction(() => ({phase: this.phase, humanHand: this.humanHand.length, aiHand: this.aiHand.length}), this.handleEndOfGame);
+        reaction(() => ({phase: this.phase, humanHand: this.humanHand.length, aiHand: this.aiHand.length, cardsOnTable: this.cardsOnTable.length, isProcessing: this.isProcessing}), this.handleEndOfGame);
     }
     
     init() {
@@ -342,7 +342,7 @@ export class GameStateStore {
     }
 
     handleEndOfGame = () => {
-         if (this.phase === 'playing' && this.humanHand.length === 0 && this.aiHand.length === 0 && !this.isProcessing) {
+         if (this.phase === 'playing' && this.humanHand.length === 0 && this.aiHand.length === 0 && this.cardsOnTable.length === 0 && !this.isProcessing) {
             let winner: 'human' | 'ai' | 'tie' = 'tie';
             if (this.humanScore > this.aiScore) winner = 'human';
             if (this.aiScore > this.humanScore) winner = 'ai';
