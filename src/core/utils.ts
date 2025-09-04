@@ -4,7 +4,7 @@
 */
 import { SUITS_IT, VALUES_IT, valueToFileNumber, POINTS } from './constants';
 import { translations } from './translations';
-import type { Card, Language } from './types';
+import type { Card, Language, CardDeckStyle } from './types';
 
 const WEB_IMAGE_BASE_URL = 'https://s3.tebi.io/waifubriscola';
 // Evita 'public/'. Usa il base URL di Vite per funzionare sia in dev che in build (Capacitor incluso)
@@ -26,10 +26,10 @@ export const getCardId = (card: Card, lang: Language): string => {
   return `${translatedValue}${translations[lang].cardIdConnector}${translatedSuit}`;
 }
 
-export const getCardImagePath = (card: Card): string => {
+export const getCardImagePath = (card: Card, style: CardDeckStyle): string => {
   const suit = card.suit.toLowerCase();
   const number = valueToFileNumber[card.value];
-  return getImageUrl(`/classic/${suit}${number}.png`);
+  return getImageUrl(`/${style}/${suit}${number}.png`);
 };
 
 /**

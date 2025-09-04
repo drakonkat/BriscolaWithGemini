@@ -14,7 +14,10 @@
   --primary-accent-hover: #45a049;
 
   /* Responsive Card Sizing */
-  --card-aspect-ratio: 1.7857; /* 150 / 84 */
+  --classic-card-aspect-ratio: 1.7857; /* 150 / 84 */
+  --poker-card-aspect-ratio: 1.4;    /* 88.9mm / 63.5mm */
+
+  --card-aspect-ratio: var(--classic-card-aspect-ratio); /* Default to classic */
   --card-width-clamp: clamp(54px, 6.5vw, 90px);
   --card-height-from-vw: calc(var(--card-width-clamp) * var(--card-aspect-ratio));
   --card-height-from-vh: calc(30vh - 50px);
@@ -57,6 +60,8 @@ body {
   height: 100%;
   text-align: center;
   padding: 3rem 1rem;
+  padding-top: calc(3rem + env(safe-area-inset-top));
+  padding-bottom: calc(3rem + env(safe-area-inset-bottom));
   position: relative;
   overflow-y: auto;
   z-index: 1;
@@ -88,8 +93,8 @@ body {
 
 .waifu-coins-display {
   position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
+  top: calc(1.5rem + env(safe-area-inset-top));
+  right: calc(1.5rem + env(safe-area-inset-right));
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -471,6 +476,10 @@ input:checked + .slider:before {
   max-width: 1600px;
   margin: auto;
   position: relative;
+}
+
+.app-container.deck-style-poker {
+  --card-aspect-ratio: var(--poker-card-aspect-ratio);
 }
 
 .game-board {
@@ -1109,6 +1118,9 @@ input:checked + .slider:before {
 
 .chat-header {
   padding: 0.75rem 1rem;
+  padding-top: calc(0.75rem + env(safe-area-inset-top));
+  padding-right: calc(1rem + env(safe-area-inset-right));
+  padding-left: calc(1rem + env(safe-area-inset-left));
   background-color: #333;
   color: var(--font-color);
   border-bottom: 2px solid #444;
@@ -1240,7 +1252,9 @@ input:checked + .slider:before {
 .chat-input-form {
   display: flex;
   padding: 0.75rem;
-  padding-bottom: 1.75rem;
+  padding-right: calc(0.75rem + env(safe-area-inset-right));
+  padding-left: calc(0.75rem + env(safe-area-inset-left));
+  padding-bottom: calc(1.75rem + env(safe-area-inset-bottom));
   border-top: 2px solid #ddd;
   background-color: #f0f0f0;
   gap: 0.5rem;
@@ -1720,8 +1734,8 @@ input:checked + .slider:before {
 }
 .fullscreen-actions {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: calc(15px + env(safe-area-inset-top));
+  right: calc(15px + env(safe-area-inset-right));
   display: flex;
   gap: 10px;
 }
@@ -2681,7 +2695,9 @@ input:checked + .slider:before {
   }
   .waifu-coins-display {
       top: 1rem;
+      top: calc(1rem + env(safe-area-inset-top));
       right: 1rem;
+      right: calc(1rem + env(safe-area-inset-right));
   }
 
   body {

@@ -192,13 +192,13 @@ export const BOSS_WAIFU: Waifu = {
   fallbackMessages: {
       it: {
           winning: ["Era prevedibile.", "Speravo in una vera sfida.", "Non sei ancora al mio livello.", "Ancora un passo verso l'inevitabile.", "Ti stai impegnando? Non sembra.", "Deludente.", "La perfezione ha un nome: il mio.", "Mostrami qualcosa di degno.", "Il tuo destino è segnato."],
-          losing: ["Fortuna. Nient'altro.", "Non abituarti a questa sensazione.", "Come osi? Questa mossa... la pagherai.", "Interessante. Forse c'è del potenziale in te.", "Un errore di calcolo. Non si ripeterà.", "Mi stai costringendo a fare sul serio.", "Questa insolenza avrà fine.", "Analizzo la tua strategia. Non funzionerà di nuovo."],
-          neutral: ["La tua mossa?", "Non farmi aspettare.", "Silenzio. Sto pensando.", "Valutando le tue opzioni.", "Ogni carta ha una conseguenza.", "Non male. Ma non abbastanza.", "La prossima mossa deciderà molto.", "La fortuna aiuta gli audaci, o gli stupidi?", "Dimostrami il tuo valore."]
+          losing: ["Fortuna. Nient'altro.", "Non abituarti a questa sensazione.", "Come osi? Questa mossa... la pagherai.", "Un fastidioso colpo di fortuna.", "Non ti montare la testa.", "Questo round è tuo, ma la partita è mia.", "Una momentanea distrazione.", "Hai risvegliato il mio interesse... per poco.", "Consideralo un mio regalo."],
+          neutral: ["Silenzio. Sto pensando.", "La tua mossa non era del tutto stupida.", "Vediamo come te la cavi ora.", "Non deludermi.", "La partita è ancora da decidere.", "Ogni carta ha il suo peso.", "Questa situazione è... accettabile.", "Sei più resistente del previsto.", "Interessante.", "Mostrami la tua prossima mossa."]
       },
       en: {
-          winning: ["Predictable.", "I was hoping for a real challenge.", "You are not on my level yet.", "Another step towards the inevitable.", "Are you even trying? It doesn't look like it.", "Disappointing.", "Perfection has a name: mine.", "Show me something worthy.", "Your fate is sealed."],
-          losing: ["Luck. Nothing more.", "Don't get used to this feeling.", "How dare you? That move... you will pay for it.", "Interesting. Perhaps there is some potential in you.", "A miscalculation. It will not happen again.", "You are forcing me to get serious.", "This insolence will end.", "Analyzing your strategy. It won't work again."],
-          neutral: ["Your move?", "Don't keep me waiting.", "Silence. I'm thinking.", "Evaluating your options.", "Every card has a consequence.", "Not bad. But not good enough.", "The next move will decide a lot.", "Does fortune favor the bold, or the foolish?", "Prove your worth to me."]
+          winning: ["Predictable.", "I was hoping for a real challenge.", "You are not yet on my level.", "One more step towards the inevitable.", "Are you even trying? It doesn't seem so.", "Disappointing.", "Perfection has a name: mine.", "Show me something worthy.", "Your fate is sealed."],
+          losing: ["Luck. Nothing more.", "Don't get used to this feeling.", "How dare you? This move... you will pay for it.", "An annoying stroke of luck.", "Don't get a big head.", "This round is yours, but the game is mine.", "A momentary distraction.", "You've piqued my interest... briefly.", "Consider it my gift."],
+          neutral: ["Silence. I'm thinking.", "Your move was not entirely foolish.", "Let's see how you handle this.", "Do not disappoint me.", "The game is yet to be decided.", "Every card carries weight.", "This situation is... acceptable.", "You're more resilient than I expected.", "Interesting.", "Show me your next move."]
       }
   }
 };

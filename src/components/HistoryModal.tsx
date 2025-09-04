@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { translations } from '../core/translations';
-import type { Language, TrickHistoryEntry } from '../core/types';
+import type { Language, TrickHistoryEntry, CardDeckStyle } from '../core/types';
 import { CardView } from './CardView';
 import { ElementIcon } from './ElementIcon';
 
@@ -13,9 +13,10 @@ interface HistoryModalProps {
     history: TrickHistoryEntry[];
     language: Language;
     aiName: string;
+    cardDeckStyle: CardDeckStyle;
 }
 
-export const HistoryModal = ({ isOpen, onClose, history, language, aiName }: HistoryModalProps) => {
+export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardDeckStyle }: HistoryModalProps) => {
     if (!isOpen) {
         return null;
     }
@@ -46,8 +47,8 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName }: His
                         {[...history].reverse().map(entry => (
                             <div key={entry.trickNumber} className="history-entry">
                                 <span>{entry.trickNumber}</span>
-                                <div><CardView card={entry.humanCard} lang={language} /></div>
-                                <div><CardView card={entry.aiCard} lang={language} /></div>
+                                <div><CardView card={entry.humanCard} lang={language} cardDeckStyle={cardDeckStyle} /></div>
+                                <div><CardView card={entry.aiCard} lang={language} cardDeckStyle={cardDeckStyle} /></div>
                                 <div className="history-clash-result">
                                     {entry.clashResult ? (
                                         entry.clashResult.type === 'dice' ? (

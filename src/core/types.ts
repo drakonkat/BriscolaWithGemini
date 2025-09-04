@@ -23,10 +23,14 @@ export type Language = 'it' | 'en';
 export type Waifu = WaifuType;
 export type GameEmotionalState = 'winning' | 'losing' | 'neutral';
 export type GameplayMode = 'classic' | 'roguelike';
-export type Difficulty = 'easy' | 'medium' | 'hard';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'nightmare';
 export type Soundtrack = 'epic' | 'chill';
 export type Element = 'fire' | 'water' | 'air' | 'earth';
 export type AbilityType = 'incinerate' | 'tide' | 'cyclone' | 'fortify';
+export type SnackbarType = 'success' | 'warning';
+export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'event' | 'soundEditor';
+export type CardDeckStyle = 'classic' | 'poker';
+
 
 // FIX: Added 'healing_fountain' to the PlayerPowerUp type to allow it to be set as an active power-up.
 export type PlayerPowerUp = 'fortune_amulet' | 'insight_potion' | 'coin_pouch' | 'healing_fountain';

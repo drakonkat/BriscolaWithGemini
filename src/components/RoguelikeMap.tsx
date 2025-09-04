@@ -2,27 +2,26 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../stores';
 import { translations } from '../core/translations';
 import { CachedImage } from './CachedImage';
-import type { Language, RoguelikeState } from '../core/types';
-
-interface RoguelikeMapProps {
-    roguelikeState: RoguelikeState;
-    onStartLevel: () => void;
-    language: Language;
-    backgroundUrl: string;
-}
 
 const LEVEL_REWARDS = [0, 25, 50, 75, 150];
 
-export const RoguelikeMap = ({ roguelikeState, onStartLevel, language, backgroundUrl }: RoguelikeMapProps) => {
+export const RoguelikeMap = observer(() => {
+    const { gameStateStore, gameSettingsStore, uiStore } = useStores();
+    const { roguelikeState } = gameStateStore;
+    const { language } = gameSettingsStore;
+    const { menuBackgroundUrl } = uiStore;
+
     const T = translations[language];
     const TR = T.roguelike;
     const { currentLevel } = roguelikeState;
 
     return (
         <div className="roguelike-map">
-            <CachedImage imageUrl={backgroundUrl} alt="Roguelike Map Background" className="menu-background" />
+            <CachedImage imageUrl={menuBackgroundUrl} alt="Roguelike Map Background" className="menu-background" />
             <div className="roguelike-map-content">
                 <h1>{TR.mapTitle}</h1>
                 
@@ -37,11 +36,11 @@ export const RoguelikeMap = ({ roguelikeState, onStartLevel, language, backgroun
                 </div>
 
                 <div className="roguelike-map-actions">
-                    <button onClick={onStartLevel}>
+                    <button onClick={gameStateStore.startRoguelikeLevel}>
                         {currentLevel > 0 ? TR.continueRun : TR.startRun}
                     </button>
                 </div>
             </div>
         </div>
     );
-};
+});
