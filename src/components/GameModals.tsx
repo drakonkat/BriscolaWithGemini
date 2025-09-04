@@ -2,6 +2,9 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../stores';
+
 import { GameOverModal } from './GameOverModal';
 import { QuotaExceededModal } from './QuotaExceededModal';
 import { RulesModal } from './RulesModal';
@@ -17,45 +20,23 @@ import { HistoryModal } from './HistoryModal';
 import { KasumiSwapModal } from './KasumiSwapModal';
 import { SoundEditorModal } from './SoundEditorModal';
 
-import { useGameSettings } from '../hooks/useGameSettings';
-import { useGachaAndGallery } from '../hooks/useGachaAndGallery';
-import { useUIState } from '../hooks/useUIState';
-import { useChat } from '../hooks/useChat';
-import { useGameState } from '../hooks/useGameState';
-
 import { translations } from '../core/translations';
 import type { RoguelikeState, RoguelikeEvent } from '../core/types';
-import type { SoundSettings } from '../core/soundManager';
 
-type GameModalsProps = {
-    uiState: ReturnType<typeof useUIState>['uiState'];
-    uiActions: ReturnType<typeof useUIState>['uiActions'];
-    gameState: ReturnType<typeof useGameState>['gameState'];
-    gameActions: ReturnType<typeof useGameState>['gameActions'];
-    chatActions: ReturnType<typeof useChat>['chatActions'];
-    gachaState: ReturnType<typeof useGachaAndGallery>['gachaState'];
-    gachaActions: ReturnType<typeof useGachaAndGallery>['gachaActions'];
-    settings: ReturnType<typeof useGameSettings>['settings'];
-    onSoundEditorSettingsChange: (value: SoundSettings | ((val: SoundSettings) => SoundSettings)) => void;
-};
+export const GameModals = observer(() => {
+    const { uiStore, gameStateStore, gachaStore, gameSettingsStore } = useStores();
+    const { language, difficulty, gameplayMode, cardDeckStyle } = gameSettingsStore;
+    const { 
+        phase, gameResult, lastGameWinnings, currentWaifu, gameMode, humanScore, aiScore, 
+        trickHistory, isKasumiModalOpen, briscolaCard, humanHand, roguelikeState
+    } = gameStateStore;
 
-export const GameModals = ({
-    uiState,
-    uiActions,
-    gameState,
-    gameActions,
-    chatActions,
-    gachaState,
-    gachaActions,
-    settings,
-    onSoundEditorSettingsChange,
-}: GameModalsProps) => {
-    const T = translations[settings.language];
+    const T = translations[language];
     const TR = T.roguelike;
 
     const handleEventChoice = (choice: () => void) => {
         choice();
-        uiActions.closeModal('event');
+        uiStore.closeModal('event');
     }
 
     const generateEventsFromTypes = (types: RoguelikeEvent['type'][] = []): RoguelikeEvent[] => {
@@ -67,9 +48,9 @@ export const GameModals = ({
                 title: TR.marketTitle,
                 description: TR.marketDescription,
                 choices: [
-                    { text: TR.fortuneAmulet, description: TR.fortuneAmuletDesc, action: () => gameActions.setRoguelikeState((p: RoguelikeState) => ({ ...p, activePowerUp: 'fortune_amulet' })) },
-                    { text: TR.insightPotion, description: TR.insightPotionDesc, action: () => gameActions.setRoguelikeState((p: RoguelikeState) => ({ ...p, activePowerUp: 'insight_potion' })) },
-                    { text: TR.coinPouch, description: TR.coinPouchDesc, action: () => gachaActions.addCoins(50) }
+                    { text: TR.fortuneAmulet, description: TR.fortuneAmuletDesc, action: () => gameStateStore.roguelikeState.activePowerUp = 'fortune_amulet' },
+                    { text: TR.insightPotion, description: TR.insightPotionDesc, action: () => gameStateStore.roguelikeState.activePowerUp = 'insight_potion' },
+                    { text: TR.coinPouch, description: TR.coinPouchDesc, action: () => gachaStore.addCoins(50) }
                 ]
             }),
             witch_hut: (): RoguelikeEvent => ({
@@ -77,7 +58,7 @@ export const GameModals = ({
                 title: TR.witchHutTitle,
                 description: TR.witchHutDescription,
                 choices: [
-                    { text: TR.powerUpAbility(T[gameState.humanAbility!]), description: TR.powerUpAbilityDesc, action: () => {} },
+                    { text: TR.powerUpAbility(T[roguelikeState.humanAbility!]), description: TR.powerUpAbilityDesc, action: () => {} },
                     { text: TR.swapAbility, description: TR.swapAbilityDesc, action: () => {} }
                 ]
             }),
@@ -86,7 +67,7 @@ export const GameModals = ({
                 title: TR.healingFountainTitle,
                 description: TR.healingFountainDescription,
                 choices: [
-                    { text: TR.startWith10Points, description: TR.startWith10PointsDesc, action: () => gameActions.setRoguelikeState((p: RoguelikeState) => ({...p, activePowerUp: 'healing_fountain'})) }
+                    { text: TR.startWith10Points, description: TR.startWith10PointsDesc, action: () => gameStateStore.roguelikeState.activePowerUp = 'healing_fountain' }
                 ]
             }),
             challenge_altar: (): RoguelikeEvent => ({
@@ -94,7 +75,7 @@ export const GameModals = ({
                 title: TR.challengeAltarTitle,
                 description: TR.challengeAltarDescription,
                 choices: [
-                    { text: TR.acceptChallenge, description: TR.challengeScoreAbove80(100), action: () => gameActions.setRoguelikeState((p: RoguelikeState) => ({...p, challenge: {type: 'score_above_80', reward: 100, completed: false}})) },
+                    { text: TR.acceptChallenge, description: TR.challengeScoreAbove80(100), action: () => gameStateStore.roguelikeState.challenge = {type: 'score_above_80', reward: 100, completed: false} },
                     { text: TR.skipEvent, action: () => {} }
                 ]
             }),
@@ -103,127 +84,129 @@ export const GameModals = ({
         return types.map(type => allEventGenerators[type]());
     };
 
-    const eventsForModal = generateEventsFromTypes(gameState.roguelikeState.eventTypesForCrossroads);
+    const eventsForModal = generateEventsFromTypes(roguelikeState.eventTypesForCrossroads);
 
     return (
         <>
-            {gameState.phase === 'gameOver' && gameState.gameResult && settings.gameplayMode === 'classic' &&(
+            {phase === 'gameOver' && gameResult && gameplayMode === 'classic' &&(
                 <GameOverModal
-                    humanScore={gameState.humanScore}
-                    aiScore={gameState.aiScore}
-                    aiName={gameState.currentWaifu?.name ?? ''}
-                    winner={gameState.gameResult}
-                    onPlayAgain={() => gameActions.startGame(gameState.currentWaifu)}
-                    onGoToMenu={gameActions.goToMenu}
-                    language={settings.language}
-                    winnings={gameState.lastGameWinnings}
+                    humanScore={humanScore}
+                    aiScore={aiScore}
+                    aiName={currentWaifu?.name ?? ''}
+                    winner={gameResult}
+                    onPlayAgain={() => gameStateStore.startGame(currentWaifu)}
+                    onGoToMenu={gameStateStore.goToMenu}
+                    language={language}
+                    winnings={lastGameWinnings}
                 />
             )}
             
-            {gameState.phase === 'gameOver' && gameState.gameResult && settings.gameplayMode === 'roguelike' && (
+            {phase === 'gameOver' && gameResult && gameplayMode === 'roguelike' && (
                  <div className="game-over-overlay">
                     <div className="game-over-modal">
-                        <h2>{gameState.gameResult === 'human' ? TR.runCompleted : TR.runFailed}</h2>
-                        <p>{gameState.gameResult === 'human' ? TR.runCompletedMessage(gameState.lastGameWinnings) : TR.runFailedMessage(gameState.lastGameWinnings)}</p>
-                        {gameState.gameResult === 'ai' ? (
-                            <button onClick={gameActions.goToMenu}>{T.backToMenu}</button>
+                        <h2>{gameResult === 'human' ? TR.runCompleted : TR.runFailed}</h2>
+                        <p>{gameResult === 'human' ? TR.runCompletedMessage(lastGameWinnings) : TR.runFailedMessage(lastGameWinnings)}</p>
+                        {gameResult === 'ai' ? (
+                            <button onClick={gameStateStore.goToMenu}>{T.backToMenu}</button>
                         ) : (
-                            <button onClick={() => gameActions.setPhase('roguelike-map')}>{TR.backToMap}</button>
+                            <button onClick={() => gameStateStore.setPhase('roguelike-map')}>{TR.backToMap}</button>
                         )}
                     </div>
                 </div>
             )}
 
             <EventModal 
-                isOpen={uiState.isEventModalOpen}
-                onClose={() => uiActions.closeModal('event')}
+                isOpen={uiStore.isEventModalOpen}
+                onClose={() => uiStore.closeModal('event')}
                 events={eventsForModal}
                 onChoiceSelected={handleEventChoice}
-                language={settings.language}
+                language={language}
             />
 
-            {uiState.isQuotaExceededModalOpen && gameState.gameMode === 'online' && (
-                <QuotaExceededModal language={settings.language} onContinue={gameActions.continueFromQuotaModal} />
+            {uiStore.isQuotaExceededModalOpen && gameMode === 'online' && (
+                <QuotaExceededModal language={language} onContinue={gameStateStore.continueFromQuotaModal} />
             )}
 
-            <RulesModal isOpen={uiState.isRulesModalOpen} onClose={() => uiActions.closeModal('rules')} language={settings.language} difficulty={settings.difficulty} />
-            <PrivacyPolicyModal isOpen={uiState.isPrivacyModalOpen} onClose={() => uiActions.closeModal('privacy')} language={settings.language} />
-            <TermsAndConditionsModal isOpen={uiState.isTermsModalOpen} onClose={() => uiActions.closeModal('terms')} language={settings.language} />
+            <RulesModal isOpen={uiStore.isRulesModalOpen} onClose={() => uiStore.closeModal('rules')} language={language} difficulty={difficulty} />
+            <PrivacyPolicyModal isOpen={uiStore.isPrivacyModalOpen} onClose={() => uiStore.closeModal('privacy')} language={language} />
+            <TermsAndConditionsModal isOpen={uiStore.isTermsModalOpen} onClose={() => uiStore.closeModal('terms')} language={language} />
             
             <GalleryModal
-              isOpen={uiState.isGalleryModalOpen}
-              onClose={() => uiActions.closeModal('gallery')}
-              language={settings.language}
-              backgrounds={gachaState.BACKGROUNDS}
-              unlockedBackgrounds={gachaState.unlockedBackgrounds}
-              waifuCoins={gachaState.waifuCoins}
-              onGachaRoll={gachaActions.handleGachaRoll}
-              onImageSelect={gachaActions.openFullscreenImage}
-              hasRolledGacha={gachaState.hasRolledGacha}
+              isOpen={uiStore.isGalleryModalOpen}
+              onClose={() => uiStore.closeModal('gallery')}
+              language={language}
+              backgrounds={gachaStore.BACKGROUNDS}
+              unlockedBackgrounds={gachaStore.unlockedBackgrounds}
+              waifuCoins={gachaStore.waifuCoins}
+              onGachaRoll={gachaStore.handleGachaRoll}
+              onImageSelect={gachaStore.openFullscreenImage}
+              hasRolledGacha={gachaStore.hasRolledGacha}
             />
             
             <FullscreenImageModal
-              isOpen={!!gachaState.fullscreenImage}
-              imageUrl={gachaState.fullscreenImage}
-              onClose={gachaActions.closeFullscreenImage}
-              language={settings.language}
+              isOpen={!!gachaStore.fullscreenImage}
+              imageUrl={gachaStore.fullscreenImage}
+              onClose={gachaStore.closeFullscreenImage}
+              language={language}
             />
 
-            {gameState.currentWaifu && (
+            {currentWaifu && (
                 <WaifuDetailsModal 
-                    isOpen={uiState.isWaifuModalOpen}
-                    onClose={() => uiActions.closeModal('waifuDetails')}
-                    waifu={gameState.currentWaifu}
-                    language={settings.language}
+                    isOpen={uiStore.isWaifuModalOpen}
+                    onClose={() => uiStore.closeModal('waifuDetails')}
+                    waifu={currentWaifu}
+                    language={language}
                 />
             )}
 
             <SupportModal
-                isOpen={uiState.isSupportModalOpen}
-                onClose={() => uiActions.closeModal('support')}
-                onVote={uiActions.handleSubscriptionInterest}
-                hasVoted={uiState.hasVotedForSubscription}
-                language={settings.language}
+                isOpen={uiStore.isSupportModalOpen}
+                onClose={() => uiStore.closeModal('support')}
+                onVote={uiStore.handleSubscriptionInterest}
+                hasVoted={uiStore.hasVotedForSubscription}
+                language={language}
             />
 
             <ConfirmationModal
-                isOpen={uiState.isConfirmLeaveModalOpen}
-                onClose={() => uiActions.closeModal('confirmLeave')}
+                isOpen={uiStore.isConfirmLeaveModalOpen}
+                onClose={() => uiStore.closeModal('confirmLeave')}
                 onConfirm={() => {
-                    gameActions.confirmLeaveGame();
-                    uiActions.closeModal('confirmLeave');
+                    gameStateStore.confirmLeaveGame();
+                    uiStore.closeModal('confirmLeave');
                 }}
                 title={T.confirmLeave.title}
                 message={T.confirmLeave.message}
                 confirmText={T.confirmLeave.confirm}
                 cancelText={T.confirmLeave.cancel}
-                language={settings.language}
+                language={language}
             />
 
             <HistoryModal
-                isOpen={uiState.isHistoryModalOpen}
-                onClose={() => uiActions.closeModal('history')}
-                history={gameState.trickHistory}
-                language={settings.language}
-                aiName={gameState.currentWaifu?.name ?? ''}
+                isOpen={uiStore.isHistoryModalOpen}
+                onClose={() => uiStore.closeModal('history')}
+                history={trickHistory}
+                language={language}
+                aiName={currentWaifu?.name ?? ''}
+                cardDeckStyle={cardDeckStyle}
             />
             
             <KasumiSwapModal
-                isOpen={gameState.isKasumiModalOpen}
-                onClose={gameActions.closeKasumiModal}
-                onCardSelect={gameActions.handleKasumiCardSwap}
-                briscolaCard={gameState.briscolaCard}
-                hand={gameState.humanHand}
-                language={settings.language}
+                isOpen={isKasumiModalOpen}
+                onClose={gameStateStore.closeKasumiModal}
+                onCardSelect={gameStateStore.handleKasumiCardSwap}
+                briscolaCard={briscolaCard}
+                hand={humanHand}
+                language={language}
+                cardDeckStyle={cardDeckStyle}
             />
 
             <SoundEditorModal
-                isOpen={uiState.isSoundEditorModalOpen}
-                onClose={() => uiActions.closeModal('soundEditor')}
-                settings={settings.soundEditorSettings}
-                onSettingsChange={onSoundEditorSettingsChange}
-                language={settings.language}
+                isOpen={uiStore.isSoundEditorModalOpen}
+                onClose={() => uiStore.closeModal('soundEditor')}
+                settings={gameSettingsStore.soundEditorSettings}
+                onSettingsChange={(v) => gameSettingsStore.soundEditorSettings = typeof v === 'function' ? v(gameSettingsStore.soundEditorSettings) : v}
+                language={language}
             />
         </>
     );
-};
+});

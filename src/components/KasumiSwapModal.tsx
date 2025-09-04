@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { translations } from '../core/translations';
-import type { Card, Language } from '../core/types';
+import type { Card, Language, CardDeckStyle } from '../core/types';
 import { CardView } from './CardView';
 
 interface KasumiSwapModalProps {
@@ -13,9 +13,10 @@ interface KasumiSwapModalProps {
     briscolaCard: Card | null;
     hand: Card[];
     language: Language;
+    cardDeckStyle: CardDeckStyle;
 }
 
-export const KasumiSwapModal = ({ isOpen, onClose, onCardSelect, briscolaCard, hand, language }: KasumiSwapModalProps) => {
+export const KasumiSwapModal = ({ isOpen, onClose, onCardSelect, briscolaCard, hand, language, cardDeckStyle }: KasumiSwapModalProps) => {
     if (!isOpen || !briscolaCard) {
         return null;
     }
@@ -34,11 +35,11 @@ export const KasumiSwapModal = ({ isOpen, onClose, onCardSelect, briscolaCard, h
                     <h2>{T.kasumiSwapTitle}</h2>
                     <p>{T.kasumiSwapMessage}</p>
                     <div className="kasumi-swap-cards">
-                        <CardView card={briscolaCard} lang={language} />
+                        <CardView card={briscolaCard} lang={language} cardDeckStyle={cardDeckStyle} />
                     </div>
                     <div className="hand">
                         {hand.map(card => (
-                            <CardView key={card.id} card={card} lang={language} isPlayable onClick={() => onCardSelect(card)} />
+                            <CardView key={card.id} card={card} lang={language} isPlayable onClick={() => onCardSelect(card)} cardDeckStyle={cardDeckStyle} />
                         ))}
                     </div>
                      <div className="modal-actions">

@@ -3,33 +3,30 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { useEffect, useState, useCallback } from 'react';
+import { observer } from 'mobx-react-lite';
+import { useStores } from '../stores';
 import { translations } from '../core/translations';
-import type { Language } from '../core/types';
 
-interface SnackbarProps {
-  message: string;
-  onClose: () => void;
-  lang: Language;
-  type?: 'success' | 'warning';
-}
+export const Snackbar = observer(() => {
+  const { uiStore, gameSettingsStore } = useStores();
+  const { message, type } = uiStore.snackbar;
+  const { language } = gameSettingsStore;
 
-export const Snackbar = ({ message, onClose, lang, type = 'success' }: SnackbarProps) => {
   const [isVisible, setIsVisible] = useState(false);
-  const T = translations[lang];
+  const T = translations[language];
 
   const handleClose = useCallback(() => {
     setIsVisible(false);
     const closeTimer = setTimeout(() => {
-        onClose();
+        uiStore.hideSnackbar();
     }, 300);
     return () => clearTimeout(closeTimer);
-  }, [onClose]);
+  }, [uiStore]);
 
   useEffect(() => {
     if (message) {
       setIsVisible(true);
       const timer = setTimeout(handleClose, 3000);
-
       return () => clearTimeout(timer);
     } else {
       setIsVisible(false);
@@ -50,4 +47,4 @@ export const Snackbar = ({ message, onClose, lang, type = 'success' }: SnackbarP
       </button>
     </div>
   );
-};
+});

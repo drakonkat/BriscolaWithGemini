@@ -35,7 +35,7 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
     }
 
     const rewards = {
-        loss: Math.round(20 * difficultyMultiplier),
+        loss: difficulty === 'nightmare' ? Math.round(20 * 1.5) : Math.round(20 * difficultyMultiplier),
         win61: Math.round(45 * difficultyMultiplier),
         win81: Math.round(70 * difficultyMultiplier),
         win101: Math.round(100 * difficultyMultiplier),
@@ -66,10 +66,19 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
 
                 <h3 className="rules-subtitle">{T.waifuCoinRulesTitle}</h3>
                 <ul className="rules-info-list">
-                    <li className="rules-info-item">{T.waifuCoinRuleLoss(rewards.loss)}</li>
-                    <li className="rules-info-item">{T.waifuCoinRuleWin61(rewards.win61)}</li>
-                    <li className="rules-info-item">{T.waifuCoinRuleWin81(rewards.win81)}</li>
-                    <li className="rules-info-item">{T.waifuCoinRuleWin101(rewards.win101)}</li>
+                    {difficulty === 'nightmare' ? (
+                         <>
+                            <li className="rules-info-item">{T.waifuCoinRuleLoss(rewards.loss)}</li>
+                            <li className="rules-info-item">{T.waifuCoinRuleWinNightmare(500)}</li>
+                        </>
+                    ) : (
+                        <>
+                            <li className="rules-info-item">{T.waifuCoinRuleLoss(rewards.loss)}</li>
+                            <li className="rules-info-item">{T.waifuCoinRuleWin61(rewards.win61)}</li>
+                            <li className="rules-info-item">{T.waifuCoinRuleWin81(rewards.win81)}</li>
+                            <li className="rules-info-item">{T.waifuCoinRuleWin101(rewards.win101)}</li>
+                        </>
+                    )}
                 </ul>
 
                 <h3 className="rules-subtitle">{T.waifuCoinDifficultyMultiplier}</h3>
@@ -78,6 +87,7 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                     <li className={`rules-info-item ${difficulty === 'easy' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierEasy}</li>
                     <li className={`rules-info-item ${difficulty === 'medium' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierMedium}</li>
                     <li className={`rules-info-item ${difficulty === 'hard' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierHard}</li>
+                    <li className={`rules-info-item ${difficulty === 'nightmare' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierNightmare}</li>
                 </ul>
 
                 <h3 className="rules-subtitle">{T.gachaRulesTitle}</h3>

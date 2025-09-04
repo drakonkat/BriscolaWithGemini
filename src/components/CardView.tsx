@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { getCardId, getCardImagePath, getImageUrl } from '../core/utils';
-import type { Card, Language } from '../core/types';
+import type { Card, Language, CardDeckStyle } from '../core/types';
 import { translations } from '../core/translations';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
 
 type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
 
-export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, elementalEffectStatus?: ElementalEffectStatus }) => {
+export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus, cardDeckStyle }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, elementalEffectStatus?: ElementalEffectStatus, cardDeckStyle: CardDeckStyle }) => {
   const T = translations[lang];
 
   if (isFaceDown) {
@@ -22,7 +22,7 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, classNam
   }
 
   const cardId = getCardId(card, lang);
-  const imagePath = getCardImagePath(card);
+  const imagePath = getCardImagePath(card, cardDeckStyle);
   
   const stateClasses = [
     isPlayable ? 'playable' : '',
