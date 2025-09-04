@@ -44,16 +44,31 @@ export const FullscreenImageModal = observer(({ isOpen, imageUrl, onClose, langu
                 });
                 uiStore.showSnackbar(T.gallery.imageSavedToDownloads, 'success');
             } else if (platform === 'web') {
-                // Use the cached image data URL to bypass CORS issues.
-                const dataUrl = await getCachedImageSrc(imageUrl);
-console.log("ASD",imageUrl,dataUrl)
-               const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download =filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(dataUrl);
+                // For web, fetch the image as a blob to create a downloadable link
+                try {
+                    const response = await fetch(imageUrl);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok.');
+                    }
+                    const blob = await response.blob();
+                    const objectUrl = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = objectUrl;
+                    a.download = filename;
+                    
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    // Clean up the object URL and the link element
+                    URL.revokeObjectURL(objectUrl);
+                    document.body.removeChild(a);
+                } catch (webError) {
+                    console.warn('Web download via blob failed, falling back to new tab:', webError);
+                    // Fallback for web if fetch/blob fails is to open in a new tab.
+                    window.open(imageUrl, '_blank');
+                }
             } else {
                 // For other native platforms (like iOS), open in the system browser.
                 window.open(imageUrl, '_system');
