@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar } from '@capacitor/status-bar';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { translations } from '../core/translations';
@@ -16,6 +18,12 @@ import { RoguelikeMap } from './RoguelikeMap';
 export const App = observer(() => {
   const { gameStateStore, uiStore, gameSettingsStore, chatStore } = useStores();
   const { cardDeckStyle } = gameSettingsStore;
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+        StatusBar.setOverlaysWebView({ overlay: true });
+    }
+  }, []);
 
   useEffect(() => {
     if (gameStateStore.phase === 'roguelike-map' && gameStateStore.roguelikeState.justWonLevel) {
