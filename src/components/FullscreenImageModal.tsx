@@ -4,10 +4,13 @@
 */
 import { useState } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { observer } from 'mobx-react-lite';
 import { translations } from '../core/translations';
 import { getCachedImageSrc } from '../core/imageCache';
 import type { Language } from '../core/types';
 import { CachedImage } from './CachedImage';
+import { useStores } from '../stores';
 
 interface FullscreenImageModalProps {
     isOpen: boolean;
@@ -16,7 +19,8 @@ interface FullscreenImageModalProps {
     language: Language;
 }
 
-export const FullscreenImageModal = ({ isOpen, imageUrl, onClose, language }: FullscreenImageModalProps) => {
+export const FullscreenImageModal = observer(({ isOpen, imageUrl, onClose, language }: FullscreenImageModalProps) => {
+    const { uiStore } = useStores();
     const [isDownloading, setIsDownloading] = useState(false);
     const T = translations[language];
 
@@ -27,26 +31,34 @@ export const FullscreenImageModal = ({ isOpen, imageUrl, onClose, language }: Fu
     const handleDownload = async () => {
         setIsDownloading(true);
         try {
-            if (Capacitor.isNativePlatform()) {
-                // For native platforms (Android/iOS), open the original URL in the system browser
-                // as direct file downloads are problematic in WebViews.
+            const dataUrl = await getCachedImageSrc(imageUrl);
+            if (!dataUrl) {
+                throw new Error('Image URL is empty or could not be retrieved from cache/network.');
+            }
+            const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1) || 'waifu-briscola-background.png';
+
+            if (Capacitor.getPlatform() === 'android') {
+                if (!dataUrl.startsWith('data:')) {
+                    throw new Error('Retrieved image source is not a data URL.');
+                }
+                const base64Data = dataUrl.split(',')[1];
+
+                await Filesystem.writeFile({
+                    path: filename,
+                    data: base64Data,
+                    directory: Directory.Downloads,
+                });
+                
+                uiStore.showSnackbar(T.gallery.imageSavedToDownloads, 'success');
+
+            } else if (Capacitor.isNativePlatform()) {
+                // Fallback for other native platforms like iOS
                 window.open(imageUrl, '_system');
             } else {
-                // For web, use the existing data URL download logic.
-                const dataUrl = await getCachedImageSrc(imageUrl);
-
-                if (!dataUrl) {
-                    throw new Error('Image URL is empty or could not be retrieved.');
-                }
-        
-                // Create a temporary anchor element to trigger the download.
-                // The 'download' attribute works directly with data URLs.
+                // Web download logic
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = dataUrl;
-                
-                // Extract filename from the original URL or provide a default.
-                const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1) || 'waifu-briscola-background.png';
                 a.download = filename;
                 
                 document.body.appendChild(a);
@@ -55,7 +67,7 @@ export const FullscreenImageModal = ({ isOpen, imageUrl, onClose, language }: Fu
             }
         } catch (error) {
             console.warn('Error downloading image:', error);
-            // TODO: Optionally, show an error message to the user via snackbar or alert.
+            uiStore.showSnackbar(T.gallery.imageSaveFailed, 'warning');
         } finally {
             setIsDownloading(false);
         }
@@ -82,4 +94,4 @@ export const FullscreenImageModal = ({ isOpen, imageUrl, onClose, language }: Fu
             </div>
         </div>
     );
-};
+});

@@ -296,6 +296,8 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
         locked: "Bloccato",
         download: "Scarica",
         fullscreenView: "Visualizza a schermo intero",
+        imageSavedToDownloads: "Immagine salvata nei Download!",
+        imageSaveFailed: "Salvataggio immagine fallito.",
     },
     // Legal Modals
     privacyPolicy: {
@@ -675,6 +677,8 @@ Be creative, unique, and in character. The response must be short (1-2 sentences
         locked: "Locked",
         download: "Download",
         fullscreenView: "View fullscreen",
+        imageSavedToDownloads: "Image saved to Downloads!",
+        imageSaveFailed: "Failed to save image.",
     },
     // Legal Modals
     privacyPolicy: {
