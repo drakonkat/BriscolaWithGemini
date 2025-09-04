@@ -7,7 +7,6 @@ import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { observer } from 'mobx-react-lite';
 import { translations } from '../core/translations';
-import { getCachedImageSrc } from '../core/imageCache';
 import type { Language } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { useStores } from '../stores';
@@ -30,52 +29,66 @@ export const FullscreenImageModal = observer(({ isOpen, imageUrl, onClose, langu
 
     const handleDownload = async () => {
         setIsDownloading(true);
+        const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1) || 'waifu-briscola-background.png';
+        
         try {
-            const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1) || 'waifu-briscola-background.png';
-            
             const platform = Capacitor.getPlatform();
 
             if (platform === 'android') {
-                // Use Filesystem API for native download on Android
-                await Filesystem.downloadFile({
-                    path: filename,
-                    url: imageUrl,
-                    directory: Directory.Documents,
-                });
-                uiStore.showSnackbar(T.gallery.imageSavedToDownloads, 'success');
+                // 1. Check permissions
+                let permStatus = await Filesystem.checkPermissions();
+
+                // 2. If not granted, request them
+                if (permStatus.publicStorage !== 'granted') {
+                    permStatus = await Filesystem.requestPermissions();
+                }
+
+                // 3. If granted, proceed with download
+                if (permStatus.publicStorage === 'granted') {
+                    try {
+                        await Filesystem.downloadFile({
+                            path: filename,
+                            url: imageUrl,
+                            // Use the user's public Downloads directory, available in modern Capacitor versions.
+                            // FIX: Replaced `Directory.Downloads` with the correct `Directory.ExternalStorage` for saving files to the public downloads directory on Android, as per Capacitor's Filesystem API.
+                            directory: Directory.ExternalStorage,
+                        });
+                        uiStore.showSnackbar(T.gallery.imageSavedToDownloads, 'success');
+                    } catch (downloadError) {
+                        console.error('Android file download error:', downloadError);
+                        uiStore.showSnackbar(T.gallery.imageSaveFailed, 'warning');
+                    }
+                } else {
+                    // 4. If denied, inform the user
+                    uiStore.showSnackbar(T.gallery.permissionDenied, 'warning');
+                }
             } else if (platform === 'web') {
                 // For web, fetch the image as a blob to create a downloadable link
-                try {
-                    const response = await fetch(imageUrl);
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok.');
-                    }
-                    const blob = await response.blob();
-                    const objectUrl = URL.createObjectURL(blob);
-                    
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = objectUrl;
-                    a.download = filename;
-                    
-                    document.body.appendChild(a);
-                    a.click();
-                    
-                    // Clean up the object URL and the link element
-                    URL.revokeObjectURL(objectUrl);
-                    document.body.removeChild(a);
-                } catch (webError) {
-                    console.warn('Web download via blob failed, falling back to new tab:', webError);
-                    // Fallback for web if fetch/blob fails is to open in a new tab.
-                    window.open(imageUrl, '_blank');
+                const response = await fetch(imageUrl);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok for web download.');
                 }
+                const blob = await response.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = objectUrl;
+                a.download = filename;
+                
+                document.body.appendChild(a);
+                a.click();
+                
+                URL.revokeObjectURL(objectUrl);
+                document.body.removeChild(a);
             } else {
-                // For other native platforms (like iOS), open in the system browser.
+                // For other native platforms (like iOS), which don't have the same permission model,
+                // open in the system browser for the user to save.
                 window.open(imageUrl, '_system');
             }
         } catch (error) {
-            // This will catch errors from the Android Filesystem API primarily
-            console.warn('Error downloading image:', error);
+            // This will catch general errors, like the fetch failing on web
+            console.error('General download error:', error);
             uiStore.showSnackbar(T.gallery.imageSaveFailed, 'warning');
         } finally {
             setIsDownloading(false);
