@@ -31,39 +31,38 @@ export const FullscreenImageModal = observer(({ isOpen, imageUrl, onClose, langu
     const handleDownload = async () => {
         setIsDownloading(true);
         try {
-            const dataUrl = await getCachedImageSrc(imageUrl);
-            if (!dataUrl) {
-                throw new Error('Image URL is empty or could not be retrieved from cache/network.');
-            }
             const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1) || 'waifu-briscola-background.png';
-
+            
             if (Capacitor.getPlatform() === 'android') {
-                if (!dataUrl.startsWith('data:')) {
-                    throw new Error('Retrieved image source is not a data URL.');
-                }
-                const base64Data = dataUrl.split(',')[1];
-
-                await Filesystem.writeFile({
+                // Use downloadFile for a more direct and robust download on Android
+                await Filesystem.downloadFile({
                     path: filename,
-                    data: base64Data,
-                    directory: Directory.Downloads,
+                    url: imageUrl,
+                    // FIX: Property 'Downloads' does not exist on type 'typeof Directory'. Replaced with 'Documents'.
+                    directory: Directory.Documents,
                 });
-                
                 uiStore.showSnackbar(T.gallery.imageSavedToDownloads, 'success');
-
-            } else if (Capacitor.isNativePlatform()) {
-                // Fallback for other native platforms like iOS
-                window.open(imageUrl, '_system');
             } else {
-                // Web download logic
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = dataUrl;
-                a.download = filename;
+                // Keep the old logic for web and other platforms (like iOS)
+                const dataUrl = await getCachedImageSrc(imageUrl);
+                if (!dataUrl) {
+                    throw new Error('Image URL is empty or could not be retrieved from cache/network.');
+                }
                 
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                if (Capacitor.isNativePlatform()) {
+                    // Fallback for other native platforms like iOS
+                    window.open(imageUrl, '_system');
+                } else {
+                    // Web download logic
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = dataUrl;
+                    a.download = filename;
+                    
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
             }
         } catch (error) {
             console.warn('Error downloading image:', error);
