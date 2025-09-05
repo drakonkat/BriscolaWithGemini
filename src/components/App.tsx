@@ -5,7 +5,7 @@
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar } from '@capacitor/status-bar';
-import { SafeArea } from 'capacitor-plugin-safe-area';
+import { SafeArea, type SafeAreaInsets } from 'capacitor-plugin-safe-area';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { translations } from '../core/translations';
@@ -21,12 +21,40 @@ export const App = observer(() => {
   const { cardDeckStyle } = gameSettingsStore;
 
   useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
-        StatusBar.setOverlaysWebView({ overlay: true });
+    const setupSafeArea = async () => {
+      if (Capacitor.isNativePlatform()) {
+        await StatusBar.setOverlaysWebView({ overlay: true });
         if (Capacitor.getPlatform() === 'android') {
-            SafeArea.setImmersiveNavigationBar();
+          await SafeArea.setImmersiveNavigationBar();
         }
-    }
+
+        const applyInsets = (insets: SafeAreaInsets) => {
+          const root = document.documentElement;
+          if (root && insets) {
+            root.style.setProperty('--safe-area-inset-top', `${insets.top}px`);
+            root.style.setProperty('--safe-area-inset-bottom', `${insets.bottom}px`);
+            root.style.setProperty('--safe-area-inset-left', `${insets.left}px`);
+            root.style.setProperty('--safe-area-inset-right', `${insets.right}px`);
+          }
+        };
+        
+        // Get initial insets
+        try {
+            const initialInsets = await SafeArea.getSafeAreaInsets();
+            if(initialInsets) applyInsets(initialInsets.insets);
+        } catch (e) {
+            console.error('Failed to get initial safe area insets', e);
+        }
+
+
+        // Listen for changes
+        SafeArea.addListener('safeAreaChanged', (data) => {
+          if (data) applyInsets(data.insets);
+        });
+      }
+    };
+
+    setupSafeArea();
   }, []);
 
   useEffect(() => {
