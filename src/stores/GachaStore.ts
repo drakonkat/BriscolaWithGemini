@@ -131,8 +131,26 @@ export class GachaStore {
                 is_first_roll: isFirstRoll,
             });
         } else {
-            this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaFailure, 'success');
-            this.rootStore.posthog?.capture('gacha_failure', { reason: '50_percent_roll_failed' });
+            const rand = Math.random();
+            let refundAmount = 0;
+            if (rand < 0.40) { // 40% chance
+                refundAmount = 20;
+            } else if (rand < 0.75) { // 35% chance
+                refundAmount = 50;
+            } else if (rand < 0.88) { // 13% chance
+                refundAmount = 100;
+            } else if (rand < 0.95) { // 7% chance
+                refundAmount = 150;
+            } else { // 5% chance
+                refundAmount = 200;
+            }
+
+            this.addCoins(refundAmount);
+            this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaFailureWithRefund(refundAmount), 'success');
+            this.rootStore.posthog?.capture('gacha_failure', { 
+                reason: '50_percent_roll_failed',
+                refund_amount: refundAmount 
+            });
         }
         
         if (isFirstRoll) {

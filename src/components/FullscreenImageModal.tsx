@@ -4,10 +4,12 @@
 */
 import { useState } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { observer } from 'mobx-react-lite';
 import { translations } from '../core/translations';
-import { getCachedImageSrc } from '../core/imageCache';
 import type { Language } from '../core/types';
 import { CachedImage } from './CachedImage';
+import { useStores } from '../stores';
 
 interface FullscreenImageModalProps {
     isOpen: boolean;
@@ -16,7 +18,8 @@ interface FullscreenImageModalProps {
     language: Language;
 }
 
-export const FullscreenImageModal = ({ isOpen, imageUrl, onClose, language }: FullscreenImageModalProps) => {
+export const FullscreenImageModal = observer(({ isOpen, imageUrl, onClose, language }: FullscreenImageModalProps) => {
+    const { uiStore } = useStores();
     const [isDownloading, setIsDownloading] = useState(false);
     const T = translations[language];
 
@@ -26,36 +29,67 @@ export const FullscreenImageModal = ({ isOpen, imageUrl, onClose, language }: Fu
 
     const handleDownload = async () => {
         setIsDownloading(true);
-        try {
-            if (Capacitor.isNativePlatform()) {
-                // For native platforms (Android/iOS), open the original URL in the system browser
-                // as direct file downloads are problematic in WebViews.
-                window.open(imageUrl, '_system');
-            } else {
-                // For web, use the existing data URL download logic.
-                const dataUrl = await getCachedImageSrc(imageUrl);
-
-                if (!dataUrl) {
-                    throw new Error('Image URL is empty or could not be retrieved.');
-                }
+        const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1) || 'waifu-briscola-background.png';
         
-                // Create a temporary anchor element to trigger the download.
-                // The 'download' attribute works directly with data URLs.
+        try {
+            const platform = Capacitor.getPlatform();
+
+            if (platform === 'android') {
+                // 1. Check permissions
+                let permStatus = await Filesystem.checkPermissions();
+
+                // 2. If not granted, request them
+                if (permStatus.publicStorage !== 'granted') {
+                    permStatus = await Filesystem.requestPermissions();
+                }
+
+                // 3. If granted, proceed with download
+                if (permStatus.publicStorage === 'granted') {
+                    try {
+                        await Filesystem.downloadFile({
+                            path: filename,
+                            url: imageUrl,
+                            // Use the user's public Downloads directory, available in modern Capacitor versions.
+                            // FIX: Replaced `Directory.Downloads` with the correct `Directory.ExternalStorage` for saving files to the public downloads directory on Android, as per Capacitor's Filesystem API.
+                            directory: Directory.ExternalStorage,
+                        });
+                        uiStore.showSnackbar(T.gallery.imageSavedToDownloads, 'success');
+                    } catch (downloadError) {
+                        console.error('Android file download error:', downloadError);
+                        uiStore.showSnackbar(T.gallery.imageSaveFailed, 'warning');
+                    }
+                } else {
+                    // 4. If denied, inform the user
+                    uiStore.showSnackbar(T.gallery.permissionDenied, 'warning');
+                }
+            } else if (platform === 'web') {
+                // For web, fetch the image as a blob to create a downloadable link
+                const response = await fetch(imageUrl);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok for web download.');
+                }
+                const blob = await response.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                
                 const a = document.createElement('a');
                 a.style.display = 'none';
-                a.href = dataUrl;
-                
-                // Extract filename from the original URL or provide a default.
-                const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1) || 'waifu-briscola-background.png';
+                a.href = objectUrl;
                 a.download = filename;
                 
                 document.body.appendChild(a);
                 a.click();
+                
+                URL.revokeObjectURL(objectUrl);
                 document.body.removeChild(a);
+            } else {
+                // For other native platforms (like iOS), which don't have the same permission model,
+                // open in the system browser for the user to save.
+                window.open(imageUrl, '_system');
             }
         } catch (error) {
-            console.warn('Error downloading image:', error);
-            // TODO: Optionally, show an error message to the user via snackbar or alert.
+            // This will catch general errors, like the fetch failing on web
+            console.error('General download error:', error);
+            uiStore.showSnackbar(T.gallery.imageSaveFailed, 'warning');
         } finally {
             setIsDownloading(false);
         }
@@ -82,4 +116,4 @@ export const FullscreenImageModal = ({ isOpen, imageUrl, onClose, language }: Fu
             </div>
         </div>
     );
-};
+});

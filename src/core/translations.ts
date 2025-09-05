@@ -291,11 +291,14 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
         promoButton: "Galleria & Gacha",
         gachaNotEnoughCoins: "Non hai abbastanza Waifu Coins! (Costo: 100)",
         gachaSuccess: (rarity: string) => `Congratulazioni! Hai sbloccato un nuovo sfondo (${rarity})!`,
-        gachaFailure: "Nessuna fortuna questa volta. Riprova!",
+        gachaFailureWithRefund: (coins: number) => `Nessuna fortuna... ma hai ricevuto un rimborso di ${coins} WC!`,
         gachaAllUnlocked: "Hai sbloccato tutti gli sfondi!",
         locked: "Bloccato",
         download: "Scarica",
         fullscreenView: "Visualizza a schermo intero",
+        imageSavedToDownloads: "Immagine salvata nei Download!",
+        imageSaveFailed: "Salvataggio immagine fallito.",
+        permissionDenied: "Permesso di archiviazione negato. Impossibile salvare l'immagine.",
     },
     // Legal Modals
     privacyPolicy: {
@@ -670,11 +673,14 @@ Be creative, unique, and in character. The response must be short (1-2 sentences
         promoButton: "Gallery & Gacha",
         gachaNotEnoughCoins: "Not enough Waifu Coins! (Cost: 100)",
         gachaSuccess: (rarity: string) => `Congratulations! You unlocked a new background (${rarity})!`,
-        gachaFailure: "No luck this time. Try again!",
+        gachaFailureWithRefund: (coins: number) => `No luck... but you received a refund of ${coins} WC!`,
         gachaAllUnlocked: "You've unlocked all backgrounds!",
         locked: "Locked",
         download: "Download",
         fullscreenView: "View fullscreen",
+        imageSavedToDownloads: "Image saved to Downloads!",
+        imageSaveFailed: "Failed to save image.",
+        permissionDenied: "Storage permission denied. Could not save the image.",
     },
     // Legal Modals
     privacyPolicy: {
