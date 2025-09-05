@@ -12,7 +12,7 @@
     "android:apk": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug && cd .."
   },
   "dependencies": {
-  "@capacitor/android": "^7.4.3",
+    "@capacitor/android": "^7.4.3",
     "@capacitor/core": "^7.4.3",
     "@capacitor/file-transfer": "^1.0.5",
     "@capacitor/filesystem": "^7.1.4",
@@ -31,6 +31,7 @@
     "@types/node": "^20.12.12",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.1",
     "typescript": "^5.2.2",
     "vite": "^5.3.1"
   }
