@@ -18,6 +18,7 @@
     "@capacitor/filesystem": "^7.0.0",
     "@capacitor/screen-orientation": "^7.0.0",
     "@capacitor/status-bar": "^7.0.0",
+    "capacitor-plugin-safe-area": "^2.0.1",
     "@google/genai": "^0.7.0",
     "mobx": "^6.13.0",
     "mobx-react-lite": "^4.0.7",

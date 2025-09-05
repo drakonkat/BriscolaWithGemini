@@ -5,6 +5,7 @@
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar } from '@capacitor/status-bar';
+import { SafeArea } from 'capacitor-plugin-safe-area';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { translations } from '../core/translations';
@@ -22,6 +23,9 @@ export const App = observer(() => {
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
         StatusBar.setOverlaysWebView({ overlay: true });
+        if (Capacitor.getPlatform() === 'android') {
+            SafeArea.setImmersiveNavigationBar();
+        }
     }
   }, []);
 
