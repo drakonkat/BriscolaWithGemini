@@ -1,7 +1,7 @@
-import { CapacitorConfig } from '@capacitor/cli';
+import {CapacitorConfig} from '@capacitor/cli';
 
 const config: CapacitorConfig = {
- appId: 'com.waifubriscola.app',
+    appId: 'com.waifubriscola.app',
     appName: 'WaifuBriscola',
     webDir: 'dist',
     // FIX: Removed deprecated `bundledWebRuntime` property, which is not a valid key in modern CapacitorConfig.

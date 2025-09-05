@@ -4,6 +4,7 @@
 */
 import { useState } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { FileTransfer } from '@capacitor/file-transfer';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { observer } from 'mobx-react-lite';
 import { translations } from '../core/translations';
@@ -22,6 +23,11 @@ export const FullscreenImageModal = observer(({ isOpen, imageUrl, onClose, langu
     const { uiStore } = useStores();
     const [isDownloading, setIsDownloading] = useState(false);
     const T = translations[language];
+    let finalImageUrl = imageUrl;
+    if (imageUrl.startsWith('./assets/')) {
+        let relativePath = imageUrl.substring('./assets'.length);
+        finalImageUrl = "https://s3.tebi.io/waifubriscola"+relativePath;
+    }
 
     if (!isOpen) {
         return null;
@@ -29,7 +35,8 @@ export const FullscreenImageModal = observer(({ isOpen, imageUrl, onClose, langu
 
     const handleDownload = async () => {
         setIsDownloading(true);
-        const filename = imageUrl.substring(imageUrl.lastIndexOf('/') + 1) || 'waifu-briscola-background.png';
+        const filename = finalImageUrl.substring(imageUrl.lastIndexOf('/') + 1) || 'waifu-briscola-background.png';
+
         
         try {
             const platform = Capacitor.getPlatform();
@@ -46,13 +53,18 @@ export const FullscreenImageModal = observer(({ isOpen, imageUrl, onClose, langu
                 // 3. If granted, proceed with download
                 if (permStatus.publicStorage === 'granted') {
                     try {
-                        await Filesystem.downloadFile({
-                            path: filename,
-                            url: imageUrl,
-                            // Use the user's public Downloads directory, available in modern Capacitor versions.
-                            // FIX: Replaced `Directory.Downloads` with the correct `Directory.ExternalStorage` for saving files to the public downloads directory on Android, as per Capacitor's Filesystem API.
-                            directory: Directory.ExternalStorage,
+                        let fileInfo = await Filesystem.getUri({
+                            directory: Directory.Documents,
+                            path: filename
                         });
+
+
+                        await FileTransfer.downloadFile({
+                            url: finalImageUrl,
+                            path: fileInfo.uri,
+                            progress: true
+                        });
+
                         uiStore.showSnackbar(T.gallery.imageSavedToDownloads, 'success');
                     } catch (downloadError) {
                         console.error('Android file download error:', downloadError);
