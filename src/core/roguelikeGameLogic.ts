@@ -112,8 +112,6 @@ export const determineWeaknessWinner = (humanElement: Element, aiElement: Elemen
  * Calculates the points for a trick in Roguelike mode, applying elemental power effects.
  * @param humanCard The card played by the human.
  * @param aiCard The card played by the AI.
- * @param humanPowerActive Whether the human player's elemental power is active.
- * @param aiPowerActive Whether the AI player's elemental power is active.
  * @param winner The winner of the trick.
  * @param clashWinner The winner of the elemental clash, if one occurred.
  * @returns An object with the total points for the trick and the individual card points after modifications.
@@ -121,32 +119,33 @@ export const determineWeaknessWinner = (humanElement: Element, aiElement: Elemen
 export const calculateRoguelikeTrickPoints = (
     humanCard: Card,
     aiCard: Card,
-    humanPowerActive: boolean,
-    aiPowerActive: boolean,
     winner: Player,
     clashWinner: 'human' | 'ai' | 'tie' | null
 ) => {
     let humanCardPoints = getCardPoints(humanCard);
     let aiCardPoints = getCardPoints(aiCard);
 
+    // A power is active if the player activated it AND they didn't lose the clash.
+    const isHumanPowerActive = (humanCard.elementalEffectActivated ?? false) && clashWinner !== 'ai';
+    const isAiPowerActive = (aiCard.elementalEffectActivated ?? false) && clashWinner !== 'human';
+
     // Water Power: Halves opponent's card points only if the user of the power loses the trick
-    if (humanPowerActive && humanCard.element === 'water' && winner === 'ai') {
+    if (isHumanPowerActive && humanCard.element === 'water' && winner === 'ai') {
         aiCardPoints = Math.floor(aiCardPoints / 2);
     }
-    if (aiPowerActive && aiCard.element === 'water' && winner === 'human') {
+    if (isAiPowerActive && aiCard.element === 'water' && winner === 'human') {
         humanCardPoints = Math.floor(humanCardPoints / 2);
     }
 
     let pointsForTrick = humanCardPoints + aiCardPoints;
 
-    // Air Power: Nullifies trick points if the user's power is active (from winning a clash) and they lose the trick.
-    if (humanPowerActive && humanCard.element === 'air' && winner === 'ai') {
+    // Air Power: Nullifies trick points if the user's power is active and they lose the trick.
+    if (isHumanPowerActive && humanCard.element === 'air' && winner === 'ai') {
         pointsForTrick = 0;
     }
-    if (aiPowerActive && aiCard.element === 'air' && winner === 'human') {
+    if (isAiPowerActive && aiCard.element === 'air' && winner === 'human') {
         pointsForTrick = 0;
     }
-
 
     return {
         pointsForTrick,
