@@ -693,6 +693,10 @@ export class GameStateStore {
     activateHumanAbility = () => {
         if (!this.roguelikeState.humanAbility || this.humanAbilityCharges < 2 || this.turn !== 'human' || this.isProcessing) return;
         if (this.roguelikeState.humanAbility === 'incinerate' && (this.cardsOnTable.length !== 1 || this.trickStarter === 'human')) return;
+        
+        // FIX: Prevent activating an ability if another is already in a pending state.
+        if (this.abilityTargetingState || this.abilityArmed || this.abilityUsedThisTurn) return;
+
         if (this.roguelikeState.humanAbility === 'tide') {
             this.message = this.T.abilityUsed(this.T.scoreYou, this.T.tide);
             this.revealedAiHand = [...this.aiHand];
