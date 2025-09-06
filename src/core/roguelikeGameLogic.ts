@@ -139,8 +139,7 @@ export const calculateRoguelikeTrickPoints = (
 
     let pointsForTrick = humanCardPoints + aiCardPoints;
 
-    // Air Power: Nullifies trick points if the user of the power loses the trick.
-    // The clash only determines if the power is active, not its effect upon losing.
+    // Air Power: Nullifies trick points if the user's power is active (from winning a clash) and they lose the trick.
     if (humanPowerActive && humanCard.element === 'air' && winner === 'ai') {
         pointsForTrick = 0;
     }
