@@ -4,8 +4,8 @@
 */
 import { useState } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { FileTransfer } from '@capacitor/file-transfer';
-import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Browser } from '@capacitor/browser';
+
 import { observer } from 'mobx-react-lite';
 import { translations } from '../core/translations';
 import type { Language } from '../core/types';
@@ -42,38 +42,40 @@ export const FullscreenImageModal = observer(({ isOpen, imageUrl, onClose, langu
             const platform = Capacitor.getPlatform();
 
             if (platform === 'android') {
-                // 1. Check permissions
-                let permStatus = await Filesystem.checkPermissions();
+                await Browser.open({ url:finalImageUrl });
 
-                // 2. If not granted, request them
-                if (permStatus.publicStorage !== 'granted') {
-                    permStatus = await Filesystem.requestPermissions();
-                }
-
-                // 3. If granted, proceed with download
-                if (permStatus.publicStorage === 'granted') {
-                    try {
-                        let fileInfo = await Filesystem.getUri({
-                            directory: Directory.Documents,
-                            path: filename
-                        });
-
-
-                        await FileTransfer.downloadFile({
-                            url: finalImageUrl,
-                            path: fileInfo.uri,
-                            progress: true
-                        });
-
-                        uiStore.showSnackbar(T.gallery.imageSavedToDownloads, 'success');
-                    } catch (downloadError) {
-                        console.error('Android file download error:', downloadError);
-                        uiStore.showSnackbar(T.gallery.imageSaveFailed, 'warning');
-                    }
-                } else {
-                    // 4. If denied, inform the user
-                    uiStore.showSnackbar(T.gallery.permissionDenied, 'warning');
-                }
+                // // 1. Check permissions
+                // let permStatus = await Filesystem.checkPermissions();
+                //
+                // // 2. If not granted, request them
+                // if (permStatus.publicStorage !== 'granted') {
+                //     permStatus = await Filesystem.requestPermissions();
+                // }
+                //
+                // // 3. If granted, proceed with download
+                // if (permStatus.publicStorage === 'granted') {
+                //     try {
+                //         let fileInfo = await Filesystem.getUri({
+                //             directory: Directory.Documents,
+                //             path: filename
+                //         });
+                //
+                //
+                //         await FileTransfer.downloadFile({
+                //             url: finalImageUrl,
+                //             path: fileInfo.uri,
+                //             progress: true
+                //         });
+                //
+                //         uiStore.showSnackbar(T.gallery.imageSavedToDownloads, 'success');
+                //     } catch (downloadError) {
+                //         console.error('Android file download error:', downloadError);
+                //         uiStore.showSnackbar(T.gallery.imageSaveFailed, 'warning');
+                //     }
+                // } else {
+                //     // 4. If denied, inform the user
+                //     uiStore.showSnackbar(T.gallery.permissionDenied, 'warning');
+                // }
             } else if (platform === 'web') {
                 // For web, fetch the image as a blob to create a downloadable link
                 const response = await fetch(imageUrl);
