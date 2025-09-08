@@ -83,8 +83,7 @@ export const GameBoard = observer(() => {
         isProcessing, turn, trickStarter, backgroundUrl, lastTrick, lastTrickHighlights, activeElements,
         roguelikeState, abilityArmed, powerAnimation, cardForElementalChoice, elementalClash,
         abilityTargetingState, abilityUsedThisTurn, revealedAiHand, 
-// FIX: Property 'isTutorialGame' does not exist on type 'GameStateStore'.
-isTutorialGame,
+        isTutorialGame,
     } = gameStateStore;
     const { animatingCard, drawingCards, unreadMessageCount, waifuBubbleMessage } = uiStore;
     const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle } = gameSettingsStore;
@@ -319,9 +318,9 @@ isTutorialGame,
                             card={card}
                             isPlayable={turn === 'human' && !isProcessing && !abilityTargetingState && !abilityUsedThisTurn}
                             onClick={() => {
-                                // FIX: Property 'playTutorialCard' does not exist on type 'GameStateStore'.
+                                // FIX: The method `playTutorialCard` does not exist. The `selectCardForPlay` method handles tutorial logic.
                                 if (isTutorialGame) {
-                                    gameStateStore.playTutorialCard(card);
+                                    gameStateStore.selectCardForPlay(card);
                                 } else if (abilityTargetingState) {
                                     gameStateStore.targetCardInHandForAbility(card);
                                 } else {

@@ -6,7 +6,6 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import type { RootStore } from '.';
 import type { Player, Card, ModalType, SnackbarType } from '../core/types';
 import { getImageUrl } from '../core/utils';
-// FIX: Add missing import for translations.
 import { translations } from '../core/translations';
 
 const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
@@ -19,12 +18,38 @@ const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
     }
 };
 
+type TutorialStepId = 'welcome' | 'gameMode' | 'difficulty' | 'waifu' | 'gallery' | 'start' | 'playerHand' | 'promptPlayCard' | 'aiResponds' | 'trickWon' | 'scoreUpdate' | 'drawingCards' | 'briscola' | 'end';
+
 type TutorialStepDetails = {
-    elementQuery: string;
-    // FIX: Correct type for textKey
+    elementQuery?: string | null;
     textKey: keyof (typeof translations)['it']['tutorial'];
     position?: 'top' | 'bottom' | 'left' | 'right';
+    waitForInput?: boolean;
+    action?: (store: UIStateStore) => void;
 };
+
+const TUTORIAL_STEPS: Record<TutorialStepId, TutorialStepDetails> = {
+    // Menu
+    welcome: { elementQuery: '[data-tutorial-id="welcome"]', textKey: 'welcome', position: 'bottom' },
+    gameMode: { elementQuery: '[data-tutorial-id="game-mode"]', textKey: 'gameMode', position: 'bottom' },
+    difficulty: { elementQuery: '[data-tutorial-id="difficulty"]', textKey: 'difficulty', position: 'bottom' },
+    waifu: { elementQuery: '[data-tutorial-id="waifu-selector"]', textKey: 'waifu', position: 'top' },
+    gallery: { elementQuery: '[data-tutorial-id="gallery"]', textKey: 'gallery', position: 'bottom' },
+    start: { elementQuery: '[data-tutorial-id="start-game"]', textKey: 'start', position: 'top', action: (store) => store.rootStore.gameStateStore.startTutorialGame() },
+    // In-Game
+    playerHand: { elementQuery: '[data-tutorial-id="player-hand"]', textKey: 'playerHand', position: 'top' },
+    promptPlayCard: { elementQuery: '[data-tutorial-id="player-hand"]', textKey: 'promptPlayCard', position: 'top', waitForInput: true },
+    aiResponds: { elementQuery: '.played-cards', textKey: 'aiResponds', position: 'bottom' },
+    trickWon: { elementQuery: '.played-cards', textKey: 'trickWon', position: 'bottom' },
+    scoreUpdate: { elementQuery: '[data-tutorial-id="player-score"]', textKey: 'scoreUpdate', position: 'left' },
+    drawingCards: { elementQuery: '[data-tutorial-id="briscola-deck"]', textKey: 'drawingCards', position: 'right' },
+    briscola: { elementQuery: '[data-tutorial-id="briscola-deck"]', textKey: 'briscola', position: 'right' },
+    end: { elementQuery: null, textKey: 'end', position: 'bottom' },
+};
+
+const TUTORIAL_SEQUENCE: TutorialStepId[] = [
+    'welcome', 'gameMode', 'difficulty', 'waifu', 'gallery', 'start'
+];
 
 export class UIStateStore {
     rootStore: RootStore;
@@ -46,10 +71,11 @@ export class UIStateStore {
 
     // Tutorial State
     isTutorialActive = false;
-    tutorialStep = 0;
+    tutorialStep: TutorialStepId | null = null;
     highlightedElementRect: DOMRect | null = null;
     tutorialText = '';
     tutorialPosition: 'top' | 'bottom' | 'left' | 'right' = 'bottom';
+    isTutorialWaitingForInput = false;
 
     // UI Element States
     menuBackgroundUrl = getImageUrl(`/background/landscape${Math.floor(Math.random() * 19) + 3}.png`);
@@ -166,84 +192,112 @@ export class UIStateStore {
     // --- Tutorial Methods ---
     startTutorial = () => {
         this.isTutorialActive = true;
-        this.tutorialStep = 0; // Will be incremented to 1 by nextTutorialStep
-        this.nextTutorialStep();
+        this.setTutorialStep('welcome');
     }
 
     endTutorial = () => {
         this.isTutorialActive = false;
-        this.tutorialStep = 0;
+        this.tutorialStep = null;
         this.highlightedElementRect = null;
         this.rootStore.gameSettingsStore.setTutorialCompleted(true);
-        // FIX: Correctly access isTutorialGame from gameStateStore.
         if (this.rootStore.gameStateStore.isTutorialGame) {
             this.rootStore.gameStateStore.goToMenu();
         }
     }
+    
+    setTutorialStep(stepId: TutorialStepId) {
+        const T = translations[this.rootStore.gameSettingsStore.language].tutorial;
+        const details = TUTORIAL_STEPS[stepId];
+        if (!details) {
+            this.endTutorial();
+            return;
+        }
+
+        this.tutorialStep = stepId;
+        this.tutorialText = T[details.textKey] as string;
+        this.tutorialPosition = details.position ?? 'bottom';
+        this.isTutorialWaitingForInput = details.waitForInput ?? false;
+        this.setHighlightedElementByQuery(details.elementQuery);
+
+        if (details.action) {
+            details.action(this);
+        }
+    }
 
     nextTutorialStep = () => {
-        const { gameStateStore, gameSettingsStore } = this.rootStore;
-        // FIX: Add missing reference to translations.
-        const T = translations[gameSettingsStore.language].tutorial;
+        if (!this.tutorialStep) return;
+    
+        // Handle menu tutorial steps first with the sequence array
+        const currentIndex = TUTORIAL_SEQUENCE.indexOf(this.tutorialStep);
+        if (currentIndex > -1 && currentIndex < TUTORIAL_SEQUENCE.length - 1) {
+            const nextStepId = TUTORIAL_SEQUENCE[currentIndex + 1];
+            this.setTutorialStep(nextStepId);
+            return;
+        }
 
-        this.tutorialStep++;
-    
-        const menuSteps: TutorialStepDetails[] = [
-            { elementQuery: '[data-tutorial-id="welcome"]', textKey: 'welcome', position: 'bottom' },
-            { elementQuery: '[data-tutorial-id="game-mode"]', textKey: 'gameMode', position: 'bottom' },
-            { elementQuery: '[data-tutorial-id="difficulty"]', textKey: 'difficulty', position: 'bottom' },
-            { elementQuery: '[data-tutorial-id="waifu-selector"]', textKey: 'waifu', position: 'top' },
-            { elementQuery: '[data-tutorial-id="gallery"]', textKey: 'gallery', position: 'bottom' },
-            { elementQuery: '[data-tutorial-id="start-game"]', textKey: 'start', position: 'top' },
-        ];
-    
-        const gameSteps: TutorialStepDetails[] = [
-            { elementQuery: '[data-tutorial-id="player-hand"]', textKey: 'playerHand', position: 'top' },
-            { elementQuery: '[data-tutorial-id="briscola-deck"]', textKey: 'briscola', position: 'right' },
-            { elementQuery: '[data-tutorial-id="player-score"]', textKey: 'score', position: 'left' },
-            { elementQuery: '[data-tutorial-id="waifu-status"]', textKey: 'waifuStatus', position: 'left' },
-            { elementQuery: '[data-tutorial-id="end-tutorial"]', textKey: 'end', position: 'bottom' },
-        ];
-    
-        let currentStepDetails: TutorialStepDetails | undefined;
-    
-        if (gameStateStore.phase === 'menu') {
-            currentStepDetails = menuSteps[this.tutorialStep - 1];
-        // FIX: Correctly access isTutorialGame from gameStateStore.
-        } else if (gameStateStore.isTutorialGame) {
-            currentStepDetails = gameSteps[this.tutorialStep - menuSteps.length - 1];
-        }
-    
-        if (currentStepDetails) {
-            this.updateTutorialUI(currentStepDetails, T);
-            if (this.tutorialStep === menuSteps.length) {
-                // Last step of menu, special handling
-                // FIX: Correctly call startTutorialGame from gameStateStore.
-                setTimeout(() => gameStateStore.startTutorialGame(), 500);
-            }
-        } else {
-            this.endTutorial();
+        // Handle in-game tutorial steps
+        switch(this.tutorialStep) {
+            case 'start':
+                // This is the last menu step. Its action starts the game. The tutorial continues via game events.
+                break;
+            case 'playerHand':
+                this.setTutorialStep('promptPlayCard');
+                break;
+            case 'aiResponds':
+                this.rootStore.gameStateStore.resolveTrickForTutorial();
+                // Hide the bubble and wait for the 'trickResolved' event to show the next step.
+                this.tutorialStep = null;
+                this.highlightedElementRect = null;
+                break;
+            case 'trickWon':
+                this.setTutorialStep('scoreUpdate');
+                break;
+            case 'scoreUpdate':
+                // The game will automatically draw cards and fire the 'cardsDrawn' event,
+                // which shows the 'drawingCards' step. Hiding this bubble makes the transition smooth.
+                this.tutorialStep = null;
+                this.highlightedElementRect = null;
+                break;
+            case 'drawingCards':
+                this.setTutorialStep('briscola');
+                break;
+            case 'briscola':
+                this.setTutorialStep('end');
+                break;
         }
     }
     
-    updateTutorialUI(details: TutorialStepDetails, translation: any) {
-        this.tutorialText = translation[details.textKey];
-        this.tutorialPosition = details.position ?? 'bottom';
-        this.setHighlightedElementByQuery(details.elementQuery);
+    onTutorialGameEvent(event: 'aiResponded' | 'trickResolved' | 'cardsDrawn') {
+        if (!this.isTutorialActive) return;
+
+        switch(event) {
+            case 'aiResponded':
+                this.setTutorialStep('aiResponds');
+                break;
+            case 'trickResolved':
+                this.setTutorialStep('trickWon');
+                break;
+            case 'cardsDrawn':
+                this.setTutorialStep('drawingCards');
+                break;
+        }
     }
-    
-    setHighlightedElementByQuery(query: string) {
-        // Use a small delay to ensure the element is rendered and laid out
+
+    setHighlightedElementByQuery(query?: string | null) {
         setTimeout(() => {
             runInAction(() => {
-                const element = document.querySelector(query);
-                if (element) {
-                    this.highlightedElementRect = element.getBoundingClientRect();
+                if (query) {
+                    const element = document.querySelector(query);
+                    if (element) {
+                        this.highlightedElementRect = element.getBoundingClientRect();
+                    } else {
+                        console.warn(`Tutorial element not found: ${query}`);
+                        this.highlightedElementRect = null;
+                    }
                 } else {
-                    // Fallback for centered "welcome" or "end" messages
                     this.highlightedElementRect = null; 
                 }
             });
-        }, 100);
+        }, 150);
     }
 }

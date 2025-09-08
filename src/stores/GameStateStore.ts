@@ -11,7 +11,8 @@ import { playSound, startMusic, stopMusic, updateSoundSettings } from '../core/s
 import { translations } from '../core/translations';
 import { createDeck, getTrickWinner as getClassicTrickWinner } from '../core/classicGameLogic';
 import { initializeRoguelikeDeck, assignAbilities, getRoguelikeTrickWinner, calculateRoguelikeTrickPoints, determineWeaknessWinner } from '../core/roguelikeGameLogic';
-import { getCardPoints, shuffleDeck } from '../core/utils';
+// FIX: `getImageUrl` was not imported, causing a reference error.
+import { getCardPoints, shuffleDeck, getImageUrl } from '../core/utils';
 import { QuotaExceededError, getAIWaifuTrickMessage, getAIGenericTeasingMessage } from '../core/gemini';
 import { getLocalAIMove, getAIAbilityDecision } from '../core/localAI';
 import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
@@ -38,6 +39,24 @@ const INITIAL_ROGUELIKE_STATE: RoguelikeState = {
 };
 
 const ROGUELIKE_LEVEL_REWARDS = [0, 25, 50, 75, 150];
+
+// --- Tutorial Constants ---
+const TUTORIAL_HUMAN_HAND: Card[] = [
+    { id: 'tutorial-h-ace-bastoni', suit: 'Bastoni', value: 'Asso' },
+    { id: 'tutorial-h-3-coppe', suit: 'Coppe', value: '3' },
+    { id: 'tutorial-h-5-spade', suit: 'Spade', value: '5' },
+];
+const TUTORIAL_AI_HAND: Card[] = [
+    { id: 'tutorial-a-2-bastoni', suit: 'Bastoni', value: '2' },
+    { id: 'tutorial-a-re-spade', suit: 'Spade', value: 'Re' },
+    { id: 'tutorial-a-6-denara', suit: 'denara', value: '6' },
+];
+const TUTORIAL_BRISCOLA: Card = { id: 'tutorial-b-7-coppe', suit: 'Coppe', value: '7' };
+const TUTORIAL_DECK: Card[] = [
+    { id: 'tutorial-d-re-coppe', suit: 'Coppe', value: 'Re' }, // for human
+    { id: 'tutorial-d-asso-denara', suit: 'denara', value: 'Asso' }, // for AI
+];
+// --- End Tutorial Constants ---
 
 export class GameStateStore {
     rootStore: RootStore;
@@ -94,8 +113,7 @@ export class GameStateStore {
     humanAbilityUsedInTrick = false;
     aiAbilityUsedInTrick = false;
     
-// FIX: Add isTutorialGame property for tutorial logic.
-isTutorialGame = false;
+    isTutorialGame = false;
 
     constructor(rootStore: RootStore) {
         makeAutoObservable(this, { rootStore: false, clashTimeoutRef: false, resolveTrickCallbackRef: false }, { autoBind: true });
@@ -146,7 +164,7 @@ isTutorialGame = false;
     }
     
     handleTrickResolution = () => {
-        if (this.phase !== 'playing' || this.cardsOnTable.length < 2) return;
+        if (this.phase !== 'playing' || this.cardsOnTable.length < 2 || this.isTutorialGame) return;
         
         const trickId = this.cardsOnTable.map(c => c.id).sort().join('-');
         if (this.lastResolvedTrick.includes(trickId)) return;
@@ -290,6 +308,19 @@ isTutorialGame = false;
         if (this.phase !== 'playing' || this.turn !== 'ai' || this.isProcessing || this.cardsOnTable.length >= 2 || this.aiHand.length === 0 || this.isAiUsingAbility) {
             return;
         }
+
+        if (this.isTutorialGame) {
+            if (this.rootStore.uiStore.tutorialStep === 'promptPlayCard' && this.cardsOnTable.length === 1) {
+                setTimeout(() => runInAction(() => {
+                    const aiCardToPlay = this.aiHand.find(c => c.id === 'tutorial-a-2-bastoni')!;
+                    playSound('card-place');
+                    this.aiHand = this.aiHand.filter(c => c.id !== aiCardToPlay.id);
+                    this.cardsOnTable.push(aiCardToPlay);
+                    this.rootStore.uiStore.onTutorialGameEvent('aiResponded');
+                }), 1500);
+            }
+            return;
+        }
         
         const performAiAction = () => {
             if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' && this.roguelikeState.aiAbility && this.aiAbilityCharges >= 2) {
@@ -422,15 +453,8 @@ isTutorialGame = false;
     }
     
     // Actions
-    // ... all actions like startGame, selectCardForPlay, etc.
-    // will be defined here, using `this.` to access state.
-    // The implementation will be moved from the `useGameState` hook.
-    // I will do this for all actions.
-    
-    // (Abridged for brevity, full implementation will be provided)
     
     startGame = (selectedWaifu: Waifu | null) => {
-        // ... Logic from useGameState ...
         const { language, gameplayMode, difficulty, isChatEnabled } = this.rootStore.gameSettingsStore;
         
         const bgIndex = Math.floor(Math.random() * 21) + 1;
@@ -461,10 +485,8 @@ isTutorialGame = false;
         this.lastTrick = null;
         this.abilityUsedThisTurn = null;
         this.activeElements = [];
-        // FIX: Reset isTutorialGame flag for new games.
-        if (!this.isTutorialGame) {
-            this.roguelikeState = INITIAL_ROGUELIKE_STATE;
-        }
+        this.isTutorialGame = false;
+        this.roguelikeState = INITIAL_ROGUELIKE_STATE;
         
         if (gameplayMode === 'classic') {
             this.currentWaifu = newWaifu;
@@ -611,6 +633,10 @@ isTutorialGame = false;
         if (trickWinner === 'human') { this.humanScore += points; playSound('trick-win'); this.message = this.T.youWonTrick(points); } 
         else { this.aiScore += points; playSound('trick-lose'); this.message = this.T.aiWonTrick(this.currentWaifu?.name ?? 'AI', points); }
         
+        if (this.isTutorialGame) {
+            this.rootStore.uiStore.onTutorialGameEvent('trickResolved');
+        }
+
         this.turn = trickWinner;
         this.trickStarter = trickWinner;
         this.elementalClash = null;
@@ -658,12 +684,27 @@ isTutorialGame = false;
             this.humanAbilityUsedInTrick = false;
             this.aiAbilityUsedInTrick = false;
             if(trickWinner === 'human') this.message = this.T.yourTurnMessage;
+            if (this.isTutorialGame) {
+                this.rootStore.uiStore.onTutorialGameEvent('cardsDrawn');
+            }
         }), 1500);
     };
     
-    // ... Other actions implemented similarly ...
     selectCardForPlay = (card: Card) => {
-        if (this.turn !== 'human' || this.isProcessing || this.abilityTargetingState) return;
+        if (this.turn !== 'human' || this.isProcessing) return;
+
+        if (this.isTutorialGame) {
+            const { uiStore } = this.rootStore;
+            if (uiStore.tutorialStep === 'promptPlayCard' && card.id === 'tutorial-h-ace-bastoni') {
+                playSound('card-place');
+                this.humanHand = this.humanHand.filter(c => c.id !== card.id);
+                this.cardsOnTable.push(card);
+                this.turn = 'ai';
+            }
+            return;
+        }
+
+        if (this.abilityTargetingState) return;
 
         let cardToPlay = card;
         if (this.abilityArmed === 'fortify') {
@@ -701,7 +742,6 @@ isTutorialGame = false;
         if (!this.roguelikeState.humanAbility || this.humanAbilityCharges < 2 || this.turn !== 'human' || this.isProcessing) return;
         if (this.roguelikeState.humanAbility === 'incinerate' && (this.cardsOnTable.length !== 1 || this.trickStarter === 'human')) return;
         
-        // FIX: Prevent activating an ability if another is already in a pending state.
         if (this.abilityTargetingState || this.abilityArmed || this.abilityUsedThisTurn) return;
 
         if (this.roguelikeState.humanAbility === 'tide') {
@@ -802,50 +842,56 @@ isTutorialGame = false;
     };
     resetJustWonLevelFlag = () => { if (this.roguelikeState) this.roguelikeState.justWonLevel = false; };
     
-    // FIX: Add startTutorialGame method to initialize a tutorial match.
     startTutorialGame = () => {
-        this.isTutorialGame = true;
         const tutorialWaifu = WAIFUS.find(w => w.name === 'Sakura') || WAIFUS[0];
-        // Temporarily set classic mode for the tutorial game logic
-        const originalMode = this.rootStore.gameSettingsStore.gameplayMode;
-        this.rootStore.gameSettingsStore.setGameplayMode('classic');
-        this.startGame(tutorialWaifu);
-        this.rootStore.gameSettingsStore.setGameplayMode(originalMode);
+        
+        this.backgroundUrl = getImageUrl('/background/landscape3.png');
+        this.currentWaifu = tutorialWaifu;
+        this.isTutorialGame = true;
+        this.phase = 'playing';
+        this.aiEmotionalState = 'neutral';
+        this.cardsOnTable = [];
+        this.humanScore = 0;
+        this.aiScore = 0;
+        this.gameResult = null;
+        this.lastGameWinnings = 0;
+        this.trickCounter = 0;
+        this.humanHand = [...TUTORIAL_HUMAN_HAND];
+        this.aiHand = [...TUTORIAL_AI_HAND];
+        this.briscolaCard = { ...TUTORIAL_BRISCOLA };
+        this.briscolaSuit = TUTORIAL_BRISCOLA.suit;
+        this.deck = [...TUTORIAL_DECK];
+        this.turn = 'human';
+        this.trickStarter = 'human';
+        this.message = this.T.yourTurn;
+        this.rootStore.uiStore.setTutorialStep('playerHand');
     };
 
-    // FIX: Add playTutorialCard to handle card plays during the tutorial.
-    playTutorialCard = (card: Card) => {
-        if (this.turn === 'human' && !this.isProcessing) {
-            this.selectCardForPlay(card);
-            setTimeout(() => this.rootStore.uiStore.nextTutorialStep(), 2000);
-        }
+    resolveTrickForTutorial = () => {
+        if (!this.isTutorialGame || this.phase !== 'playing' || this.cardsOnTable.length < 2) return;
+
+        const trickId = this.cardsOnTable.map(c => c.id).sort().join('-');
+        if (this.lastResolvedTrick.includes(trickId)) return;
+        this.lastResolvedTrick.push(trickId);
+    
+        this.isResolvingTrick = true;
+        const humanCard = this.trickStarter === 'human' ? this.cardsOnTable[0] : this.cardsOnTable[1];
+        const aiCard = this.trickStarter === 'ai' ? this.cardsOnTable[0] : this.cardsOnTable[1];
+        
+        const trickWinner = getClassicTrickWinner(this.cardsOnTable, this.trickStarter, this.briscolaSuit!);
+        this.resolveTrick(humanCard, aiCard, trickWinner, null);
     };
 
     saveGame = () => {
         if (this.phase === 'playing') {
-            // FIX: Manually destructure serializable settings to avoid circular reference to rootStore -> posthog
             const {
-                language,
-                gameplayMode,
-                difficulty,
-                isChatEnabled,
-                waitForWaifuResponse,
-                soundtrack,
-                isMusicEnabled,
-                soundEditorSettings,
-                cardDeckStyle,
+                language, gameplayMode, difficulty, isChatEnabled, waitForWaifuResponse,
+                soundtrack, isMusicEnabled, soundEditorSettings, cardDeckStyle,
             } = this.rootStore.gameSettingsStore;
     
             const settingsToSave = {
-                language,
-                gameplayMode,
-                difficulty,
-                isChatEnabled,
-                waitForWaifuResponse,
-                soundtrack,
-                isMusicEnabled,
-                soundEditorSettings,
-                cardDeckStyle,
+                language, gameplayMode, difficulty, isChatEnabled, waitForWaifuResponse,
+                soundtrack, isMusicEnabled, soundEditorSettings, cardDeckStyle,
             };
 
             const stateToSave = {
