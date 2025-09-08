@@ -237,11 +237,29 @@ export class GameStateStore {
             const potentialCards = [...this.aiHand, ...this.deck];
             let bestWinningMove: { card: Card | null; points: number } = { card: null, points: -1 };
     
+            const isRoguelike = this.rootStore.gameSettingsStore.gameplayMode === 'roguelike';
+
             // Find the best winning move from all available cards to maximize points
             for (const potentialCard of potentialCards) {
-                const isWinner = getClassicTrickWinner([humanCard, potentialCard], 'human', briscolaSuit) === 'ai';
+                let isWinner: boolean;
+                let trickPoints = -1;
+    
+                if (isRoguelike) {
+                    isWinner = getRoguelikeTrickWinner([humanCard, potentialCard], 'human', briscolaSuit) === 'ai';
+                    if (isWinner) {
+                        // Simulate points assuming AI activates its power, but with a neutral clash outcome.
+                        const activatedPotentialCard = { ...potentialCard, elementalEffectActivated: !!potentialCard.element };
+                        const result = calculateRoguelikeTrickPoints(humanCard, activatedPotentialCard, 'ai', null);
+                        trickPoints = result.pointsForTrick;
+                    }
+                } else {
+                    isWinner = getClassicTrickWinner([humanCard, potentialCard], 'human', briscolaSuit) === 'ai';
+                    if (isWinner) {
+                        trickPoints = getCardPoints(humanCard) + getCardPoints(potentialCard);
+                    }
+                }
+    
                 if (isWinner) {
-                    const trickPoints = getCardPoints(humanCard) + getCardPoints(potentialCard);
                     if (trickPoints > bestWinningMove.points) {
                         bestWinningMove = { card: potentialCard, points: trickPoints };
                     } else if (trickPoints === bestWinningMove.points && bestWinningMove.card && RANK[potentialCard.value] < RANK[bestWinningMove.card.value]) {
