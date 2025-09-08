@@ -318,9 +318,8 @@ export const GameBoard = observer(() => {
                         <CardView
                             key={card.id}
                             card={card}
-                            isPlayable={turn === 'human' && !isProcessing && !abilityTargetingState && !abilityUsedThisTurn}
+                            isPlayable={turn === 'human' && !isProcessing && !abilityTargetingState}
                             onClick={() => {
-                                // FIX: The method `playTutorialCard` does not exist. The `selectCardForPlay` method handles tutorial logic.
                                 if (isTutorialGame) {
                                     gameStateStore.selectCardForPlay(card);
                                 } else if (abilityTargetingState) {
