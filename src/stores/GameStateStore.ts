@@ -700,25 +700,21 @@ export class GameStateStore {
         setTimeout(() => runInAction(() => {
             // FIX: Clear temporary effects like Fortify from cards in hand at the end of a trick.
             // This prevents invalid states where a card remains fortified in hand after a trick,
-            // which could cause the AI logic to freeze on subsequent turns.
-            const cleanedHumanHand = this.humanHand.map(c => {
-                if (c.isTemporaryBriscola) {
-                    const { isTemporaryBriscola, ...rest } = c;
-                    return rest;
-                }
-                return c;
-            });
-            const cleanedAiHand = this.aiHand.map(c => {
-                if (c.isTemporaryBriscola) {
-                    const { isTemporaryBriscola, ...rest } = c;
-                    return rest;
-                }
-                return c;
-            });
+            // which could cause the AI logic to freeze on subsequent turns. This is a robust safeguard
+            // for both players' hands.
+            const cleanupHand = (hand: Card[]): Card[] => {
+                return hand.map(c => {
+                    if (c.isTemporaryBriscola) {
+                        const { isTemporaryBriscola, ...rest } = c;
+                        return rest;
+                    }
+                    return c;
+                });
+            };
 
             let newDeck = [...this.deck];
-            let newHumanHand = [...cleanedHumanHand];
-            let newAiHand = [...cleanedAiHand];
+            let newHumanHand = cleanupHand(this.humanHand);
+            let newAiHand = cleanupHand(this.aiHand);
             let newBriscolaCard = this.briscolaCard;
             const drawOrder: Player[] = trickWinner === 'human' ? ['human', 'ai'] : ['ai', 'human'];
 
