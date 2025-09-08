@@ -82,7 +82,9 @@ export const GameBoard = observer(() => {
         currentWaifu, aiScore, aiHand, humanScore, humanHand, briscolaCard, deck, cardsOnTable, message,
         isProcessing, turn, trickStarter, backgroundUrl, lastTrick, lastTrickHighlights, activeElements,
         roguelikeState, abilityArmed, powerAnimation, cardForElementalChoice, elementalClash,
-        abilityTargetingState, abilityUsedThisTurn, revealedAiHand,
+        abilityTargetingState, abilityUsedThisTurn, revealedAiHand, 
+// FIX: Property 'isTutorialGame' does not exist on type 'GameStateStore'.
+isTutorialGame,
     } = gameStateStore;
     const { animatingCard, drawingCards, unreadMessageCount, waifuBubbleMessage } = uiStore;
     const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle } = gameSettingsStore;
@@ -105,7 +107,7 @@ export const GameBoard = observer(() => {
     const aiCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
 
     return (
-        <main className="game-board">
+        <main className="game-board" data-tutorial-id="end-tutorial">
             <CachedImage 
                 imageUrl={backgroundUrl} 
                 alt={T.gameBoardBackground} 
@@ -138,7 +140,7 @@ export const GameBoard = observer(() => {
                 </div>
             </div>
 
-            <div className="waifu-status-container">
+            <div className="waifu-status-container" data-tutorial-id="waifu-status">
                 {currentWaifu && (
                     <button className="waifu-status-button" onClick={() => isChatEnabled ? uiStore.openModal('chat') : uiStore.openModal('waifuDetails')} aria-label={waifuIconAriaLabel}>
                         <CachedImage imageUrl={getImageUrl(currentWaifu.avatar)} alt={currentWaifu.name} className="waifu-status-avatar" />
@@ -224,7 +226,7 @@ export const GameBoard = observer(() => {
                 </div>
             )}
             
-            <div className="deck-area-wrapper">
+            <div className="deck-area-wrapper" data-tutorial-id="briscola-deck">
                 {briscolaCard && (
                     <div className="deck-container" title={`${T.briscolaLabel}: ${getCardId(briscolaCard, language)}`}>
                         <div className="deck-pile-wrapper">
@@ -310,14 +312,17 @@ export const GameBoard = observer(() => {
             </div>
 
             <div className="player-area human-area">
-                <div className="hand">
+                <div className="hand" data-tutorial-id="player-hand">
                     {humanHand.map(card => (
                         <CardView
                             key={card.id}
                             card={card}
                             isPlayable={turn === 'human' && !isProcessing && !abilityTargetingState && !abilityUsedThisTurn}
                             onClick={() => {
-                                if (abilityTargetingState) {
+                                // FIX: Property 'playTutorialCard' does not exist on type 'GameStateStore'.
+                                if (isTutorialGame) {
+                                    gameStateStore.playTutorialCard(card);
+                                } else if (abilityTargetingState) {
                                     gameStateStore.targetCardInHandForAbility(card);
                                 } else {
                                     gameStateStore.selectCardForPlay(card);
@@ -333,7 +338,7 @@ export const GameBoard = observer(() => {
             
             <div className="bottom-bar">
                 <div className="player-info-group">
-                    <div className="player-score human-score">
+                    <div className="player-score human-score" data-tutorial-id="player-score">
                         <span>{T.scoreYou}: {humanScore}</span>
                     </div>
                     {roguelikeState.humanAbility && <AbilityIndicator player="human" />}

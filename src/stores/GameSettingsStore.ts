@@ -28,6 +28,7 @@ export class GameSettingsStore {
     isMusicEnabled: boolean = loadFromLocalStorage('is_music_enabled', false);
     soundEditorSettings: SoundSettings = loadFromLocalStorage('sound_editor_settings', defaultSoundSettings);
     cardDeckStyle: CardDeckStyle = loadFromLocalStorage('card_deck_style', 'classic');
+    hasCompletedTutorial: boolean = loadFromLocalStorage('has_completed_tutorial', false);
 
     constructor(rootStore: RootStore) {
         makeAutoObservable(this, { rootStore: false });
@@ -42,6 +43,7 @@ export class GameSettingsStore {
         autorun(() => localStorage.setItem('is_music_enabled', JSON.stringify(this.isMusicEnabled)));
         autorun(() => localStorage.setItem('sound_editor_settings', JSON.stringify(this.soundEditorSettings)));
         autorun(() => localStorage.setItem('card_deck_style', JSON.stringify(this.cardDeckStyle)));
+        autorun(() => localStorage.setItem('has_completed_tutorial', JSON.stringify(this.hasCompletedTutorial)));
     }
 
     setLanguage = (lang: Language) => this.language = lang;
@@ -53,4 +55,5 @@ export class GameSettingsStore {
     setIsMusicEnabled = (enabled: boolean) => this.isMusicEnabled = enabled;
     setSoundEditorSettings = (settings: SoundSettings) => this.soundEditorSettings = settings;
     setCardDeckStyle = (style: CardDeckStyle) => this.cardDeckStyle = style;
+    setTutorialCompleted = (completed: boolean) => this.hasCompletedTutorial = completed;
 }

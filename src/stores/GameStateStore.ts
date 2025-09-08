@@ -93,6 +93,9 @@ export class GameStateStore {
     resolveTrickCallbackRef: (() => void) | null = null;
     humanAbilityUsedInTrick = false;
     aiAbilityUsedInTrick = false;
+    
+// FIX: Add isTutorialGame property for tutorial logic.
+isTutorialGame = false;
 
     constructor(rootStore: RootStore) {
         makeAutoObservable(this, { rootStore: false, clashTimeoutRef: false, resolveTrickCallbackRef: false }, { autoBind: true });
@@ -458,7 +461,10 @@ export class GameStateStore {
         this.lastTrick = null;
         this.abilityUsedThisTurn = null;
         this.activeElements = [];
-        this.roguelikeState = INITIAL_ROGUELIKE_STATE;
+        // FIX: Reset isTutorialGame flag for new games.
+        if (!this.isTutorialGame) {
+            this.roguelikeState = INITIAL_ROGUELIKE_STATE;
+        }
         
         if (gameplayMode === 'classic') {
             this.currentWaifu = newWaifu;
@@ -780,7 +786,10 @@ export class GameStateStore {
         this.closeKasumiModal();
     };
     confirmLeaveGame = () => { this.rootStore.posthog?.capture('game_left', { human_score: this.humanScore, ai_score: this.aiScore }); this.clearSavedGame(); this.phase = 'menu'; };
-    goToMenu = () => this.phase = 'menu';
+    goToMenu = () => {
+        this.isTutorialGame = false;
+        this.phase = 'menu';
+    }
     handleQuotaExceeded = () => { this.isQuotaExceeded = true; this.gameMode = 'fallback'; };
     continueFromQuotaModal = () => this.isQuotaExceeded = false;
     forceCloseClashModal = () => {
@@ -793,6 +802,25 @@ export class GameStateStore {
     };
     resetJustWonLevelFlag = () => { if (this.roguelikeState) this.roguelikeState.justWonLevel = false; };
     
+    // FIX: Add startTutorialGame method to initialize a tutorial match.
+    startTutorialGame = () => {
+        this.isTutorialGame = true;
+        const tutorialWaifu = WAIFUS.find(w => w.name === 'Sakura') || WAIFUS[0];
+        // Temporarily set classic mode for the tutorial game logic
+        const originalMode = this.rootStore.gameSettingsStore.gameplayMode;
+        this.rootStore.gameSettingsStore.setGameplayMode('classic');
+        this.startGame(tutorialWaifu);
+        this.rootStore.gameSettingsStore.setGameplayMode(originalMode);
+    };
+
+    // FIX: Add playTutorialCard to handle card plays during the tutorial.
+    playTutorialCard = (card: Card) => {
+        if (this.turn === 'human' && !this.isProcessing) {
+            this.selectCardForPlay(card);
+            setTimeout(() => this.rootStore.uiStore.nextTutorialStep(), 2000);
+        }
+    };
+
     saveGame = () => {
         if (this.phase === 'playing') {
             // FIX: Manually destructure serializable settings to avoid circular reference to rootStore -> posthog

@@ -44,7 +44,7 @@ export const Menu = observer(() => {
     return (
         <div className="menu">
             <CachedImage imageUrl={menuBackgroundUrl} alt="Game background" className="menu-background" />
-            <div className="menu-content">
+            <div className="menu-content" data-tutorial-id="welcome">
                 <div className="waifu-coins-display">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9 16.5v-1c0-.83.67-1.5 1.5-1.5H12v-1h-1.5c-.83 0-1.5-.67-1.5-1.5v-1c0-.83.67-1.5 1.5-1.5H12V7h1.5c.83 0 1.5.67 1.5 1.5v1c0 .83-.67 1.5-1.5 1.5H12v1h1.5c.83 0 1.5.67 1.5 1.5v1c0 .83-.67 1.5-1.5 1.5H12v1H9z"/>
@@ -83,14 +83,14 @@ export const Menu = observer(() => {
                 <p>{T.projectDescription1}</p>
                 <p>{T.projectDescription2}</p>
 
-                <div className="gallery-promo-container">
+                <div className="gallery-promo-container" data-tutorial-id="gallery">
                     <button className="gallery-promo-button" onClick={() => uiStore.openModal('gallery')}>
                         {T.gallery.promoButton}
                     </button>
                 </div>
                 
                  <div className="menu-primary-settings">
-                    <div className="settings-selector">
+                    <div className="settings-selector" data-tutorial-id="game-mode">
                         <label htmlFor="game-mode-select">{T.gameModeLabel}:</label>
                         <select 
                             id="game-mode-select" 
@@ -101,7 +101,7 @@ export const Menu = observer(() => {
                             <option value="roguelike">{T.gameModeRoguelike}</option>
                         </select>
                     </div>
-                     <div className="settings-selector">
+                     <div className="settings-selector" data-tutorial-id="difficulty">
                         <label htmlFor="difficulty-select">{T.difficultyLabel}:</label>
                         <select id="difficulty-select" value={difficulty} onChange={(e) => gameSettingsStore.setDifficulty(e.target.value as any)}>
                             <option value="easy">{T.difficultyEasy}</option>
@@ -123,15 +123,17 @@ export const Menu = observer(() => {
                     </div>
                 </div>
 
-                <WaifuSelector 
-                    language={language}
-                    onWaifuSelected={handleWaifuSelection}
-                    selectedWaifu={selectedWaifu}
-                    isRandomSelected={isRandomCardSelected}
-                    disabled={gameplayMode === 'roguelike'}
-                />
+                <div data-tutorial-id="waifu-selector">
+                    <WaifuSelector 
+                        language={language}
+                        onWaifuSelected={handleWaifuSelection}
+                        selectedWaifu={selectedWaifu}
+                        isRandomSelected={isRandomCardSelected}
+                        disabled={gameplayMode === 'roguelike'}
+                    />
+                </div>
 
-                <div className="start-game-container">
+                <div className="start-game-container" data-tutorial-id="start-game">
                     {hasSavedGame && (
                         <button
                             className="start-game-button"
@@ -143,7 +145,7 @@ export const Menu = observer(() => {
                     <button 
                         className="start-game-button" 
                         onClick={() => gameStateStore.startGame(selectedWaifu)} 
-                        disabled={!selectedWaifu && !isRandomCardSelected}
+                        disabled={!selectedWaifu && !isRandomCardSelected && !uiStore.isTutorialActive}
                     >
                         {T.startGame}
                     </button>

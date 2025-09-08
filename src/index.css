@@ -3054,3 +3054,69 @@ input:checked + .slider:before {
   font-weight: bold;
   color: var(--primary-accent);
 }
+
+/* --- Tutorial Styles --- */
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  pointer-events: none; /* Allows clicks to pass through to the bubble */
+}
+
+.tutorial-overlay-pane {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(2px);
+  transition: all 0.3s ease-in-out;
+}
+
+.tutorial-bubble {
+  position: absolute;
+  background: var(--ui-bg);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  max-width: 350px;
+  width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 10001;
+  pointer-events: auto; /* The bubble itself is clickable */
+  transition: all 0.3s ease-in-out;
+  animation: fade-in 0.3s ease-out;
+}
+.tutorial-bubble p {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin: 0 0 1.5rem 0;
+}
+.tutorial-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tutorial-buttons button {
+  font-size: 1rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--primary-accent);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.tutorial-buttons button:hover {
+  background-color: var(--primary-accent-hover);
+}
+.tutorial-buttons .skip-button {
+  background: none;
+  color: #ccc;
+  padding: 0;
+}
+.tutorial-buttons .skip-button:hover {
+  color: white;
+  text-decoration: underline;
+}
