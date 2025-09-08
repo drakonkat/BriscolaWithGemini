@@ -311,6 +311,18 @@ export class GameStateStore {
         this.message = this.T.aiPlayedYourTurn(this.currentWaifu!.name);
         this.aiHand = this.aiHand.filter(c => c.id !== cardToPlay.id);
         this.cardsOnTable.push(cardToPlay);
+        
+        // FIX: Aggressively clean up temporary states from the AI's hand immediately after it plays a card.
+        // This prevents state corruption that could cause the AI to freeze on subsequent turns, especially
+        // after using an ability like "Fortify" on a card that it ultimately decides not to play.
+        this.aiHand = this.aiHand.map(c => {
+            if (c.isTemporaryBriscola) {
+                const { isTemporaryBriscola, ...rest } = c;
+                return rest;
+            }
+            return c;
+        });
+
         if (this.trickStarter === 'ai') {
             this.turn = 'human';
         }
@@ -380,6 +392,17 @@ export class GameStateStore {
     
                 this.aiHand = this.aiHand.filter(c => c.id !== chosenCard.id);
                 this.cardsOnTable.push(chosenCard);
+                
+                // FIX: Aggressively clean up temporary states from the AI's hand immediately after it plays a card.
+                // This ensures the AI's hand is always in a valid state, preventing freezes on subsequent turns.
+                this.aiHand = this.aiHand.map(c => {
+                    if (c.isTemporaryBriscola) {
+                        const { isTemporaryBriscola, ...rest } = c;
+                        return rest;
+                    }
+                    return c;
+                });
+
                 if (this.trickStarter === 'ai') this.turn = 'human';
             }
         };
