@@ -231,35 +231,29 @@ export class GameStateStore {
         const briscolaSuit = this.briscolaSuit!;
         let cardToPlay: Card;
     
+        const isRoguelike = this.rootStore.gameSettingsStore.gameplayMode === 'roguelike';
+        const getTrickWinner = isRoguelike ? getRoguelikeTrickWinner : getClassicTrickWinner;
+        
         // AI plays second
         if (this.cardsOnTable.length > 0) {
             const humanCard = this.cardsOnTable[0];
-            const potentialCards = [...this.aiHand, ...this.deck];
+            const potentialCards = [...this.aiHand, ...this.deck]; // In Nightmare, AI knows the deck
             let bestWinningMove: { card: Card | null; points: number } = { card: null, points: -1 };
     
-            const isRoguelike = this.rootStore.gameSettingsStore.gameplayMode === 'roguelike';
-
             // Find the best winning move from all available cards to maximize points
             for (const potentialCard of potentialCards) {
-                let isWinner: boolean;
-                let trickPoints = -1;
+                let isWinner = getTrickWinner([humanCard, potentialCard], 'human', briscolaSuit) === 'ai';
     
-                if (isRoguelike) {
-                    isWinner = getRoguelikeTrickWinner([humanCard, potentialCard], 'human', briscolaSuit) === 'ai';
-                    if (isWinner) {
-                        // Simulate points assuming AI activates its power, but with a neutral clash outcome.
+                if (isWinner) {
+                    let trickPoints;
+                    if (isRoguelike) {
                         const activatedPotentialCard = { ...potentialCard, elementalEffectActivated: !!potentialCard.element };
                         const result = calculateRoguelikeTrickPoints(humanCard, activatedPotentialCard, 'ai', null);
                         trickPoints = result.pointsForTrick;
-                    }
-                } else {
-                    isWinner = getClassicTrickWinner([humanCard, potentialCard], 'human', briscolaSuit) === 'ai';
-                    if (isWinner) {
+                    } else {
                         trickPoints = getCardPoints(humanCard) + getCardPoints(potentialCard);
                     }
-                }
     
-                if (isWinner) {
                     if (trickPoints > bestWinningMove.points) {
                         bestWinningMove = { card: potentialCard, points: trickPoints };
                     } else if (trickPoints === bestWinningMove.points && bestWinningMove.card && RANK[potentialCard.value] < RANK[bestWinningMove.card.value]) {
@@ -681,9 +675,27 @@ export class GameStateStore {
         }
         
         setTimeout(() => runInAction(() => {
+            // FIX: Clear temporary effects like Fortify from cards in hand at the end of a trick.
+            // This prevents invalid states where a card remains fortified in hand after a trick,
+            // which could cause the AI logic to freeze on subsequent turns.
+            const cleanedHumanHand = this.humanHand.map(c => {
+                if (c.isTemporaryBriscola) {
+                    const { isTemporaryBriscola, ...rest } = c;
+                    return rest;
+                }
+                return c;
+            });
+            const cleanedAiHand = this.aiHand.map(c => {
+                if (c.isTemporaryBriscola) {
+                    const { isTemporaryBriscola, ...rest } = c;
+                    return rest;
+                }
+                return c;
+            });
+
             let newDeck = [...this.deck];
-            let newHumanHand = [...this.humanHand];
-            let newAiHand = [...this.aiHand];
+            let newHumanHand = [...cleanedHumanHand];
+            let newAiHand = [...cleanedAiHand];
             let newBriscolaCard = this.briscolaCard;
             const drawOrder: Player[] = trickWinner === 'human' ? ['human', 'ai'] : ['ai', 'human'];
 
