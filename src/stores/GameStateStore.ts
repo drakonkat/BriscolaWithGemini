@@ -332,7 +332,7 @@ export class GameStateStore {
         if (this.phase !== 'playing' || this.turn !== 'ai' || this.isProcessing || this.cardsOnTable.length >= 2 || this.aiHand.length === 0 || this.isAiUsingAbility) {
             return;
         }
-
+    
         if (this.isTutorialGame) {
             if (this.rootStore.uiStore.tutorialStep === 'promptPlayCard' && this.cardsOnTable.length === 1) {
                 setTimeout(() => runInAction(() => {
@@ -345,46 +345,15 @@ export class GameStateStore {
             }
             return;
         }
-        
-        const performAiAction = () => {
-            if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' && this.roguelikeState.aiAbility && this.aiAbilityCharges >= 2) {
-                const decision = getAIAbilityDecision(this.roguelikeState.aiAbility, this.aiHand, null, this.deck.length, this.cardsOnTable);
-                if (decision.useAbility) {
-                    this.isAiUsingAbility = true;
-                    this.aiAbilityCharges = 0;
-                    this.aiAbilityUsedInTrick = true;
-                    this.message = this.T.abilityUsed(this.currentWaifu?.name ?? 'AI', this.T[decision.ability]);
     
-                    switch (decision.ability) {
-                        case 'tide': this.revealedAiHand = [...this.humanHand]; setTimeout(() => runInAction(() => this.revealedAiHand = null), 5000); break;
-                        case 'incinerate': if (this.cardsOnTable.length === 1 && decision.targetCardId) { this.cardsOnTable = [{ ...this.cardsOnTable[0], isBurned: true }]; } break;
-                        case 'cyclone':
-                            if (decision.targetCardId && this.deck.length > 0) {
-                                const cardToSwap = this.aiHand.find(c => c.id === decision.targetCardId);
-                                if (cardToSwap) {
-                                    const newDeck = [...this.deck, cardToSwap];
-                                    const shuffled = shuffleDeck(newDeck);
-                                    const newCard = shuffled.shift()!;
-                                    this.aiHand = [...this.aiHand.filter(c => c.id !== cardToSwap.id), newCard];
-                                    this.deck = shuffled;
-                                }
-                            }
-                            break;
-                        case 'fortify': if (decision.targetCardId) { this.aiHand = this.aiHand.map(c => c.id === decision.targetCardId ? { ...c, isTemporaryBriscola: true } : c); } break;
-                    }
-                    
-                    setTimeout(() => runInAction(() => this.isAiUsingAbility = false), 500); 
-                    return;
-                }
-            }
-    
+        const playCardAction = () => {
             if (!this.currentWaifu) return;
     
             if (this.rootStore.gameSettingsStore.difficulty === 'nightmare') {
                 this.performNightmareAiTurn();
             } else {
                 let chosenCard = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, this.rootStore.gameSettingsStore.difficulty);
-
+    
                 if (chosenCard.element) chosenCard = { ...chosenCard, elementalEffectActivated: true };
     
                 playSound('card-place');
@@ -392,9 +361,7 @@ export class GameStateStore {
     
                 this.aiHand = this.aiHand.filter(c => c.id !== chosenCard.id);
                 this.cardsOnTable.push(chosenCard);
-                
-                // FIX: Aggressively clean up temporary states from the AI's hand immediately after it plays a card.
-                // This ensures the AI's hand is always in a valid state, preventing freezes on subsequent turns.
+    
                 this.aiHand = this.aiHand.map(c => {
                     if (c.isTemporaryBriscola) {
                         const { isTemporaryBriscola, ...rest } = c;
@@ -402,13 +369,50 @@ export class GameStateStore {
                     }
                     return c;
                 });
-
+    
                 if (this.trickStarter === 'ai') this.turn = 'human';
             }
         };
     
-        performAiAction();
-    }
+        if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' && this.roguelikeState.aiAbility && this.aiAbilityCharges >= 2) {
+            const decision = getAIAbilityDecision(this.roguelikeState.aiAbility, this.aiHand, null, this.deck.length, this.cardsOnTable);
+            if (decision.useAbility) {
+                this.isAiUsingAbility = true;
+                this.aiAbilityCharges = 0;
+                this.aiAbilityUsedInTrick = true;
+                this.message = this.T.abilityUsed(this.currentWaifu?.name ?? 'AI', this.T[decision.ability]);
+    
+                switch (decision.ability) {
+                    case 'tide': this.revealedAiHand = [...this.humanHand]; setTimeout(() => runInAction(() => this.revealedAiHand = null), 5000); break;
+                    case 'incinerate': if (this.cardsOnTable.length === 1 && decision.targetCardId) { this.cardsOnTable = [{ ...this.cardsOnTable[0], isBurned: true }]; } break;
+                    case 'cyclone':
+                        if (decision.targetCardId && this.deck.length > 0) {
+                            const cardToSwap = this.aiHand.find(c => c.id === decision.targetCardId);
+                            if (cardToSwap) {
+                                const newDeck = [...this.deck, cardToSwap];
+                                const shuffled = shuffleDeck(newDeck);
+                                const newCard = shuffled.shift()!;
+                                this.aiHand = [...this.aiHand.filter(c => c.id !== cardToSwap.id), newCard];
+                                this.deck = shuffled;
+                            }
+                        }
+                        break;
+                    case 'fortify': if (decision.targetCardId) { this.aiHand = this.aiHand.map(c => c.id === decision.targetCardId ? { ...c, isTemporaryBriscola: true } : c); } break;
+                }
+                
+                setTimeout(() => {
+                    runInAction(() => {
+                        this.isAiUsingAbility = false;
+                        playCardAction();
+                    });
+                }, 1000);
+                
+                return;
+            }
+        }
+    
+        playCardAction();
+    };
 
     handleEndOfGame = () => {
          if (this.phase === 'playing' && this.humanHand.length === 0 && this.aiHand.length === 0 && this.cardsOnTable.length === 0 && !this.isProcessing) {
