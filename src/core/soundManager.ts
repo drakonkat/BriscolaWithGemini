@@ -248,6 +248,13 @@ export const playSound = async (name: SoundName) => {
             playNote(context, 1567.98, now + 0.2, 0.15, 0.2); // G6
             break;
         }
+        case 'gacha-multi-unlock': {
+            const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98]; // C5, E5, G5, C6, E6, G6
+            notes.forEach((freq, i) => {
+                playNote(context, freq, now + i * 0.08, 0.5, 0.25);
+            });
+            break;
+        }
     }
 };
 

@@ -21,6 +21,7 @@ interface GalleryModalProps {
     unlockedBackgrounds: string[];
     waifuCoins: number;
     onGachaRoll: () => void;
+    onGachaMultiRoll: () => void;
     hasRolledGacha: boolean;
     isRolling: boolean;
     gachaAnimationState: { active: boolean; rarity: 'R' | 'SR' | 'SSR' | null };
@@ -28,16 +29,18 @@ interface GalleryModalProps {
     onImageSelect: (url: string) => void;
 }
 
-export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, hasRolledGacha, isRolling, gachaAnimationState, onAnimationEnd, onImageSelect }: GalleryModalProps) => {
+export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onGachaMultiRoll, hasRolledGacha, isRolling, gachaAnimationState, onAnimationEnd, onImageSelect }: GalleryModalProps) => {
     if (!isOpen) {
         return null;
     }
 
     const T = translations[language];
     const GACHA_COST = 100;
+    const GACHA_COST_X10 = 900;
     const isFirstRoll = !hasRolledGacha;
     const allUnlocked = unlockedBackgrounds.length >= backgrounds.length;
     const canAfford = waifuCoins >= GACHA_COST;
+    const canAffordX10 = waifuCoins >= GACHA_COST_X10;
     const buttonText = isFirstRoll ? T.gallery.gachaButtonFree : T.gallery.gachaButton;
 
     return (
@@ -56,6 +59,10 @@ export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedB
                         <button onClick={onGachaRoll} disabled={allUnlocked || (!isFirstRoll && !canAfford) || isRolling}>
                             {buttonText}
                         </button>
+                        {/* FIX: Added a button for multi-gacha rolls. */}
+                        <button onClick={onGachaMultiRoll} disabled={allUnlocked || isFirstRoll || !canAffordX10 || isRolling}>
+                            {T.gallery.gachaButtonX10(GACHA_COST_X10)}
+                        </button>
                         <button onClick={onClose} className="button-secondary">{T.close}</button>
                     </div>
                 </div>
@@ -68,7 +75,6 @@ export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedB
                             <div 
                                 key={index} 
                                 className={`gallery-item ${isUnlocked ? '' : 'locked'} ${rarityClass}`} 
-                                // FIX: onImageSelect is now passed via props and can be called.
                                 onClick={isUnlocked ? () => onImageSelect(item.url) : undefined}
                                 onKeyDown={isUnlocked ? (e) => (e.key === 'Enter' || e.key === ' ') && onImageSelect(item.url) : undefined}
                                 role={isUnlocked ? 'button' : 'img'}

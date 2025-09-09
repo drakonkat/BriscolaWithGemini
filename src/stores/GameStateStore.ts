@@ -720,6 +720,9 @@ export class GameStateStore {
             }
         }
         
+        const isFinalTrick = this.deck.length === 0 && !this.briscolaCard;
+        const delay = isFinalTrick ? 3000 : 1500;
+
         setTimeout(() => runInAction(() => {
             // FIX: Clear temporary effects like Fortify from cards in hand at the end of a trick.
             // This prevents invalid states where a card remains fortified in hand after a trick,
@@ -759,7 +762,7 @@ export class GameStateStore {
             if (this.isTutorialGame) {
                 this.rootStore.uiStore.onTutorialGameEvent('cardsDrawn');
             }
-        }), 1500);
+        }), delay);
     };
     
     selectCardForPlay = (card: Card) => {

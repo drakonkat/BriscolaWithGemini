@@ -28,7 +28,7 @@ export type Soundtrack = 'epic' | 'chill';
 export type Element = 'fire' | 'water' | 'air' | 'earth';
 export type AbilityType = 'incinerate' | 'tide' | 'cyclone' | 'fortify';
 export type SnackbarType = 'success' | 'warning';
-export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'event' | 'soundEditor';
+export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'event' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock';
 export type CardDeckStyle = 'classic' | 'poker';
 export type SoundName =
   | 'game-start'
@@ -46,7 +46,8 @@ export type SoundName =
   | 'gacha-unlock-r'
   | 'gacha-unlock-sr'
   | 'gacha-unlock-ssr'
-  | 'gacha-refund';
+  | 'gacha-refund'
+  | 'gacha-multi-unlock';
 
 // FIX: Added OscillatorType to be used for sound settings.
 export type OscillatorType = 'sine' | 'sawtooth' | 'square' | 'triangle';

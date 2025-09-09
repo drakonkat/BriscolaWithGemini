@@ -19,6 +19,9 @@ import { EventModal } from './EventModal';
 import { HistoryModal } from './HistoryModal';
 import { KasumiSwapModal } from './KasumiSwapModal';
 import { SoundEditorModal } from './SoundEditorModal';
+// FIX: Imported missing Gacha result modals.
+import { GachaSingleUnlockModal } from './GachaSingleUnlockModal';
+import { GachaMultiUnlockModal } from './GachaMultiUnlockModal';
 
 import { translations } from '../core/translations';
 import type { RoguelikeState, RoguelikeEvent } from '../core/types';
@@ -139,6 +142,7 @@ export const GameModals = observer(() => {
               unlockedBackgrounds={gachaStore.unlockedBackgrounds}
               waifuCoins={gachaStore.waifuCoins}
               onGachaRoll={gachaStore.handleGachaRoll}
+              onGachaMultiRoll={gachaStore.handleMultiGachaRoll}
               onImageSelect={gachaStore.openFullscreenImage}
               hasRolledGacha={gachaStore.hasRolledGacha}
               isRolling={gachaStore.isRolling}
@@ -151,6 +155,18 @@ export const GameModals = observer(() => {
               imageUrl={gachaStore.fullscreenImage}
               onClose={gachaStore.closeFullscreenImage}
               language={language}
+            />
+
+            <GachaSingleUnlockModal
+                isOpen={uiStore.isGachaSingleUnlockModalOpen}
+                onClose={() => uiStore.closeModal('gachaSingleUnlock')}
+                language={language}
+            />
+
+            <GachaMultiUnlockModal
+                isOpen={uiStore.isGachaMultiUnlockModalOpen}
+                onClose={() => uiStore.closeModal('gachaMultiUnlock')}
+                language={language}
             />
 
             {currentWaifu && (

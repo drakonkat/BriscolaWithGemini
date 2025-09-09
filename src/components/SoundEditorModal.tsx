@@ -75,7 +75,7 @@ export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, 
                 </button>
                 <h2>{T.soundEditorTitle}</h2>
                 <div className="sound-editor-controls">
-                    <ControlSlider label={T.tempo} value={settings.tempo} min={10} max={60} step={1} onChange={(v) => handleSettingChange('tempo', v)} displayValue={`${settings.tempo} BPM`} />
+                    <ControlSlider label={T.tempo} value={settings.tempo} min={10} max={360} step={1} onChange={(v) => handleSettingChange('tempo', v)} displayValue={`${settings.tempo} BPM`} />
                     
                     <div className="sound-editor-control">
                         <label htmlFor="osc-type">{T.oscillatorType}</label>
