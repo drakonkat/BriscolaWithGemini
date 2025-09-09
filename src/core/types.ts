@@ -48,6 +48,7 @@ export type SoundName =
   | 'gacha-unlock-ssr'
   | 'gacha-refund'
   | 'gacha-multi-unlock';
+export type DrumType = 'kick' | 'snare' | 'closedHat' | 'openHat';
 
 // FIX: Added OscillatorType to be used for sound settings.
 export type OscillatorType = 'sine' | 'sawtooth' | 'square' | 'triangle';

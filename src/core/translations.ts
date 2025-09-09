@@ -78,6 +78,11 @@ export const translations = {
     oscSawtooth: "Dente di Sega",
     oscSquare: "Quadrata",
     oscTriangle: "Triangolare",
+    drums: "Batteria",
+    kick: "Cassa",
+    snare: "Rullante",
+    closedHat: "Hi-Hat Chiuso",
+    openHat: "Hi-Hat Aperto",
     // Tutorial
     tutorial: {
       next: "Avanti",
@@ -486,6 +491,11 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     oscSawtooth: "Sawtooth",
     oscSquare: "Square",
     oscTriangle: "Triangle",
+    drums: "Drums",
+    kick: "Kick",
+    snare: "Snare",
+    closedHat: "Closed Hat",
+    openHat: "Open Hat",
     // Tutorial
     tutorial: {
       next: "Next",

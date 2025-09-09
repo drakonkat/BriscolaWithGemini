@@ -5,8 +5,9 @@
 import { useState, useEffect } from 'react';
 import { translations } from '../core/translations';
 // FIX: OscillatorType is defined in core/types, not exported from soundManager.
-import { defaultSoundSettings, startMusic, stopMusic, type SoundSettings } from '../core/soundManager';
-import type { Language, OscillatorType } from '../core/types';
+// FIX: Added missing 'updateSoundSettings' import.
+import { defaultSoundSettings, startMusic, stopMusic, updateSoundSettings, type SoundSettings, DRUM_TYPES } from '../core/soundManager';
+import type { Language, OscillatorType, DrumType } from '../core/types';
 
 interface SoundEditorModalProps {
     isOpen: boolean;
@@ -34,13 +35,18 @@ const ControlSlider = ({ label, value, min, max, step, onChange, displayValue }:
 export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, language }: SoundEditorModalProps) => {
     const [isPlaying, setIsPlaying] = useState(false);
 
-    // Effect to handle cleanup when the modal is closed
     useEffect(() => {
-        if (!isOpen) {
+        if (!isOpen && isPlaying) {
             stopMusic();
             setIsPlaying(false);
         }
-    }, [isOpen]);
+    }, [isOpen, isPlaying]);
+
+    useEffect(() => {
+        if (isPlaying) {
+            updateSoundSettings(settings);
+        }
+    }, [settings, isPlaying]);
 
 
     if (!isOpen) return null;
@@ -49,6 +55,15 @@ export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, 
 
     const handleSettingChange = (key: keyof SoundSettings, value: any) => {
         onSettingsChange(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleDrumToggle = (drum: DrumType, step: number) => {
+        onSettingsChange(prev => {
+            const newPattern = { ...prev.drumPattern };
+            newPattern[drum] = [...newPattern[drum]]; // Create new array for immutability
+            newPattern[drum][step] = !newPattern[drum][step];
+            return { ...prev, drumPattern: newPattern };
+        });
     };
 
     const handleReset = () => {
@@ -74,24 +89,49 @@ export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, 
                     </svg>
                 </button>
                 <h2>{T.soundEditorTitle}</h2>
-                <div className="sound-editor-controls">
-                    <ControlSlider label={T.tempo} value={settings.tempo} min={10} max={360} step={1} onChange={(v) => handleSettingChange('tempo', v)} displayValue={`${settings.tempo} BPM`} />
-                    
-                    <div className="sound-editor-control">
-                        <label htmlFor="osc-type">{T.oscillatorType}</label>
-                        <select id="osc-type" value={settings.oscillatorType} onChange={(e) => handleSettingChange('oscillatorType', e.target.value as OscillatorType)}>
-                            <option value="sawtooth">{T.oscSawtooth}</option>
-                            <option value="sine">{T.oscSine}</option>
-                            <option value="square">{T.oscSquare}</option>
-                            <option value="triangle">{T.oscTriangle}</option>
-                        </select>
+                <div className="sound-editor-content">
+                    <div className="sound-editor-controls">
+                        <ControlSlider label={T.tempo} value={settings.tempo} min={10} max={360} step={1} onChange={(v) => handleSettingChange('tempo', v)} displayValue={`${settings.tempo} BPM`} />
+                        
+                        <div className="sound-editor-control">
+                            <label htmlFor="osc-type">{T.oscillatorType}</label>
+                            <select id="osc-type" value={settings.oscillatorType} onChange={(e) => handleSettingChange('oscillatorType', e.target.value as OscillatorType)}>
+                                <option value="sawtooth">{T.oscSawtooth}</option>
+                                <option value="sine">{T.oscSine}</option>
+                                <option value="square">{T.oscSquare}</option>
+                                <option value="triangle">{T.oscTriangle}</option>
+                            </select>
+                        </div>
+
+                        <ControlSlider label={T.filterFrequency} value={settings.filterCutoff} min={100} max={8000} step={50} onChange={(v) => handleSettingChange('filterCutoff', v)} displayValue={`${settings.filterCutoff} Hz`} />
+                        <ControlSlider label={T.lfoFrequency} value={settings.lfoFrequency} min={0.05} max={1} step={0.01} onChange={(v) => handleSettingChange('lfoFrequency', v)} displayValue={`${settings.lfoFrequency.toFixed(2)} Hz`} />
+                        <ControlSlider label={T.lfoDepth} value={settings.lfoDepth} min={0} max={4000} step={100} onChange={(v) => handleSettingChange('lfoDepth', v)} />
+                        <ControlSlider label={T.reverbAmount} value={settings.reverbWetness} min={0} max={1} step={0.05} onChange={(v) => handleSettingChange('reverbWetness', v)} displayValue={`${Math.round(settings.reverbWetness * 100)}%`} />
                     </div>
 
-                    <ControlSlider label={T.filterFrequency} value={settings.filterCutoff} min={100} max={8000} step={50} onChange={(v) => handleSettingChange('filterCutoff', v)} displayValue={`${settings.filterCutoff} Hz`} />
-                    <ControlSlider label={T.lfoFrequency} value={settings.lfoFrequency} min={0.05} max={1} step={0.01} onChange={(v) => handleSettingChange('lfoFrequency', v)} displayValue={`${settings.lfoFrequency.toFixed(2)} Hz`} />
-                    <ControlSlider label={T.lfoDepth} value={settings.lfoDepth} min={0} max={4000} step={100} onChange={(v) => handleSettingChange('lfoDepth', v)} />
-                    <ControlSlider label={T.reverbAmount} value={settings.reverbWetness} min={0} max={1} step={0.05} onChange={(v) => handleSettingChange('reverbWetness', v)} displayValue={`${Math.round(settings.reverbWetness * 100)}%`} />
+                    <div className="sound-editor-drums">
+                        <h3>{T.drums}</h3>
+                        <div className="drum-sequencer">
+                            {DRUM_TYPES.map(drum => (
+                                <div key={drum} className="drum-row">
+                                    {/* FIX: Correctly access translation string for drum type. */}
+                                    <span className="drum-label">{T[drum]}</span>
+                                    <div className="drum-steps">
+                                        {[...Array(16)].map((_, step) => (
+                                            <button
+                                                key={step}
+                                                className={`step-button ${settings.drumPattern[drum][step] ? 'active' : ''} beat-${step % 4 === 0 ? 'strong' : 'weak'}`}
+                                                onClick={() => handleDrumToggle(drum, step)}
+                                                aria-label={`${T[drum]} step ${step + 1}`}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
+
                 <div className="modal-actions">
                     <button onClick={handleTogglePlay} className="button-primary">
                         {isPlaying ? T.stop : T.play}

@@ -1213,6 +1213,10 @@ input:checked + .slider:before {
   word-break: break-word;
 }
 
+.message strong {
+  font-weight: 900;
+}
+
 .message-container.ai .message {
   background-color: var(--waifu-bubble);
   border-bottom-left-radius: 4px;
@@ -1384,6 +1388,10 @@ input:checked + .slider:before {
     opacity: 0;
     text-align: left;
     word-break: break-word;
+}
+
+.waifu-message-bubble strong {
+  font-weight: 900;
 }
 
 .waifu-message-bubble::after {
@@ -2914,11 +2922,22 @@ input:checked + .slider:before {
 }
 
 /* Sound Editor Modal */
+.sound-editor-modal {
+    width: auto;
+    max-width: 95%;
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+}
+.sound-editor-content {
+    overflow-y: auto;
+    margin: 2rem 0;
+    padding: 0 1rem;
+}
 .sound-editor-controls {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    margin: 2rem 0;
 }
 .sound-editor-control {
     display: flex;
@@ -2970,9 +2989,73 @@ input:checked + .slider:before {
 .sound-editor-modal .modal-actions button.button-primary:hover {
     background-color: var(--primary-accent-hover);
 }
+/* Drum Sequencer Styles */
+.sound-editor-drums {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #444;
+}
+.sound-editor-drums h3 {
+    font-size: 1.3rem;
+    color: #a0d8a2;
+    margin-bottom: 1rem;
+    text-align: left;
+}
+.drum-sequencer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+.drum-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.drum-label {
+    width: 100px;
+    text-align: right;
+    font-size: 0.9rem;
+    color: #ccc;
+    flex-shrink: 0;
+}
+.drum-steps {
+    display: flex;
+    gap: 4px;
+}
+.step-button {
+    width: 28px;
+    height: 40px;
+    border: 1px solid #555;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.1s;
+    flex-shrink: 0;
+}
+.step-button.beat-strong {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+.step-button:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+.step-button.active {
+    background-color: var(--primary-accent);
+    border-color: var(--primary-accent-hover);
+}
 
 
 /* --- Responsive Design --- */
+@media (min-width: 1025px) {
+  .gacha-unlock-modal {
+    max-width: 900px;
+  }
+  .gacha-unlock-modal .unlocked-image {
+    max-height: 60vh;
+  }
+}
+
 @media (max-width: 1024px) {
   .menu {
     justify-content: flex-start;
