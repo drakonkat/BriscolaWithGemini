@@ -162,7 +162,8 @@ export class GachaStore {
             } else { // 5% chance
                 refundAmount = 200;
             }
-
+            
+            playSound('gacha-refund');
             this.addCoins(refundAmount);
             this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaFailureWithRefund(refundAmount), 'success');
             this.rootStore.posthog?.capture('gacha_failure', { 

@@ -242,6 +242,12 @@ export const playSound = async (name: SoundName) => {
             });
             break;
         }
+        case 'gacha-refund': {
+            playNote(context, 1046.50, now, 0.08, 0.2); // C6
+            playNote(context, 1318.51, now + 0.1, 0.1, 0.2); // E6
+            playNote(context, 1567.98, now + 0.2, 0.15, 0.2); // G6
+            break;
+        }
     }
 };
 

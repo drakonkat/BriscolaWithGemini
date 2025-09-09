@@ -6,6 +6,7 @@ import { translations } from '../core/translations';
 import type { Language } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { GachaUnlockAnimation } from './GachaUnlockAnimation';
+import { GachaRollingAnimation } from './GachaRollingAnimation';
 
 type BackgroundItem = {
     url: string;
@@ -42,7 +43,8 @@ export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedB
     return (
         <div className="game-over-overlay" onClick={onClose}>
             <div className="gallery-modal" onClick={(e) => e.stopPropagation()}>
-                 {gachaAnimationState.active && gachaAnimationState.rarity && (
+                {isRolling && !gachaAnimationState.active && <GachaRollingAnimation />}
+                {gachaAnimationState.active && gachaAnimationState.rarity && (
                     <GachaUnlockAnimation 
                         rarity={gachaAnimationState.rarity}
                         onAnimationEnd={onAnimationEnd}

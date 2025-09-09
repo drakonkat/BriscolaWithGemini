@@ -45,7 +45,8 @@ export type SoundName =
   | 'gacha-roll'
   | 'gacha-unlock-r'
   | 'gacha-unlock-sr'
-  | 'gacha-unlock-ssr';
+  | 'gacha-unlock-ssr'
+  | 'gacha-refund';
 
 // FIX: Added OscillatorType to be used for sound settings.
 export type OscillatorType = 'sine' | 'sawtooth' | 'square' | 'triangle';
