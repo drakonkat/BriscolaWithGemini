@@ -4,8 +4,9 @@
 */
 import { useState, useEffect } from 'react';
 import { translations } from '../core/translations';
-import { defaultSoundSettings, startMusic, stopMusic, type SoundSettings, type OscillatorType } from '../core/soundManager';
-import type { Language } from '../core/types';
+// FIX: OscillatorType is defined in core/types, not exported from soundManager.
+import { defaultSoundSettings, startMusic, stopMusic, type SoundSettings } from '../core/soundManager';
+import type { Language, OscillatorType } from '../core/types';
 
 interface SoundEditorModalProps {
     isOpen: boolean;

@@ -1573,6 +1573,7 @@ input:checked + .slider:before {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative; /* Needed for particle overlay */
 }
 .gallery-header {
   display: flex;
@@ -1708,6 +1709,127 @@ input:checked + .slider:before {
   background-color: #444;
   color: #888;
   cursor: not-allowed;
+}
+
+/* --- Gacha Animation --- */
+.gacha-unlock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 100;
+}
+
+@keyframes gacha-particle-fly {
+  0% {
+    transform: rotate(0) translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--angle)) translateY(var(--distance, 70vh)) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes gacha-flash {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0.7; }
+  50% { opacity: 0.4; }
+  100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+}
+
+.gacha-unlock-overlay .particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  animation-name: gacha-particle-fly;
+  animation-timing-function: cubic-bezier(0.1, 0.8, 0.7, 1);
+  animation-fill-mode: forwards;
+}
+
+.gacha-unlock-overlay .flash {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transform-origin: center;
+  animation: gacha-flash 0.5s ease-out forwards;
+}
+
+/* R Rarity */
+.gacha-unlock-overlay.rarity-r .particle {
+  width: 8px;
+  height: 8px;
+  background: #f1c40f;
+  box-shadow: 0 0 4px #f1c40f;
+  animation-duration: 1.5s;
+}
+
+/* SR Rarity */
+.gacha-unlock-overlay.rarity-sr .flash {
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(52,152,219,0.5) 50%, rgba(52,152,219,0) 70%);
+}
+.gacha-unlock-overlay.rarity-sr .particle {
+  animation-duration: 2s;
+}
+.gacha-unlock-overlay.rarity-sr .particle:nth-child(even) {
+  width: 10px;
+  height: 10px;
+  background: #3498db;
+  box-shadow: 0 0 6px #3498db;
+}
+.gacha-unlock-overlay.rarity-sr .particle:nth-child(odd) {
+  width: 5px;
+  height: 15px;
+  background: #ffffff;
+  border-radius: 2px;
+  box-shadow: 0 0 8px #ffffff;
+}
+
+/* SSR Rarity */
+.gacha-unlock-overlay.rarity-ssr .flash {
+  background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,215,0,0.6) 50%, rgba(255,215,0,0) 70%);
+}
+.gacha-unlock-overlay.rarity-ssr .particle {
+  animation-duration: 2.5s;
+}
+.gacha-unlock-overlay.rarity-ssr .particle:nth-child(5n) {
+  width: 12px;
+  height: 12px;
+  background: hsl(calc(var(--angle-deg) * 1), 100%, 70%);
+  box-shadow: 0 0 8px hsl(calc(var(--angle-deg) * 1), 100%, 70%);
+  --angle-deg: calc(360 / 60 * var(--i));
+}
+.gacha-unlock-overlay.rarity-ssr .particle:nth-child(5n + 1) {
+  width: 7px;
+  height: 20px;
+  border-radius: 3px;
+  background: hsl(calc(var(--angle-deg) * 1.2), 100%, 75%);
+  box-shadow: 0 0 10px hsl(calc(var(--angle-deg) * 1.2), 100%, 75%);
+}
+.gacha-unlock-overlay.rarity-ssr .particle:nth-child(5n + 2) {
+  width: 8px;
+  height: 8px;
+  background: white;
+  animation-duration: 1.5s;
+}
+.gacha-unlock-overlay.rarity-ssr .particle:nth-child(5n + 3) {
+  width: 10px;
+  height: 10px;
+  background: hsl(calc(var(--angle-deg) * 0.8), 100%, 65%);
+  box-shadow: 0 0 7px hsl(calc(var(--angle-deg) * 0.8), 100%, 65%);
+}
+.gacha-unlock-overlay.rarity-ssr .particle:nth-child(5n + 4) {
+  width: 15px;
+  height: 15px;
+  background: transparent;
+  border: 2px solid hsl(calc(var(--angle-deg) * 1.5), 100%, 80%);
+  animation-duration: 3s;
 }
 
 /* --- Fullscreen Image Modal --- */

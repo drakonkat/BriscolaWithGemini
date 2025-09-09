@@ -2,21 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-
-export type SoundName =
-  | 'game-start'
-  | 'card-place'
-  | 'trick-win'
-  | 'trick-lose'
-  | 'chat-notify'
-  | 'game-win'
-  | 'game-lose'
-  | 'element-fire'
-  | 'element-water'
-  | 'element-air'
-  | 'element-earth';
-
-export type OscillatorType = 'sine' | 'sawtooth' | 'square' | 'triangle';
+import type { SoundName, OscillatorType } from './types';
 
 export interface SoundSettings {
     tempo: number; // BPM, will be converted to chord duration
@@ -219,6 +205,41 @@ export const playSound = async (name: SoundName) => {
         }
         case 'element-earth': {
             playNote(context, 80, now, 0.2, 0.5);
+            break;
+        }
+        case 'gacha-roll': {
+            for (let i = 0; i < 10; i++) {
+                playNote(context, 440 + i * 40, now + i * 0.08, 0.1, 0.1);
+            }
+            break;
+        }
+        case 'gacha-unlock-r': {
+            playNote(context, 659.25, now, 0.4, 0.3); // E5
+            playNote(context, 880.00, now, 0.4, 0.3); // A5
+            break;
+        }
+        case 'gacha-unlock-sr': {
+            playNote(context, 659.25, now, 0.5, 0.3); // E5
+            playNote(context, 880.00, now + 0.1, 0.5, 0.3); // A5
+            playNote(context, 1318.51, now + 0.2, 0.5, 0.2); // E6
+            break;
+        }
+        case 'gacha-unlock-ssr': {
+            const bass = context.createOscillator();
+            const bassGain = context.createGain();
+            bass.connect(bassGain).connect(context.destination);
+            bass.type = 'sine';
+            bass.frequency.setValueAtTime(82.41, now); // E2
+            bassGain.gain.setValueAtTime(0, now);
+            bassGain.gain.linearRampToValueAtTime(0.4, now + 0.05);
+            bassGain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+            bass.start(now);
+            bass.stop(now + 1.0);
+
+            const notes = [523.25, 659.25, 880.00, 1046.50, 1318.51]; // C5, E5, A5, C6, E6
+            notes.forEach((freq, i) => {
+                playNote(context, freq, now + i * 0.1, 0.8, 0.3);
+            });
             break;
         }
     }

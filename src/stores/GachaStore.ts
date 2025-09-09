@@ -2,10 +2,12 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { makeAutoObservable, autorun } from 'mobx';
+import { makeAutoObservable, autorun, runInAction } from 'mobx';
 import type { RootStore } from '.';
 import { getImageUrl } from '../core/utils';
 import { translations } from '../core/translations';
+import { playSound } from '../core/soundManager';
+import type { SoundName } from '../core/types';
 
 type BackgroundItem = {
     url: string;
@@ -73,6 +75,8 @@ export class GachaStore {
     unlockedBackgrounds: string[] = loadFromLocalStorage('unlocked_backgrounds', []);
     hasRolledGacha: boolean = loadFromLocalStorage('has_rolled_gacha', false);
     fullscreenImage: string = '';
+    isRolling = false;
+    gachaAnimationState: { active: boolean; rarity: 'R' | 'SR' | 'SSR' | null } = { active: false, rarity: null };
 
     readonly BACKGROUNDS = BACKGROUNDS;
 
@@ -93,10 +97,11 @@ export class GachaStore {
         this.waifuCoins += amount;
     }
 
-    handleGachaRoll = () => {
+    handleGachaRoll = async () => {
         const GACHA_COST = 100;
         const isFirstRoll = !this.hasRolledGacha;
 
+        if (this.isRolling) return;
         if (!isFirstRoll && this.waifuCoins < GACHA_COST) {
             this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaNotEnoughCoins, 'warning');
             return;
@@ -108,9 +113,13 @@ export class GachaStore {
             return;
         }
 
+        this.isRolling = true;
         if (!isFirstRoll) {
             this.addCoins(-GACHA_COST);
         }
+
+        playSound('gacha-roll');
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
         if (isFirstRoll || Math.random() < 0.50) {
             const rand = Math.random();
@@ -124,8 +133,17 @@ export class GachaStore {
             if (pool.length === 0) pool = locked;
 
             const toUnlock = pool[Math.floor(Math.random() * pool.length)];
-            this.unlockedBackgrounds.push(toUnlock.url);
-            this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaSuccess(toUnlock.rarity), 'success');
+            
+            playSound(`gacha-unlock-${toUnlock.rarity.toLowerCase() as 'r' | 'sr' | 'ssr'}`);
+            this.gachaAnimationState = { active: true, rarity: toUnlock.rarity };
+
+            setTimeout(() => {
+                runInAction(() => {
+                    this.unlockedBackgrounds.push(toUnlock.url);
+                    this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaSuccess(toUnlock.rarity), 'success');
+                });
+            }, 1000);
+
             this.rootStore.posthog?.capture('gacha_success', { 
                 rarity: toUnlock.rarity,
                 is_first_roll: isFirstRoll,
@@ -151,11 +169,17 @@ export class GachaStore {
                 reason: '50_percent_roll_failed',
                 refund_amount: refundAmount 
             });
+            this.isRolling = false;
         }
         
         if (isFirstRoll) {
             this.hasRolledGacha = true;
         }
+    }
+
+    endGachaAnimation = () => {
+        this.gachaAnimationState = { active: false, rarity: null };
+        this.isRolling = false;
     }
 
     openFullscreenImage = (url: string) => {

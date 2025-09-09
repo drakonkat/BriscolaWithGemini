@@ -30,7 +30,25 @@ export type AbilityType = 'incinerate' | 'tide' | 'cyclone' | 'fortify';
 export type SnackbarType = 'success' | 'warning';
 export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'event' | 'soundEditor';
 export type CardDeckStyle = 'classic' | 'poker';
+export type SoundName =
+  | 'game-start'
+  | 'card-place'
+  | 'trick-win'
+  | 'trick-lose'
+  | 'chat-notify'
+  | 'game-win'
+  | 'game-lose'
+  | 'element-fire'
+  | 'element-water'
+  | 'element-air'
+  | 'element-earth'
+  | 'gacha-roll'
+  | 'gacha-unlock-r'
+  | 'gacha-unlock-sr'
+  | 'gacha-unlock-ssr';
 
+// FIX: Added OscillatorType to be used for sound settings.
+export type OscillatorType = 'sine' | 'sawtooth' | 'square' | 'triangle';
 
 // FIX: Added 'healing_fountain' to the PlayerPowerUp type to allow it to be set as an active power-up.
 export type PlayerPowerUp = 'fortune_amulet' | 'insight_potion' | 'coin_pouch' | 'healing_fountain';

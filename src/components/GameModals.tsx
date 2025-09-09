@@ -141,6 +141,9 @@ export const GameModals = observer(() => {
               onGachaRoll={gachaStore.handleGachaRoll}
               onImageSelect={gachaStore.openFullscreenImage}
               hasRolledGacha={gachaStore.hasRolledGacha}
+              isRolling={gachaStore.isRolling}
+              gachaAnimationState={gachaStore.gachaAnimationState}
+              onAnimationEnd={gachaStore.endGachaAnimation}
             />
             
             <FullscreenImageModal
