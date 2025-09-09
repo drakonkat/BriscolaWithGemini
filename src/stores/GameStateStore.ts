@@ -232,7 +232,7 @@ export class GameStateStore {
         let cardToPlay: Card;
     
         const isRoguelike = this.rootStore.gameSettingsStore.gameplayMode === 'roguelike';
-        const getTrickWinner = isRoguelike ? getRoguelikeTrickWinner : getClassicTrickWinner;
+        const getTrickWinnerLogic = isRoguelike ? getRoguelikeTrickWinner : getClassicTrickWinner;
         
         // AI plays second
         if (this.cardsOnTable.length > 0) {
@@ -242,7 +242,7 @@ export class GameStateStore {
     
             // Find the best winning move from all available cards to maximize points
             for (const potentialCard of potentialCards) {
-                let isWinner = getTrickWinner([humanCard, potentialCard], 'human', briscolaSuit) === 'ai';
+                let isWinner = getTrickWinnerLogic([humanCard, potentialCard], 'human', briscolaSuit) === 'ai';
     
                 if (isWinner) {
                     let trickPoints;
@@ -424,16 +424,16 @@ export class GameStateStore {
 
             let winnings = 0;
             const { difficulty, gameplayMode } = this.rootStore.gameSettingsStore;
-            let difficultyMultiplier = 1.0;
-            if (difficulty === 'easy') difficultyMultiplier = 0.5;
-            else if (difficulty === 'hard') difficultyMultiplier = 1.5;
-            else if (difficulty === 'nightmare') difficultyMultiplier = 2.5;
-
+            
             this.clearSavedGame();
 
             this.rootStore.posthog?.capture('game_over', { human_score: this.humanScore, ai_score: this.aiScore, winner, winnings });
 
             if (gameplayMode === 'classic') {
+                let difficultyMultiplier = 1.0;
+                if (difficulty === 'easy') difficultyMultiplier = 0.5;
+                else if (difficulty === 'hard') difficultyMultiplier = 1.5;
+
                 if (winner === 'human') {
                     if (difficulty === 'nightmare') {
                         winnings = 500;
@@ -454,15 +454,23 @@ export class GameStateStore {
                 this.gameResult = winner;
                 this.phase = 'gameOver';
             } else { // Roguelike
-                 if (winner === 'human') {
+                if (winner === 'human') {
                     const levelJustWon = this.roguelikeState.currentLevel;
                     winnings = ROGUELIKE_LEVEL_REWARDS[levelJustWon];
                     const newRunCoins = this.roguelikeState.runCoins + winnings;
 
-                    const allEventTypes: RoguelikeEvent['type'][] = ['market', 'witch_hut', 'healing_fountain', 'challenge_altar'];
-                    const chosenEventTypes = shuffleDeck(allEventTypes).slice(0, 2);
+                    if (levelJustWon >= 4) {
+                        // Run is complete
+                        this.rootStore.gachaStore.addCoins(newRunCoins);
+                        this.lastGameWinnings = newRunCoins;
+                        this.gameResult = winner;
+                        this.phase = 'gameOver';
+                        this.roguelikeState = INITIAL_ROGUELIKE_STATE;
+                    } else {
+                        // Level is won, but run continues
+                        const allEventTypes: RoguelikeEvent['type'][] = ['market', 'witch_hut', 'healing_fountain', 'challenge_altar'];
+                        const chosenEventTypes = shuffleDeck(allEventTypes).slice(0, 2);
 
-                    runInAction(() => {
                         this.roguelikeState = {
                             ...this.roguelikeState,
                             runCoins: newRunCoins,
@@ -472,20 +480,31 @@ export class GameStateStore {
                             justWonLevel: true,
                             eventTypesForCrossroads: chosenEventTypes,
                         };
-                        if (levelJustWon >= 4) {
-                            this.rootStore.gachaStore.addCoins(newRunCoins);
-                            this.lastGameWinnings = newRunCoins;
-                        }
-                        this.gameResult = winner;
-                        this.phase = 'gameOver';
-                    });
-                } else {
-                    const level1LossReward = difficulty === 'easy' ? 10 : (difficulty === 'hard' || difficulty === 'nightmare' ? 30 : 20);
-                    winnings = this.roguelikeState.currentLevel === 1 ? level1LossReward : Math.round(this.roguelikeState.runCoins / 2);
+                        this.rootStore.uiStore.showSnackbar(`${this.T.coinsEarned(winnings)}`, 'success');
+                        this.phase = 'roguelike-map';
+                    }
+                } else { // AI won, run failed
+                    let level1LossReward;
+                    switch(difficulty) {
+                        case 'easy': level1LossReward = 10; break;
+                        case 'medium': level1LossReward = 20; break;
+                        case 'hard': level1LossReward = 30; break;
+                        case 'nightmare': level1LossReward = 50; break; // Increased reward
+                        default: level1LossReward = 20;
+                    }
+
+                    let consolationCoins = Math.round(this.roguelikeState.runCoins / 2);
+                    if (difficulty === 'nightmare') {
+                        consolationCoins = Math.round(this.roguelikeState.runCoins * 0.75);
+                    }
+                    
+                    winnings = this.roguelikeState.currentLevel === 1 ? level1LossReward : consolationCoins;
+
                     this.rootStore.gachaStore.addCoins(winnings);
                     this.lastGameWinnings = winnings;
                     this.gameResult = winner;
                     this.phase = 'gameOver';
+                    this.roguelikeState = INITIAL_ROGUELIKE_STATE;
                 }
             }
         }
