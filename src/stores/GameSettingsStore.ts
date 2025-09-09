@@ -29,6 +29,7 @@ export class GameSettingsStore {
     soundEditorSettings: SoundSettings = loadFromLocalStorage('sound_editor_settings', defaultSoundSettings);
     cardDeckStyle: CardDeckStyle = loadFromLocalStorage('card_deck_style', 'classic');
     hasCompletedTutorial: boolean = loadFromLocalStorage('has_completed_tutorial', false);
+    customSoundPresets: Record<string, SoundSettings> = loadFromLocalStorage('custom_sound_presets', {});
 
     constructor(rootStore: RootStore) {
         makeAutoObservable(this, { rootStore: false });
@@ -44,6 +45,7 @@ export class GameSettingsStore {
         autorun(() => localStorage.setItem('sound_editor_settings', JSON.stringify(this.soundEditorSettings)));
         autorun(() => localStorage.setItem('card_deck_style', JSON.stringify(this.cardDeckStyle)));
         autorun(() => localStorage.setItem('has_completed_tutorial', JSON.stringify(this.hasCompletedTutorial)));
+        autorun(() => localStorage.setItem('custom_sound_presets', JSON.stringify(this.customSoundPresets)));
     }
 
     setLanguage = (lang: Language) => this.language = lang;
@@ -56,4 +58,16 @@ export class GameSettingsStore {
     setSoundEditorSettings = (settings: SoundSettings) => this.soundEditorSettings = settings;
     setCardDeckStyle = (style: CardDeckStyle) => this.cardDeckStyle = style;
     setTutorialCompleted = (completed: boolean) => this.hasCompletedTutorial = completed;
+    
+    saveCustomPreset = (name: string, settings: SoundSettings) => {
+        if (!name.trim()) return;
+        const newPresets = { ...this.customSoundPresets, [name.trim()]: settings };
+        this.customSoundPresets = newPresets;
+    }
+
+    deleteCustomPreset = (name: string) => {
+        const newPresets = { ...this.customSoundPresets };
+        delete newPresets[name];
+        this.customSoundPresets = newPresets;
+    }
 }

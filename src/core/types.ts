@@ -50,6 +50,12 @@ export type SoundName =
   | 'gacha-multi-unlock';
 export type DrumType = 'kick' | 'snare' | 'closedHat' | 'openHat';
 
+export type Chord = '---' | 'Am' | 'G' | 'C' | 'F' | 'Dm' | 'E';
+export const CHORDS: Chord[] = ['---', 'Am', 'G', 'C', 'F', 'Dm', 'E'];
+
+export type Decade = '40s' | '50s' | '60s' | '70s' | '80s' | '90s' | '2000s' | '2010s' | '2020s' | 'blue90s';
+
+
 // FIX: Added OscillatorType to be used for sound settings.
 export type OscillatorType = 'sine' | 'sawtooth' | 'square' | 'triangle';
 

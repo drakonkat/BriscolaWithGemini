@@ -2,7 +2,8 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import type { SoundName, OscillatorType, DrumType } from './types';
+import type { SoundName, OscillatorType, DrumType, Chord, Decade } from './types';
+import { CHORDS } from './types';
 
 export interface SoundSettings {
     tempo: number; // BPM
@@ -12,6 +13,7 @@ export interface SoundSettings {
     lfoDepth: number; // a gain value
     reverbWetness: number; // 0 to 1
     drumPattern: Record<DrumType, boolean[]>;
+    chordPattern: Chord[];
 }
 
 const SEQUENCE_LENGTH = 16;
@@ -30,6 +32,127 @@ export const defaultSoundSettings: SoundSettings = {
         closedHat: Array(SEQUENCE_LENGTH).fill(false),
         openHat: Array(SEQUENCE_LENGTH).fill(false),
     },
+    chordPattern: Array(SEQUENCE_LENGTH).fill('---'),
+};
+
+// Chord definitions (frequencies for root, third, fifth)
+const CHORD_MAP: Record<Chord, number[] | null> = {
+    '---': null,
+    'Am': [220.00, 261.63, 329.63], // A3, C4, E4
+    'G': [196.00, 246.94, 293.66],  // G3, B3, D4
+    'C': [261.63, 329.63, 392.00],  // C4, E4, G4
+    'F': [349.23, 440.00, 523.25],  // F4, A4, C5
+    'Dm': [293.66, 349.23, 440.00], // D4, F4, A4
+    'E': [329.63, 415.30, 493.88],  // E4, G#4, B4
+};
+
+export const decadePresets: Record<Decade, SoundSettings> = {
+    '40s': { /* Swing */
+        tempo: 140, oscillatorType: 'sine', filterCutoff: 1500, lfoFrequency: 0.1, lfoDepth: 800, reverbWetness: 0.2,
+        drumPattern: {
+            kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
+            snare: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+            closedHat: [true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['C','C','G','G','F','F','C','G', 'C','C','G','G','F','F','C','G'],
+    },
+    '50s': { /* Rock */
+        tempo: 165, oscillatorType: 'square', filterCutoff: 2500, lfoFrequency: 0.2, lfoDepth: 1000, reverbWetness: 0.25,
+        drumPattern: {
+            kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
+            snare: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false],
+            closedHat: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['C', '---', 'F', '---', 'G', '---', 'F', '---', 'C', '---', 'F', '---', 'G', '---', 'F', '---'],
+    },
+    '60s': { /* Soul */
+        tempo: 110, oscillatorType: 'sawtooth', filterCutoff: 3000, lfoFrequency: 0.1, lfoDepth: 500, reverbWetness: 0.4,
+        drumPattern: {
+            kick: [true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['Am', '---', 'G', '---', 'C', '---', 'F', '---', 'Am', '---', 'G', '---', 'C', '---', 'F', '---'],
+    },
+    '70s': { /* Disco */
+        tempo: 125, oscillatorType: 'sawtooth', filterCutoff: 4000, lfoFrequency: 0.5, lfoDepth: 1500, reverbWetness: 0.5,
+        drumPattern: {
+            kick: [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true],
+            openHat: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false],
+        },
+        chordPattern: ['Dm', 'Dm', 'G', 'G', 'C', 'C', 'F', 'F', 'Dm', 'Dm', 'G', 'G', 'C', 'C', 'F', 'F'],
+    },
+    '80s': { /* Synthwave */
+        tempo: 100, oscillatorType: 'square', filterCutoff: 5000, lfoFrequency: 0.8, lfoDepth: 2000, reverbWetness: 0.6,
+        drumPattern: {
+            kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['Am', '---', 'G', '---', 'C', '---', 'F', '---', 'Am', '---', 'G', '---', 'E', '---', 'E', '---'],
+    },
+    '90s': { /* Pop */
+        tempo: 118, oscillatorType: 'sawtooth', filterCutoff: 6000, lfoFrequency: 0.3, lfoDepth: 1000, reverbWetness: 0.4,
+        drumPattern: {
+            kick: [true, false, false, false, true, false, false, true, true, false, false, false, true, false, false, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, true, false],
+            closedHat: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F'],
+    },
+    'blue90s': { /* Eiffel 65 - Blue */
+        tempo: 128,
+        oscillatorType: 'sawtooth',
+        filterCutoff: 6200,
+        lfoFrequency: 1.8,
+        lfoDepth: 1800,
+        reverbWetness: 0.5,
+        drumPattern: {
+            kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+            openHat: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false],
+        },
+        // Transposed progression from Gm-Eb-Bb-F to Am-F-C-G
+        chordPattern: ['Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G', 'Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G'],
+    },
+    '2000s': { /* Dance */
+        tempo: 128, oscillatorType: 'sawtooth', filterCutoff: 7000, lfoFrequency: 1.0, lfoDepth: 2500, reverbWetness: 0.5,
+        drumPattern: {
+            kick: [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false],
+            openHat: [false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true],
+        },
+        chordPattern: ['Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G', 'Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G'],
+    },
+    '2010s': { /* EDM */
+        tempo: 128, oscillatorType: 'square', filterCutoff: 8000, lfoFrequency: 0.9, lfoDepth: 3000, reverbWetness: 0.6,
+        drumPattern: {
+            kick: [true, false, false, true, true, false, false, false, true, false, false, true, true, false, false, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F'],
+    },
+    '2020s': { /* Lo-fi */
+        tempo: 80, oscillatorType: 'triangle', filterCutoff: 1200, lfoFrequency: 0.05, lfoDepth: 400, reverbWetness: 0.7,
+        drumPattern: {
+            kick: [true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['F', '---', 'E', '---', 'Am', '---', 'C', '---', 'F', '---', 'E', '---', 'Am', '---', 'G', '---'],
+    },
 };
 
 let currentSoundSettings: SoundSettings = { ...defaultSoundSettings };
@@ -46,7 +169,6 @@ let lfoGainNode: GainNode | null = null;
 let dryGainNode: GainNode | null = null;
 let wetGainNode: GainNode | null = null;
 let isMusicGraphBuilt = false;
-let currentChordIndex = 0;
 
 // High-precision scheduling variables
 let schedulerInterval: number | null = null;
@@ -159,6 +281,25 @@ const createHihat = (context: AudioContext, time: number, isOpen: boolean) => {
 
     noise.start(time);
     noise.stop(time + duration);
+};
+
+const createGuitarChord = (context: AudioContext, time: number, frequencies: number[]) => {
+    const duration = 0.8;
+    frequencies.forEach((freq, index) => {
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.connect(gain);
+        gain.connect(context.destination);
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, time + index * 0.02); // Strum effect
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.3, time + index * 0.02 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+        osc.start(time + index * 0.02);
+        osc.stop(time + duration + 0.1);
+    });
 };
 
 
@@ -312,13 +453,6 @@ export const playSound = async (name: SoundName) => {
 
 // --- Background Music ---
 
-const PROGRESSION = [
-    [130.81, 155.56, 196.00], // Cm (C3, Eb3, G3)
-    [207.65, 261.63, 311.13], // Ab Major (Ab3, C4, Eb4)
-    [174.61, 207.65, 261.63], // Fm (F3, Ab3, C4)
-    [196.00, 246.94, 293.66]  // G Major (G3, B3, D4)
-];
-
 const createReverbImpulseResponse = (context: AudioContext): AudioBuffer => {
     const sampleRate = context.sampleRate;
     const duration = 2.5;
@@ -373,6 +507,7 @@ export const updateSoundSettings = (newSettings: SoundSettings) => {
 
 const scheduleNotes = (step: number, time: number) => {
     const context = audioContext!;
+    const secondsPerStep = (60.0 / currentSoundSettings.tempo) / 4.0;
     
     // Schedule Drums
     if (currentSoundSettings.drumPattern.kick[step]) createKick(context, time);
@@ -380,34 +515,46 @@ const scheduleNotes = (step: number, time: number) => {
     if (currentSoundSettings.drumPattern.closedHat[step]) createHihat(context, time, false);
     if (currentSoundSettings.drumPattern.openHat[step]) createHihat(context, time, true);
     
-    // Schedule Synth Chord on the first beat of the bar
-    if (step === 0) {
-        const chord = PROGRESSION[currentChordIndex];
-        const barDuration = (60 / currentSoundSettings.tempo) * 4;
-        const attackTime = Math.min(0.8, barDuration * 0.2);
-        const releaseTime = Math.min(1.0, barDuration * 0.25);
+    // Schedule Guitar Chord
+    const chordName = currentSoundSettings.chordPattern[step];
+    const chordFrequencies = CHORD_MAP[chordName];
+    if (chordFrequencies) {
+        createGuitarChord(context, time, chordFrequencies);
+    }
+    
+    // Schedule Synth lead
+    const currentBar = Math.floor(step / 4);
+    let barChordName: Chord | undefined;
+    for (let i = step; i >= currentBar * 4; i--) {
+        if (currentSoundSettings.chordPattern[i] !== '---') {
+            barChordName = currentSoundSettings.chordPattern[i];
+            break;
+        }
+    }
+    const currentBarChord = barChordName ? CHORD_MAP[barChordName] : null;
 
-        chord.forEach((freq, index) => {
-            const osc = context.createOscillator();
-            const noteGain = context.createGain();
+    if (currentBarChord && step % 2 === 0) { // Play synth on 8th notes
+        const noteIndex = (step / 2) % currentBarChord.length;
+        const freq = currentBarChord[noteIndex] * 2; // one octave higher
+        const duration = secondsPerStep * 0.9;
+        
+        const osc = context.createOscillator();
+        const noteGain = context.createGain();
 
-            osc.connect(noteGain);
-            noteGain.connect(filterNode!);
-            
-            osc.type = (index === 0) ? 'sine' : currentSoundSettings.oscillatorType;
-            noteGain.gain.value = (index === 0) ? 1.0 : 0.25;
-            osc.detune.value = (index === 1) ? -5 : (index === 2) ? 5 : 0;
-            osc.frequency.setValueAtTime(freq, time);
-            
-            noteGain.gain.setValueAtTime(0, time);
-            noteGain.gain.linearRampToValueAtTime(noteGain.gain.value, time + attackTime);
-            noteGain.gain.setValueAtTime(noteGain.gain.value, time + barDuration - releaseTime);
-            noteGain.gain.linearRampToValueAtTime(0, time + barDuration - 0.01);
-            
-            osc.start(time);
-            osc.stop(time + barDuration);
-        });
-        currentChordIndex = (currentChordIndex + 1) % PROGRESSION.length;
+        osc.connect(noteGain);
+        noteGain.connect(filterNode!);
+        
+        osc.type = currentSoundSettings.oscillatorType;
+        noteGain.gain.value = 0.25;
+        osc.frequency.setValueAtTime(freq, time);
+        
+        noteGain.gain.setValueAtTime(0, time);
+        noteGain.gain.linearRampToValueAtTime(noteGain.gain.value, time + 0.01);
+        noteGain.gain.setValueAtTime(noteGain.gain.value, time + duration - 0.05);
+        noteGain.gain.linearRampToValueAtTime(0, time + duration);
+        
+        osc.start(time);
+        osc.stop(time + duration);
     }
 };
 
@@ -428,7 +575,6 @@ export const startMusic = (settings: SoundSettings) => {
     updateSoundSettings(settings);
     isMusicPlaying = true;
     currentStep = 0;
-    currentChordIndex = 0;
     nextNoteTime = context.currentTime;
     musicGainNode!.gain.cancelScheduledValues(context.currentTime);
     musicGainNode!.gain.setValueAtTime(0, context.currentTime);
