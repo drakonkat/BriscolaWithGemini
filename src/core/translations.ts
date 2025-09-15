@@ -165,6 +165,7 @@ export const translations = {
       backToMap: "Torna alla Mappa",
       crossroadsTitle: "Bivio",
       crossroadsMessage: "Hai superato il livello! Scegli il tuo prossimo passo.",
+      initialPowerTitle: "Potere Iniziale",
       // Events
       marketTitle: "Il Mercato",
       marketDescription: "Un mercante misterioso ti offre i suoi averi. Scegli un oggetto da usare nel prossimo livello.",
@@ -191,6 +192,38 @@ export const translations = {
       insightPotionDesc: "Vedi la mano della tua avversaria per i primi 3 turni del prossimo livello.",
       coinPouch: "Sacchetto di Monete",
       coinPouchDesc: "Ottieni subito 50 Waifu Coins extra.",
+      // FIX: Added missing translations for power selection screen
+      chooseYourPower: "Scegli il tuo Potere Iniziale",
+      initialPowerMessage: "Questo potere ti aiuterà per tutta la durata della tua run. Scegli saggiamente!",
+      chooseYourPath: "Scegli il tuo Percorso",
+      levelUpMessage: (level: number) => `Hai completato il livello ${level - 1}! Scegli un nuovo potere o potenzia uno esistente.`,
+      powers: {
+        upgrade: "Potenzia",
+        bonus_point_per_trick: {
+          name: "Tributo",
+          desc: (level: number) => `Ottieni +${level} punto/i bonus ogni volta che vinci un turno.`
+        },
+        king_bonus: {
+          name: "Cacciatore di Teste",
+          desc: (level: number) => `Guadagni +${level} punti extra quando vinci un turno con un Re.`
+        },
+        ace_of_briscola_start: {
+          name: "Asso nella Manica",
+          desc: () => "Inizi ogni partita con l'Asso di Briscola in mano."
+        },
+        briscola_mastery: {
+          name: "Maestria della Briscola",
+          desc: (level: number) => `Le tue carte Briscola valgono +${level} punti quando vinci un turno.`
+        },
+        value_swap: {
+          name: "Scambio Inaspettato",
+          desc: () => "Il 2 batte il Fante quando entrambi sono dello stesso seme (non Briscola)."
+        },
+        last_trick_insight: {
+          name: "Preveggenza Finale",
+          desc: () => "Vedi le carte del tuo avversario durante gli ultimi tre turni."
+        },
+      }
     },
     elementalPowersTitle: "Poteri Elementali",
     toggleLegend: "Mostra/Nascondi Descrizioni",
@@ -201,7 +234,7 @@ export const translations = {
     suitIs: (suit: string, element: string) => `${suit} è ${element}`,
     fireDescription: "Vinci il turno con una carta Fuoco per +3 punti bonus.",
     waterDescription: "Se perdi il turno, l'effetto dimezza i punti della carta vincente.",
-    airDescription: "Se perdi il turno, l'effetto annulla i punti della mano.",
+    airDescription: "Le tue carte Aria valgono +1 punto per ogni altra carta Aria già nel tuo mazzo punti.",
     earthDescription: "Se perdi il turno, recupera i punti della tua carta Terra.",
     elementalClash: {
         title: "Scontro Elementale!",
@@ -597,6 +630,7 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
       backToMap: "Back to Map",
       crossroadsTitle: "Crossroads",
       crossroadsMessage: "You cleared the level! Choose your next step.",
+      initialPowerTitle: "Initial Power",
       // Events
       marketTitle: "The Market",
       marketDescription: "A mysterious merchant offers you his wares. Choose one item to use in the next level.",
@@ -623,6 +657,38 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
       insightPotionDesc: "See your opponent's hand for the first 3 tricks of the next level.",
       coinPouch: "Pouch of Coins",
       coinPouchDesc: "Immediately gain an extra 50 Waifu Coins.",
+      // FIX: Added missing translations for power selection screen
+      chooseYourPower: "Choose Your Initial Power",
+      initialPowerMessage: "This power will aid you for the entire run. Choose wisely!",
+      chooseYourPath: "Choose Your Path",
+      levelUpMessage: (level: number) => `You've cleared Level ${level - 1}! Choose a new power or upgrade an existing one.`,
+      powers: {
+        upgrade: "Upgrade",
+        bonus_point_per_trick: {
+          name: "Tribute",
+          desc: (level: number) => `Gain +${level} bonus point(s) every time you win a trick.`
+        },
+        king_bonus: {
+          name: "Headhunter",
+          desc: (level: number) => `Gain +${level} extra points when winning a trick with a King.`
+        },
+        ace_of_briscola_start: {
+          name: "Ace in the Hole",
+          desc: () => "Start every match with the Ace of Trump in your hand."
+        },
+        briscola_mastery: {
+          name: "Trump Mastery",
+          desc: (level: number) => `Your Trump cards are worth +${level} points when you win a trick.`
+        },
+        value_swap: {
+          name: "Unexpected Swap",
+          desc: () => "The 2 beats the Jack when both are of the same non-Trump suit."
+        },
+        last_trick_insight: {
+          name: "Final Foresight",
+          desc: () => "See your opponent's cards during the last three tricks."
+        },
+      }
     },
     elementalPowersTitle: "Elemental Powers",
     toggleLegend: "Show/Hide Descriptions",
@@ -633,7 +699,7 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     suitIs: (suit: string, element: string) => `${suit} is ${element}`,
     fireDescription: "Win the trick with a Fire card for +3 bonus points.",
     waterDescription: "If you lose the trick, the effect halves the winning card's points.",
-    airDescription: "If you lose the trick, the effect nullifies the trick's points.",
+    airDescription: "Your Air cards are worth +1 point for each Air card in your score pile.",
     earthDescription: "If you lose the trick, recover your Earth card's points.",
     elementalClash: {
         title: "Elemental Clash!",

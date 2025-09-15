@@ -2319,6 +2319,91 @@ input:checked + .slider:before {
     transform: rotate(180deg);
 }
 
+/* Initial Power Panel (Roguelike) */
+.initial-power-panel {
+    position: absolute;
+    bottom: calc(var(--bottom-bar-height) + 10px);
+    right: calc(15px + var(--safe-area-inset-right));
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    padding: 0.75rem;
+    padding-top: 2.2rem; /* Make space for the button and title */
+    z-index: 101;
+    border: 2px solid #ffd700; /* Gold border */
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    transition: all 0.3s ease-in-out;
+    max-width: 300px;
+}
+
+.initial-power-title {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.initial-power-toggle {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.initial-power-toggle:hover, .initial-power-toggle:focus {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.initial-power-toggle svg {
+    transition: transform 0.3s ease-in-out;
+    width: 20px;
+    height: 20px;
+}
+
+.initial-power-panel.collapsed {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+}
+
+.initial-power-panel.collapsed > *:not(.initial-power-toggle) {
+    display: none;
+}
+
+.initial-power-panel.collapsed .initial-power-toggle svg {
+    transform: rotate(180deg);
+}
+
+.initial-power-content {
+    text-align: left;
+}
+
+.initial-power-content h4 {
+    font-size: 1rem;
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.initial-power-content p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #ddd;
+}
+
 
 .element-icon.fire { color: #ff6f00; }
 .element-icon.water { color: #1e88e5; }
@@ -2345,6 +2430,13 @@ input:checked + .slider:before {
     pointer-events: none;
     z-index: 100;
     animation: float-up 1.5s ease-out forwards;
+}
+
+.power-animation.element-fire {
+    color: #ff6f00;
+}
+.power-animation.element-air {
+    color: #fdd835;
 }
 
 .power-animation.human {
@@ -2532,7 +2624,7 @@ input:checked + .slider:before {
 }
 
 /* --- Roguelike Map & Event Modal --- */
-.roguelike-map {
+.power-selection-screen {
     width: 100%;
     height: 100%;
     display: flex;
@@ -2544,9 +2636,10 @@ input:checked + .slider:before {
     text-align: center;
     padding: 2rem;
     position: relative;
+    overflow-y: auto;
 }
 
-.roguelike-map-content {
+.power-selection-content {
   background-color: rgba(0, 0, 0, 0.6);
   padding: 2rem;
   border-radius: 15px;
@@ -2556,77 +2649,84 @@ input:checked + .slider:before {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.roguelike-map h1 {
+.power-selection-screen h1 {
   font-size: clamp(2.5rem, 8vw, 3.5rem);
   color: var(--primary-accent);
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
-.map-nodes {
+.power-selection-screen p {
+    font-size: 1.2rem;
+    margin-bottom: 3rem;
+    color: #ccc;
+}
+
+.power-cards-container {
   display: flex;
-  justify-content: space-around;
-  align-items: center;
-  position: relative;
-  margin: 3rem 0;
-}
-.map-path {
-    position: absolute;
-    top: 50%;
-    left: 10%;
-    right: 10%;
-    height: 4px;
-    background: linear-gradient(to right, #444, #888, #444);
-    z-index: -1;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
-.map-node {
-  background-color: #444;
-  border: 3px solid #666;
-  border-radius: 50%;
-  width: 100px;
-  height: 100px;
+.power-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 280px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  transition: all 0.3s ease;
+  justify-content: flex-start;
+  min-height: 180px;
   position: relative;
+  overflow: hidden;
 }
-.map-node.completed {
-    background-color: var(--primary-accent);
-    border-color: #a0d8a2;
+
+.power-card:hover, .power-card:focus {
+  transform: translateY(-10px) scale(1.05);
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  border-color: var(--primary-accent);
+  outline: none;
 }
-.map-node.active {
+
+.power-card h3 {
+  font-size: 1.5rem;
+  color: #a0d8a2;
+  margin-bottom: 1rem;
+}
+
+.power-card p {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 0;
+    color: #ddd;
+}
+
+.power-card.upgrade {
     border-color: #ffd700;
-    transform: scale(1.1);
-    box-shadow: 0 0 20px #ffd700;
 }
 
-.map-node-level {
-    font-size: 1.2rem;
+.power-card.upgrade:hover, .power-card.upgrade:focus {
+    box-shadow: 0 0 25px #ffd700, 0 8px 25px rgba(0,0,0,0.4);
+}
+
+.upgrade-banner {
+    position: absolute;
+    top: 15px;
+    right: -35px;
+    background: #ffd700;
+    color: #333;
+    padding: 0.3rem 3rem;
+    transform: rotate(45deg);
     font-weight: bold;
-}
-.map-node-reward {
     font-size: 0.9rem;
-    color: #ffd700;
 }
 
-.roguelike-map-actions {
-    margin-top: 3rem;
-}
-.roguelike-map-actions button {
-    font-size: 1.5rem;
-    padding: 1rem 3rem;
-    border-radius: 12px;
-    border: none;
-    background-color: var(--primary-accent);
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.roguelike-map-actions button:hover {
-    background-color: var(--primary-accent-hover);
-}
 
 /* Event Modal */
 .event-modal {

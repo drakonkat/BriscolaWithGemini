@@ -15,7 +15,6 @@ import { PrivacyPolicyModal } from './PrivacyPolicyModal';
 import { TermsAndConditionsModal } from './TermsAndConditionsModal';
 import { GalleryModal } from './GalleryModal';
 import { FullscreenImageModal } from './FullscreenImageModal';
-import { EventModal } from './EventModal';
 import { HistoryModal } from './HistoryModal';
 import { KasumiSwapModal } from './KasumiSwapModal';
 import { SoundEditorModal } from './SoundEditorModal';
@@ -24,70 +23,17 @@ import { GachaSingleUnlockModal } from './GachaSingleUnlockModal';
 import { GachaMultiUnlockModal } from './GachaMultiUnlockModal';
 
 import { translations } from '../core/translations';
-import type { RoguelikeState, RoguelikeEvent } from '../core/types';
 
 export const GameModals = observer(() => {
     const { uiStore, gameStateStore, gachaStore, gameSettingsStore } = useStores();
     const { language, difficulty, gameplayMode, cardDeckStyle } = gameSettingsStore;
     const { 
         phase, gameResult, lastGameWinnings, currentWaifu, gameMode, humanScore, aiScore, 
-        trickHistory, isKasumiModalOpen, briscolaCard, humanHand, roguelikeState
+        trickHistory, isKasumiModalOpen, briscolaCard, humanHand
     } = gameStateStore;
 
     const T = translations[language];
     const TR = T.roguelike;
-
-    const handleEventChoice = (choice: () => void) => {
-        choice();
-        uiStore.closeModal('event');
-    }
-
-    const generateEventsFromTypes = (types: RoguelikeEvent['type'][] = []): RoguelikeEvent[] => {
-        if (!types) return [];
-        
-        const allEventGenerators: Record<RoguelikeEvent['type'], () => RoguelikeEvent> = {
-            market: (): RoguelikeEvent => ({
-                type: 'market',
-                title: TR.marketTitle,
-                description: TR.marketDescription,
-                choices: [
-                    { text: TR.fortuneAmulet, description: TR.fortuneAmuletDesc, action: () => gameStateStore.roguelikeState.activePowerUp = 'fortune_amulet' },
-                    { text: TR.insightPotion, description: TR.insightPotionDesc, action: () => gameStateStore.roguelikeState.activePowerUp = 'insight_potion' },
-                    { text: TR.coinPouch, description: TR.coinPouchDesc, action: () => gachaStore.addCoins(50) }
-                ]
-            }),
-            witch_hut: (): RoguelikeEvent => ({
-                type: 'witch_hut',
-                title: TR.witchHutTitle,
-                description: TR.witchHutDescription,
-                choices: [
-                    { text: TR.powerUpAbility(T[roguelikeState.humanAbility!]), description: TR.powerUpAbilityDesc, action: () => {} },
-                    { text: TR.swapAbility, description: TR.swapAbilityDesc, action: () => {} }
-                ]
-            }),
-            healing_fountain: (): RoguelikeEvent => ({
-                type: 'healing_fountain',
-                title: TR.healingFountainTitle,
-                description: TR.healingFountainDescription,
-                choices: [
-                    { text: TR.startWith10Points, description: TR.startWith10PointsDesc, action: () => gameStateStore.roguelikeState.activePowerUp = 'healing_fountain' }
-                ]
-            }),
-            challenge_altar: (): RoguelikeEvent => ({
-                type: 'challenge_altar',
-                title: TR.challengeAltarTitle,
-                description: TR.challengeAltarDescription,
-                choices: [
-                    { text: TR.acceptChallenge, description: TR.challengeScoreAbove80(100), action: () => gameStateStore.roguelikeState.challenge = {type: 'score_above_80', reward: 100, completed: false} },
-                    { text: TR.skipEvent, action: () => {} }
-                ]
-            }),
-        };
-    
-        return types.map(type => allEventGenerators[type]());
-    };
-
-    const eventsForModal = generateEventsFromTypes(roguelikeState.eventTypesForCrossroads);
 
     return (
         <>
@@ -109,22 +55,10 @@ export const GameModals = observer(() => {
                     <div className="game-over-modal">
                         <h2>{gameResult === 'human' ? TR.runCompleted : TR.runFailed}</h2>
                         <p>{gameResult === 'human' ? TR.runCompletedMessage(lastGameWinnings) : TR.runFailedMessage(lastGameWinnings)}</p>
-                        {gameResult === 'ai' ? (
-                            <button onClick={gameStateStore.goToMenu}>{T.backToMenu}</button>
-                        ) : (
-                            <button onClick={() => gameStateStore.setPhase('roguelike-map')}>{TR.backToMap}</button>
-                        )}
+                        <button onClick={gameStateStore.goToMenu}>{T.backToMenu}</button>
                     </div>
                 </div>
             )}
-
-            <EventModal 
-                isOpen={uiStore.isEventModalOpen}
-                onClose={() => uiStore.closeModal('event')}
-                events={eventsForModal}
-                onChoiceSelected={handleEventChoice}
-                language={language}
-            />
 
             {uiStore.isQuotaExceededModalOpen && gameMode === 'online' && (
                 <QuotaExceededModal language={language} onContinue={gameStateStore.continueFromQuotaModal} />

@@ -64,7 +64,6 @@ export class UIStateStore {
     isConfirmLeaveModalOpen = false;
     isChatModalOpen = false;
     isHistoryModalOpen = false;
-    isEventModalOpen = false;
     isSoundEditorModalOpen = false;
     isQuotaExceededModalOpen = false;
     isGachaSingleUnlockModalOpen = false;
@@ -106,7 +105,6 @@ export class UIStateStore {
             case 'support': this.isSupportModalOpen = true; break;
             case 'confirmLeave': this.isConfirmLeaveModalOpen = true; break;
             case 'history': this.isHistoryModalOpen = true; break;
-            case 'event': this.isEventModalOpen = true; break;
             case 'soundEditor': this.isSoundEditorModalOpen = true; break;
             case 'gachaSingleUnlock': this.isGachaSingleUnlockModalOpen = true; break;
             case 'gachaMultiUnlock': this.isGachaMultiUnlockModalOpen = true; break;
@@ -127,7 +125,6 @@ export class UIStateStore {
             case 'support': this.isSupportModalOpen = false; break;
             case 'confirmLeave': this.isConfirmLeaveModalOpen = false; break;
             case 'history': this.isHistoryModalOpen = false; break;
-            case 'event': this.isEventModalOpen = false; break;
             case 'soundEditor': this.isSoundEditorModalOpen = false; break;
             case 'gachaSingleUnlock': this.isGachaSingleUnlockModalOpen = false; break;
             case 'gachaMultiUnlock': this.isGachaMultiUnlockModalOpen = false; break;

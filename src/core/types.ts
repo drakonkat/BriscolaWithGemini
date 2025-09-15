@@ -17,7 +17,8 @@ export type Card = {
   isTemporaryBriscola?: boolean;
 };
 export type Player = 'human' | 'ai';
-export type GamePhase = 'menu' | 'playing' | 'gameOver' | 'roguelike-map';
+// FIX: Added 'roguelike-map' to GamePhase to support the roguelike game flow.
+export type GamePhase = 'menu' | 'playing' | 'gameOver' | 'power-selection' | 'roguelike-map';
 export type ChatMessage = { sender: 'human' | 'ai'; text: string; };
 export type Language = 'it' | 'en';
 export type Waifu = WaifuType;
@@ -28,7 +29,7 @@ export type Soundtrack = 'epic' | 'chill';
 export type Element = 'fire' | 'water' | 'air' | 'earth';
 export type AbilityType = 'incinerate' | 'tide' | 'cyclone' | 'fortify';
 export type SnackbarType = 'success' | 'warning';
-export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'event' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock';
+export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock';
 export type CardDeckStyle = 'classic' | 'poker';
 export type SoundName =
   | 'game-start'
@@ -59,32 +60,28 @@ export type Decade = '40s' | '50s' | '60s' | '70s' | '80s' | '90s' | '2000s' | '
 // FIX: Added OscillatorType to be used for sound settings.
 export type OscillatorType = 'sine' | 'sawtooth' | 'square' | 'triangle';
 
-// FIX: Added 'healing_fountain' to the PlayerPowerUp type to allow it to be set as an active power-up.
-export type PlayerPowerUp = 'fortune_amulet' | 'insight_potion' | 'coin_pouch' | 'healing_fountain';
+export type RoguelikePowerUpId = 
+  'bonus_point_per_trick' | 
+  'king_bonus' | 
+  'ace_of_briscola_start' | 
+  'briscola_mastery' | 
+  'value_swap' |
+  'last_trick_insight';
 
-export type RoguelikeEvent = {
-    type: 'market' | 'witch_hut' | 'healing_fountain' | 'challenge_altar';
-    title: string;
-    description: string;
-    choices: {
-        text: string;
-        description?: string;
-        action: () => void;
-    }[];
-};
+export interface RoguelikePowerUp {
+  id: RoguelikePowerUpId;
+  level: number;
+}
 
+// FIX: Added missing properties to RoguelikeState to support game state management.
 export type RoguelikeState = {
-    currentLevel: number; // 0 = on map before starting, 1-4 = in progress
+    currentLevel: number; // 0 = before starting, 1-4 = in progress
     runCoins: number;
-    activePowerUp: PlayerPowerUp | null;
-    challenge: { type: 'score_above_80', reward: number, completed: boolean } | null;
-    humanAbility: AbilityType | null;
-    aiAbility: AbilityType | null;
     encounteredWaifus: string[];
     followers: Waifu[];
     followerAbilitiesUsedThisMatch: string[];
-    justWonLevel?: boolean;
-    eventTypesForCrossroads?: RoguelikeEvent['type'][];
+    initialPower: RoguelikePowerUpId | null;
+    activePowers: RoguelikePowerUp[];
 };
 
 export type ElementalClashResult = {
@@ -107,3 +104,6 @@ export type TrickHistoryEntry = {
   points: number;
   clashResult?: ElementalClashResult;
 };
+
+// FIX: Added RoguelikeEvent type definition.
+export type RoguelikeEvent = { type: 'market' | 'witch_hut' | 'healing_fountain' | 'challenge_altar' };

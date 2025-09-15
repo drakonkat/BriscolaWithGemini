@@ -14,7 +14,7 @@ import { GameBoard } from './GameBoard';
 import { ChatPanel } from './ChatPanel';
 import { GameModals } from './GameModals';
 import { Snackbar } from './Snackbar';
-import { RoguelikeMap } from './RoguelikeMap';
+import { PowerSelectionScreen } from './PowerSelectionScreen';
 import { TutorialOverlay } from './TutorialOverlay';
 
 export const App = observer(() => {
@@ -68,13 +68,6 @@ export const App = observer(() => {
     }
   }, []);
 
-  useEffect(() => {
-    if (gameStateStore.phase === 'roguelike-map' && gameStateStore.roguelikeState.justWonLevel) {
-        uiStore.openModal('event');
-        gameStateStore.resetJustWonLevelFlag();
-    }
-  }, [gameStateStore.phase, gameStateStore.roguelikeState.justWonLevel, uiStore, gameStateStore]);
-
   const T = translations[gameSettingsStore.language];
   const aiName = gameStateStore.currentWaifu?.name ?? '';
 
@@ -89,11 +82,10 @@ export const App = observer(() => {
     );
   }
 
-  if (gameStateStore.phase === 'roguelike-map') {
+  if (gameStateStore.phase === 'power-selection') {
       return (
         <>
-            <RoguelikeMap />
-            <GameModals />
+            <PowerSelectionScreen />
         </>
       );
   }

@@ -8,81 +8,21 @@ import { useStores } from '../stores';
 import { CardView } from './CardView';
 import { getCardId, getImageUrl } from '../core/utils';
 import { translations } from '../core/translations';
-import type { Card, Element, Player, Waifu, AbilityType, RoguelikeState } from '../core/types';
+import type { Card, Element, Player, Waifu, RoguelikeState } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
 import { ElementalChoiceModal } from './ElementalChoiceModal';
-
-const abilityToElement: Record<AbilityType, Element> = {
-    'incinerate': 'fire',
-    'tide': 'water',
-    'cyclone': 'air',
-    'fortify': 'earth',
-};
+import { POWER_UP_DEFINITIONS } from '../core/roguelikePowers';
 
 type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
-
-const AbilityIndicator = observer(({ player }: { player: Player }) => {
-    const { gameStateStore, gameSettingsStore } = useStores();
-    const { humanAbilityCharges, aiAbilityCharges, isProcessing, abilityTargetingState, abilityUsedThisTurn, abilityArmed } = gameStateStore;
-    const T = translations[gameSettingsStore.language];
-    
-    const humanAbility = gameStateStore.roguelikeState.humanAbility;
-    const aiAbility = gameStateStore.roguelikeState.aiAbility;
-
-    if (player === 'ai' && aiAbility) {
-        return (
-            <div 
-                className={`ability-indicator player-ai`}
-                title={`${T.ability}: ${T[aiAbility]}\n${T[`${aiAbility}Description`]}`}
-            >
-                <div className="ability-icon">
-                    <ElementIcon element={abilityToElement[aiAbility]} />
-                </div>
-                <div className="ability-charges">
-                    <div className={`charge-dot ${aiAbilityCharges >= 1 ? 'filled' : ''}`}></div>
-                    <div className={`charge-dot ${aiAbilityCharges >= 2 ? 'filled' : ''}`}></div>
-                </div>
-            </div>
-        );
-    }
-
-    if (player === 'human' && humanAbility) {
-        const isAbilityUnusable = isProcessing || !!abilityTargetingState || !!abilityUsedThisTurn || !!abilityArmed;
-        let isFireAbilityDisabled = true;
-        if (humanAbility === 'incinerate') {
-            isFireAbilityDisabled = (gameStateStore.cardsOnTable.length !== 1 || gameStateStore.trickStarter === 'human');
-        }
-        return (
-            <div 
-                className={`ability-indicator player-human ${humanAbilityCharges >= 2 ? 'ready' : ''} ${isAbilityUnusable || (humanAbility === 'incinerate' && isFireAbilityDisabled) ? 'disabled' : ''}`}
-                onClick={() => gameStateStore.activateHumanAbility()}
-                title={`${T.ability}: ${T[humanAbility]}\n${T[`${humanAbility}Description`]}${humanAbilityCharges >= 2 ? ` (${T.abilityReady})` : ''}`}
-                role={humanAbilityCharges >= 2 ? 'button' : undefined}
-                tabIndex={humanAbilityCharges >= 2 && !isAbilityUnusable ? 0 : -1}
-            >
-                <div className="ability-icon">
-                    <ElementIcon element={abilityToElement[humanAbility]} />
-                </div>
-                <div className="ability-charges">
-                    <div className={`charge-dot ${humanAbilityCharges >= 1 ? 'filled' : ''}`}></div>
-                    <div className={`charge-dot ${humanAbilityCharges >= 2 ? 'filled' : ''}`}></div>
-                </div>
-            </div>
-        );
-    }
-
-    return null;
-});
-
 
 export const GameBoard = observer(() => {
     const { gameStateStore, uiStore, gameSettingsStore } = useStores();
     const { 
         currentWaifu, aiScore, aiHand, humanScore, humanHand, briscolaCard, deck, cardsOnTable, message,
         isProcessing, turn, trickStarter, backgroundUrl, lastTrick, lastTrickHighlights, activeElements,
-        roguelikeState, abilityArmed, powerAnimation, cardForElementalChoice, elementalClash,
-        abilityTargetingState, abilityUsedThisTurn, revealedAiHand, 
+        roguelikeState, powerAnimation, cardForElementalChoice, elementalClash,
+        revealedAiHand, 
         isTutorialGame,
     } = gameStateStore;
     const { animatingCard, drawingCards, unreadMessageCount, waifuBubbleMessage } = uiStore;
@@ -91,6 +31,7 @@ export const GameBoard = observer(() => {
     const T = translations[language];
     const TC = T.elementalClash;
     const [isLegendExpanded, setIsLegendExpanded] = useState(true);
+    const [isInitialPowerLegendExpanded, setIsInitialPowerLegendExpanded] = useState(true);
 
     const winningScore = 60;
     const maxBlur = 25;
@@ -104,6 +45,17 @@ export const GameBoard = observer(() => {
     
     const humanCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     const aiCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
+    
+    const initialPowerId = roguelikeState.initialPower;
+    const initialPowerState = initialPowerId ? roguelikeState.activePowers.find(p => p.id === initialPowerId) : null;
+    let initialPowerDef = null;
+    if (initialPowerState) {
+        initialPowerDef = {
+            name: POWER_UP_DEFINITIONS[initialPowerState.id].name(language),
+            description: POWER_UP_DEFINITIONS[initialPowerState.id].description(language, initialPowerState.level),
+            level: initialPowerState.level,
+        };
+    }
 
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
@@ -114,8 +66,10 @@ export const GameBoard = observer(() => {
                 style={backgroundStyle}
             />
 
-            {powerAnimation && powerAnimation.type === 'fire' && (
-                <div className={`power-animation ${powerAnimation.player}`}>{'+3'}</div>
+            {powerAnimation && (
+                <div className={`power-animation ${powerAnimation.player} element-${powerAnimation.type}`}>
+                    {`+${powerAnimation.points}`}
+                </div>
             )}
             
             {drawingCards && drawingCards.map((draw, index) => (
@@ -135,7 +89,6 @@ export const GameBoard = observer(() => {
                     <div className="player-score ai-score">
                         <span>{currentWaifu?.name ?? 'AI'}: {aiScore}</span>
                     </div>
-                    {roguelikeState.aiAbility && <AbilityIndicator player="ai" />}
                 </div>
             </div>
 
@@ -200,30 +153,21 @@ export const GameBoard = observer(() => {
                             </div>
                         );
                     })}
+                </div>
+            )}
 
-                    {(roguelikeState.humanAbility || roguelikeState.aiAbility) && (
-                        <>
-                            <h3 className="abilities-subtitle">{T.abilitiesTitle}</h3>
-                            {roguelikeState.humanAbility && (
-                                <div className="elemental-power-row">
-                                    <ElementIcon element={abilityToElement[roguelikeState.humanAbility]} />
-                                    <div className="elemental-power-description">
-                                        <strong>{T.scoreYou}:</strong>
-                                        <span> {T[`${roguelikeState.humanAbility}Description` as keyof typeof T] as string}</span>
-                                    </div>
-                                </div>
-                            )}
-                            {roguelikeState.aiAbility && (
-                                <div className="elemental-power-row">
-                                    <ElementIcon element={abilityToElement[roguelikeState.aiAbility]} />
-                                    <div className="elemental-power-description">
-                                        <strong>{currentWaifu?.name}:</strong>
-                                        <span> {T[`${roguelikeState.aiAbility}Description` as keyof typeof T] as string}</span>
-                                    </div>
-                                </div>
-                            )}
-                        </>
-                    )}
+            {gameplayMode === 'roguelike' && initialPowerDef && (
+                <div className={`initial-power-panel ${!isInitialPowerLegendExpanded ? 'collapsed' : ''}`}>
+                    <span className="initial-power-title">{T.roguelike.initialPowerTitle}</span>
+                    <button className="initial-power-toggle" onClick={() => setIsInitialPowerLegendExpanded(!isInitialPowerLegendExpanded)} title={T.toggleLegend}>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
+                        </svg>
+                    </button>
+                    <div className="initial-power-content">
+                        <h4>{initialPowerDef.name} (Lv. {initialPowerDef.level})</h4>
+                        <p>{initialPowerDef.description}</p>
+                    </div>
                 </div>
             )}
             
@@ -254,7 +198,7 @@ export const GameBoard = observer(() => {
                         return (
                             <div
                                 key={follower.name}
-                                className={`follower-waifu ${isUsed ? 'disabled' : ''} ${abilityArmed?.startsWith(follower.name.toLowerCase()) ? 'armed' : ''}`}
+                                className={`follower-waifu ${isUsed ? 'disabled' : ''}`}
                                 title={`${abilityName}: ${abilityDesc}`}
                                 onClick={() => !isUsed && gameStateStore.activateFollowerAbility(follower.name)}
                             >
@@ -262,9 +206,6 @@ export const GameBoard = observer(() => {
                             </div>
                         );
                     })}
-                    {abilityArmed && ['sakura_blessing', 'rei_analysis', 'kasumi_gambit'].includes(abilityArmed) && (
-                         <button className="cancel-follower-ability-button" onClick={gameStateStore.cancelFollowerAbility}>{T.cancelFollowerAbility}</button>
-                    )}
                 </div>
             )}
 
@@ -284,27 +225,17 @@ export const GameBoard = observer(() => {
             </div>
 
             <div className="table-area">
-                {abilityTargetingState === 'incinerate' && (
-                    <div className="incinerate-cancel-container">
-                        <button className="cancel-ability-button" onClick={gameStateStore.cancelAbilityTargeting}>
-                            {T.cancelAbility}
-                        </button>
-                    </div>
-                )}
                 <div className="played-cards">
                     {cardsOnTable.map((card, index) => {
                         const owner = index === 0 ? trickStarter : (trickStarter === 'human' ? 'ai' : 'human');
                         const status = lastTrickHighlights[owner];
-                        const isTargetForIncinerate = abilityTargetingState === 'incinerate' && index === 0;
                         return (
                             <CardView 
                                 key={card.id} 
                                 card={card} 
                                 lang={language} 
                                 elementalEffectStatus={status === 'unset' ? undefined : status}
-                                className={isTargetForIncinerate ? 'targeting' : ''}
-                                onClick={isTargetForIncinerate ? gameStateStore.targetCardOnTableForAbility : undefined}
-                                isPlayable={isTargetForIncinerate}
+                                className={''}
                                 cardDeckStyle={cardDeckStyle}
                             />
                         );
@@ -318,18 +249,10 @@ export const GameBoard = observer(() => {
                         <CardView
                             key={card.id}
                             card={card}
-                            isPlayable={turn === 'human' && !isProcessing && !abilityTargetingState}
-                            onClick={() => {
-                                if (isTutorialGame) {
-                                    gameStateStore.selectCardForPlay(card);
-                                } else if (abilityTargetingState) {
-                                    gameStateStore.targetCardInHandForAbility(card);
-                                } else {
-                                    gameStateStore.selectCardForPlay(card);
-                                }
-                            }}
+                            isPlayable={turn === 'human' && !isProcessing}
+                            onClick={() => gameStateStore.selectCardForPlay(card)}
                             lang={language}
-                            className={abilityTargetingState && abilityTargetingState !== 'incinerate' ? 'targeting' : ''}
+                            className={''}
                             cardDeckStyle={cardDeckStyle}
                         />
                     ))}
@@ -341,10 +264,9 @@ export const GameBoard = observer(() => {
                     <div className="player-score human-score" data-tutorial-id="player-score">
                         <span>{T.scoreYou}: {humanScore}</span>
                     </div>
-                    {roguelikeState.humanAbility && <AbilityIndicator player="human" />}
                 </div>
 
-                {lastTrick && !abilityUsedThisTurn && !abilityArmed && (
+                {lastTrick && (
                     <button className="last-trick-recap" onClick={() => uiStore.openModal('history')} title={T.history.lastTrick}>
                         <CardView card={lastTrick.humanCard} lang={language} cardDeckStyle={cardDeckStyle} />
                         <CardView card={lastTrick.aiCard} lang={language} cardDeckStyle={cardDeckStyle} />
@@ -352,17 +274,6 @@ export const GameBoard = observer(() => {
                     </button>
                 )}
                 
-                {abilityTargetingState && abilityTargetingState !== 'incinerate' && (
-                    <button className="cancel-ability-button" onClick={gameStateStore.cancelAbilityTargeting}>
-                        {T.cancelAbility}
-                    </button>
-                )}
-
-                {abilityUsedThisTurn?.ability === 'incinerate' && (
-                    <button className="undo-ability-button" onClick={gameStateStore.onUndoAbilityUse}>
-                        {T.undoIncinerate}
-                    </button>
-                )}
 
                 <div className="turn-message" aria-live="polite">
                     {message}
