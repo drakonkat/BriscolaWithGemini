@@ -310,7 +310,19 @@ export const GameBoard = observer(() => {
                             <h2>{TC.title}</h2>
                             <div className="clash-results">
                                 {isDiceRolling ? (
-                                    <DiceRollAnimation onAnimationComplete={() => setIsDiceRolling(false)} />
+                                    <div className="clash-rolling-container">
+                                        <div className="clash-cards-preview">
+                                            <div className="clash-player-result">
+                                                <CardView card={humanCardOnTable} lang={language} cardDeckStyle={cardDeckStyle} />
+                                                <h3>{T.scoreYou}</h3>
+                                            </div>
+                                            <div className="clash-player-result">
+                                                <CardView card={aiCardOnTable} lang={language} cardDeckStyle={cardDeckStyle} />
+                                                <h3>{currentWaifu?.name}</h3>
+                                            </div>
+                                        </div>
+                                        <DiceRollAnimation onAnimationComplete={() => setIsDiceRolling(false)} />
+                                    </div>
                                 ) : (
                                     <>
                                         <div className={`clash-player-result ${elementalClash.winner === 'human' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>

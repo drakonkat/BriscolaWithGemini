@@ -2907,6 +2907,22 @@ input:checked + .slider:before {
   100% { transform: scale(1); }
 }
 
+.clash-rolling-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.clash-cards-preview {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  gap: 2rem;
+}
+
 /* --- Dice Roll Animation --- */
 .dice-animation-wrapper {
     width: 100%;
