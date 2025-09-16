@@ -918,6 +918,7 @@ input:checked + .slider:before {
   font-size: 2rem;
   margin-bottom: 1rem;
   color: var(--primary-accent);
+  padding-right: 3.5rem; /* Make space for close button */
 }
 .game-over-modal p, .rules-modal p, .event-modal p {
   font-size: 1.2rem;
@@ -935,7 +936,7 @@ input:checked + .slider:before {
   margin: 0.5rem 0 1.5rem;
   color: #a0d8a2;
 }
-.game-over-modal button, .rules-modal button, .history-modal button, .kasumi-swap-modal button,
+.game-over-modal .modal-actions button, .rules-modal .modal-actions button, .history-modal .modal-actions button, .kasumi-swap-modal .modal-actions button,
 .gacha-unlock-modal .modal-actions button, .gacha-multi-unlock-modal .modal-actions button {
   font-size: 1.2rem;
   padding: 0.7rem 2rem;
@@ -947,10 +948,10 @@ input:checked + .slider:before {
   transition: background-color 0.2s;
   margin-top: 1.5rem;
 }
-.game-over-modal button:hover, .game-over-modal button:focus,
-.rules-modal button:hover, .rules-modal button:focus,
-.history-modal button:hover, .history-modal button:focus,
-.kasumi-swap-modal button:hover, .kasumi-swap-modal button:focus,
+.game-over-modal .modal-actions button:hover, .game-over-modal .modal-actions button:focus,
+.rules-modal .modal-actions button:hover, .rules-modal .modal-actions button:focus,
+.history-modal .modal-actions button:hover, .history-modal .modal-actions button:focus,
+.kasumi-swap-modal .modal-actions button:hover, .kasumi-swap-modal .modal-actions button:focus,
 .gacha-unlock-modal .modal-actions button:hover, .gacha-unlock-modal .modal-actions button:focus,
 .gacha-multi-unlock-modal .modal-actions button:hover, .gacha-multi-unlock-modal .modal-actions button:focus {
   background-color: var(--primary-accent-hover);
@@ -1102,6 +1103,7 @@ input:checked + .slider:before {
   font-size: 1.8rem;
   margin-bottom: 1rem;
   color: var(--font-color);
+  padding-right: 3.5rem; /* Make space for close button */
 }
 .confirmation-modal p {
   font-size: 1.1rem;
@@ -1631,6 +1633,7 @@ input:checked + .slider:before {
   font-size: 2rem;
   margin-bottom: 0;
   color: var(--primary-accent);
+  padding-right: 3.5rem; /* Make space for close button */
 }
 .gallery-grid {
   display: grid;
@@ -1992,6 +1995,7 @@ input:checked + .slider:before {
     font-size: 2rem;
     color: var(--primary-accent);
     margin-bottom: 0.5rem;
+    padding-right: 3.5rem; /* Make space for close button */
 }
 .gacha-multi-unlock-modal .refund-info {
     font-size: 1.1rem;
@@ -3876,22 +3880,29 @@ input:checked + .slider:before {
   top: 1rem;
   right: 1rem;
   background: none;
-  border: none;
+  border: 1px solid #777;
   color: #aaa;
   cursor: pointer;
-  padding: 0.5rem;
-  line-height: 0;
-  transition: color 0.2s, transform 0.2s;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
   z-index: 10;
+  padding: 0;
 }
 .modal-close-button:hover, .modal-close-button:focus {
   color: white;
+  border-color: white;
   transform: scale(1.1);
   outline: none;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 .modal-close-button svg {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 
 /* --- Support Modal Poll --- */
