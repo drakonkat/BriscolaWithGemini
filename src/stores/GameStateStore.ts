@@ -199,6 +199,9 @@ export class GameStateStore {
                 const aiRoll = Math.floor(Math.random() * 100) + 1;
                 clashWinner = humanRoll > aiRoll ? 'human' : aiRoll > humanRoll ? 'ai' : 'tie';
                 finalClashResult = { type: 'dice', humanRoll, aiRoll, winner: clashWinner };
+                if (this.rootStore.gameSettingsStore.isDiceAnimationEnabled) {
+                    playSound('dice-roll');
+                }
             }
             
             this.elementalClash = finalClashResult;

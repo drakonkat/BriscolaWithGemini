@@ -12,7 +12,7 @@ import { CachedImage } from './CachedImage';
 
 export const Menu = observer(() => {
     const { gameSettingsStore, gameStateStore, uiStore, gachaStore } = useStores();
-    const { language, gameplayMode, difficulty, isChatEnabled, waitForWaifuResponse, cardDeckStyle } = gameSettingsStore;
+    const { language, gameplayMode, difficulty, isChatEnabled, waitForWaifuResponse, cardDeckStyle, isDiceAnimationEnabled } = gameSettingsStore;
     const { hasSavedGame } = gameStateStore;
     const { menuBackgroundUrl } = uiStore;
     const { waifuCoins } = gachaStore;
@@ -80,8 +80,8 @@ export const Menu = observer(() => {
                     </button>
                 </div>
                 <p>{T.subtitle}</p>
-                <p>{T.projectDescription1}</p>
-                <p>{T.projectDescription2}</p>
+                <div className="project-description">
+                </div>
 
                 <div className="gallery-promo-container" data-tutorial-id="gallery">
                     <button className="gallery-promo-button" onClick={() => uiStore.openModal('gallery')}>
@@ -169,6 +169,15 @@ export const Menu = observer(() => {
                             <span className="slider"></span>
                         </label>
                     </div>
+                    {gameplayMode === 'roguelike' && (
+                        <div className="settings-selector">
+                            <label htmlFor="dice-animation-toggle">{T.diceAnimationLabel}:</label>
+                            <label className="toggle-switch">
+                                <input id="dice-animation-toggle" type="checkbox" checked={isDiceAnimationEnabled} onChange={(e) => gameSettingsStore.setIsDiceAnimationEnabled(e.target.checked)} />
+                                <span className="slider"></span>
+                            </label>
+                        </div>
+                    )}
                      <div className="settings-selector">
                         <label htmlFor="language-select">{T.language}:</label>
                         <select id="language-select" value={language} onChange={(e) => gameSettingsStore.setLanguage(e.target.value as any)}>

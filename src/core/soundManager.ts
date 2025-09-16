@@ -401,6 +401,27 @@ export const playSound = async (name: SoundName) => {
             playNote(context, 80, now, 0.2, 0.5);
             break;
         }
+        case 'dice-roll': {
+            // Simulate a few quick rattles
+            for (let i = 0; i < 4; i++) {
+                const startTime = now + i * 0.08;
+                const duration = 0.05;
+                const noise = createWhiteNoise(context, duration);
+                const filter = context.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 1500 + Math.random() * 1000;
+                filter.Q.value = 1;
+
+                const gain = context.createGain();
+                gain.gain.setValueAtTime(0.2, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                
+                noise.connect(filter).connect(gain).connect(context.destination);
+                noise.start(startTime);
+                noise.stop(startTime + duration);
+            }
+            break;
+        }
         case 'gacha-roll': {
             for (let i = 0; i < 10; i++) {
                 playNote(context, 440 + i * 40, now + i * 0.08, 0.1, 0.1);

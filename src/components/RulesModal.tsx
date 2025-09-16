@@ -63,6 +63,10 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                         <span>{T.scorePoints(0)}</span>
                     </li>
                 </ul>
+                
+                <h3 className="rules-subtitle">{T.projectDescriptionTitle}</h3>
+                <p>{T.projectDescription1}</p>
+                <p>{T.projectDescription2}</p>
 
                 <h3 className="rules-subtitle">{T.waifuCoinRulesTitle}</h3>
                 <ul className="rules-info-list">

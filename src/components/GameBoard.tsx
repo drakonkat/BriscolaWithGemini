@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { CardView } from './CardView';
@@ -13,6 +13,7 @@ import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
 import { ElementalChoiceModal } from './ElementalChoiceModal';
 import { POWER_UP_DEFINITIONS } from '../core/roguelikePowers';
+import { DiceRollAnimation } from './DiceRollAnimation';
 
 type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
 
@@ -26,12 +27,19 @@ export const GameBoard = observer(() => {
         isTutorialGame,
     } = gameStateStore;
     const { animatingCard, drawingCards, unreadMessageCount, waifuBubbleMessage } = uiStore;
-    const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle } = gameSettingsStore;
+    const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle, isDiceAnimationEnabled } = gameSettingsStore;
     
     const T = translations[language];
     const TC = T.elementalClash;
     const [isLegendExpanded, setIsLegendExpanded] = useState(true);
     const [isInitialPowerLegendExpanded, setIsInitialPowerLegendExpanded] = useState(true);
+    const [isDiceRolling, setIsDiceRolling] = useState(false);
+
+    useEffect(() => {
+        if (elementalClash?.type === 'dice' && isDiceAnimationEnabled) {
+            setIsDiceRolling(true);
+        }
+    }, [elementalClash, isDiceAnimationEnabled]);
 
     const winningScore = 60;
     const maxBlur = 25;
@@ -301,19 +309,25 @@ export const GameBoard = observer(() => {
                             </button>
                             <h2>{TC.title}</h2>
                             <div className="clash-results">
-                                <div className={`clash-player-result ${elementalClash.winner === 'human' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
-                                    <CardView card={humanCardOnTable} lang={language} cardDeckStyle={cardDeckStyle} />
-                                    <h3>{TC.yourRoll}</h3>
-                                    <div className="clash-roll">{elementalClash.humanRoll}</div>
-                                </div>
-                                <div className={`clash-player-result ${elementalClash.winner === 'ai' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
-                                    <CardView card={aiCardOnTable} lang={language} cardDeckStyle={cardDeckStyle} />
-                                    <h3>{TC.opponentRoll}</h3>
-                                    <div className="clash-roll">{elementalClash.aiRoll}</div>
-                                </div>
+                                {isDiceRolling ? (
+                                    <DiceRollAnimation onAnimationComplete={() => setIsDiceRolling(false)} />
+                                ) : (
+                                    <>
+                                        <div className={`clash-player-result ${elementalClash.winner === 'human' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
+                                            <CardView card={humanCardOnTable} lang={language} cardDeckStyle={cardDeckStyle} />
+                                            <h3>{TC.yourRoll}</h3>
+                                            <div className="clash-roll">{elementalClash.humanRoll}</div>
+                                        </div>
+                                        <div className={`clash-player-result ${elementalClash.winner === 'ai' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
+                                            <CardView card={aiCardOnTable} lang={language} cardDeckStyle={cardDeckStyle} />
+                                            <h3>{TC.opponentRoll}</h3>
+                                            <div className="clash-roll">{elementalClash.aiRoll}</div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                             <div className="clash-outcome">
-                                {elementalClash.winner !== 'tie' ? TC.winner : TC.tie}
+                                {!isDiceRolling && (elementalClash.winner !== 'tie' ? TC.winner : TC.tie)}
                             </div>
                         </div>
                     ) : (

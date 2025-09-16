@@ -48,7 +48,8 @@ export type SoundName =
   | 'gacha-unlock-sr'
   | 'gacha-unlock-ssr'
   | 'gacha-refund'
-  | 'gacha-multi-unlock';
+  | 'gacha-multi-unlock'
+  | 'dice-roll';
 export type DrumType = 'kick' | 'snare' | 'closedHat' | 'openHat';
 
 export type Chord = '---' | 'Am' | 'G' | 'C' | 'F' | 'Dm' | 'E';
