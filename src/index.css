@@ -97,9 +97,6 @@ body {
 }
 
 .waifu-coins-display {
-  position: absolute;
-  top: calc(1.5rem + var(--safe-area-inset-top));
-  right: calc(1.5rem + var(--safe-area-inset-right));
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -131,6 +128,31 @@ body {
   font-size: clamp(2.5rem, 10vw, 4rem);
 }
 
+.menu-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.actions-popup {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.actions-popup .rules-button {
+    display: flex;
+    gap: 0.5rem;
+    width: auto;
+    padding: 0.5rem;
+}
+.actions-popup .rules-button span {
+    display: none;
+}
+
+.more-menu-button {
+    display: none;
+}
+
 .rules-button {
     background: none;
     border: 2px solid rgba(255, 255, 255, 0.7);
@@ -146,6 +168,7 @@ body {
     font-weight: bold;
     transition: all 0.2s ease;
     flex-shrink: 0;
+    text-decoration: none;
 }
 .rules-button:hover, .rules-button:focus {
     background-color: var(--primary-accent);
@@ -164,8 +187,7 @@ body {
     height: 20px;
 }
 
-
-.menu p {
+.menu-subtitle {
   font-size: clamp(1rem, 4vw, 1.2rem);
   margin: 1rem 0 1.5rem;
   max-width: 600px;
@@ -3369,13 +3391,7 @@ input:checked + .slider:before {
   .menu {
     justify-content: flex-start;
   }
-  .waifu-coins-display {
-      top: 1rem;
-      top: calc(1rem + var(--safe-area-inset-top));
-      right: 1rem;
-      right: calc(1rem + var(--safe-area-inset-right));
-  }
-
+  
   .app-container {
     flex-direction: column;
     height: 100%;
@@ -3487,19 +3503,138 @@ input:checked + .slider:before {
   }
 
   .menu {
-    padding-top: calc(1rem + var(--safe-area-inset-top));
-    padding-bottom: calc(1rem + var(--safe-area-inset-bottom));
-  }
-
-  .menu-title-container {
-    flex-wrap: wrap;
+    padding: 0.5rem;
+    padding-top: calc(0.5rem + var(--safe-area-inset-top));
+    padding-bottom: calc(0.5rem + var(--safe-area-inset-bottom));
   }
   
+  .menu-content {
+      padding: 1rem 0.5rem;
+  }
+  
+  .menu-title-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    width: 100%;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: nowrap;
+  }
+  
+  .menu h1 {
+    grid-column: 2;
+    margin: 0;
+    font-size: clamp(1.8rem, 7vw, 2.5rem);
+  }
+  
+  .menu-subtitle {
+    margin: 0.5rem 0 1rem;
+    font-size: 1rem;
+  }
+  
+  .waifu-coins-display {
+    grid-column: 1;
+    justify-self: start;
+    position: static;
+    padding: 0.3rem 0.6rem;
+    font-size: 1rem;
+    margin: 0;
+    background: none;
+    border: none;
+  }
+  
+  .menu-actions {
+    grid-column: 3;
+    justify-self: end;
+    position: relative;
+  }
+  
+  .more-menu-button {
+    display: flex;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    padding: 0;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+  }
+  
+  .actions-popup {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background-color: #3e3e3e;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    z-index: 10;
+    border: 1px solid #555;
+    width: max-content;
+    overflow: hidden;
+  }
+  .actions-popup.open {
+    display: flex;
+  }
+  
+  .actions-popup .rules-button {
+    width: 100%;
+    border-radius: 0;
+    border: none;
+    padding: 0.75rem 1rem;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    font-size: 1rem;
+    font-weight: normal;
+  }
+  
+  .actions-popup .rules-button span {
+    display: inline;
+    color: #eee;
+  }
+  
+  .actions-popup .rules-button svg {
+    color: #ccc;
+  }
+  
+  .menu-title-container > .rules-button {
+    display: none;
+  }
+
+  .start-game-container {
+    margin: 1rem 0;
+  }
+  .start-game-button {
+      font-size: 1.5rem;
+      padding: 0.8rem 2rem;
+  }
+
+  .gallery-promo-container {
+    margin: 1rem 0;
+  }
+  .gallery-promo-button {
+      font-size: 1.2rem;
+      padding: 0.8rem 2rem;
+  }
+
+  .waifu-selection {
+    margin-top: 1rem;
+  }
+  .waifu-selection h2 {
+    display: none;
+  }
+
   .menu .project-description {
     display: none;
   }
   
-  .menu-primary-settings, .waifu-selection, .start-game-container, .gallery-promo-container, .menu-settings {
+  .menu-primary-settings, .menu-settings {
     margin-top: 1.5rem;
     margin-bottom: 0;
   }
@@ -3528,17 +3663,6 @@ input:checked + .slider:before {
     min-width: auto;
   }
 
-  .menu-content {
-      padding: 1.5rem 1rem;
-      margin-top: 0;
-      margin-bottom: 0;
-  }
-  .waifu-coins-display {
-      position: static;
-      margin-bottom: 1.5rem;
-      justify-content: center;
-  }
-  
   /* Mobile Waifu Selector */
   .waifu-selector-container {
       display: none;
@@ -3834,4 +3958,20 @@ input:checked + .slider:before {
   padding: 0.6rem 1.2rem;
   border-radius: 8px;
   border: none;
-  background-color: var(--primary
+  background-color: var(--primary-accent);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.tutorial-buttons button:hover, .tutorial-buttons button:focus {
+  background-color: var(--primary-accent-hover);
+}
+.tutorial-buttons .skip-button {
+  background: none;
+  color: #ccc;
+  text-decoration: underline;
+}
+.tutorial-buttons .skip-button:hover, .tutorial-buttons .skip-button:focus {
+  background: none;
+  color: white;
+}

@@ -402,18 +402,21 @@ export const playSound = async (name: SoundName) => {
             break;
         }
         case 'dice-roll': {
-            // Simulate a few quick rattles
-            for (let i = 0; i < 4; i++) {
-                const startTime = now + i * 0.08;
-                const duration = 0.05;
+            const totalDuration = 2.5; // seconds
+            const numberOfRattles = 30;
+            for (let i = 0; i < numberOfRattles; i++) {
+                const startTime = now + (i / numberOfRattles) * totalDuration;
+                const duration = 0.1 + Math.random() * 0.1;
                 const noise = createWhiteNoise(context, duration);
                 const filter = context.createBiquadFilter();
                 filter.type = 'bandpass';
-                filter.frequency.value = 1500 + Math.random() * 1000;
-                filter.Q.value = 1;
+                filter.frequency.value = 1000 + Math.random() * 1500;
+                filter.Q.value = 1.5;
 
                 const gain = context.createGain();
-                gain.gain.setValueAtTime(0.2, startTime);
+                // Fade out the sound over the total duration
+                const initialGain = 0.15 * (1 - (i / numberOfRattles));
+                gain.gain.setValueAtTime(initialGain, startTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
                 
                 noise.connect(filter).connect(gain).connect(context.destination);
