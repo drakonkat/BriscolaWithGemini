@@ -4,7 +4,7 @@
 */
 import { RANK } from './constants';
 import { getCardPoints, shuffleDeck } from './utils';
-import type { Card, Suit, Player, Element, AbilityType } from './types';
+import type { Card, Suit, Player, Element, AbilityType, RoguelikePowerUp } from './types';
 
 /**
  * Initializes a deck for Roguelike mode by assigning elements to cards based on the current level.
@@ -36,16 +36,6 @@ export const initializeRoguelikeDeck = (deck: Card[], level: number): { deck: Ca
 };
 
 /**
- * Shuffles and assigns unique abilities to the human and AI player.
- * @returns An object containing the assigned abilities for each player.
- */
-export const assignAbilities = (): { humanAbility: AbilityType, aiAbility: AbilityType } => {
-    const abilities: AbilityType[] = ['incinerate', 'tide', 'cyclone', 'fortify'];
-    const shuffledAbilities = shuffleDeck(abilities);
-    return { humanAbility: shuffledAbilities[0], aiAbility: shuffledAbilities[1] };
-};
-
-/**
  * Gets the rank of a card, considering Roguelike effects like 'Fortify'.
  * @param card The card to evaluate.
  * @returns The numerical rank of the card.
@@ -55,13 +45,14 @@ const getRoguelikeCardRank = (card: Card): number => {
 };
 
 /**
- * Determines the winner of a trick in Roguelike mode, considering card rank modifications.
+ * Determines the winner of a trick in Roguelike mode, considering card rank modifications and special powers.
  * @param playedCards The two cards played in the trick.
  * @param starter The player who started the trick.
  * @param briscola The trump suit.
+ * @param activePowers The list of active power-ups for the human player.
  * @returns The winning player.
  */
-export const getRoguelikeTrickWinner = (playedCards: Card[], starter: Player, briscola: Suit): Player => {
+export const getRoguelikeTrickWinner = (playedCards: Card[], starter: Player, briscola: Suit, activePowers: RoguelikePowerUp[] = []): Player => {
     const card1 = playedCards[0];
     const card2 = playedCards[1];
     const follower: Player = starter === 'human' ? 'ai' : 'human';
@@ -80,8 +71,16 @@ export const getRoguelikeTrickWinner = (playedCards: Card[], starter: Player, br
       return rank1 > rank2 ? starter : follower;
     }
     
-    // If they are of the same suit (but not briscola), the higher rank wins.
+    // If they are of the same suit (but not briscola), check for powers and then rank.
     if (card1.suit === card2.suit) {
+        // Check for 'value_swap' power
+        const hasValueSwap = activePowers.some(p => p.id === 'value_swap');
+        if (hasValueSwap) {
+            const humanCard = starter === 'human' ? card1 : card2;
+            const aiCard = starter === 'ai' ? card1 : card2;
+            if (humanCard.value === '2' && aiCard.value === 'Fante') return 'human';
+            if (humanCard.value === 'Fante' && aiCard.value === '2') return 'ai';
+        }
         return rank1 > rank2 ? starter : follower;
     }
     
@@ -120,10 +119,15 @@ export const calculateRoguelikeTrickPoints = (
     humanCard: Card,
     aiCard: Card,
     winner: Player,
-    clashWinner: 'human' | 'ai' | 'tie' | null
+    clashWinner: 'human' | 'ai' | 'tie' | null,
+    briscolaSuit: Suit,
+    activePowers: RoguelikePowerUp[],
+    humanScorePile: Card[],
+    aiScorePile: Card[],
 ) => {
     let humanCardPoints = getCardPoints(humanCard);
     let aiCardPoints = getCardPoints(aiCard);
+    let airBonus = 0;
 
     // A power is active if the player activated it AND they didn't lose the clash.
     const isHumanPowerActive = (humanCard.elementalEffectActivated ?? false) && clashWinner !== 'ai';
@@ -139,17 +143,42 @@ export const calculateRoguelikeTrickPoints = (
 
     let pointsForTrick = humanCardPoints + aiCardPoints;
 
-    // Air Power: Nullifies trick points if the user's power is active and they lose the trick.
-    if (isHumanPowerActive && humanCard.element === 'air' && winner === 'ai') {
-        pointsForTrick = 0;
+    // Air Power: Bonus points for collected air cards
+    if (winner === 'human' && humanCard.element === 'air' && isHumanPowerActive) {
+        const airCardsInPile = humanScorePile.filter(card => card.element === 'air').length;
+        airBonus = airCardsInPile;
+        pointsForTrick += airBonus;
     }
-    if (isAiPowerActive && aiCard.element === 'air' && winner === 'human') {
-        pointsForTrick = 0;
+    if (winner === 'ai' && aiCard.element === 'air' && isAiPowerActive) {
+        const airCardsInPile = aiScorePile.filter(card => card.element === 'air').length;
+        airBonus = airCardsInPile;
+        pointsForTrick += airBonus;
     }
+
+    // Roguelike passive power points
+    if (winner === 'human') {
+        const bonusPointPower = activePowers.find(p => p.id === 'bonus_point_per_trick');
+        if (bonusPointPower) {
+            pointsForTrick += bonusPointPower.level;
+        }
+
+        const headhunterPower = activePowers.find(p => p.id === 'king_bonus');
+        // The winning card for human is humanCard
+        if (headhunterPower && humanCard.value === 'Re') {
+            pointsForTrick += headhunterPower.level * 5;
+        }
+
+        const briscolaMasteryPower = activePowers.find(p => p.id === 'briscola_mastery');
+        if (briscolaMasteryPower && (humanCard.suit === briscolaSuit || humanCard.isTemporaryBriscola)) {
+            pointsForTrick += briscolaMasteryPower.level * 2;
+        }
+    }
+
 
     return {
         pointsForTrick,
         humanCardPoints, // Points to return for Earth power
         aiCardPoints,    // Points to return for Earth power
+        airBonus,
     };
 };

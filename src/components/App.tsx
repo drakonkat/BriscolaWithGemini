@@ -14,7 +14,8 @@ import { GameBoard } from './GameBoard';
 import { ChatPanel } from './ChatPanel';
 import { GameModals } from './GameModals';
 import { Snackbar } from './Snackbar';
-import { RoguelikeMap } from './RoguelikeMap';
+import { PowerSelectionScreen } from './PowerSelectionScreen';
+import { TutorialOverlay } from './TutorialOverlay';
 
 export const App = observer(() => {
   const { gameStateStore, uiStore, gameSettingsStore, chatStore } = useStores();
@@ -28,8 +29,11 @@ export const App = observer(() => {
           await SafeArea.setImmersiveNavigationBar();
         }
 
-        const applyInsets = (insets: SafeAreaInsets) => {
+        // FIX: The type signature of `applyInsets` has been corrected to expect the `SafeAreaInsets` object directly, which contains the `insets` property.
+        const applyInsets = (result: SafeAreaInsets) => {
           const root = document.documentElement;
+          // The result from the plugin is a wrapper object. Access its `insets` property.
+          const insets = (result as any).insets;
           if (root && insets) {
             root.style.setProperty('--safe-area-inset-top', `${insets.top}px`);
             root.style.setProperty('--safe-area-inset-bottom', `${insets.bottom}px`);
@@ -40,29 +44,29 @@ export const App = observer(() => {
         
         // Get initial insets
         try {
+            // FIX: Pass the object from getSafeAreaInsets directly to applyInsets.
             const initialInsets = await SafeArea.getSafeAreaInsets();
-            if(initialInsets) applyInsets(initialInsets.insets);
+            if(initialInsets) applyInsets(initialInsets);
         } catch (e) {
             console.error('Failed to get initial safe area insets', e);
         }
 
 
         // Listen for changes
+        // FIX: Pass the data object from the listener directly to applyInsets.
         SafeArea.addListener('safeAreaChanged', (data) => {
-          if (data) applyInsets(data.insets);
+          if (data) applyInsets(data);
         });
       }
     };
 
     setupSafeArea();
-  }, []);
 
-  useEffect(() => {
-    if (gameStateStore.phase === 'roguelike-map' && gameStateStore.roguelikeState.justWonLevel) {
-        uiStore.openModal('event');
-        gameStateStore.resetJustWonLevelFlag();
+    // Start tutorial for first-time users
+    if (!gameSettingsStore.hasCompletedTutorial) {
+      uiStore.startTutorial();
     }
-  }, [gameStateStore.phase, gameStateStore.roguelikeState.justWonLevel, uiStore, gameStateStore]);
+  }, []);
 
   const T = translations[gameSettingsStore.language];
   const aiName = gameStateStore.currentWaifu?.name ?? '';
@@ -73,15 +77,15 @@ export const App = observer(() => {
         <Menu />
         <GameModals />
         <Snackbar />
+        {uiStore.isTutorialActive && <TutorialOverlay />}
       </>
     );
   }
 
-  if (gameStateStore.phase === 'roguelike-map') {
+  if (gameStateStore.phase === 'power-selection') {
       return (
         <>
-            <RoguelikeMap />
-            <GameModals />
+            <PowerSelectionScreen />
         </>
       );
   }
@@ -96,6 +100,7 @@ export const App = observer(() => {
 
       <GameModals />
       <Snackbar />
+      {uiStore.isTutorialActive && <TutorialOverlay />}
     </div>
   );
 });

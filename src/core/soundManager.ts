@@ -2,44 +2,162 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-
-export type SoundName =
-  | 'game-start'
-  | 'card-place'
-  | 'trick-win'
-  | 'trick-lose'
-  | 'chat-notify'
-  | 'game-win'
-  | 'game-lose'
-  | 'element-fire'
-  | 'element-water'
-  | 'element-air'
-  | 'element-earth';
-
-export type OscillatorType = 'sine' | 'sawtooth' | 'square' | 'triangle';
+import type { SoundName, OscillatorType, DrumType, Chord, Decade } from './types';
+import { CHORDS } from './types';
 
 export interface SoundSettings {
-    tempo: number; // BPM, will be converted to chord duration
+    tempo: number; // BPM
     oscillatorType: OscillatorType;
     filterCutoff: number; // Hz
     lfoFrequency: number; // Hz
     lfoDepth: number; // a gain value
     reverbWetness: number; // 0 to 1
+    drumPattern: Record<DrumType, boolean[]>;
+    chordPattern: Chord[];
 }
 
+const SEQUENCE_LENGTH = 16;
+export const DRUM_TYPES: DrumType[] = ['kick', 'snare', 'closedHat', 'openHat'];
+
 export const defaultSoundSettings: SoundSettings = {
-    tempo: 15, // 15 BPM = 4 second chord duration
+    tempo: 120,
     oscillatorType: 'sawtooth',
     filterCutoff: 2000,
     lfoFrequency: 0.1,
     lfoDepth: 1200,
     reverbWetness: 0.3,
+    drumPattern: {
+        kick: Array(SEQUENCE_LENGTH).fill(false),
+        snare: Array(SEQUENCE_LENGTH).fill(false),
+        closedHat: Array(SEQUENCE_LENGTH).fill(false),
+        openHat: Array(SEQUENCE_LENGTH).fill(false),
+    },
+    chordPattern: Array(SEQUENCE_LENGTH).fill('---'),
+};
+
+// Chord definitions (frequencies for root, third, fifth)
+const CHORD_MAP: Record<Chord, number[] | null> = {
+    '---': null,
+    'Am': [220.00, 261.63, 329.63], // A3, C4, E4
+    'G': [196.00, 246.94, 293.66],  // G3, B3, D4
+    'C': [261.63, 329.63, 392.00],  // C4, E4, G4
+    'F': [349.23, 440.00, 523.25],  // F4, A4, C5
+    'Dm': [293.66, 349.23, 440.00], // D4, F4, A4
+    'E': [329.63, 415.30, 493.88],  // E4, G#4, B4
+};
+
+export const decadePresets: Record<Decade, SoundSettings> = {
+    '40s': { /* Swing */
+        tempo: 140, oscillatorType: 'sine', filterCutoff: 1500, lfoFrequency: 0.1, lfoDepth: 800, reverbWetness: 0.2,
+        drumPattern: {
+            kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
+            snare: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+            closedHat: [true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['C','C','G','G','F','F','C','G', 'C','C','G','G','F','F','C','G'],
+    },
+    '50s': { /* Rock */
+        tempo: 165, oscillatorType: 'square', filterCutoff: 2500, lfoFrequency: 0.2, lfoDepth: 1000, reverbWetness: 0.25,
+        drumPattern: {
+            kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
+            snare: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false],
+            closedHat: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['C', '---', 'F', '---', 'G', '---', 'F', '---', 'C', '---', 'F', '---', 'G', '---', 'F', '---'],
+    },
+    '60s': { /* Soul */
+        tempo: 110, oscillatorType: 'sawtooth', filterCutoff: 3000, lfoFrequency: 0.1, lfoDepth: 500, reverbWetness: 0.4,
+        drumPattern: {
+            kick: [true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['Am', '---', 'G', '---', 'C', '---', 'F', '---', 'Am', '---', 'G', '---', 'C', '---', 'F', '---'],
+    },
+    '70s': { /* Disco */
+        tempo: 125, oscillatorType: 'sawtooth', filterCutoff: 4000, lfoFrequency: 0.5, lfoDepth: 1500, reverbWetness: 0.5,
+        drumPattern: {
+            kick: [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true],
+            openHat: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false],
+        },
+        chordPattern: ['Dm', 'Dm', 'G', 'G', 'C', 'C', 'F', 'F', 'Dm', 'Dm', 'G', 'G', 'C', 'C', 'F', 'F'],
+    },
+    '80s': { /* Synthwave */
+        tempo: 100, oscillatorType: 'square', filterCutoff: 5000, lfoFrequency: 0.8, lfoDepth: 2000, reverbWetness: 0.6,
+        drumPattern: {
+            kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['Am', '---', 'G', '---', 'C', '---', 'F', '---', 'Am', '---', 'G', '---', 'E', '---', 'E', '---'],
+    },
+    '90s': { /* Pop */
+        tempo: 118, oscillatorType: 'sawtooth', filterCutoff: 6000, lfoFrequency: 0.3, lfoDepth: 1000, reverbWetness: 0.4,
+        drumPattern: {
+            kick: [true, false, false, false, true, false, false, true, true, false, false, false, true, false, false, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, true, false],
+            closedHat: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F'],
+    },
+    'blue90s': { /* Eiffel 65 - Blue */
+        tempo: 128,
+        oscillatorType: 'sawtooth',
+        filterCutoff: 6200,
+        lfoFrequency: 1.8,
+        lfoDepth: 1800,
+        reverbWetness: 0.5,
+        drumPattern: {
+            kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+            openHat: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false],
+        },
+        // Transposed progression from Gm-Eb-Bb-F to Am-F-C-G
+        chordPattern: ['Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G', 'Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G'],
+    },
+    '2000s': { /* Dance */
+        tempo: 128, oscillatorType: 'sawtooth', filterCutoff: 7000, lfoFrequency: 1.0, lfoDepth: 2500, reverbWetness: 0.5,
+        drumPattern: {
+            kick: [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false],
+            openHat: [false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true],
+        },
+        chordPattern: ['Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G', 'Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G'],
+    },
+    '2010s': { /* EDM */
+        tempo: 128, oscillatorType: 'square', filterCutoff: 8000, lfoFrequency: 0.9, lfoDepth: 3000, reverbWetness: 0.6,
+        drumPattern: {
+            kick: [true, false, false, true, true, false, false, false, true, false, false, true, true, false, false, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F'],
+    },
+    '2020s': { /* Lo-fi */
+        tempo: 80, oscillatorType: 'triangle', filterCutoff: 1200, lfoFrequency: 0.05, lfoDepth: 400, reverbWetness: 0.7,
+        drumPattern: {
+            kick: [true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false],
+            snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
+            closedHat: [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false],
+            openHat: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        },
+        chordPattern: ['F', '---', 'E', '---', 'Am', '---', 'C', '---', 'F', '---', 'E', '---', 'Am', '---', 'G', '---'],
+    },
 };
 
 let currentSoundSettings: SoundSettings = { ...defaultSoundSettings };
 
 let audioContext: AudioContext | null = null;
-let musicScheduler: number | null = null;
 let isMusicPlaying = false;
 
 // Audio graph nodes
@@ -51,8 +169,13 @@ let lfoGainNode: GainNode | null = null;
 let dryGainNode: GainNode | null = null;
 let wetGainNode: GainNode | null = null;
 let isMusicGraphBuilt = false;
-let currentChordIndex = 0;
 
+// High-precision scheduling variables
+let schedulerInterval: number | null = null;
+let currentStep = 0;
+let nextNoteTime = 0.0;
+const scheduleAheadTime = 0.1; // seconds
+const schedulerFrequency = 25.0; // ms
 
 const initAudioContext = () => {
     if (typeof window === 'undefined') return null;
@@ -63,28 +186,17 @@ const initAudioContext = () => {
             console.error("Web Audio API is not supported in this browser.");
         }
     }
-    // Resume context if it's suspended (required by modern browsers)
     if (audioContext && audioContext.state === 'suspended') {
         audioContext.resume().catch(e => console.error('Failed to resume audio context:', e));
     }
     return audioContext;
 };
 
-// Ensure context is initialized on first user interaction
 if (typeof window !== 'undefined') {
-    window.addEventListener('click', initAudioContext, { once: true });
-    window.addEventListener('touchend', initAudioContext, { once: true });
+    const init = () => initAudioContext();
+    window.addEventListener('click', init, { once: true });
+    window.addEventListener('touchend', init, { once: true });
 }
-
-// Helper to create a simple volume envelope
-const createEnvelope = (gainNode: GainNode, startTime: number, attack: number, decay: number, sustain: number, release: number, duration: number) => {
-    const gain = gainNode.gain;
-    gain.setValueAtTime(0, startTime);
-    gain.linearRampToValueAtTime(1, startTime + attack);
-    gain.linearRampToValueAtTime(sustain, startTime + attack + decay);
-    gain.setValueAtTime(sustain, startTime + duration - release);
-    gain.linearRampToValueAtTime(0, startTime + duration);
-};
 
 const playNote = (context: AudioContext, frequency: number, startTime: number, duration: number, volume = 0.5) => {
     const osc = context.createOscillator();
@@ -102,7 +214,7 @@ const playNote = (context: AudioContext, frequency: number, startTime: number, d
 };
 
 const createWhiteNoise = (context: AudioContext, duration: number): AudioBufferSourceNode => {
-    const bufferSize = context.sampleRate * duration;
+    const bufferSize = Math.round(context.sampleRate * duration);
     const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
     const output = buffer.getChannelData(0);
 
@@ -113,6 +225,81 @@ const createWhiteNoise = (context: AudioContext, duration: number): AudioBufferS
     const noise = context.createBufferSource();
     noise.buffer = buffer;
     return noise;
+};
+
+// --- Synthesized Drum Sounds ---
+const createKick = (context: AudioContext, time: number) => {
+    const osc = context.createOscillator();
+    const gain = context.createGain();
+    osc.connect(gain);
+    gain.connect(context.destination);
+
+    osc.frequency.setValueAtTime(150, time);
+    osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.1);
+    gain.gain.setValueAtTime(1, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+    
+    osc.start(time);
+    osc.stop(time + 0.15);
+};
+
+const createSnare = (context: AudioContext, time: number) => {
+    const noise = createWhiteNoise(context, 0.2);
+    const noiseFilter = context.createBiquadFilter();
+    noiseFilter.type = 'highpass';
+    noiseFilter.frequency.value = 1500;
+    const noiseGain = context.createGain();
+    noise.connect(noiseFilter).connect(noiseGain).connect(context.destination);
+    noiseGain.gain.setValueAtTime(0.8, time);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+
+    const osc = context.createOscillator();
+    const oscGain = context.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = 120;
+    osc.connect(oscGain).connect(context.destination);
+    oscGain.gain.setValueAtTime(0.7, time);
+    oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+
+    noise.start(time);
+    osc.start(time);
+    noise.stop(time + 0.2);
+    osc.stop(time + 0.1);
+};
+
+const createHihat = (context: AudioContext, time: number, isOpen: boolean) => {
+    const duration = isOpen ? 0.3 : 0.08;
+    const noise = createWhiteNoise(context, duration);
+    const filter = context.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 7000;
+    const gain = context.createGain();
+    
+    noise.connect(filter).connect(gain).connect(context.destination);
+    gain.gain.setValueAtTime(0.3, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+
+    noise.start(time);
+    noise.stop(time + duration);
+};
+
+const createGuitarChord = (context: AudioContext, time: number, frequencies: number[]) => {
+    const duration = 0.8;
+    frequencies.forEach((freq, index) => {
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.connect(gain);
+        gain.connect(context.destination);
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, time + index * 0.02); // Strum effect
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.3, time + index * 0.02 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+        osc.start(time + index * 0.02);
+        osc.stop(time + duration + 0.1);
+    });
 };
 
 
@@ -128,16 +315,13 @@ export const playSound = async (name: SoundName) => {
 
     switch (name) {
         case 'card-place': {
-            // Create a short burst of filtered white noise to simulate a card hitting a table.
             const noise = createWhiteNoise(context, 0.1);
             const filter = context.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.frequency.value = 800; // Cut high frequencies for a "thump" sound
-            
+            filter.frequency.value = 800;
             const gain = context.createGain();
-            gain.gain.setValueAtTime(0.4, now); // Start relatively loud
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1); // Fast decay
-
+            gain.gain.setValueAtTime(0.4, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
             noise.connect(filter).connect(gain).connect(context.destination);
             noise.start(now);
             noise.stop(now + 0.1);
@@ -176,12 +360,10 @@ export const playSound = async (name: SoundName) => {
             bandpass.type = 'bandpass';
             bandpass.frequency.value = 1000;
             bandpass.Q.value = 20;
-
             const gain = context.createGain();
             noise.connect(bandpass).connect(gain).connect(context.destination);
             gain.gain.setValueAtTime(0.3, now);
             gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-            
             noise.start(now);
             noise.stop(now + 0.3);
             break;
@@ -206,13 +388,11 @@ export const playSound = async (name: SoundName) => {
             bandpass.Q.value = 5;
             bandpass.frequency.setValueAtTime(200, now);
             bandpass.frequency.exponentialRampToValueAtTime(3000, now + 0.4);
-
             const gain = context.createGain();
             noise.connect(bandpass).connect(gain).connect(context.destination);
             gain.gain.setValueAtTime(0, now);
             gain.gain.linearRampToValueAtTime(0.2, now + 0.05);
             gain.gain.linearRampToValueAtTime(0, now + 0.5);
-
             noise.start(now);
             noise.stop(now + 0.5);
             break;
@@ -221,20 +401,82 @@ export const playSound = async (name: SoundName) => {
             playNote(context, 80, now, 0.2, 0.5);
             break;
         }
+        case 'dice-roll': {
+            const totalDuration = 2.5; // seconds
+            const numberOfRattles = 30;
+            for (let i = 0; i < numberOfRattles; i++) {
+                const startTime = now + (i / numberOfRattles) * totalDuration;
+                const duration = 0.1 + Math.random() * 0.1;
+                const noise = createWhiteNoise(context, duration);
+                const filter = context.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 1000 + Math.random() * 1500;
+                filter.Q.value = 1.5;
+
+                const gain = context.createGain();
+                // Fade out the sound over the total duration
+                const initialGain = 0.15 * (1 - (i / numberOfRattles));
+                gain.gain.setValueAtTime(initialGain, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                
+                noise.connect(filter).connect(gain).connect(context.destination);
+                noise.start(startTime);
+                noise.stop(startTime + duration);
+            }
+            break;
+        }
+        case 'gacha-roll': {
+            for (let i = 0; i < 10; i++) {
+                playNote(context, 440 + i * 40, now + i * 0.08, 0.1, 0.1);
+            }
+            break;
+        }
+        case 'gacha-unlock-r': {
+            playNote(context, 659.25, now, 0.4, 0.3); // E5
+            playNote(context, 880.00, now, 0.4, 0.3); // A5
+            break;
+        }
+        case 'gacha-unlock-sr': {
+            playNote(context, 659.25, now, 0.5, 0.3); // E5
+            playNote(context, 880.00, now + 0.1, 0.5, 0.3); // A5
+            playNote(context, 1318.51, now + 0.2, 0.5, 0.2); // E6
+            break;
+        }
+        case 'gacha-unlock-ssr': {
+            const bass = context.createOscillator();
+            const bassGain = context.createGain();
+            bass.connect(bassGain).connect(context.destination);
+            bass.type = 'sine';
+            bass.frequency.setValueAtTime(82.41, now); // E2
+            bassGain.gain.setValueAtTime(0, now);
+            bassGain.gain.linearRampToValueAtTime(0.4, now + 0.05);
+            bassGain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+            bass.start(now);
+            bass.stop(now + 1.0);
+            const notes = [523.25, 659.25, 880.00, 1046.50, 1318.51]; // C5, E5, A5, C6, E6
+            notes.forEach((freq, i) => {
+                playNote(context, freq, now + i * 0.1, 0.8, 0.3);
+            });
+            break;
+        }
+        case 'gacha-refund': {
+            playNote(context, 1046.50, now, 0.08, 0.2); // C6
+            playNote(context, 1318.51, now + 0.1, 0.1, 0.2); // E6
+            playNote(context, 1567.98, now + 0.2, 0.15, 0.2); // G6
+            break;
+        }
+        case 'gacha-multi-unlock': {
+            const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98]; // C5, E5, G5, C6, E6, G6
+            notes.forEach((freq, i) => {
+                playNote(context, freq, now + i * 0.08, 0.5, 0.25);
+            });
+            break;
+        }
     }
 };
 
 // --- Background Music ---
 
-// Chord progression: i-VI-iv-V (Cm - Ab - Fm - G)
-const PROGRESSION = [
-    [130.81, 155.56, 196.00], // Cm (C3, Eb3, G3)
-    [207.65, 261.63, 311.13], // Ab Major (Ab3, C4, Eb4)
-    [174.61, 207.65, 261.63], // Fm (F3, Ab3, C4)
-    [196.00, 246.94, 293.66]  // G Major (G3, B3, D4)
-];
-
-// Function to create a simple reverb impulse response
 const createReverbImpulseResponse = (context: AudioContext): AudioBuffer => {
     const sampleRate = context.sampleRate;
     const duration = 2.5;
@@ -261,36 +503,25 @@ const buildMusicGraph = (context: AudioContext) => {
     convolverNode = context.createConvolver();
     dryGainNode = context.createGain();
     wetGainNode = context.createGain();
-
     filterNode.type = 'lowpass';
     lfoNode.type = 'sine';
     convolverNode.buffer = createReverbImpulseResponse(context);
-
-    // Connections
     lfoNode.connect(lfoGainNode);
     lfoGainNode.connect(filterNode.frequency);
-    
     filterNode.connect(musicGainNode);
     musicGainNode.connect(dryGainNode);
     musicGainNode.connect(wetGainNode);
     dryGainNode.connect(context.destination);
     wetGainNode.connect(convolverNode);
     convolverNode.connect(context.destination);
-
     lfoNode.start();
     isMusicGraphBuilt = true;
 };
 
-/**
- * Updates the sound settings and applies them to the live audio graph.
- */
 export const updateSoundSettings = (newSettings: SoundSettings) => {
-    currentSoundSettings = { ...newSettings }; // Always store the new settings
-
+    currentSoundSettings = { ...newSettings };
     const context = initAudioContext();
     if (!context || !isMusicGraphBuilt) return;
-
-    // Apply settings to the existing audio graph nodes for real-time changes.
     if (filterNode) filterNode.frequency.value = currentSoundSettings.filterCutoff;
     if (lfoNode) lfoNode.frequency.value = currentSoundSettings.lfoFrequency;
     if (lfoGainNode) lfoGainNode.gain.value = currentSoundSettings.lfoDepth;
@@ -298,80 +529,91 @@ export const updateSoundSettings = (newSettings: SoundSettings) => {
     if (wetGainNode) wetGainNode.gain.value = currentSoundSettings.reverbWetness;
 };
 
-const playChord = (context: AudioContext) => {
-    if (!isMusicPlaying || !musicGainNode || !filterNode) return;
+const scheduleNotes = (step: number, time: number) => {
+    const context = audioContext!;
+    const secondsPerStep = (60.0 / currentSoundSettings.tempo) / 4.0;
+    
+    // Schedule Drums
+    if (currentSoundSettings.drumPattern.kick[step]) createKick(context, time);
+    if (currentSoundSettings.drumPattern.snare[step]) createSnare(context, time);
+    if (currentSoundSettings.drumPattern.closedHat[step]) createHihat(context, time, false);
+    if (currentSoundSettings.drumPattern.openHat[step]) createHihat(context, time, true);
+    
+    // Schedule Guitar Chord
+    const chordName = currentSoundSettings.chordPattern[step];
+    const chordFrequencies = CHORD_MAP[chordName];
+    if (chordFrequencies) {
+        createGuitarChord(context, time, chordFrequencies);
+    }
+    
+    // Schedule Synth lead
+    const currentBar = Math.floor(step / 4);
+    let barChordName: Chord | undefined;
+    for (let i = step; i >= currentBar * 4; i--) {
+        if (currentSoundSettings.chordPattern[i] !== '---') {
+            barChordName = currentSoundSettings.chordPattern[i];
+            break;
+        }
+    }
+    const currentBarChord = barChordName ? CHORD_MAP[barChordName] : null;
 
-    const chord = PROGRESSION[currentChordIndex];
-    const now = context.currentTime;
-    const chordDuration = 60 / currentSoundSettings.tempo;
-
-    chord.forEach((freq, index) => {
+    if (currentBarChord && step % 2 === 0) { // Play synth on 8th notes
+        const noteIndex = (step / 2) % currentBarChord.length;
+        const freq = currentBarChord[noteIndex] * 2; // one octave higher
+        const duration = secondsPerStep * 0.9;
+        
         const osc = context.createOscillator();
         const noteGain = context.createGain();
 
         osc.connect(noteGain);
         noteGain.connect(filterNode!);
+        
+        osc.type = currentSoundSettings.oscillatorType;
+        noteGain.gain.value = 0.25;
+        osc.frequency.setValueAtTime(freq, time);
+        
+        noteGain.gain.setValueAtTime(0, time);
+        noteGain.gain.linearRampToValueAtTime(noteGain.gain.value, time + 0.01);
+        noteGain.gain.setValueAtTime(noteGain.gain.value, time + duration - 0.05);
+        noteGain.gain.linearRampToValueAtTime(0, time + duration);
+        
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+};
 
-        // Use sine for the root note, and slightly detuned custom oscillators for others for richness
-        if (index === 0) {
-            osc.type = 'sine';
-            noteGain.gain.value = 1.0;
-        } else {
-            osc.type = currentSoundSettings.oscillatorType;
-            osc.detune.value = (index === 1) ? -5 : 5; // Detune for chorus effect
-            noteGain.gain.value = 0.25; // Upper notes are quieter
-        }
-
-        osc.frequency.setValueAtTime(freq, now);
-
-        // Gentle attack and release for each note
-        noteGain.gain.setValueAtTime(0, now);
-        noteGain.gain.linearRampToValueAtTime(noteGain.gain.value, now + 0.8);
-        noteGain.gain.setValueAtTime(noteGain.gain.value, now + chordDuration - 1);
-        noteGain.gain.linearRampToValueAtTime(0, now + chordDuration - 0.1);
-
-        osc.start(now);
-        osc.stop(now + chordDuration);
-    });
-
-    // Schedule the next chord
-    currentChordIndex = (currentChordIndex + 1) % PROGRESSION.length;
-    musicScheduler = window.setTimeout(() => playChord(context), chordDuration * 1000);
+const scheduler = () => {
+    const context = audioContext!;
+    while (nextNoteTime < context.currentTime + scheduleAheadTime) {
+        scheduleNotes(currentStep, nextNoteTime);
+        const secondsPerStep = (60.0 / currentSoundSettings.tempo) / 4.0;
+        nextNoteTime += secondsPerStep;
+        currentStep = (currentStep + 1) % SEQUENCE_LENGTH;
+    }
 };
 
 export const startMusic = (settings: SoundSettings) => {
     const context = initAudioContext();
     if (!context || isMusicPlaying) return;
-
-    // Ensure the audio graph is built and ready.
     buildMusicGraph(context);
-    
-    // Apply the latest settings before starting.
     updateSoundSettings(settings);
-    
     isMusicPlaying = true;
-    currentChordIndex = 0;
-
-    // Fade music in
+    currentStep = 0;
+    nextNoteTime = context.currentTime;
     musicGainNode!.gain.cancelScheduledValues(context.currentTime);
     musicGainNode!.gain.setValueAtTime(0, context.currentTime);
     musicGainNode!.gain.linearRampToValueAtTime(0.025, context.currentTime + 2.0);
-
-    playChord(context);
+    schedulerInterval = window.setInterval(scheduler, schedulerFrequency);
 };
 
 export const stopMusic = () => {
     const context = initAudioContext();
     if (!context || !isMusicPlaying || !musicGainNode) return;
-
     isMusicPlaying = false;
-
-    if (musicScheduler) {
-        clearTimeout(musicScheduler);
-        musicScheduler = null;
+    if (schedulerInterval) {
+        clearInterval(schedulerInterval);
+        schedulerInterval = null;
     }
-    
-    // Fade music out
     musicGainNode.gain.cancelScheduledValues(context.currentTime);
     musicGainNode.gain.linearRampToValueAtTime(0, context.currentTime + 1.5);
 };

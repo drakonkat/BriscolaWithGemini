@@ -61,7 +61,11 @@ export const ChatPanel = observer(() => {
       <div className="chat-messages">
         {chatHistory.map((msg, index) => (
           <div key={index} className={`message-container ${msg.sender === 'human' ? 'human' : 'ai'}`}>
-            <div className="message">{msg.text}</div>
+            <div className="message">
+              {msg.text.split('*').map((part, i) =>
+                i % 2 === 1 ? <strong key={i}>{part}</strong> : part
+              )}
+            </div>
           </div>
         ))}
         {(isAiChatting || isAiGeneratingMessage) && (

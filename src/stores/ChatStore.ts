@@ -28,7 +28,7 @@ export class ChatStore {
                 waifu: this.rootStore.gameStateStore.currentWaifu
             }),
             ({ phase, waifu }) => {
-                if ((this.prevPhase === 'menu' || this.prevPhase === 'roguelike-map') && phase === 'playing' && waifu) {
+                if ((this.prevPhase === 'menu' || this.prevPhase === 'power-selection') && phase === 'playing' && waifu) {
                     this.resetChat(waifu);
                 }
                 this.prevPhase = phase;

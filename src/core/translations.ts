@@ -23,6 +23,7 @@ export const translations = {
     cardDeckStyleLabel: "Stile Mazzo",
     cardDeckStyleClassic: "Classico",
     cardDeckStylePoker: "Poker",
+    diceAnimationLabel: "Animazione Dadi",
     toggleChatLabel: "Abilita Chat Waifu",
     toggleWaitForWaifuLabel: "Attendi Risposta Waifu",
     fastModeEnabled: "Modalità veloce attivata: il gioco non attenderà più la risposta della Waifu.",
@@ -31,6 +32,7 @@ export const translations = {
     comingSoon: " (Prossimamente)",
     comingSoonTooltip: "Questa modalità sarà presto disponibile!",
     rulesTitle: "Regole del Punteggio",
+    projectDescriptionTitle: "Descrizione del Progetto",
     refreshBackground: "Cambia Sfondo",
     winCondition: "Il mazzo ha un totale di 120 punti. Il primo giocatore a totalizzare più di 60 punti vince la partita.",
     otherCards: "Altre carte",
@@ -78,6 +80,51 @@ export const translations = {
     oscSawtooth: "Dente di Sega",
     oscSquare: "Quadrata",
     oscTriangle: "Triangolare",
+    drums: "Batteria",
+    kick: "Cassa",
+    snare: "Rullante",
+    closedHat: "Hi-Hat Chiuso",
+    openHat: "Hi-Hat Aperto",
+    guitarChords: "Accordi Chitarra",
+    decadePresets: "Preset Decennio",
+    loadPresetPlaceholder: "Carica un Preset Decennio...",
+    decade_40s: "Anni '40 Swing",
+    decade_50s: "Anni '50 Rock",
+    decade_60s: "Anni '60 Soul",
+    decade_70s: "Anni '70 Disco",
+    decade_80s: "Anni '80 Synth",
+    decade_90s: "Anni '90 Pop",
+    decade_2000s: "Anni 2000 Dance",
+    decade_2010s: "Anni 2010 EDM",
+    decade_2020s: "Anni 2020 Lo-fi",
+    decade_blue90s: "Eiffel 65 - Blue",
+    savePreset: "Salva Preset",
+    presetName: "Nome Preset",
+    save: "Salva",
+    deletePreset: "Elimina Preset",
+    defaultPresets: "Preset Predefiniti",
+    customPresets: "I Tuoi Preset",
+    // Tutorial
+    tutorial: {
+      next: "Avanti",
+      skip: "Salta Tutorial",
+      finish: "Fine",
+      welcome: "Benvenuto in Waifu Briscola! Ti mostrerò rapidamente come funziona tutto.",
+      gameMode: "Qui puoi scegliere tra una partita classica o la modalità Roguelike per una sfida più grande.",
+      difficulty: "Seleziona la difficoltà dell'IA. Le difficoltà più alte offrono ricompense maggiori!",
+      waifu: "Scegli la tua avversaria qui. Ognuna ha una personalità unica che scoprirai giocando e chattando.",
+      gallery: "Usa i Waifu Coins che guadagni per sbloccare nuovi bellissimi sfondi di gioco qui!",
+      start: "Quando sei pronto, premi qui per iniziare una partita di prova!",
+      // In-game tutorial steps
+      playerHand: "Questa è la tua mano. Le carte hanno un valore (come l'Asso) e un seme.",
+      promptPlayCard: "È il tuo turno. Giochiamo l'Asso di Bastoni, una carta di alto valore. Clicca su di essa.",
+      aiResponds: "Perfetto! Ora l'IA gioca la sua carta. Poiché hai iniziato con Bastoni, deve rispondere con lo stesso seme se ne ha uno.",
+      trickWon: "Hai vinto il turno! Nel seme di Bastoni, il tuo Asso batte il 2 dell'IA.",
+      scoreUpdate: "I punti delle carte vinte (11 per il tuo Asso) vengono aggiunti al tuo punteggio. Te ne servono più di 60 per vincere!",
+      drawingCards: "Dopo ogni turno, entrambi i giocatori pescano una nuova carta. Chi ha vinto pesca per primo.",
+      briscola: "Questa è la Briscola. Le carte di questo seme (Coppe) battono qualsiasi altro seme che non sia Briscola.",
+      end: "Hai imparato le basi! Il tutorial ora terminerà. Goditi il gioco!",
+    },
     // Game
     welcomeMessage: "Benvenuto! Inizia una nuova partita.",
     yourTurn: "Tocca a te iniziare.",
@@ -120,6 +167,7 @@ export const translations = {
       backToMap: "Torna alla Mappa",
       crossroadsTitle: "Bivio",
       crossroadsMessage: "Hai superato il livello! Scegli il tuo prossimo passo.",
+      initialPowerTitle: "Potere Iniziale",
       // Events
       marketTitle: "Il Mercato",
       marketDescription: "Un mercante misterioso ti offre i suoi averi. Scegli un oggetto da usare nel prossimo livello.",
@@ -146,6 +194,38 @@ export const translations = {
       insightPotionDesc: "Vedi la mano della tua avversaria per i primi 3 turni del prossimo livello.",
       coinPouch: "Sacchetto di Monete",
       coinPouchDesc: "Ottieni subito 50 Waifu Coins extra.",
+      // FIX: Added missing translations for power selection screen
+      chooseYourPower: "Scegli il tuo Potere Iniziale",
+      initialPowerMessage: "Questo potere ti aiuterà per tutta la durata della tua run. Scegli saggiamente!",
+      chooseYourPath: "Scegli il tuo Percorso",
+      levelUpMessage: (level: number) => `Hai completato il livello ${level - 1}! Scegli un nuovo potere o potenzia uno esistente.`,
+      powers: {
+        upgrade: "Potenzia",
+        bonus_point_per_trick: {
+          name: "Tributo",
+          desc: (level: number) => `Ottieni +${level} punto/i bonus ogni volta che vinci un turno.`
+        },
+        king_bonus: {
+          name: "Cacciatore di Teste",
+          desc: (level: number) => `Guadagni +${level} punti extra quando vinci un turno con un Re.`
+        },
+        ace_of_briscola_start: {
+          name: "Asso nella Manica",
+          desc: () => "Inizi ogni partita con l'Asso di Briscola in mano."
+        },
+        briscola_mastery: {
+          name: "Maestria della Briscola",
+          desc: (level: number) => `Le tue carte Briscola valgono +${level} punti quando vinci un turno.`
+        },
+        value_swap: {
+          name: "Scambio Inaspettato",
+          desc: () => "Il 2 batte il Fante quando entrambi sono dello stesso seme (non Briscola)."
+        },
+        last_trick_insight: {
+          name: "Preveggenza Finale",
+          desc: () => "Vedi le carte del tuo avversario durante gli ultimi tre turni."
+        },
+      }
     },
     elementalPowersTitle: "Poteri Elementali",
     toggleLegend: "Mostra/Nascondi Descrizioni",
@@ -156,7 +236,7 @@ export const translations = {
     suitIs: (suit: string, element: string) => `${suit} è ${element}`,
     fireDescription: "Vinci il turno con una carta Fuoco per +3 punti bonus.",
     waterDescription: "Se perdi il turno, l'effetto dimezza i punti della carta vincente.",
-    airDescription: "Se perdi il turno, l'effetto annulla i punti della mano.",
+    airDescription: "Le tue carte Aria valgono +1 punto per ogni altra carta Aria già nel tuo mazzo punti.",
     earthDescription: "Se perdi il turno, recupera i punti della tua carta Terra.",
     elementalClash: {
         title: "Scontro Elementale!",
@@ -247,14 +327,14 @@ Hai appena vinto un turno a Briscola contro senpai.
 - Hai vinto ${points} punti.
 
 Basandoti sulla tua personalità e sui punti che hai vinto, genera una risposta breve e caratteristica per senpai (1-2 frasi).
-Sii maliziosa, un po' stuzzicante e leggermente allusiva, specialmente se i punti sono alti. Sii creativa e unica.
+Sii maliziosa, un po' stuzzicante e leggermente allusiva, specialmente se i punti sono alti. Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa e unica.
 La risposta deve essere in italiano.
 `,
     waifuGenericTeasePrompt: (waifuName: string, personality: string, aiScore: number, humanScore: number) => `
 Sei ${waifuName}. La tua personalità è: "${personality}".
 Stai giocando a Briscola contro senpai. Il punteggio è Tu: ${aiScore}, Senpai: ${humanScore}.
 Fai un commento generico, stuzzicante e con un doppio senso sensuale, in linea con la tua personalità, sulla partita in corso. Non fare riferimento alle ultime carte giocate.
-Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) e in italiano.
+Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) e in italiano.
 `,
     // Quota Exceeded
     quotaExceeded: {
@@ -287,9 +367,10 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
         title: "Galleria Sfondi",
         backgroundAlt: "Sfondo",
         gachaButton: "Gacha! (100 WC)",
+        gachaButtonX10: (cost: number) => `Gacha x10 (${cost} WC)`,
         gachaButtonFree: "Primo Gacha Gratis!",
         promoButton: "Galleria & Gacha",
-        gachaNotEnoughCoins: "Non hai abbastanza Waifu Coins! (Costo: 100)",
+        gachaNotEnoughCoins: "Non hai abbastanza Waifu Coins!",
         gachaSuccess: (rarity: string) => `Congratulazioni! Hai sbloccato un nuovo sfondo (${rarity})!`,
         gachaFailureWithRefund: (coins: number) => `Nessuna fortuna... ma hai ricevuto un rimborso di ${coins} WC!`,
         gachaAllUnlocked: "Hai sbloccato tutti gli sfondi!",
@@ -299,6 +380,10 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
         imageSavedToDownloads: "Immagine salvata nei Download!",
         imageSaveFailed: "Salvataggio immagine fallito.",
         permissionDenied: "Permesso di archiviazione negato. Impossibile salvare l'immagine.",
+        rarityUnlocked: (rarity: string) => `Sbloccato ${rarity}!`,
+        gachaMultiResultTitle: "Risultati Gacha",
+        gachaMultiUnlocked: (count: number) => `Hai sbloccato ${count} nuovi sfondi!`,
+        gachaMultiRefund: (coins: number) => `Hai ricevuto un rimborso di ${coins} WC.`,
     },
     // Legal Modals
     privacyPolicy: {
@@ -405,6 +490,7 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
     cardDeckStyleLabel: "Deck Style",
     cardDeckStyleClassic: "Classic",
     cardDeckStylePoker: "Poker",
+    diceAnimationLabel: "Dice Animation",
     toggleChatLabel: "Enable Waifu Chat",
     toggleWaitForWaifuLabel: "Wait for Waifu Reply",
     fastModeEnabled: "Fast mode enabled: The game will no longer wait for the Waifu's reply.",
@@ -413,6 +499,7 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
     comingSoon: " (Coming Soon)",
     comingSoonTooltip: "This mode will be available soon!",
     rulesTitle: "Scoring Rules",
+    projectDescriptionTitle: "Project Description",
     refreshBackground: "Change Background",
     winCondition: "The deck has a total of 120 points. The first player to score more than 60 points wins the game.",
     otherCards: "Other cards",
@@ -460,6 +547,51 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
     oscSawtooth: "Sawtooth",
     oscSquare: "Square",
     oscTriangle: "Triangle",
+    drums: "Drums",
+    kick: "Kick",
+    snare: "Snare",
+    closedHat: "Closed Hat",
+    openHat: "Open Hat",
+    guitarChords: "Guitar Chords",
+    decadePresets: "Decade Presets",
+    loadPresetPlaceholder: "Load a Decade Preset...",
+    decade_40s: "'40s Swing",
+    decade_50s: "'50s Rock",
+    decade_60s: "'60s Soul",
+    decade_70s: "'70s Disco",
+    decade_80s: "'80s Synth",
+    decade_90s: "'90s Pop",
+    decade_2000s: "'00s Dance",
+    decade_2010s: "'10s EDM",
+    decade_2020s: "'20s Lo-fi",
+    decade_blue90s: "Eiffel 65 - Blue",
+    savePreset: "Save Preset",
+    presetName: "Preset Name",
+    save: "Save",
+    deletePreset: "Delete Preset",
+    defaultPresets: "Default Presets",
+    customPresets: "Your Presets",
+    // Tutorial
+    tutorial: {
+      next: "Next",
+      skip: "Skip Tutorial",
+      finish: "Finish",
+      welcome: "Welcome to Waifu Briscola! Let me give you a quick tour of how everything works.",
+      gameMode: "Here you can choose between a classic game or the Roguelike mode for a bigger challenge.",
+      difficulty: "Select the AI difficulty. Higher difficulties offer greater rewards!",
+      waifu: "Choose your opponent here. Each has a unique personality you'll discover by playing and chatting.",
+      gallery: "Use the Waifu Coins you earn to unlock beautiful new game backgrounds here!",
+      start: "When you're ready, press here to start a practice match!",
+      // In-game tutorial steps
+      playerHand: "This is your hand. Cards have a value (like the Ace) and a suit.",
+      promptPlayCard: "It's your turn. Let's play the Ace of Batons, a high-value card. Click on it.",
+      aiResponds: "Perfect! Now the AI plays its card. Since you started with Batons, it must respond with the same suit if it has one.",
+      trickWon: "You won the trick! In the Batons suit, your Ace beats the AI's 2.",
+      scoreUpdate: "The points from the cards you won (11 for your Ace) are added to your score. You need more than 60 to win!",
+      drawingCards: "After each trick, both players draw a new card. The winner of the trick draws first.",
+      briscola: "This is the Briscola (Trump). Cards of this suit (Cups) beat any other non-Trump suit.",
+      end: "You've learned the basics! The tutorial will now end. Enjoy the game!",
+    },
     // Game
     welcomeMessage: "Welcome! Start a new game.",
     yourTurn: "It's your turn to start.",
@@ -502,6 +634,7 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
       backToMap: "Back to Map",
       crossroadsTitle: "Crossroads",
       crossroadsMessage: "You cleared the level! Choose your next step.",
+      initialPowerTitle: "Initial Power",
       // Events
       marketTitle: "The Market",
       marketDescription: "A mysterious merchant offers you his wares. Choose one item to use in the next level.",
@@ -528,6 +661,38 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
       insightPotionDesc: "See your opponent's hand for the first 3 tricks of the next level.",
       coinPouch: "Pouch of Coins",
       coinPouchDesc: "Immediately gain an extra 50 Waifu Coins.",
+      // FIX: Added missing translations for power selection screen
+      chooseYourPower: "Choose Your Initial Power",
+      initialPowerMessage: "This power will aid you for the entire run. Choose wisely!",
+      chooseYourPath: "Choose Your Path",
+      levelUpMessage: (level: number) => `You've cleared Level ${level - 1}! Choose a new power or upgrade an existing one.`,
+      powers: {
+        upgrade: "Upgrade",
+        bonus_point_per_trick: {
+          name: "Tribute",
+          desc: (level: number) => `Gain +${level} bonus point(s) every time you win a trick.`
+        },
+        king_bonus: {
+          name: "Headhunter",
+          desc: (level: number) => `Gain +${level} extra points when winning a trick with a King.`
+        },
+        ace_of_briscola_start: {
+          name: "Ace in the Hole",
+          desc: () => "Start every match with the Ace of Trump in your hand."
+        },
+        briscola_mastery: {
+          name: "Trump Mastery",
+          desc: (level: number) => `Your Trump cards are worth +${level} points when you win a trick.`
+        },
+        value_swap: {
+          name: "Unexpected Swap",
+          desc: () => "The 2 beats the Jack when both are of the same non-Trump suit."
+        },
+        last_trick_insight: {
+          name: "Final Foresight",
+          desc: () => "See your opponent's cards during the last three tricks."
+        },
+      }
     },
     elementalPowersTitle: "Elemental Powers",
     toggleLegend: "Show/Hide Descriptions",
@@ -538,7 +703,7 @@ Sii creativa, unica e in personaggio. La risposta deve essere breve (1-2 frasi) 
     suitIs: (suit: string, element: string) => `${suit} is ${element}`,
     fireDescription: "Win the trick with a Fire card for +3 bonus points.",
     waterDescription: "If you lose the trick, the effect halves the winning card's points.",
-    airDescription: "If you lose the trick, the effect nullifies the trick's points.",
+    airDescription: "Your Air cards are worth +1 point for each Air card in your score pile.",
     earthDescription: "If you lose the trick, recover your Earth card's points.",
     elementalClash: {
         title: "Elemental Clash!",
@@ -629,14 +794,14 @@ You just won a trick in a game of Briscola against senpai.
 - You won ${points} points.
 
 Based on your personality and the points you won, generate a short, in-character response to senpai (1-2 sentences).
-Make it flirty, a bit teasing, and slightly suggestive, especially if the points are high. Be creative and unique.
+Make it flirty, a bit teasing, and slightly suggestive, especially if the points are high. Use asterisks to emphasize words, for example *like this*. Be creative and unique.
 The response must be in English.
 `,
     waifuGenericTeasePrompt: (waifuName: string, personality: string, aiScore: number, humanScore: number) => `
 You are ${waifuName}. Your personality is: "${personality}".
 You are playing Briscola against senpai. The score is You: ${aiScore}, Senpai: ${humanScore}.
 Make a generic, teasing comment about the ongoing game with a sensual double entendre that fits your personality. Do not refer to the last cards played.
-Be creative, unique, and in character. The response must be short (1-2 sentences) and in English.
+Use asterisks to emphasize words, for example *like this*. Be creative, unique, and in character. The response must be short (1-2 sentences) and in English.
 `,
     // Quota Exceeded
     quotaExceeded: {
@@ -669,9 +834,10 @@ Be creative, unique, and in character. The response must be short (1-2 sentences
         title: "Background Gallery",
         backgroundAlt: "Background",
         gachaButton: "Gacha! (100 WC)",
+        gachaButtonX10: (cost: number) => `Gacha x10 (${cost} WC)`,
         gachaButtonFree: "First Gacha Free!",
         promoButton: "Gallery & Gacha",
-        gachaNotEnoughCoins: "Not enough Waifu Coins! (Cost: 100)",
+        gachaNotEnoughCoins: "Not enough Waifu Coins!",
         gachaSuccess: (rarity: string) => `Congratulations! You unlocked a new background (${rarity})!`,
         gachaFailureWithRefund: (coins: number) => `No luck... but you received a refund of ${coins} WC!`,
         gachaAllUnlocked: "You've unlocked all backgrounds!",
@@ -681,6 +847,10 @@ Be creative, unique, and in character. The response must be short (1-2 sentences
         imageSavedToDownloads: "Image saved to Downloads!",
         imageSaveFailed: "Failed to save image.",
         permissionDenied: "Storage permission denied. Could not save the image.",
+        rarityUnlocked: (rarity: string) => `${rarity} Unlocked!`,
+        gachaMultiResultTitle: "Gacha Results",
+        gachaMultiUnlocked: (count: number) => `You unlocked ${count} new backgrounds!`,
+        gachaMultiRefund: (coins: number) => `You received a refund of ${coins} WC.`,
     },
     // Legal Modals
     privacyPolicy: {

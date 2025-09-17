@@ -4,8 +4,10 @@
 */
 import { useState, useEffect } from 'react';
 import { translations } from '../core/translations';
-import { defaultSoundSettings, startMusic, stopMusic, type SoundSettings, type OscillatorType } from '../core/soundManager';
-import type { Language } from '../core/types';
+import { defaultSoundSettings, startMusic, stopMusic, updateSoundSettings, decadePresets, type SoundSettings, DRUM_TYPES } from '../core/soundManager';
+import type { Language, OscillatorType, DrumType, Chord, Decade } from '../core/types';
+import { CHORDS } from '../core/types';
+import { useStores } from '../stores';
 
 interface SoundEditorModalProps {
     isOpen: boolean;
@@ -31,15 +33,23 @@ const ControlSlider = ({ label, value, min, max, step, onChange, displayValue }:
 );
 
 export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, language }: SoundEditorModalProps) => {
+    const { gameSettingsStore } = useStores();
     const [isPlaying, setIsPlaying] = useState(false);
+    const [presetName, setPresetName] = useState('');
+    const [selectedPresetKey, setSelectedPresetKey] = useState('');
 
-    // Effect to handle cleanup when the modal is closed
     useEffect(() => {
-        if (!isOpen) {
+        if (!isOpen && isPlaying) {
             stopMusic();
             setIsPlaying(false);
         }
-    }, [isOpen]);
+    }, [isOpen, isPlaying]);
+
+    useEffect(() => {
+        if (isPlaying) {
+            updateSoundSettings(settings);
+        }
+    }, [settings, isPlaying]);
 
 
     if (!isOpen) return null;
@@ -50,8 +60,38 @@ export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, 
         onSettingsChange(prev => ({ ...prev, [key]: value }));
     };
 
+    const handleDrumToggle = (drum: DrumType, step: number) => {
+        onSettingsChange(prev => {
+            const newPattern = { ...prev.drumPattern };
+            newPattern[drum] = [...newPattern[drum]]; // Create new array for immutability
+            newPattern[drum][step] = !newPattern[drum][step];
+            return { ...prev, drumPattern: newPattern };
+        });
+    };
+
+    const handleChordChange = (step: number, chord: Chord) => {
+        onSettingsChange(prev => {
+            const newPattern = [...prev.chordPattern];
+            newPattern[step] = chord;
+            return { ...prev, chordPattern: newPattern };
+        });
+    };
+
+    const handlePresetChange = (presetKey: string) => {
+        setSelectedPresetKey(presetKey);
+        const defaultPreset = decadePresets[presetKey as Decade];
+        const customPreset = gameSettingsStore.customSoundPresets[presetKey];
+
+        if (defaultPreset) {
+            onSettingsChange(defaultPreset);
+        } else if (customPreset) {
+            onSettingsChange(customPreset);
+        }
+    };
+
     const handleReset = () => {
         onSettingsChange(defaultSoundSettings);
+        setSelectedPresetKey('');
     };
 
     const handleTogglePlay = () => {
@@ -63,6 +103,25 @@ export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, 
             setIsPlaying(true);
         }
     };
+    
+    const handleSavePreset = () => {
+        if (!presetName.trim()) return;
+        gameSettingsStore.saveCustomPreset(presetName, settings);
+        setSelectedPresetKey(presetName); // auto-select new preset
+        setPresetName(''); // clear input
+    };
+
+    const handleDeletePreset = () => {
+        if (selectedPresetKey && gameSettingsStore.customSoundPresets[selectedPresetKey]) {
+            const nameToDelete = selectedPresetKey;
+            setSelectedPresetKey(''); // deselect
+            handleReset(); // reset to default
+            gameSettingsStore.deleteCustomPreset(nameToDelete);
+        }
+    };
+
+    const isCustomPresetSelected = selectedPresetKey in gameSettingsStore.customSoundPresets;
+    const allDefaultPresets = Object.keys(decadePresets) as Decade[];
 
     return (
         <div className="game-over-overlay" onClick={onClose}>
@@ -73,29 +132,119 @@ export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, 
                     </svg>
                 </button>
                 <h2>{T.soundEditorTitle}</h2>
-                <div className="sound-editor-controls">
-                    <ControlSlider label={T.tempo} value={settings.tempo} min={10} max={60} step={1} onChange={(v) => handleSettingChange('tempo', v)} displayValue={`${settings.tempo} BPM`} />
-                    
-                    <div className="sound-editor-control">
-                        <label htmlFor="osc-type">{T.oscillatorType}</label>
-                        <select id="osc-type" value={settings.oscillatorType} onChange={(e) => handleSettingChange('oscillatorType', e.target.value as OscillatorType)}>
-                            <option value="sawtooth">{T.oscSawtooth}</option>
-                            <option value="sine">{T.oscSine}</option>
-                            <option value="square">{T.oscSquare}</option>
-                            <option value="triangle">{T.oscTriangle}</option>
-                        </select>
+                <div className="sound-editor-content">
+                    <div className="sound-editor-controls">
+                        {/* Preset Selector */}
+                        <div className="sound-editor-control">
+                            <label htmlFor="preset-select">{T.decadePresets}</label>
+                            <div className="preset-select-wrapper">
+                                <select 
+                                    id="preset-select" 
+                                    value={selectedPresetKey} 
+                                    onChange={(e) => handlePresetChange(e.target.value)}
+                                >
+                                    <option value="">{T.loadPresetPlaceholder}</option>
+                                    <optgroup label={T.defaultPresets}>
+                                        {allDefaultPresets.map(key => {
+                                            const translationKey = `decade_${key}` as keyof typeof T;
+                                            const label = T[translationKey] as string || key;
+                                            return <option key={key} value={key}>{label}</option>;
+                                        })}
+                                    </optgroup>
+                                    {Object.keys(gameSettingsStore.customSoundPresets).length > 0 && (
+                                        <optgroup label={T.customPresets}>
+                                            {Object.keys(gameSettingsStore.customSoundPresets).map(name => (
+                                                <option key={name} value={name}>{name}</option>
+                                            ))}
+                                        </optgroup>
+                                    )}
+                                </select>
+                                {isCustomPresetSelected && (
+                                    <button className="delete-preset-button" onClick={handleDeletePreset}>{T.deletePreset}</button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Sliders and Selects */}
+                        <ControlSlider label={T.tempo} value={settings.tempo} min={60} max={360} step={1} onChange={(v) => handleSettingChange('tempo', v)} />
+                        <div className="sound-editor-control">
+                            <label htmlFor="osc-type-select">{T.oscillatorType}</label>
+                            <select id="osc-type-select" value={settings.oscillatorType} onChange={(e) => handleSettingChange('oscillatorType', e.target.value as OscillatorType)}>
+                                <option value="sine">{T.oscSine}</option>
+                                <option value="sawtooth">{T.oscSawtooth}</option>
+                                <option value="square">{T.oscSquare}</option>
+                                <option value="triangle">{T.oscTriangle}</option>
+                            </select>
+                        </div>
+                        <ControlSlider label={T.filterFrequency} value={settings.filterCutoff} min={100} max={10000} step={100} onChange={(v) => handleSettingChange('filterCutoff', v)} displayValue={`${settings.filterCutoff} Hz`} />
+                        <ControlSlider label={T.lfoFrequency} value={settings.lfoFrequency} min={0.1} max={10} step={0.1} onChange={(v) => handleSettingChange('lfoFrequency', v)} displayValue={`${settings.lfoFrequency} Hz`} />
+                        <ControlSlider label={T.lfoDepth} value={settings.lfoDepth} min={0} max={5000} step={100} onChange={(v) => handleSettingChange('lfoDepth', v)} />
+                        <ControlSlider label={T.reverbAmount} value={settings.reverbWetness} min={0} max={1} step={0.05} onChange={(v) => handleSettingChange('reverbWetness', v)} />
                     </div>
 
-                    <ControlSlider label={T.filterFrequency} value={settings.filterCutoff} min={100} max={8000} step={50} onChange={(v) => handleSettingChange('filterCutoff', v)} displayValue={`${settings.filterCutoff} Hz`} />
-                    <ControlSlider label={T.lfoFrequency} value={settings.lfoFrequency} min={0.05} max={1} step={0.01} onChange={(v) => handleSettingChange('lfoFrequency', v)} displayValue={`${settings.lfoFrequency.toFixed(2)} Hz`} />
-                    <ControlSlider label={T.lfoDepth} value={settings.lfoDepth} min={0} max={4000} step={100} onChange={(v) => handleSettingChange('lfoDepth', v)} />
-                    <ControlSlider label={T.reverbAmount} value={settings.reverbWetness} min={0} max={1} step={0.05} onChange={(v) => handleSettingChange('reverbWetness', v)} displayValue={`${Math.round(settings.reverbWetness * 100)}%`} />
+                    {/* Chord Sequencer */}
+                    <div className="sound-editor-chords">
+                        <h3>{T.guitarChords}</h3>
+                        <div className="chord-sequencer">
+                            <div className="chord-row">
+                                <div className="drum-label">{T.guitarChords}</div>
+                                <div className="chord-steps">
+                                    {[...Array(16)].map((_, i) => (
+                                        <div key={i} className="step-chord-wrapper">
+                                            <select 
+                                                className="step-select"
+                                                value={settings.chordPattern[i] || '---'}
+                                                onChange={(e) => handleChordChange(i, e.target.value as Chord)}
+                                            >
+                                                {CHORDS.map(chord => <option key={chord} value={chord}>{chord}</option>)}
+                                            </select>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Drum Sequencer */}
+                    <div className="sound-editor-drums">
+                        <h3>{T.drums}</h3>
+                        <div className="drum-sequencer">
+                            {DRUM_TYPES.map(drum => (
+                                <div key={drum} className="drum-row">
+                                    <div className="drum-label">{T[drum]}</div>
+                                    <div className="drum-steps">
+                                        {[...Array(16)].map((_, i) => (
+                                            <button 
+                                                key={i}
+                                                className={`step-button ${i % 4 === 0 ? 'beat-strong' : ''} ${settings.drumPattern[drum][i] ? 'active' : ''}`}
+                                                onClick={() => handleDrumToggle(drum, i)}
+                                                aria-label={`${T[drum] as string} step ${i + 1}`}
+                                            ></button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Save Preset */}
+                    <div className="save-preset-section">
+                        <h3>{T.savePreset}</h3>
+                        <div className="save-preset-controls">
+                            <input 
+                                type="text"
+                                placeholder={T.presetName}
+                                value={presetName}
+                                onChange={(e) => setPresetName(e.target.value)} 
+                            />
+                            <button onClick={handleSavePreset} disabled={!presetName.trim()}>{T.save}</button>
+                        </div>
+                    </div>
                 </div>
+                
                 <div className="modal-actions">
-                    <button onClick={handleTogglePlay} className="button-primary">
-                        {isPlaying ? T.stop : T.play}
-                    </button>
-                    <button onClick={handleReset} className="button-primary">{T.resetToDefaults}</button>
+                    <button onClick={handleTogglePlay} className="button-primary">{isPlaying ? T.stop : T.play}</button>
+                    <button onClick={handleReset} className="button-secondary">{T.resetToDefaults}</button>
                     <button onClick={onClose} className="button-secondary">{T.close}</button>
                 </div>
             </div>

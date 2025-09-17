@@ -5,6 +5,8 @@
 import { translations } from '../core/translations';
 import type { Language } from '../core/types';
 import { CachedImage } from './CachedImage';
+import { GachaUnlockAnimation } from './GachaUnlockAnimation';
+import { GachaRollingAnimation } from './GachaRollingAnimation';
 
 type BackgroundItem = {
     url: string;
@@ -19,30 +21,52 @@ interface GalleryModalProps {
     unlockedBackgrounds: string[];
     waifuCoins: number;
     onGachaRoll: () => void;
-    onImageSelect: (url: string) => void;
+    onGachaMultiRoll: () => void;
     hasRolledGacha: boolean;
+    isRolling: boolean;
+    gachaAnimationState: { active: boolean; rarity: 'R' | 'SR' | 'SSR' | null };
+    onAnimationEnd: () => void;
+    onImageSelect: (url: string) => void;
 }
 
-export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onImageSelect, hasRolledGacha }: GalleryModalProps) => {
+export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onGachaMultiRoll, hasRolledGacha, isRolling, gachaAnimationState, onAnimationEnd, onImageSelect }: GalleryModalProps) => {
     if (!isOpen) {
         return null;
     }
 
     const T = translations[language];
     const GACHA_COST = 100;
+    const GACHA_COST_X10 = 900;
     const isFirstRoll = !hasRolledGacha;
     const allUnlocked = unlockedBackgrounds.length >= backgrounds.length;
     const canAfford = waifuCoins >= GACHA_COST;
+    const canAffordX10 = waifuCoins >= GACHA_COST_X10;
     const buttonText = isFirstRoll ? T.gallery.gachaButtonFree : T.gallery.gachaButton;
 
     return (
         <div className="game-over-overlay" onClick={onClose}>
             <div className="gallery-modal" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-close-button" onClick={onClose} aria-label={T.close}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+                {isRolling && !gachaAnimationState.active && <GachaRollingAnimation />}
+                {gachaAnimationState.active && gachaAnimationState.rarity && (
+                    <GachaUnlockAnimation 
+                        rarity={gachaAnimationState.rarity}
+                        onAnimationEnd={onAnimationEnd}
+                    />
+                )}
                 <div className="gallery-header">
                     <h2>{T.gallery.title}</h2>
                     <div className="modal-actions">
-                        <button onClick={onGachaRoll} disabled={allUnlocked || (!isFirstRoll && !canAfford)}>
+                        <button onClick={onGachaRoll} disabled={allUnlocked || (!isFirstRoll && !canAfford) || isRolling}>
                             {buttonText}
+                        </button>
+                        {/* FIX: Added a button for multi-gacha rolls. */}
+                        <button onClick={onGachaMultiRoll} disabled={allUnlocked || isFirstRoll || !canAffordX10 || isRolling}>
+                            {T.gallery.gachaButtonX10(GACHA_COST_X10)}
                         </button>
                         <button onClick={onClose} className="button-secondary">{T.close}</button>
                     </div>
