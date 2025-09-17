@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { translations } from '../core/translations';
-import type { Language, TrickHistoryEntry, CardDeckStyle } from '../core/types';
+import type { Language, TrickHistoryEntry, CardDeckStyle, GameplayMode } from '../core/types';
 import { CardView } from './CardView';
 import { ElementIcon } from './ElementIcon';
 
@@ -14,19 +14,21 @@ interface HistoryModalProps {
     language: Language;
     aiName: string;
     cardDeckStyle: CardDeckStyle;
+    gameplayMode: GameplayMode;
 }
 
-export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardDeckStyle }: HistoryModalProps) => {
+export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardDeckStyle, gameplayMode }: HistoryModalProps) => {
     if (!isOpen) {
         return null;
     }
 
     const T = translations[language];
     const TH = T.history;
+    const isClassicMode = gameplayMode === 'classic';
 
     return (
         <div className="game-over-overlay" onClick={onClose}>
-            <div className="history-modal" onClick={(e) => e.stopPropagation()}>
+            <div className={`history-modal ${isClassicMode ? 'classic-mode' : ''}`} onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close-button" onClick={onClose} aria-label={T.close}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -39,7 +41,7 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardD
                         <span>{TH.trick}</span>
                         <span>{TH.you}</span>
                         <span>{TH.opponent}</span>
-                        <span>{TH.clash}</span>
+                        {!isClassicMode && <span>{TH.clash}</span>}
                         <span>{TH.pointsYou}</span>
                         <span>{TH.pointsOpponent}</span>
                     </div>
@@ -49,21 +51,23 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardD
                                 <span>{entry.trickNumber}</span>
                                 <div><CardView card={entry.humanCard} lang={language} cardDeckStyle={cardDeckStyle} /></div>
                                 <div><CardView card={entry.aiCard} lang={language} cardDeckStyle={cardDeckStyle} /></div>
-                                <div className="history-clash-result">
-                                    {entry.clashResult ? (
-                                        entry.clashResult.type === 'dice' ? (
-                                            <span>{`${entry.clashResult.humanRoll} vs ${entry.clashResult.aiRoll}`}</span>
+                                {!isClassicMode && (
+                                    <div className="history-clash-result">
+                                        {entry.clashResult ? (
+                                            entry.clashResult.type === 'dice' ? (
+                                                <span>{`${entry.clashResult.humanRoll} vs ${entry.clashResult.aiRoll}`}</span>
+                                            ) : (
+                                                <>
+                                                    <ElementIcon element={entry.clashResult.winningElement} />
+                                                    &gt;
+                                                    <ElementIcon element={entry.clashResult.losingElement} />
+                                                </>
+                                            )
                                         ) : (
-                                            <>
-                                                <ElementIcon element={entry.clashResult.winningElement} />
-                                                &gt;
-                                                <ElementIcon element={entry.clashResult.losingElement} />
-                                            </>
-                                        )
-                                    ) : (
-                                        <span>-</span>
-                                    )}
-                                </div>
+                                            <span>-</span>
+                                        )}
+                                    </div>
+                                )}
                                 <span className={`history-points ${entry.winner === 'human' ? 'human' : ''}`}>
                                     {entry.winner === 'human' ? entry.points : 0}
                                 </span>

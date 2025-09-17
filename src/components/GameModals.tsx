@@ -141,6 +141,7 @@ export const GameModals = observer(() => {
                 language={language}
                 aiName={currentWaifu?.name ?? ''}
                 cardDeckStyle={cardDeckStyle}
+                gameplayMode={gameplayMode}
             />
             
             <KasumiSwapModal
