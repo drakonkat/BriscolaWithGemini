@@ -3007,6 +3007,10 @@ input:checked + .slider:before {
     padding: 0.5rem;
     border-radius: 6px;
 }
+.history-modal.classic-mode .history-header,
+.history-modal.classic-mode .history-entry {
+    grid-template-columns: 0.5fr 1fr 1fr 0.8fr 0.8fr;
+}
 .history-entry .card {
     --card-height: 54px; /* ~30% of normal */
     --card-width: 30px;
@@ -3859,6 +3863,10 @@ input:checked + .slider:before {
     font-size: 0.8rem;
     grid-template-columns: 0.4fr 1fr 1fr 1fr 0.5fr 0.5fr;
     gap: 0.5rem;
+  }
+  .history-modal.classic-mode .history-header,
+  .history-modal.classic-mode .history-entry {
+      grid-template-columns: 0.4fr 1fr 1fr 0.5fr 0.5fr;
   }
   .history-entry .card {
     --card-height: 45px;
