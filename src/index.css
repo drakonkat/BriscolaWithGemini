@@ -4011,3 +4011,9 @@ input:checked + .slider:before {
   background: none;
   color: white;
 }
+.game-over-modal h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--primary-accent);
+    padding-right: 0;
+}
