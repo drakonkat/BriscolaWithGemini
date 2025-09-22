@@ -2,6 +2,8 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
+// FIX: Import React to use React.Fragment.
+import React from 'react';
 import { translations } from '../core/translations';
 import type { Card, Language, CardDeckStyle } from '../core/types';
 import { CardView } from './CardView';
@@ -39,7 +41,10 @@ export const KasumiSwapModal = ({ isOpen, onClose, onCardSelect, briscolaCard, h
                     </div>
                     <div className="hand">
                         {hand.map(card => (
-                            <CardView key={card.id} card={card} lang={language} isPlayable onClick={() => onCardSelect(card)} cardDeckStyle={cardDeckStyle} />
+                            // FIX: Wrap CardView in React.Fragment to solve key prop type error.
+                            <React.Fragment key={card.id}>
+                                <CardView card={card} lang={language} isPlayable onClick={() => onCardSelect(card)} cardDeckStyle={cardDeckStyle} />
+                            </React.Fragment>
                         ))}
                     </div>
                      <div className="modal-actions">

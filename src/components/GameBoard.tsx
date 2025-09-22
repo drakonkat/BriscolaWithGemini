@@ -2,7 +2,8 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { useState, useEffect } from 'react';
+// FIX: Import React to use React.Fragment.
+import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { CardView } from './CardView';
@@ -220,15 +221,17 @@ export const GameBoard = observer(() => {
 
             <div className="player-area ai-area">
                 <div className="hand">
-                    {(revealedAiHand || aiHand).map((card) => 
-                        <CardView 
-                            key={card.id} 
-                            card={card} 
-                            isFaceDown={!revealedAiHand} 
-                            lang={language}
-                            cardDeckStyle={cardDeckStyle}
-                        />
-                    )}
+                    {(revealedAiHand || aiHand).map((card) => (
+                        // FIX: Wrap CardView in React.Fragment to solve key prop type error.
+                        <React.Fragment key={card.id}>
+                            <CardView 
+                                card={card} 
+                                isFaceDown={!revealedAiHand} 
+                                lang={language}
+                                cardDeckStyle={cardDeckStyle}
+                            />
+                        </React.Fragment>
+                    ))}
                 </div>
             </div>
 
@@ -238,14 +241,16 @@ export const GameBoard = observer(() => {
                         const owner = index === 0 ? trickStarter : (trickStarter === 'human' ? 'ai' : 'human');
                         const status = lastTrickHighlights[owner];
                         return (
-                            <CardView 
-                                key={card.id} 
-                                card={card} 
-                                lang={language} 
-                                elementalEffectStatus={status === 'unset' ? undefined : status}
-                                className={''}
-                                cardDeckStyle={cardDeckStyle}
-                            />
+                            // FIX: Wrap CardView in React.Fragment to solve key prop type error.
+                            <React.Fragment key={card.id}>
+                                <CardView 
+                                    card={card} 
+                                    lang={language} 
+                                    elementalEffectStatus={status === 'unset' ? undefined : status}
+                                    className={''}
+                                    cardDeckStyle={cardDeckStyle}
+                                />
+                            </React.Fragment>
                         );
                     })}
                 </div>
@@ -254,15 +259,17 @@ export const GameBoard = observer(() => {
             <div className="player-area human-area">
                 <div className="hand" data-tutorial-id="player-hand">
                     {humanHand.map(card => (
-                        <CardView
-                            key={card.id}
-                            card={card}
-                            isPlayable={turn === 'human' && !isProcessing}
-                            onClick={() => gameStateStore.selectCardForPlay(card)}
-                            lang={language}
-                            className={''}
-                            cardDeckStyle={cardDeckStyle}
-                        />
+                        // FIX: Wrap CardView in React.Fragment to solve key prop type error.
+                        <React.Fragment key={card.id}>
+                            <CardView
+                                card={card}
+                                isPlayable={turn === 'human' && !isProcessing}
+                                onClick={() => gameStateStore.selectCardForPlay(card)}
+                                lang={language}
+                                className={''}
+                                cardDeckStyle={cardDeckStyle}
+                            />
+                        </React.Fragment>
                     ))}
                 </div>
             </div>
