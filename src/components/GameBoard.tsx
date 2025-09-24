@@ -24,8 +24,8 @@ export const GameBoard = observer(() => {
         currentWaifu, aiScore, aiHand, humanScore, humanHand, briscolaCard, deck, cardsOnTable, message,
         isProcessing, turn, trickStarter, backgroundUrl, lastTrick, lastTrickHighlights, activeElements,
         roguelikeState, powerAnimation, cardForElementalChoice, elementalClash,
-        revealedAiHand, 
-        isTutorialGame,
+        revealedAiHand, isAiHandPermanentlyRevealed, lastTrickInsightCooldown, activateLastTrickInsight,
+        briscolaSwapCooldown, openBriscolaSwapModal, isTutorialGame,
     } = gameStateStore;
     const { animatingCard, drawingCards, unreadMessageCount, waifuBubbleMessage } = uiStore;
     const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle, isDiceAnimationEnabled } = gameSettingsStore;
@@ -222,7 +222,6 @@ export const GameBoard = observer(() => {
             <div className="player-area ai-area">
                 <div className="hand">
                     {(revealedAiHand || aiHand).map((card) => (
-                        // FIX: Wrap CardView in React.Fragment to solve key prop type error.
                         <React.Fragment key={card.id}>
                             <CardView 
                                 card={card} 
@@ -241,7 +240,6 @@ export const GameBoard = observer(() => {
                         const owner = index === 0 ? trickStarter : (trickStarter === 'human' ? 'ai' : 'human');
                         const status = lastTrickHighlights[owner];
                         return (
-                            // FIX: Wrap CardView in React.Fragment to solve key prop type error.
                             <React.Fragment key={card.id}>
                                 <CardView 
                                     card={card} 
@@ -259,7 +257,6 @@ export const GameBoard = observer(() => {
             <div className="player-area human-area">
                 <div className="hand" data-tutorial-id="player-hand">
                     {humanHand.map(card => (
-                        // FIX: Wrap CardView in React.Fragment to solve key prop type error.
                         <React.Fragment key={card.id}>
                             <CardView
                                 card={card}
@@ -279,6 +276,50 @@ export const GameBoard = observer(() => {
                     <div className="player-score human-score" data-tutorial-id="player-score">
                         <span>{T.scoreYou}: {humanScore}</span>
                     </div>
+                    
+                    {(() => {
+                        const insightPower = roguelikeState.activePowers.find(p => p.id === 'last_trick_insight');
+                        const swapPower = roguelikeState.activePowers.find(p => p.id === 'value_swap');
+
+                        return (
+                            <>
+                                {insightPower && insightPower.level === 2 && (
+                                    <button
+                                        className={`ability-indicator player-human ${lastTrickInsightCooldown === 0 ? 'ready' : 'disabled'}`}
+                                        onClick={activateLastTrickInsight}
+                                        disabled={lastTrickInsightCooldown > 0 || turn !== 'human'}
+                                        title={POWER_UP_DEFINITIONS['last_trick_insight'].name(language)}
+                                    >
+                                        <div className="ability-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5 4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
+                                        </div>
+                                        {lastTrickInsightCooldown > 0 ? (
+                                            <span>{T.abilities.onCooldown(lastTrickInsightCooldown)}</span>
+                                        ) : (
+                                            <span>{T.abilities.revealHand}</span>
+                                        )}
+                                    </button>
+                                )}
+                                {swapPower && (
+                                    <button
+                                        className={`ability-indicator player-human ${briscolaSwapCooldown === 0 ? 'ready' : 'disabled'}`}
+                                        onClick={openBriscolaSwapModal}
+                                        disabled={briscolaSwapCooldown > 0 || turn !== 'human'}
+                                        title={POWER_UP_DEFINITIONS['value_swap'].name(language)}
+                                    >
+                                        <div className="ability-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.99 11 3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+                                        </div>
+                                        {briscolaSwapCooldown > 0 ? (
+                                            <span>{T.abilities.onCooldown(briscolaSwapCooldown)}</span>
+                                        ) : (
+                                            <span>{POWER_UP_DEFINITIONS['value_swap'].name(language)}</span>
+                                        )}
+                                    </button>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
 
                 {lastTrick && (

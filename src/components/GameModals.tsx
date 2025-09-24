@@ -23,13 +23,15 @@ import { GachaSingleUnlockModal } from './GachaSingleUnlockModal';
 import { GachaMultiUnlockModal } from './GachaMultiUnlockModal';
 
 import { translations } from '../core/translations';
+import { BriscolaSwapModal } from './BriscolaSwapModal';
 
 export const GameModals = observer(() => {
     const { uiStore, gameStateStore, gachaStore, gameSettingsStore } = useStores();
     const { language, difficulty, gameplayMode, cardDeckStyle } = gameSettingsStore;
     const { 
         phase, gameResult, lastGameWinnings, currentWaifu, gameMode, humanScore, aiScore, 
-        trickHistory, isKasumiModalOpen, briscolaCard, humanHand
+        trickHistory, isKasumiModalOpen, briscolaCard, humanHand, isBriscolaSwapModalOpen,
+        closeBriscolaSwapModal, handleBriscolaSwap
     } = gameStateStore;
 
     const T = translations[language];
@@ -55,7 +57,9 @@ export const GameModals = observer(() => {
                     <div className="game-over-modal">
                         <h2>{gameResult === 'human' ? TR.runCompleted : TR.runFailed}</h2>
                         <p>{gameResult === 'human' ? TR.runCompletedMessage(lastGameWinnings) : TR.runFailedMessage(lastGameWinnings)}</p>
-                        <button onClick={gameStateStore.goToMenu}>{T.backToMenu}</button>
+                        <div className="modal-actions">
+                            <button onClick={gameStateStore.goToMenu}>{T.backToMenu}</button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -148,6 +152,16 @@ export const GameModals = observer(() => {
                 isOpen={isKasumiModalOpen}
                 onClose={gameStateStore.closeKasumiModal}
                 onCardSelect={gameStateStore.handleKasumiCardSwap}
+                briscolaCard={briscolaCard}
+                hand={humanHand}
+                language={language}
+                cardDeckStyle={cardDeckStyle}
+            />
+
+            <BriscolaSwapModal
+                isOpen={isBriscolaSwapModalOpen}
+                onClose={closeBriscolaSwapModal}
+                onCardSelect={handleBriscolaSwap}
                 briscolaCard={briscolaCard}
                 hand={humanHand}
                 language={language}

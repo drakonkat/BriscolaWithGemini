@@ -11,46 +11,34 @@ export const POWER_UP_DEFINITIONS: Record<RoguelikePowerUpId, {
     maxLevel: number;
 }> = {
   'bonus_point_per_trick': { 
-    // FIX: Corrected translation path
     name: (lang) => translations[lang].roguelike.powers.bonus_point_per_trick.name, 
-    // FIX: Corrected translation path
     description: (lang, level) => translations[lang].roguelike.powers.bonus_point_per_trick.desc(level), 
     maxLevel: 3 
   },
   'king_bonus': { 
-    // FIX: Corrected translation path
     name: (lang) => translations[lang].roguelike.powers.king_bonus.name, 
-    // FIX: Corrected translation path
-    description: (lang, level) => translations[lang].roguelike.powers.king_bonus.desc(level * 5), 
-    maxLevel: 2 
+    description: (lang, level) => translations[lang].roguelike.powers.king_bonus.desc(level), 
+    maxLevel: 3
   },
   'ace_of_briscola_start': { 
-    // FIX: Corrected translation path
     name: (lang) => translations[lang].roguelike.powers.ace_of_briscola_start.name, 
-    // FIX: Corrected translation path
-    description: (lang) => translations[lang].roguelike.powers.ace_of_briscola_start.desc(), 
-    maxLevel: 1 
+    description: (lang, level) => translations[lang].roguelike.powers.ace_of_briscola_start.desc(level), 
+    maxLevel: 3
   },
   'briscola_mastery': { 
-    // FIX: Corrected translation path
     name: (lang) => translations[lang].roguelike.powers.briscola_mastery.name, 
-    // FIX: Corrected translation path
-    description: (lang, level) => translations[lang].roguelike.powers.briscola_mastery.desc(level * 2), 
+    description: (lang, level) => translations[lang].roguelike.powers.briscola_mastery.desc(level), 
     maxLevel: 3 
   },
   'value_swap': { 
-    // FIX: Corrected translation path
     name: (lang) => translations[lang].roguelike.powers.value_swap.name, 
-    // FIX: Corrected translation path
-    description: (lang) => translations[lang].roguelike.powers.value_swap.desc(), 
-    maxLevel: 1 
+    description: (lang, level) => translations[lang].roguelike.powers.value_swap.desc(4 - level), 
+    maxLevel: 3 
   },
   'last_trick_insight': { 
-    // FIX: Corrected translation path
     name: (lang) => translations[lang].roguelike.powers.last_trick_insight.name, 
-    // FIX: Corrected translation path
-    description: (lang) => translations[lang].roguelike.powers.last_trick_insight.desc(), 
-    maxLevel: 1 
+    description: (lang, level) => translations[lang].roguelike.powers.last_trick_insight.desc(level), 
+    maxLevel: 3
   },
 };
 
