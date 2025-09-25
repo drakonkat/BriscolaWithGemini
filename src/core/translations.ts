@@ -169,6 +169,8 @@ export const translations = {
       crossroadsTitle: "Bivio",
       crossroadsMessage: "Hai superato il livello! Scegli il tuo prossimo passo.",
       initialPowerTitle: "Potere Iniziale",
+      allPowersTitle: "Poteri Attivi",
+      elementalCycleTitle: "Ciclo Elementale",
       // Events
       marketTitle: "Il Mercato",
       marketDescription: "Un mercante misterioso ti offre i suoi averi. Scegli un oggetto da usare nel prossimo livello.",
@@ -646,6 +648,8 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
       crossroadsTitle: "Crossroads",
       crossroadsMessage: "You cleared the level! Choose your next step.",
       initialPowerTitle: "Initial Power",
+      allPowersTitle: "Active Powers",
+      elementalCycleTitle: "Elemental Cycle",
       // Events
       marketTitle: "The Market",
       marketDescription: "A mysterious merchant offers you his wares. Choose an item to use in the next level.",

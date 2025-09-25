@@ -33,7 +33,6 @@ export const GameBoard = observer(() => {
     const T = translations[language];
     const TC = T.elementalClash;
     const [isLegendExpanded, setIsLegendExpanded] = useState(true);
-    const [isInitialPowerLegendExpanded, setIsInitialPowerLegendExpanded] = useState(true);
     const [isDiceRolling, setIsDiceRolling] = useState(false);
 
     useEffect(() => {
@@ -55,17 +54,6 @@ export const GameBoard = observer(() => {
     const humanCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     const aiCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     
-    const initialPowerId = roguelikeState.initialPower;
-    const initialPowerState = initialPowerId ? roguelikeState.activePowers.find(p => p.id === initialPowerId) : null;
-    let initialPowerDef = null;
-    if (initialPowerState) {
-        initialPowerDef = {
-            name: POWER_UP_DEFINITIONS[initialPowerState.id].name(language),
-            description: POWER_UP_DEFINITIONS[initialPowerState.id].description(language, initialPowerState.level),
-            level: initialPowerState.level,
-        };
-    }
-
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
             <CachedImage 
@@ -143,7 +131,7 @@ export const GameBoard = observer(() => {
                 </button>
             </div>
             
-            {gameplayMode === 'roguelike' && activeElements.length > 0 && (
+            {gameplayMode === 'roguelike' && (activeElements.length > 0 || roguelikeState.activePowers.length > 0) && (
                 <div className={`elemental-powers-panel ${!isLegendExpanded ? 'collapsed' : ''}`} title={T.elementalPowersTitle}>
                     <button className="elemental-powers-toggle" onClick={() => setIsLegendExpanded(!isLegendExpanded)} title={T.toggleLegend}>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -162,21 +150,29 @@ export const GameBoard = observer(() => {
                             </div>
                         );
                     })}
-                </div>
-            )}
 
-            {gameplayMode === 'roguelike' && initialPowerDef && (
-                <div className={`initial-power-panel ${!isInitialPowerLegendExpanded ? 'collapsed' : ''}`}>
-                    <span className="initial-power-title">{T.roguelike.initialPowerTitle}</span>
-                    <button className="initial-power-toggle" onClick={() => setIsInitialPowerLegendExpanded(!isInitialPowerLegendExpanded)} title={T.toggleLegend}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
-                        </svg>
-                    </button>
-                    <div className="initial-power-content">
-                        <h4>{initialPowerDef.name} (Lv. {initialPowerDef.level})</h4>
-                        <p>{initialPowerDef.description}</p>
-                    </div>
+                    {activeElements.length > 0 && (
+                        <>
+                           <h4 className="abilities-subtitle">{T.roguelike.elementalCycleTitle}</h4>
+                           <div className="elemental-cycle-display">
+                               <ElementIcon element="water" /> &gt; <ElementIcon element="fire" /> &gt; <ElementIcon element="air" /> &gt; <ElementIcon element="earth" /> &gt; <ElementIcon element="water" />
+                           </div>
+                        </>
+                    )}
+
+                    {roguelikeState.activePowers.length > 0 && (
+                        <>
+                            <h4 className="abilities-subtitle">{T.roguelike.allPowersTitle}</h4>
+                            <div className="roguelike-powers-list">
+                                {roguelikeState.activePowers.map(power => (
+                                    <div key={power.id} className="roguelike-power-entry">
+                                        <h5>{POWER_UP_DEFINITIONS[power.id].name(language)} (Lv. {power.level})</h5>
+                                        <p>{POWER_UP_DEFINITIONS[power.id].description(language, power.level)}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
             
