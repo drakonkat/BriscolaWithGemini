@@ -738,10 +738,6 @@ export class GameStateStore {
         const delay = isFinalTrick ? 3000 : 1500;
 
         setTimeout(() => runInAction(() => {
-            // FIX: Clear temporary effects like Fortify from cards in hand at the end of a trick.
-            // This prevents invalid states where a card remains fortified in hand after a trick,
-            // which could cause the AI logic to freeze on subsequent turns. This is a robust safeguard
-            // for both players' hands.
             const cleanupHand = (hand: Card[]): Card[] => {
                 return hand.map(c => {
                     if (c.isTemporaryBriscola) {
@@ -771,18 +767,12 @@ export class GameStateStore {
             this.cardsOnTable = [];
             this.isResolvingTrick = false;
 
-            // FIX: Cannot assign to 'revealedAiHand' because it is a read-only property.
-            // The getter for `revealedAiHand` already contains the logic to show the hand
-            // for the last tricks based on game state, so this explicit assignment
-            // was redundant and incorrect. It has been removed.
-            if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike') {
-                
-            }
-
             if(trickWinner === 'human') this.message = this.T.yourTurnMessage;
             if (this.isTutorialGame) {
                 this.rootStore.uiStore.onTutorialGameEvent('cardsDrawn');
             }
+
+            this.handleEndOfGame();
         }), delay);
     };
     
