@@ -860,7 +860,7 @@ input:checked + .slider:before {
   align-items: center;
   position: relative;
   gap: 0.75rem;
-  top: 8px;
+  top: 7px;
 }
 .chat-header-avatar-button { background: none; border: none; padding: 0; cursor: pointer; border-radius: 50%; line-height: 0; }
 .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: top; border: 2px solid var(--primary-accent); transition: transform 0.2s ease; }
