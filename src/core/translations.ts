@@ -143,6 +143,7 @@ export const translations = {
     tokensUsed: "Token Usati",
     briscolaLabel: "Briscola",
     remainingCardsLabel: "Carte Rimanenti",
+    briscolaSwapMessage: "Scegli una carta dalla tua mano per scambiarla con la Briscola.",
     history: {
       title: "Storico Turni",
       lastTrick: "Ultimo Turno",
@@ -168,6 +169,8 @@ export const translations = {
       crossroadsTitle: "Bivio",
       crossroadsMessage: "Hai superato il livello! Scegli il tuo prossimo passo.",
       initialPowerTitle: "Potere Iniziale",
+      allPowersTitle: "Poteri Attivi",
+      elementalCycleTitle: "Ciclo Elementale",
       // Events
       marketTitle: "Il Mercato",
       marketDescription: "Un mercante misterioso ti offre i suoi averi. Scegli un oggetto da usare nel prossimo livello.",
@@ -207,23 +210,31 @@ export const translations = {
         },
         king_bonus: {
           name: "Cacciatore di Teste",
-          desc: (level: number) => `Guadagni +${level} punti extra quando vinci un turno con un Re.`
+          desc: (level: number) => `Quando giochi un Fante, Cavallo o Re e vinci il turno, ottieni +${level * 2} punti bonus.`
         },
         ace_of_briscola_start: {
           name: "Asso nella Manica",
-          desc: () => "Inizi ogni partita con l'Asso di Briscola in mano."
+          desc: (level: number) => {
+            if (level === 1) return "Inizi ogni partita con una Briscola casuale tra Re, Tre e Asso.";
+            if (level === 2) return "Inizi ogni partita con una Briscola casuale tra Tre e Asso.";
+            return "Inizi ogni partita con l'Asso e il Tre di Briscola.";
+          }
         },
         briscola_mastery: {
           name: "Maestria della Briscola",
-          desc: (level: number) => `Le tue carte Briscola valgono +${level} punti quando vinci un turno.`
+          desc: (level: number) => `Le tue carte Briscola valgono +${level * 2} punti quando vinci un turno.`
         },
         value_swap: {
           name: "Scambio Inaspettato",
-          desc: () => "Il 2 batte il Fante quando entrambi sono dello stesso seme (non Briscola)."
+          desc: (cooldown: number) => `Abilità Attiva: Ogni ${cooldown} turni, puoi scambiare la Briscola con una carta in mano.`
         },
         last_trick_insight: {
           name: "Preveggenza Finale",
-          desc: () => "Vedi le carte del tuo avversario durante gli ultimi tre turni."
+          desc: (level: number) => {
+            if (level === 1) return "Vedi le carte del tuo avversario durante gli ultimi tre turni.";
+            if (level === 2) return "Ogni 3 turni, puoi attivare un'abilità per vedere la mano dell'avversario per questo turno.";
+            return "L'avversario gioca sempre con le carte scoperte.";
+          }
         },
       }
     },
@@ -252,7 +263,11 @@ export const translations = {
     activatePower: "Attiva Potere",
     playNormally: "Gioca Normalmente",
     // Elemental Abilities
-    abilitiesTitle: "Abilità",
+    abilities: {
+        title: "Abilità",
+        revealHand: "Rivela Mano",
+        onCooldown: (turns: number) => `In ricarica (${turns})`,
+    },
     ability: "Abilità",
     incinerate: "Incenerire",
     tide: "Marea",
@@ -356,119 +371,116 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
         message: "Waifu Briscola è un progetto gratuito. Le tue donazioni aiutano a coprire i costi dell'IA per tutti. In alternativa, facci sapere se saresti interessato a un abbonamento personale per un accesso illimitato!",
         subscriptionPoll: {
             title: "Saresti interessato a un abbonamento?",
-            description: "La tua risposta è anonima e ci aiuta a capire l'interesse per un futuro abbonamento con accesso illimitato, per sostenere il progetto. Per favore, rispondi onestamente!",
-            yes: "Sì",
-            no: "No",
-            thanks: "Grazie mille per il tuo prezioso feedback!"
-        }
+            description: "La tua risposta è anonima e ci aiuta a capire l'interesse per un futuro abbonamento con accesso illimitato.",
+            yes: "Sì, mi interessa",
+            no: "No, grazie",
+            thanks: "Grazie per il tuo feedback!",
+        },
     },
-    // Gallery
+    // FIX: Added missing translations
     gallery: {
-        title: "Galleria Sfondi",
-        backgroundAlt: "Sfondo",
-        gachaButton: "Gacha! (100 WC)",
-        gachaButtonX10: (cost: number) => `Gacha x10 (${cost} WC)`,
-        gachaButtonFree: "Primo Gacha Gratis!",
-        promoButton: "Galleria & Gacha",
-        gachaNotEnoughCoins: "Non hai abbastanza Waifu Coins!",
-        gachaSuccess: (rarity: string) => `Congratulazioni! Hai sbloccato un nuovo sfondo (${rarity})!`,
-        gachaFailureWithRefund: (coins: number) => `Nessuna fortuna... ma hai ricevuto un rimborso di ${coins} WC!`,
+        promoButton: "Sblocca Sfondi",
+        title: "Galleria",
+        gachaButtonFree: "Tiro Gratis!",
+        gachaButton: (cost: number) => `Tira per ${cost} WC`,
+        gachaButtonX10: (cost: number) => `Tira 10x per ${cost} WC`,
+        gachaNotEnoughCoins: "Non hai abbastanza Waifu Coins.",
         gachaAllUnlocked: "Hai sbloccato tutti gli sfondi!",
+        gachaFailureWithRefund: (amount: number) => `Sfortunato! Ma hai ricevuto un rimborso di ${amount} WC.`,
+        gachaMultiResultTitle: "Risultati del Tiro Multiplo",
+        gachaMultiUnlocked: (count: number) => `Hai sbloccato ${count} nuovi sfondi!`,
+        gachaMultiRefund: (amount: number) => `Hai ricevuto un rimborso di ${amount} WC.`,
+        rarityUnlocked: (rarity: string) => `Hai trovato uno sfondo di rarità ${rarity}!`,
+        backgroundAlt: "Sfondo di gioco",
+        fullscreenView: "Clicca per vedere a schermo intero.",
         locked: "Bloccato",
         download: "Scarica",
-        fullscreenView: "Visualizza a schermo intero",
         imageSavedToDownloads: "Immagine salvata nei Download!",
-        imageSaveFailed: "Salvataggio immagine fallito.",
-        permissionDenied: "Permesso di archiviazione negato. Impossibile salvare l'immagine.",
-        rarityUnlocked: (rarity: string) => `Sbloccato ${rarity}!`,
-        gachaMultiResultTitle: "Risultati Gacha",
-        gachaMultiUnlocked: (count: number) => `Hai sbloccato ${count} nuovi sfondi!`,
-        gachaMultiRefund: (coins: number) => `Hai ricevuto un rimborso di ${coins} WC.`,
+        imageSaveFailed: "Salvataggio dell'immagine fallito.",
+        permissionDenied: "Permesso di salvataggio negato.",
     },
-    // Legal Modals
     privacyPolicy: {
         linkText: "Privacy Policy",
-        title: "Privacy Policy di Waifu Briscola",
+        title: "Informativa sulla Privacy",
         lastUpdatedPrefix: "Ultimo aggiornamento:",
-        lastUpdatedDate: "25 Maggio 2024",
-        contactPrefix: "Referente:",
-        contactName: "Mauro Mazzocchetti",
-        intro: "Questa Privacy Policy descrive come le tue informazioni vengono gestite quando utilizzi l'applicazione Waifu Briscola ('Servizio').",
+        lastUpdatedDate: "24 Luglio 2024",
+        contactPrefix: "Contatto:",
+        contactName: "service@tnl.one",
+        intro: "Questa informativa sulla privacy descrive le nostre politiche sulla raccolta, l'uso e la divulgazione delle tue informazioni in relazione all'utilizzo della nostra applicazione, Waifu Briscola.",
         collection: {
-            title: "Informazioni che raccogliamo",
-            intro: "Per migliorare la tua esperienza, utilizziamo servizi di terze parti che possono raccogliere informazioni:",
+            title: "Informazioni che Raccogliamo",
+            intro: "Raccogliamo le seguenti informazioni:",
             posthog: {
-                title: "Dati di utilizzo (PostHog):",
-                text: "Raccogliamo dati di analisi anonimi o pseudonimi su come interagisci con il gioco. Questo include eventi come l'inizio di una partita, le carte giocate e i risultati finali. Questi dati ci aiutano a capire come viene utilizzato il gioco e come possiamo migliorarlo. Non raccogliamo informazioni di identificazione personale (PII) attraverso PostHog."
+                title: "Dati di Analisi Anonimi (PostHog):",
+                text: "Utilizziamo PostHog per raccogliere dati di utilizzo anonimi per capire come viene utilizzata l'applicazione e migliorarla. Questi dati non includono informazioni di identificazione personale."
             },
             gemini: {
-                title: "Interazioni con l'IA (Google Gemini):",
-                text: "I messaggi di chat che invii e le informazioni sullo stato del gioco (come le carte nella tua mano e sul tavolo) vengono inviati all'API di Google Gemini per generare le risposte e le mosse dell'IA. Queste interazioni sono soggette alla <a href='https://policies.google.com/privacy' target='_blank' rel='noopener noreferrer'>Privacy Policy di Google</a>. Non inviamo alcuna informazione personale a Google oltre al contenuto delle tue interazioni di gioco."
+                title: "Input per l'IA (Google Gemini):",
+                text: "I messaggi di chat inviati e le azioni di gioco vengono inviati all'API di Google Gemini per generare risposte. Per maggiori informazioni, consulta la <a href='https://policies.google.com/privacy' target='_blank' rel='noopener noreferrer'>Privacy Policy di Google</a>."
             }
         },
         usage: {
-            title: "Come utilizziamo le tue informazioni",
-            intro: "Utilizziamo le informazioni raccolte per:",
+            title: "Come Usiamo le Tue Informazioni",
+            intro: "Usiamo le informazioni che raccogliamo per:",
             points: [
-                "Fornire, operare e mantenere il nostro Servizio.",
-                "Migliorare, personalizzare ed espandere il nostro Servizio.",
-                "Comprendere e analizzare come utilizzi il nostro Servizio.",
-                "Prevenire abusi e garantire la sicurezza."
+                "Fornire e mantenere la nostra applicazione.",
+                "Migliorare e personalizzare la tua esperienza.",
+                "Capire come utilizzi la nostra applicazione per migliorarla."
             ]
         },
         sharing: {
-            title: "Condivisione delle informazioni",
-            text: "Non condividiamo le tue informazioni personali con nessuno, ad eccezione dei fornitori di servizi di terze parti (PostHog, Google) necessari per il funzionamento dell'applicazione, come descritto sopra."
+            title: "Condivisione delle Tue Informazioni",
+            text: "Non condividiamo le tue informazioni personali con terze parti, ad eccezione di quanto necessario per fornire il servizio (ad es. API di Google Gemini)."
         },
         security: {
-            title: "Sicurezza dei dati",
-            text: "La sicurezza delle tue informazioni è importante per noi, ma ricorda che nessun metodo di trasmissione su Internet o metodo di archiviazione elettronica è sicuro al 100%."
+            title: "Sicurezza",
+            text: "La sicurezza delle tue informazioni è importante per noi, ma ricorda che nessun metodo di trasmissione su Internet o di archiviazione elettronica è sicuro al 100%."
         },
         changes: {
-            title: "Modifiche a questa Privacy Policy",
-            text: "Potremmo aggiornare la nostra Privacy Policy di volta in volta. Ti informeremo di eventuali modifiche pubblicando la nuova Privacy Policy su questa pagina."
+            title: "Modifiche a Questa Informativa sulla Privacy",
+            text: "Potremmo aggiornare la nostra Informativa sulla Privacy di tanto in tanto. Ti avviseremo di eventuali modifiche pubblicando la nuova Informativa sulla Privacy in questa pagina."
         },
         contact: {
             title: "Contattaci",
-            text: "Se hai domande su questa Privacy Policy, puoi contattare il referente Mauro Mazzocchetti."
+            text: "Se hai domande su questa Informativa sulla Privacy, puoi contattarci a: service@tnl.one"
         }
     },
     termsAndConditions: {
         linkText: "Termini e Condizioni",
-        title: "Termini e Condizioni di Waifu Briscola",
+        title: "Termini e Condizioni",
         lastUpdatedPrefix: "Ultimo aggiornamento:",
-        lastUpdatedDate: "25 Maggio 2024",
-        contactPrefix: "Referente:",
-        contactName: "Mauro Mazzocchetti",
-        intro: "Benvenuto in Waifu Briscola! Questi termini e condizioni delineano le regole per l'utilizzo dell'applicazione Waifu Briscola ('Servizio').",
+        lastUpdatedDate: "24 Luglio 2024",
+        contactPrefix: "Contatto:",
+        contactName: "service@tnl.one",
+        intro: "Benvenuto in Waifu Briscola! Questi termini e condizioni delineano le regole e i regolamenti per l'uso della nostra applicazione.",
         acceptance: {
             title: "Accettazione dei Termini",
-            text: "Accedendo e utilizzando questo Servizio, accetti di essere vincolato da questi Termini. Se non sei d'accordo con qualsiasi parte dei termini, non puoi utilizzare il Servizio."
+            text: "Accedendo e utilizzando questa applicazione, accetti di essere vincolato da questi termini. Se non sei d'accordo con una qualsiasi parte dei termini, non puoi utilizzare l'applicazione."
         },
         usage: {
-            title: "Utilizzo del Servizio",
-            text: "Accetti di non utilizzare il Servizio per scopi illegali o non autorizzati. Sei responsabile della tua condotta e di qualsiasi contenuto che fornisci durante l'utilizzo del Servizio, inclusi i messaggi di chat."
+            title: "Uso Consentito",
+            text: "Ti viene concesso un diritto limitato, non esclusivo e non trasferibile di utilizzare l'applicazione per scopi personali e non commerciali."
         },
         aiContent: {
-            title: "Contenuti Generati dall'IA",
-            intro: "Il Servizio utilizza modelli di intelleigenza artificiale (Google Gemini) per generare risposte, commenti e mosse di gioco. Riconosci che:",
+            title: "Contenuto Generato dall'IA",
+            intro: "L'applicazione utilizza modelli di intelligenza artificiale (Google Gemini) per generare contenuti. Riconosci che:",
             points: [
-                "I contenuti generati dall'IA sono prodotti da un modello e potrebbero non essere sempre accurati, appropriati o coerenti.",
-                "Non siamo responsabili per i contenuti generati dall'IA.",
-                "Le interazioni con l'IA sono pensate solo per scopi di intrattenimento."
+                "Il contenuto generato dall'IA potrebbe non essere sempre accurato o appropriato.",
+                "Non siamo responsabili per alcun contenuto generato dall'IA.",
+                "L'uso del contenuto generato dall'IA è a tuo rischio."
             ]
         },
         liability: {
             title: "Limitazione di Responsabilità",
-            text: "In nessun caso Mauro Mazzocchetti, né i suoi partner, saranno responsabili per eventuali danni indiretti, incidentali, speciali, consequenziali o punitivi, inclusi, senza limitazione, la perdita di profitti, dati, avviamento o altre perdite immateriali, derivanti da (i) il tuo accesso o utilizzo o incapacità di accedere o utilizzare il Servizio; (ii) qualsiasi contenuto ottenuto dal Servizio."
+            text: "In nessun caso Waifu Briscola, né i suoi direttori, dipendenti, partner, agenti, fornitori o affiliati, saranno responsabili per eventuali danni indiretti, incidentali, speciali, consequenziali o punitivi."
         },
         changes: {
             title: "Modifiche ai Termini",
-            text: "Ci riserviamo il diritto, a nostra esclusiva discrezione, di modificare o sostituire questi Termini in qualsiasi momento. Continuando ad accedere o utilizzare il nostro Servizio dopo che tali revisioni diventano efficaci, accetti di essere vincolato dai termini rivisti."
+            text: "Ci riserviamo il diritto, a nostra esclusiva discrezione, di modificare o sostituire questi Termini in qualsiasi momento."
         },
         governingLaw: {
             title: "Legge Applicabile",
-            text: "Questi Termini saranno regolati e interpretati in conformità con le leggi italiane, senza riguardo alle sue disposizioni sul conflitto di leggi."
+            text: "Questi Termini saranno regolati e interpretati in conformità con le leggi della giurisdizione in cui ha sede l'azienda, senza riguardo alle disposizioni sui conflitti di legge."
         }
     },
   },
@@ -476,8 +488,8 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     // Menu
     title: "Waifu Briscola",
     subtitle: "Challenge an opponent controlled by Gemini AI.",
-    projectDescription1: "This is a small, unpretentious project, born for fun. The goal is to gradually add new features, more card decks, and, most importantly, lots of new Waifus with unique personalities to discover!",
-    projectDescription2: "The funds raised from donations will be used to hire designers and artists to continuously improve the waifus and the game, thereby redistributing wealth among humans and preventing AI from stealing their jobs.",
+    projectDescription1: "This is a small, unpretentious project born for fun. The goal is to gradually add new features, more card decks, and, above all, lots of new Waifus with unique personalities to discover!",
+    projectDescription2: "The funds raised from donations will be used to hire designers and artists to increasingly improve the waifus and the game, so as to redistribute wealth among humans and not let AI steal their jobs.",
     startGame: "Start Game",
     resumeGame: "Resume Game",
     language: "Language",
@@ -492,8 +504,8 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     cardDeckStylePoker: "Poker",
     diceAnimationLabel: "Dice Animation",
     toggleChatLabel: "Enable Waifu Chat",
-    toggleWaitForWaifuLabel: "Wait for Waifu Reply",
-    fastModeEnabled: "Fast mode enabled: The game will no longer wait for the Waifu's reply.",
+    toggleWaitForWaifuLabel: "Wait for Waifu Response",
+    fastModeEnabled: "Fast mode enabled: the game will no longer wait for the Waifu's response.",
     gameModeClassic: "Classic Briscola",
     gameModeRoguelike: "Roguelike Mode",
     comingSoon: " (Coming Soon)",
@@ -515,10 +527,10 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     waifuCoinDifficultyMultiplierEasy: "Easy: 50% of base coins.",
     waifuCoinDifficultyMultiplierMedium: "Normal: 100% of base coins.",
     waifuCoinDifficultyMultiplierHard: "Hard: 150% of base coins.",
-    waifuCoinDifficultyMultiplierNightmare: "Nightmare: Special 500 WC reward for winning.",
+    waifuCoinDifficultyMultiplierNightmare: "Nightmare: Special reward of 500 WC for winning.",
     gachaRulesTitle: "Gacha Rules",
-    gachaRule50Percent: "Each roll has a 50% chance to unlock a background.",
-    gachaRuleRarityTitle: "If the roll is successful, the rarity probabilities are:",
+    gachaRule50Percent: "Each pull has a 50% chance to unlock a background.",
+    gachaRuleRarityTitle: "If the pull is successful, the rarity chances are:",
     gachaRuleRarityR: "R Rarity: 80%",
     gachaRuleRaritySR: "SR Rarity: 15%",
     gachaRuleRaritySSR: "SSR Rarity: 5%",
@@ -536,13 +548,13 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     soundEditorTitle: "Sound Editor",
     play: "Play",
     stop: "Stop",
-    tempo: "Speed",
+    tempo: "Tempo",
     oscillatorType: "Oscillator Type",
     filterFrequency: "Filter Frequency",
-    lfoFrequency: "Modulation Speed",
-    lfoDepth: "Modulation Depth",
+    lfoFrequency: "LFO Speed",
+    lfoDepth: "LFO Depth",
     reverbAmount: "Reverb Amount",
-    resetToDefaults: "Reset",
+    resetToDefaults: "Reset to Defaults",
     oscSine: "Sine",
     oscSawtooth: "Sawtooth",
     oscSquare: "Square",
@@ -550,20 +562,20 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     drums: "Drums",
     kick: "Kick",
     snare: "Snare",
-    closedHat: "Closed Hat",
-    openHat: "Open Hat",
+    closedHat: "Closed Hi-Hat",
+    openHat: "Open Hi-Hat",
     guitarChords: "Guitar Chords",
     decadePresets: "Decade Presets",
     loadPresetPlaceholder: "Load a Decade Preset...",
-    decade_40s: "'40s Swing",
-    decade_50s: "'50s Rock",
-    decade_60s: "'60s Soul",
-    decade_70s: "'70s Disco",
-    decade_80s: "'80s Synth",
-    decade_90s: "'90s Pop",
-    decade_2000s: "'00s Dance",
-    decade_2010s: "'10s EDM",
-    decade_2020s: "'20s Lo-fi",
+    decade_40s: "40s Swing",
+    decade_50s: "50s Rock",
+    decade_60s: "60s Soul",
+    decade_70s: "70s Disco",
+    decade_80s: "80s Synth",
+    decade_90s: "90s Pop",
+    decade_2000s: "2000s Dance",
+    decade_2010s: "2010s EDM",
+    decade_2020s: "2020s Lo-fi",
     decade_blue90s: "Eiffel 65 - Blue",
     savePreset: "Save Preset",
     presetName: "Preset Name",
@@ -576,20 +588,20 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
       next: "Next",
       skip: "Skip Tutorial",
       finish: "Finish",
-      welcome: "Welcome to Waifu Briscola! Let me give you a quick tour of how everything works.",
-      gameMode: "Here you can choose between a classic game or the Roguelike mode for a bigger challenge.",
-      difficulty: "Select the AI difficulty. Higher difficulties offer greater rewards!",
+      welcome: "Welcome to Waifu Briscola! I'll quickly show you how everything works.",
+      gameMode: "Here you can choose between a classic game or Roguelike mode for a bigger challenge.",
+      difficulty: "Select the AI's difficulty. Higher difficulties offer greater rewards!",
       waifu: "Choose your opponent here. Each has a unique personality you'll discover by playing and chatting.",
-      gallery: "Use the Waifu Coins you earn to unlock beautiful new game backgrounds here!",
-      start: "When you're ready, press here to start a practice match!",
+      gallery: "Use the Waifu Coins you earn to unlock new beautiful game backgrounds here!",
+      start: "When you're ready, press here to start a practice game!",
       // In-game tutorial steps
-      playerHand: "This is your hand. Cards have a value (like the Ace) and a suit.",
+      playerHand: "This is your hand. The cards have a value (like the Ace) and a suit.",
       promptPlayCard: "It's your turn. Let's play the Ace of Batons, a high-value card. Click on it.",
       aiResponds: "Perfect! Now the AI plays its card. Since you started with Batons, it must respond with the same suit if it has one.",
       trickWon: "You won the trick! In the Batons suit, your Ace beats the AI's 2.",
-      scoreUpdate: "The points from the cards you won (11 for your Ace) are added to your score. You need more than 60 to win!",
-      drawingCards: "After each trick, both players draw a new card. The winner of the trick draws first.",
-      briscola: "This is the Briscola (Trump). Cards of this suit (Cups) beat any other non-Trump suit.",
+      scoreUpdate: "The points from the won cards (11 for your Ace) are added to your score. You need more than 60 to win!",
+      drawingCards: "After each trick, both players draw a new card. The winner draws first.",
+      briscola: "This is the Briscola (trump card). Cards of this suit (Cups) beat any other non-Briscola suit.",
       end: "You've learned the basics! The tutorial will now end. Enjoy the game!",
     },
     // Game
@@ -597,7 +609,7 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     yourTurn: "It's your turn to start.",
     aiStarts: (name: string) => `${name} starts.`,
     aiThinking: (name: string) => `${name} is thinking...`,
-    aiPlayedYourTurn: (name: string) => `${name} played. It's your turn.`,
+    aiPlayedYourTurn: (name: string) => `${name} has played. Your turn.`,
     youWonTrick: (points: number) => `You won the trick (+${points} points).`,
     aiWonTrick: (name: string, points: number) => `${name} won the trick (+${points} points).`,
     yourTurnMessage: "Your turn.",
@@ -608,19 +620,20 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     backToMenu: "Back to Menu",
     cardBack: "Card back",
     tokensUsed: "Tokens Used",
-    briscolaLabel: "Trump",
-    remainingCardsLabel: "Cards Remaining",
+    briscolaLabel: "Briscola",
+    remainingCardsLabel: "Remaining Cards",
+    briscolaSwapMessage: "Choose a card from your hand to swap with the Briscola.",
     history: {
-      title: "Turn History",
+      title: "Trick History",
       lastTrick: "Last Trick",
       trick: "Trick",
       you: "You",
       opponent: "Opponent",
       clash: "Clash",
       pointsYou: "Your Pts",
-      pointsOpponent: "Opp. Pts",
+      pointsOpponent: "Opp Pts",
     },
-     // Roguelike Mode
+    // Roguelike Mode
     roguelike: {
       mapTitle: "Roguelike Map",
       level: (level: number) => `Level ${level}`,
@@ -628,69 +641,79 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
       startRun: "Start Run",
       continueRun: "Continue",
       runFailed: "Run Failed",
-      runFailedMessage: (coins: number) => `You have been defeated. You earned ${coins} WC as a consolation prize.`,
+      runFailedMessage: (coins: number) => `You have been defeated. You earned ${coins} WC as a consolation.`,
       runCompleted: "Run Completed!",
-      runCompletedMessage: (coins: number) => `Congratulations! You cleared all levels and earned a total of ${coins} WC!`,
+      runCompletedMessage: (coins: number) => `Congratulations! You have cleared all levels and earned a total of ${coins} WC!`,
       backToMap: "Back to Map",
       crossroadsTitle: "Crossroads",
       crossroadsMessage: "You cleared the level! Choose your next step.",
       initialPowerTitle: "Initial Power",
+      allPowersTitle: "Active Powers",
+      elementalCycleTitle: "Elemental Cycle",
       // Events
       marketTitle: "The Market",
-      marketDescription: "A mysterious merchant offers you his wares. Choose one item to use in the next level.",
+      marketDescription: "A mysterious merchant offers you his wares. Choose an item to use in the next level.",
       witchHutTitle: "The Witch's Hut",
       witchHutDescription: "A witch offers to manipulate your powers. You can upgrade your current ability or swap it.",
       healingFountainTitle: "Healing Fountain",
       healingFountainDescription: "Drink from an enchanted spring. You will start the next level with an advantage.",
-      challengeAltarTitle: "Altar of Challenge",
+      challengeAltarTitle: "Challenge Altar",
       challengeAltarDescription: "An ancient altar tests you. Accept the challenge for an extra reward.",
       // Event Choices
       powerUpAbility: (ability: string) => `Power Up ${ability}`,
-      powerUpAbilityDesc: "Get an extra charge for your current ability.",
+      powerUpAbilityDesc: "Gain an extra charge for your current ability.",
       swapAbility: "Swap Ability",
       swapAbilityDesc: "Replace your current ability with a new one.",
       startWith10Points: "Drink from the Fountain",
-      startWith10PointsDesc: "Start the next level with an extra 10 points.",
+      startWith10PointsDesc: "Start the next level with 10 extra points.",
       acceptChallenge: "Accept Challenge",
       challengeScoreAbove80: (reward: number) => `Win the next level with more than 80 points to earn an extra ${reward} WC.`,
       skipEvent: "Continue",
       // Market Items
       fortuneAmulet: "Amulet of Fortune",
-      fortuneAmuletDesc: "Your first drawn card in the next level will be a Trump card.",
+      fortuneAmuletDesc: "Your first card drawn in the next level will be a Briscola.",
       insightPotion: "Potion of Insight",
-      insightPotionDesc: "See your opponent's hand for the first 3 tricks of the next level.",
+      insightPotionDesc: "See your opponent's hand for the first 3 turns of the next level.",
       coinPouch: "Pouch of Coins",
-      coinPouchDesc: "Immediately gain an extra 50 Waifu Coins.",
-      // FIX: Added missing translations for power selection screen
+      coinPouchDesc: "Immediately get 50 extra Waifu Coins.",
+      // Power selection screen translations
       chooseYourPower: "Choose Your Initial Power",
-      initialPowerMessage: "This power will aid you for the entire run. Choose wisely!",
+      initialPowerMessage: "This power will help you throughout your run. Choose wisely!",
       chooseYourPath: "Choose Your Path",
-      levelUpMessage: (level: number) => `You've cleared Level ${level - 1}! Choose a new power or upgrade an existing one.`,
+      levelUpMessage: (level: number) => `You have completed level ${level - 1}! Choose a new power or upgrade an existing one.`,
       powers: {
         upgrade: "Upgrade",
         bonus_point_per_trick: {
           name: "Tribute",
-          desc: (level: number) => `Gain +${level} bonus point(s) every time you win a trick.`
+          desc: (level: number) => `Gain +${level} bonus point(s) each time you win a trick.`
         },
         king_bonus: {
           name: "Headhunter",
-          desc: (level: number) => `Gain +${level} extra points when winning a trick with a King.`
+          desc: (level: number) => `When you play a Jack, Knight, or King and win the trick, gain +${level * 2} bonus points.`
         },
         ace_of_briscola_start: {
           name: "Ace in the Hole",
-          desc: () => "Start every match with the Ace of Trump in your hand."
+          desc: (level: number) => {
+            if (level === 1) return "Start each game with a random Briscola from King, Three, and Ace.";
+            if (level === 2) return "Start each game with a random Briscola from Three and Ace.";
+            return "Start each game with the Ace and Three of Briscola.";
+          }
         },
         briscola_mastery: {
-          name: "Trump Mastery",
-          desc: (level: number) => `Your Trump cards are worth +${level} points when you win a trick.`
+          name: "Briscola Mastery",
+          desc: (level: number) => `Your Briscola cards are worth +${level * 2} points when you win a trick.`
         },
         value_swap: {
           name: "Unexpected Swap",
-          desc: () => "The 2 beats the Jack when both are of the same non-Trump suit."
+          desc: (cooldown: number) => `Active Ability: Every ${cooldown} turns, you can swap the Briscola with a card in your hand.`
         },
         last_trick_insight: {
           name: "Final Foresight",
-          desc: () => "See your opponent's cards during the last three tricks."
+          desc: (level: number) => {
+            if (level === 1) return "See your opponent's cards during the last three tricks.";
+            if (level === 2) return "Every 3 turns, you can activate an ability to see the opponent's hand for this turn.";
+            return "The opponent always plays with their cards revealed.";
+          }
         },
       }
     },
@@ -702,9 +725,9 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     earth: "Earth",
     suitIs: (suit: string, element: string) => `${suit} is ${element}`,
     fireDescription: "Win the trick with a Fire card for +3 bonus points.",
-    waterDescription: "If you lose the trick, the effect halves the winning card's points.",
-    airDescription: "Your Air cards are worth +1 point for each Air card in your score pile.",
-    earthDescription: "If you lose the trick, recover your Earth card's points.",
+    waterDescription: "If you lose the trick, the effect halves the points of the winning card.",
+    airDescription: "Your Air cards are worth +1 point for each other Air card already in your score pile.",
+    earthDescription: "If you lose the trick, recover the points of your Earth card.",
     elementalClash: {
         title: "Elemental Clash!",
         weaknessTitle: "Elemental Weakness!",
@@ -719,7 +742,11 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     activatePower: "Activate Power",
     playNormally: "Play Normally",
     // Elemental Abilities
-    abilitiesTitle: "Abilities",
+    abilities: {
+        title: "Abilities",
+        revealHand: "Reveal Hand",
+        onCooldown: (turns: number) => `On Cooldown (${turns})`,
+    },
     ability: "Ability",
     incinerate: "Incinerate",
     tide: "Tide",
@@ -727,13 +754,13 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     fortify: "Fortify",
     abilityReady: "Ability Ready!",
     abilityUsed: (playerName: string, abilityName: string) => `${playerName} used ${abilityName}!`,
-    incinerateDescription: "Incinerate: Reduce the point value of an opponent's card to 0.",
+    incinerateDescription: "Incinerate: Make an opponent's card worth 0 points.",
     tideDescription: "Tide: See your opponent's hand for 5 seconds.",
-    cycloneDescription: "Cyclone: Swap a card from your hand with one from the deck.",
-    fortifyDescription: "Fortify: Makes the next card you play a temporary Trump.",
+    cycloneDescription: "Cyclone: Swap one of your cards with one from the deck.",
+    fortifyDescription: "Fortify: Makes the next card you play a temporary Briscola.",
     cancelAbility: "Cancel",
     undoIncinerate: "Undo Incinerate",
-    confirmOrUndoMessage: "Play a card to confirm or undo the effect.",
+    confirmOrUndoMessage: "Play a card to confirm or cancel the effect.",
     // Follower Abilities
     followerAbility: "Follower Ability",
     sakura_blessing: "Sakura's Blessing",
@@ -741,11 +768,11 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     rei_analysis: "Rei's Analysis",
     rei_analysis_desc: "Steal 5 points from the opponent.",
     kasumi_gambit: "Kasumi's Gambit",
-    kasumi_gambit_desc: "Swap the Trump card with a card from your hand.",
-    followerAbilityArmed: (waifuName: string, abilityName: string) => `${waifuName}'s Ability (${abilityName}) is ready!`,
+    kasumi_gambit_desc: "Swap the Briscola with a card from your hand.",
+    followerAbilityArmed: (waifuName: string, abilityName: string) => `${waifuName}'s ability (${abilityName}) is ready!`,
     cancelFollowerAbility: "Cancel Follower Ability",
     kasumiSwapTitle: "Kasumi's Gambit",
-    kasumiSwapMessage: "Choose a card from your hand to swap with the Trump.",
+    kasumiSwapMessage: "Choose a card from your hand to swap with the Briscola.",
     // Game Over
     gameOverTitle: "Game Over",
     finalScore: "Final Score:",
@@ -755,66 +782,66 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     playAgain: "Play Again",
     coinsEarned: (coins: number) => `+${coins} Waifu Coins`,
     // Chat
-    chatWith: (name: string) => `Chat with ${name}`,
+    chatWith: (name:string) => `Chat with ${name}`,
     closeChat: "Close chat",
     chatPlaceholder: "Write a message...",
-    chatPlaceholderChatted: "You've already chatted this turn.",
+    chatPlaceholderChatted: "You have already chatted this turn.",
     chatPlaceholderNotYourTurn: "Wait for your turn to chat.",
     chatPlaceholderOffline: "Chat is disabled in offline mode.",
     sendMessage: "Send message",
     sendMessageInProgress: "Sending...",
-    chatFallback: "Sorry, senpai, I'm a bit confused right now...",
+    chatFallback: "Sorry, senpai, I'm feeling a bit confused...",
     // Card Names (for prompts and IDs)
     suits: SUITS_EN,
     values: VALUES_EN,
     cardIdConnector: " of ",
     // AI Prompts
     aiMovePrompt: (humanCardId: string | null, briscolaSuit: string, aiHandIds: string[]) => `
-You are an expert Italian Briscola card game player. Your goal is to win. You must choose one card to play from your hand. Play strategically.
-If you are the first player in the trick (humanCardId is null), lead with a card that gives you the best chance to win points or forces your opponent to waste a high-value card.
+You are an expert Italian Briscola player. Your goal is to win. You must choose a card to play from your hand. Play strategically.
+If you are the first player of the trick (humanCardId is null), lead with a card that gives you the best chance of winning points or forces your opponent to waste a high-value card.
 If you are the second player, decide if you can win the trick.
 - The human played: ${humanCardId ?? 'N/A'}.
 - The Briscola suit is: ${briscolaSuit}.
 - Your hand is: [${aiHandIds.join(', ')}].
 
 Analyze the human's card and your hand.
-- If you can win the trick, play the lowest-value card that still wins.
-- If the human played a high-value card (Ace or 3) and you can't win, throw away a low-value card with no points (a "liscio").
-- If you can't win the trick, play your lowest point-value card.
-- If you are leading, consider playing a low briscola to see what the opponent does, or a low-value card in another suit.
+- If you can win the trick, play the lowest value card that still ensures victory.
+- If the human played a high-value card (Ace or 3) and you cannot win, discard a low-value card with no points (a "liscio").
+- If you cannot win the trick, play your lowest-scoring card.
+- If you are leading the trick, consider playing a low briscola to see what the opponent does, or a low-value card in another suit.
 
-Based on this state, which card from your hand is the best to play now?
+Based on this situation, which card from your hand is the best to play now?
 `,
-    aiMoveSchemaDescription: (aiHandIds: string[]) => `The card to play from your hand. It must be one of: ${aiHandIds.join(', ')}`,
+    aiMoveSchemaDescription: (aiHandIds: string[]) => `The card to play from your hand. Must be one of: ${aiHandIds.join(', ')}`,
     waifuTrickWinPrompt: (waifuName: string, personality: string, humanCardId: string, aiCardId: string, points: number) => `
 You are ${waifuName}. Your current personality is: "${personality}".
-You just won a trick in a game of Briscola against senpai.
+You just won a trick in Briscola against senpai.
 - Senpai played: ${humanCardId}.
 - You played: ${aiCardId}, and won the trick.
 - You won ${points} points.
 
-Based on your personality and the points you won, generate a short, in-character response to senpai (1-2 sentences).
-Make it flirty, a bit teasing, and slightly suggestive, especially if the points are high. Use asterisks to emphasize words, for example *like this*. Be creative and unique.
+Based on your personality and the points you won, generate a short, in-character response for senpai (1-2 sentences).
+Be mischievous, a bit teasing, and slightly suggestive, especially if the points are high. Use asterisks to emphasize words, like *so*. Be creative and unique.
 The response must be in English.
 `,
     waifuGenericTeasePrompt: (waifuName: string, personality: string, aiScore: number, humanScore: number) => `
 You are ${waifuName}. Your personality is: "${personality}".
 You are playing Briscola against senpai. The score is You: ${aiScore}, Senpai: ${humanScore}.
-Make a generic, teasing comment about the ongoing game with a sensual double entendre that fits your personality. Do not refer to the last cards played.
-Use asterisks to emphasize words, for example *like this*. Be creative, unique, and in character. The response must be short (1-2 sentences) and in English.
+Make a generic, teasing comment with a sensual double meaning, in line with your personality, about the ongoing game. Do not refer to the last cards played.
+Use asterisks to emphasize words, like *so*. Be creative, unique, and in-character. The response must be short (1-2 sentences) and in English.
 `,
     // Quota Exceeded
     quotaExceeded: {
         title: "API Quota Exceeded",
-        message: "Unfortunately, we've hit our daily AI request limit. You can continue playing against a simpler AI.",
+        message: "Unfortunately, we've reached the daily request limit for the AI. You can continue playing against a simpler AI.",
         continueGame: "Continue Playing",
-        quotaInfo: "Quotas reset daily. Thanks for your patience!",
+        quotaInfo: "Quotas reset daily. Thank you for your patience!",
     },
     // Confirm Leave
     confirmLeave: {
-        title: "Leave Game?",
+        title: "Leave the Game?",
         message: "Are you sure you want to return to the main menu? All game progress will be lost.",
-        confirm: "Yes, Leave",
+        confirm: "Yes, leave",
         cancel: "Cancel"
     },
     // Support Modal
@@ -823,72 +850,68 @@ Use asterisks to emphasize words, for example *like this*. Be creative, unique, 
         message: "Waifu Briscola is a free project. Your donations help cover the AI costs for everyone. Alternatively, let us know if you'd be interested in a personal subscription for unlimited access!",
         subscriptionPoll: {
             title: "Would you be interested in a subscription?",
-            description: "Your answer is anonymous and helps us gauge interest in a future subscription with unlimited access to support the project. Please answer honestly!",
-            yes: "Yes",
-            no: "No",
-            thanks: "Thank you very much for your valuable feedback!"
-        }
+            description: "Your answer is anonymous and helps us gauge interest in a future subscription with unlimited access.",
+            yes: "Yes, I'm interested",
+            no: "No, thanks",
+            thanks: "Thanks for your feedback!",
+        },
     },
-    // Gallery
     gallery: {
-        title: "Background Gallery",
-        backgroundAlt: "Background",
-        gachaButton: "Gacha! (100 WC)",
-        gachaButtonX10: (cost: number) => `Gacha x10 (${cost} WC)`,
-        gachaButtonFree: "First Gacha Free!",
-        promoButton: "Gallery & Gacha",
-        gachaNotEnoughCoins: "Not enough Waifu Coins!",
-        gachaSuccess: (rarity: string) => `Congratulations! You unlocked a new background (${rarity})!`,
-        gachaFailureWithRefund: (coins: number) => `No luck... but you received a refund of ${coins} WC!`,
+        promoButton: "Unlock Backgrounds",
+        title: "Gallery",
+        gachaButtonFree: "Free Pull!",
+        gachaButton: (cost: number) => `Pull for ${cost} WC`,
+        gachaButtonX10: (cost: number) => `Pull 10x for ${cost} WC`,
+        gachaNotEnoughCoins: "You don't have enough Waifu Coins.",
         gachaAllUnlocked: "You've unlocked all backgrounds!",
+        gachaFailureWithRefund: (amount: number) => `Unlucky! But you received a refund of ${amount} WC.`,
+        gachaMultiResultTitle: "Multi-Pull Results",
+        gachaMultiUnlocked: (count: number) => `You unlocked ${count} new backgrounds!`,
+        gachaMultiRefund: (amount: number) => `You received a refund of ${amount} WC.`,
+        rarityUnlocked: (rarity: string) => `You found a ${rarity} rarity background!`,
+        backgroundAlt: "Game background",
+        fullscreenView: "Click to view fullscreen.",
         locked: "Locked",
         download: "Download",
-        fullscreenView: "View fullscreen",
         imageSavedToDownloads: "Image saved to Downloads!",
-        imageSaveFailed: "Failed to save image.",
-        permissionDenied: "Storage permission denied. Could not save the image.",
-        rarityUnlocked: (rarity: string) => `${rarity} Unlocked!`,
-        gachaMultiResultTitle: "Gacha Results",
-        gachaMultiUnlocked: (count: number) => `You unlocked ${count} new backgrounds!`,
-        gachaMultiRefund: (coins: number) => `You received a refund of ${coins} WC.`,
+        imageSaveFailed: "Image save failed.",
+        permissionDenied: "Save permission denied.",
     },
-    // Legal Modals
     privacyPolicy: {
         linkText: "Privacy Policy",
-        title: "Waifu Briscola Privacy Policy",
+        title: "Privacy Policy",
         lastUpdatedPrefix: "Last updated:",
-        lastUpdatedDate: "May 25, 2024",
-        contactPrefix: "Contact Person:",
-        contactName: "Mauro Mazzocchetti",
-        intro: "This Privacy Policy describes how your information is handled when you use the Waifu Briscola application ('Service').",
+        lastUpdatedDate: "July 24, 2024",
+        contactPrefix: "Contact:",
+        contactName: "service@tnl.one",
+        intro: "This privacy policy describes our policies on the collection, use, and disclosure of your information in connection with your use of our application, Waifu Briscola.",
         collection: {
             title: "Information We Collect",
-            intro: "To improve your experience, we use third-party services that may collect information:",
+            intro: "We collect the following information:",
             posthog: {
-                title: "Usage Data (PostHog):",
-                text: "We collect anonymous or pseudonymous analytics data about how you interact with the game. This includes events like starting a game, cards played, and final results. This data helps us understand how the game is used and how we can improve it. We do not collect Personally Identifiable Information (PII) through PostHog."
+                title: "Anonymous Analytics Data (PostHog):",
+                text: "We use PostHog to collect anonymous usage data to understand how the application is used and to improve it. This data does not include personally identifiable information."
             },
             gemini: {
-                title: "AI Interactions (Google Gemini):",
-                text: "The chat messages you send and game state information (like cards in your hand and on the table) are sent to the Google Gemini API to generate AI responses and moves. These interactions are subject to the <a href='https://policies.google.com/privacy' target='_blank' rel='noopener noreferrer'>Google Privacy Policy</a>. We do not send any personal information to Google beyond the content of your game interactions."
+                title: "AI Inputs (Google Gemini):",
+                text: "Chat messages sent and game actions are sent to the Google Gemini API to generate responses. For more information, please see the <a href='https://policies.google.com/privacy' target='_blank' rel='noopener noreferrer'>Google Privacy Policy</a>."
             }
         },
         usage: {
             title: "How We Use Your Information",
-            intro: "We use the collected information to:",
+            intro: "We use the information we collect to:",
             points: [
-                "Provide, operate, and maintain our Service.",
-                "Improve, personalize, and expand our Service.",
-                "Understand and analyze how you use our Service.",
-                "Prevent abuse and ensure security."
+                "Provide and maintain our application.",
+                "Improve and personalize your experience.",
+                "Understand how you use our application to improve it."
             ]
         },
         sharing: {
-            title: "Information Sharing",
-            text: "We do not share your personal information with anyone except for the third-party service providers (PostHog, Google) necessary for the application to function, as described above."
+            title: "Sharing Your Information",
+            text: "We do not share your personal information with third parties, except as necessary to provide the service (e.g., Google Gemini API)."
         },
         security: {
-            title: "Data Security",
+            title: "Security",
             text: "The security of your information is important to us, but remember that no method of transmission over the Internet or method of electronic storage is 100% secure."
         },
         changes: {
@@ -897,45 +920,45 @@ Use asterisks to emphasize words, for example *like this*. Be creative, unique, 
         },
         contact: {
             title: "Contact Us",
-            text: "If you have any questions about this Privacy Policy, you can contact the person in charge, Mauro Mazzocchetti."
+            text: "If you have any questions about this Privacy Policy, you can contact us at: service@tnl.one"
         }
     },
     termsAndConditions: {
-        linkText: "Terms & Conditions",
-        title: "Waifu Briscola Terms and Conditions",
+        linkText: "Terms and Conditions",
+        title: "Terms and Conditions",
         lastUpdatedPrefix: "Last updated:",
-        lastUpdatedDate: "May 25, 2024",
-        contactPrefix: "Contact Person:",
-        contactName: "Mauro Mazzocchetti",
-        intro: "Welcome to Waifu Briscola! These terms and conditions outline the rules for using the Waifu Briscola application ('Service').",
+        lastUpdatedDate: "July 24, 2024",
+        contactPrefix: "Contact:",
+        contactName: "service@tnl.one",
+        intro: "Welcome to Waifu Briscola! These terms and conditions outline the rules and regulations for the use of our application.",
         acceptance: {
             title: "Acceptance of Terms",
-            text: "By accessing and using this Service, you agree to be bound by these Terms. If you disagree with any part of the terms, you may not use the Service."
+            text: "By accessing and using this application, you accept and agree to be bound by these terms. If you disagree with any part of the terms, then you may not use the application."
         },
         usage: {
-            title: "Use of the Service",
-            text: "You agree not to use the Service for any illegal or unauthorized purpose. You are responsible for your conduct and any content you provide while using the Service, including chat messages."
+            title: "Permitted Use",
+            text: "You are granted a limited, non-exclusive, and non-transferable right to use the application for personal, non-commercial purposes."
         },
         aiContent: {
             title: "AI-Generated Content",
-            intro: "The Service uses artificial intelligence models (Google Gemini) to generate responses, commentary, and game moves. You acknowledge that:",
+            intro: "The application uses artificial intelligence models (Google Gemini) to generate content. You acknowledge that:",
             points: [
-                "AI-generated content is produced by a model and may not always be accurate, appropriate, or consistent.",
-                "We are not responsible for the content generated by the AI.",
-                "Interactions with the AI are for entertainment purposes only."
+                "AI-generated content may not always be accurate or appropriate.",
+                "We are not responsible for any content generated by the AI.",
+                "Your use of AI-generated content is at your own risk."
             ]
         },
         liability: {
             title: "Limitation of Liability",
-            text: "In no event shall Mauro Mazzocchetti, nor his partners, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, goodwill, or other intangible losses, resulting from (i) your access to or use of or inability to access or use the Service; (ii) any content obtained from the Service."
+            text: "In no event shall Waifu Briscola, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages."
         },
         changes: {
             title: "Changes to Terms",
-            text: "We reserve the right, at our sole discretion, to modify or replace these Terms at any time. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms."
+            text: "We reserve the right, at our sole discretion, to modify or replace these Terms at any time."
         },
         governingLaw: {
             title: "Governing Law",
-            text: "These Terms shall be governed and construed in accordance with the laws of Italy, without regard to its conflict of law provisions."
+            text: "These Terms shall be governed and construed in accordance with the laws of the jurisdiction where the company is based, without regard to its conflict of law provisions."
         }
     },
   }

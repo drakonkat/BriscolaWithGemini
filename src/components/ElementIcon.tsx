@@ -11,10 +11,9 @@ export const ElementIcon = ({ element }: { element: Element }) => {
         air: "M3.5 14.5C3.5 14.5 5.5 13.5 7.5 13.5C9.5 13.5 11.5 14.5 13.5 14.5C15.5 14.5 17.5 13.5 19.5 13.5C21.5 13.5 23.5 14.5 23.5 14.5M0.5 9.5C0.5 9.5 2.5 8.5 4.5 8.5C6.5 8.5 8.5 9.5 10.5 9.5C12.5 9.5 14.5 8.5 16.5 8.5C18.5 8.5 20.5 9.5 22.5 9.5C24.5 9.5 26.5 8.5 28.5 8.5M3.5 4.5C3.5 4.5 5.5 3.5 7.5 3.5C9.5 3.5 11.5 4.5 13.5 4.5C15.5 4.5 17.5 3.5 19.5 3.5C21.5 3.5 23.5 4.5 25.5 4.5",
         earth: "M12 2L9.12132 4.87868L6.24264 2L4.87868 6.24264L2 9.12132L6.24264 10.5L2 14.8787L4.87868 17.7574L9.12132 13.5L12 16.2426L14.8787 13.5L19.1213 17.7574L22 14.8787L17.7574 10.5L22 6.24264L19.1213 4.87868L14.8787 9.12132L12 2Z",
     };
-    const colors: Record<Element, string> = { fire: '#ff6f00', water: '#1e88e5', air: '#fdd835', earth: '#7cb342' };
     
     return (
-        <svg viewBox="0 0 24 24" fill={colors[element]} className={`element-icon ${element}`}>
+        <svg viewBox="0 0 24 24" fill="currentColor" className={`element-icon ${element}`}>
             <path d={paths[element]} />
         </svg>
     );

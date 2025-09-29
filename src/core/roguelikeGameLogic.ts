@@ -4,7 +4,7 @@
 */
 import { RANK } from './constants';
 import { getCardPoints, shuffleDeck } from './utils';
-import type { Card, Suit, Player, Element, AbilityType, RoguelikePowerUp } from './types';
+import type { Card, Suit, Player, Element, AbilityType, RoguelikePowerUp, Value } from './types';
 
 /**
  * Initializes a deck for Roguelike mode by assigning elements to cards based on the current level.
@@ -73,14 +73,6 @@ export const getRoguelikeTrickWinner = (playedCards: Card[], starter: Player, br
     
     // If they are of the same suit (but not briscola), check for powers and then rank.
     if (card1.suit === card2.suit) {
-        // Check for 'value_swap' power
-        const hasValueSwap = activePowers.some(p => p.id === 'value_swap');
-        if (hasValueSwap) {
-            const humanCard = starter === 'human' ? card1 : card2;
-            const aiCard = starter === 'ai' ? card1 : card2;
-            if (humanCard.value === '2' && aiCard.value === 'Fante') return 'human';
-            if (humanCard.value === 'Fante' && aiCard.value === '2') return 'ai';
-        }
         return rank1 > rank2 ? starter : follower;
     }
     
@@ -163,9 +155,11 @@ export const calculateRoguelikeTrickPoints = (
         }
 
         const headhunterPower = activePowers.find(p => p.id === 'king_bonus');
-        // The winning card for human is humanCard
-        if (headhunterPower && humanCard.value === 'Re') {
-            pointsForTrick += headhunterPower.level * 5;
+        if (headhunterPower) {
+            const playedCardValue = humanCard.value;
+            if (playedCardValue === 'Fante' || playedCardValue === 'Cavallo' || playedCardValue === 'Re') {
+                pointsForTrick += headhunterPower.level * 2;
+            }
         }
 
         const briscolaMasteryPower = activePowers.find(p => p.id === 'briscola_mastery');

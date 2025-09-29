@@ -2,13 +2,12 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-// FIX: Import React to use React.Fragment.
 import React from 'react';
 import { translations } from '../core/translations';
 import type { Card, Language, CardDeckStyle } from '../core/types';
 import { CardView } from './CardView';
 
-interface KasumiSwapModalProps {
+interface BriscolaSwapModalProps {
     isOpen: boolean;
     onClose: () => void;
     onCardSelect: (card: Card) => void;
@@ -18,7 +17,7 @@ interface KasumiSwapModalProps {
     cardDeckStyle: CardDeckStyle;
 }
 
-export const KasumiSwapModal = ({ isOpen, onClose, onCardSelect, briscolaCard, hand, language, cardDeckStyle }: KasumiSwapModalProps) => {
+export const BriscolaSwapModal = ({ isOpen, onClose, onCardSelect, briscolaCard, hand, language, cardDeckStyle }: BriscolaSwapModalProps) => {
     if (!isOpen || !briscolaCard) {
         return null;
     }
@@ -34,14 +33,14 @@ export const KasumiSwapModal = ({ isOpen, onClose, onCardSelect, briscolaCard, h
                     </svg>
                 </button>
                 <div className="modal-content">
-                    <h2>{T.kasumiSwapTitle}</h2>
-                    <p>{T.kasumiSwapMessage}</p>
+                    {/* FIX: `T.roguelike.powers.value_swap.name` is a string, not a function. Removed the incorrect function call. */}
+                    <h2>{T.roguelike.powers.value_swap.name}</h2>
+                    <p>{T.briscolaSwapMessage}</p>
                     <div className="kasumi-swap-cards">
                         <CardView card={briscolaCard} lang={language} cardDeckStyle={cardDeckStyle} />
                     </div>
                     <div className="hand">
                         {hand.map(card => (
-                            // FIX: Wrap CardView in React.Fragment to solve key prop type error.
                             <React.Fragment key={card.id}>
                                 <CardView card={card} lang={language} isPlayable onClick={() => onCardSelect(card)} cardDeckStyle={cardDeckStyle} />
                             </React.Fragment>

@@ -17,7 +17,7 @@ import { QuotaExceededError, getAIWaifuTrickMessage, getAIGenericTeasingMessage 
 import { getLocalAIMove } from '../core/localAI';
 import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
 // FIX: `RoguelikeEvent` is now correctly imported from `types.ts`.
-import type { GamePhase, Card, Player, Waifu, GameEmotionalState, Suit, Element, AbilityType, RoguelikeState, ElementalClashResult, TrickHistoryEntry, RoguelikePowerUp, RoguelikePowerUpId } from '../core/types';
+import type { GamePhase, Card, Player, Waifu, GameEmotionalState, Suit, Element, AbilityType, RoguelikeState, ElementalClashResult, TrickHistoryEntry, RoguelikePowerUp, RoguelikePowerUpId, Value } from '../core/types';
 import { RANK } from '../core/constants';
 import { POWER_UP_DEFINITIONS } from '../core/roguelikePowers';
 
@@ -90,9 +90,10 @@ export class GameStateStore {
     powerAnimation: { type: Element; player: Player; points: number } | null = null;
     elementalClash: ElementalClashResult | null = null;
     lastTrickHighlights: { human: ElementalEffectStatus, ai: ElementalEffectStatus } = { human: 'unset', ai: 'unset' };
-    revealedAiHand: Card[] | null = null;
+    isAiHandTemporarilyRevealed = false;
     guaranteedClashWinner: Player | null = null;
     isKasumiModalOpen = false;
+    isBriscolaSwapModalOpen = false;
     activeElements: Element[] = [];
 
     trickHistory: TrickHistoryEntry[] = [];
@@ -107,6 +108,9 @@ export class GameStateStore {
     
     isTutorialGame = false;
     
+    lastTrickInsightCooldown = 0;
+    briscolaSwapCooldown = 0;
+
     // FIX: Added missing property for the power selection screen.
     powerSelectionOptions: { newPowers: RoguelikePowerUpId[], upgrade: RoguelikePowerUp | null } | null = null;
 
@@ -123,7 +127,21 @@ export class GameStateStore {
         reaction(() => ({humanScore: this.humanScore, aiScore: this.aiScore}), this.updateEmotionalState);
         reaction(() => ({phase: this.phase, cardsOnTable: this.cardsOnTable.length}), this.handleTrickResolution);
         reaction(() => ({phase: this.phase, turn: this.turn, cardsOnTable: this.cardsOnTable.length}), this.handleAiTurn);
-        reaction(() => ({phase: this.phase, humanHand: this.humanHand.length, aiHand: this.aiHand.length, cardsOnTable: this.cardsOnTable.length, isProcessing: this.isProcessing}), this.handleEndOfGame);
+        reaction(
+            () => this.turn,
+            (turn) => {
+                if (this.phase === 'playing' && turn === 'human') {
+                    this.rootStore.chatStore.setHasChattedThisTurn(false);
+                    if (this.lastTrickInsightCooldown > 0) {
+                        this.lastTrickInsightCooldown--;
+                    }
+                    if (this.briscolaSwapCooldown > 0) {
+                        this.briscolaSwapCooldown--;
+                    }
+                    this.isAiHandTemporarilyRevealed = false;
+                }
+            }
+        );
     }
     
     init() {
@@ -134,6 +152,22 @@ export class GameStateStore {
 
     get isProcessing() {
         return this.isResolvingTrick;
+    }
+
+    get isAiHandPermanentlyRevealed() {
+        const power = this.roguelikeState.activePowers.find(p => p.id === 'last_trick_insight');
+        return !!power && power.level >= 3;
+    }
+
+    get revealedAiHand() {
+        if (this.isAiHandPermanentlyRevealed || this.isAiHandTemporarilyRevealed) {
+            return this.aiHand;
+        }
+        const power = this.roguelikeState.activePowers.find(p => p.id === 'last_trick_insight');
+        if (power && power.level === 1 && this.deck.length === 0 && !this.briscolaCard && this.humanHand.length <= 3) {
+            return this.aiHand;
+        }
+        return null;
     }
 
     get T() {
@@ -228,6 +262,7 @@ export class GameStateStore {
 
     performNightmareAiTurn = () => {
         const briscolaSuit = this.briscolaSuit!;
+    
         let cardToPlay: Card;
     
         const isRoguelike = this.rootStore.gameSettingsStore.gameplayMode === 'roguelike';
@@ -538,7 +573,6 @@ export class GameStateStore {
         const level = this.roguelikeState.currentLevel;
         if (level === 0) return;
 
-        // ... reset logic ...
         this.cardsOnTable = [];
         this.trickHistory = [];
         this.lastTrick = null;
@@ -548,6 +582,8 @@ export class GameStateStore {
         this.lastTrickHighlights = { human: 'unset', ai: 'unset' };
         this.guaranteedClashWinner = null;
         this.roguelikeState.followerAbilitiesUsedThisMatch = [];
+        this.lastTrickInsightCooldown = 0;
+        this.briscolaSwapCooldown = 0;
         
         let nextWaifu: Waifu;
         if (level >= 4) {
@@ -567,34 +603,45 @@ export class GameStateStore {
         let newDeck = elementalDeck;
         const newBriscola = newDeck[newDeck.length - 1];
     
-        const hasAceInHole = this.roguelikeState.activePowers.some(p => p.id === 'ace_of_briscola_start');
-        if (hasAceInHole) {
+        const aceInHolePower = this.roguelikeState.activePowers.find(p => p.id === 'ace_of_briscola_start');
+        let preDealtCards: Card[] = [];
+
+        if (aceInHolePower) {
             const briscolaSuit = newBriscola.suit;
-            const aceIndex = newDeck.findIndex(c => c.value === 'Asso' && c.suit === briscolaSuit);
-            if (aceIndex !== -1) {
-                const [aceCard] = newDeck.splice(aceIndex, 1);
-                this.humanHand = [aceCard, ...newDeck.slice(0, 2)];
-                this.aiHand = newDeck.slice(2, 5);
-                const remainingDeck = newDeck.slice(5);
-                const briscolaIndexInRemaining = remainingDeck.findIndex(c => c.id === newBriscola.id);
-                if (briscolaIndexInRemaining !== -1) {
-                    remainingDeck.splice(briscolaIndexInRemaining, 1);
-                }
-                this.deck = remainingDeck;
-                this.briscolaCard = newBriscola;
-            } else {
-                this.humanHand = newDeck.slice(0, 3);
-                this.aiHand = newDeck.slice(3, 6);
-                this.deck = newDeck.slice(6, -1);
-                this.briscolaCard = newBriscola;
+            let potentialCardValues: Value[] = [];
+            let numToPick = 0;
+
+            if (aceInHolePower.level === 1) {
+                potentialCardValues = ['Asso', '3', 'Re'];
+                numToPick = 1;
+            } else if (aceInHolePower.level === 2) {
+                potentialCardValues = ['Asso', '3'];
+                numToPick = 1;
+            } else if (aceInHolePower.level >= 3) {
+                potentialCardValues = ['Asso', '3'];
+                numToPick = 2;
             }
-        } else {
-            this.humanHand = newDeck.slice(0, 3);
-            this.aiHand = newDeck.slice(3, 6);
-            this.deck = newDeck.slice(6, -1);
-            this.briscolaCard = newBriscola;
+            
+            // Filter out the briscola card's value from the list of potential cards to give.
+            // This prevents duplicating the card that's already on the table as the briscola.
+            const availableValues = potentialCardValues.filter(value => value !== newBriscola.value);
+            
+            const cardsToFind = shuffleDeck(availableValues).slice(0, numToPick);
+            
+            for (const value of cardsToFind) {
+                // The search is now safe as we are not looking for the briscola card itself.
+                const cardIndex = newDeck.findIndex(c => c.value === value && c.suit === briscolaSuit);
+                if (cardIndex !== -1) {
+                    preDealtCards.push(newDeck.splice(cardIndex, 1)[0]);
+                }
+            }
         }
 
+        const cardsToDeal = 3 - preDealtCards.length;
+        this.humanHand = [...preDealtCards, ...newDeck.slice(0, cardsToDeal)];
+        this.aiHand = newDeck.slice(cardsToDeal, cardsToDeal + 3);
+        this.deck = newDeck.slice(cardsToDeal + 3, -1);
+        this.briscolaCard = newBriscola;
         this.briscolaSuit = newBriscola.suit;
         this.humanScore = 0;
         this.aiScore = 0;
@@ -641,8 +688,8 @@ export class GameStateStore {
             if (isHumanPowerActive && humanCardFinal.element === 'water' && trickWinner === 'ai') playSound('element-water');
             if (isAiPowerActive && aiCardFinal.element === 'water' && trickWinner === 'human') playSound('element-water');
 
-            if (trickWinner === 'human' && isHumanPowerActive && humanCardFinal.element === 'fire') { points += 3; this.powerAnimation = {type: 'fire', player: 'human', points: 3}; playSound('element-fire'); setTimeout(() => runInAction(() => this.powerAnimation = null), 1500); }
-            if (trickWinner === 'ai' && isAiPowerActive && aiCardFinal.element === 'fire') { points += 3; this.powerAnimation = {type: 'fire', player: 'ai', points: 3}; playSound('element-fire'); setTimeout(() => runInAction(() => this.powerAnimation = null), 1500); }
+            if (trickWinner === 'human' && isHumanPowerActive && humanCardFinal.element === 'fire') { this.powerAnimation = {type: 'fire', player: 'human', points: 3}; playSound('element-fire'); setTimeout(() => runInAction(() => this.powerAnimation = null), 1500); }
+            if (trickWinner === 'ai' && isAiPowerActive && aiCardFinal.element === 'fire') { this.powerAnimation = {type: 'fire', player: 'ai', points: 3}; playSound('element-fire'); setTimeout(() => runInAction(() => this.powerAnimation = null), 1500); }
             if (trickWinner === 'ai' && isHumanPowerActive && humanCardFinal.element === 'earth') { this.humanScore += result.humanCardPoints; playSound('element-earth'); }
             if (trickWinner === 'human' && isAiPowerActive && aiCardFinal.element === 'earth') { this.aiScore += result.aiCardPoints; playSound('element-earth'); }
         } else {
@@ -691,10 +738,6 @@ export class GameStateStore {
         const delay = isFinalTrick ? 3000 : 1500;
 
         setTimeout(() => runInAction(() => {
-            // FIX: Clear temporary effects like Fortify from cards in hand at the end of a trick.
-            // This prevents invalid states where a card remains fortified in hand after a trick,
-            // which could cause the AI logic to freeze on subsequent turns. This is a robust safeguard
-            // for both players' hands.
             const cleanupHand = (hand: Card[]): Card[] => {
                 return hand.map(c => {
                     if (c.isTemporaryBriscola) {
@@ -724,17 +767,12 @@ export class GameStateStore {
             this.cardsOnTable = [];
             this.isResolvingTrick = false;
 
-            if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike') {
-                const hasInsight = this.roguelikeState.activePowers.some(p => p.id === 'last_trick_insight');
-                if (hasInsight && this.deck.length === 0 && !this.briscolaCard) {
-                    this.revealedAiHand = [...this.aiHand];
-                }
-            }
-
             if(trickWinner === 'human') this.message = this.T.yourTurnMessage;
             if (this.isTutorialGame) {
                 this.rootStore.uiStore.onTutorialGameEvent('cardsDrawn');
             }
+
+            this.handleEndOfGame();
         }), delay);
     };
     
@@ -883,7 +921,9 @@ export class GameStateStore {
                 gameMode: this.gameMode, trickHistory: toJS(this.trickHistory), lastTrick: toJS(this.lastTrick), roguelikeState: toJS(this.roguelikeState), activeElements: toJS(this.activeElements),
                 lastResolvedTrick: toJS(this.lastResolvedTrick), trickCounter: this.trickCounter,
                 cardForElementalChoice: toJS(this.cardForElementalChoice), elementalClash: toJS(this.elementalClash), lastTrickHighlights: toJS(this.lastTrickHighlights),
-                revealedAiHand: toJS(this.revealedAiHand), isKasumiModalOpen: this.isKasumiModalOpen,
+                // FIX: Cannot assign to 'revealedAiHand' because it is a read-only property.
+                // Switched to saving the underlying state property `isAiHandTemporarilyRevealed` instead.
+                isAiHandTemporarilyRevealed: this.isAiHandTemporarilyRevealed, isKasumiModalOpen: this.isKasumiModalOpen,
             };
             localStorage.setItem(SAVED_GAME_KEY, JSON.stringify(stateToSave));
             this.hasSavedGame = true;
@@ -921,7 +961,9 @@ export class GameStateStore {
                 this.aiEmotionalState = saved.aiEmotionalState; this.gameMode = saved.gameMode; this.trickHistory = saved.trickHistory || []; this.lastTrick = saved.lastTrick || null;
                 this.roguelikeState = saved.roguelikeState; this.activeElements = saved.activeElements || []; this.cardForElementalChoice = saved.cardForElementalChoice; this.elementalClash = saved.elementalClash;
                 this.lastTrickHighlights = saved.lastTrickHighlights || { human: 'unset', ai: 'unset' };
-                this.revealedAiHand = saved.revealedAiHand;
+                // FIX: Cannot assign to 'revealedAiHand' because it is a read-only property.
+                // Restored the underlying state property `isAiHandTemporarilyRevealed` instead.
+                this.isAiHandTemporarilyRevealed = saved.isAiHandTemporarilyRevealed || false;
                 this.isKasumiModalOpen = saved.isKasumiModalOpen; this.lastResolvedTrick = saved.lastResolvedTrick || []; this.trickCounter = saved.trickCounter || 0;
                 this.phase = 'playing';
             });
@@ -935,7 +977,6 @@ export class GameStateStore {
     
     setPhase = (phase: GamePhase) => { this.phase = phase; };
 
-    // FIX: Added method to show the power selection screen.
     showPowerSelectionScreen = (isInitial: boolean = false) => {
         const { activePowers, initialPower } = this.roguelikeState;
         const allPowerIds = Object.keys(POWER_UP_DEFINITIONS) as RoguelikePowerUpId[];
@@ -962,7 +1003,6 @@ export class GameStateStore {
         this.phase = 'power-selection';
     }
 
-    // FIX: Added method to handle power-up selection.
     selectPowerUp = (powerId: RoguelikePowerUpId, isUpgrade: boolean) => {
         const { roguelikeState } = this;
         if (isUpgrade) {
@@ -979,5 +1019,37 @@ export class GameStateStore {
         
         this.powerSelectionOptions = null;
         this.startRoguelikeLevel();
+    }
+
+    activateLastTrickInsight = () => {
+        const power = this.roguelikeState.activePowers.find(p => p.id === 'last_trick_insight');
+        if (this.turn === 'human' && power && power.level === 2 && this.lastTrickInsightCooldown === 0) {
+            this.isAiHandTemporarilyRevealed = true;
+            this.lastTrickInsightCooldown = 3;
+        }
+    }
+
+    openBriscolaSwapModal = () => {
+        const power = this.roguelikeState.activePowers.find(p => p.id === 'value_swap');
+        if (power && this.briscolaSwapCooldown === 0) {
+            this.isBriscolaSwapModalOpen = true;
+        }
+    }
+
+    closeBriscolaSwapModal = () => { this.isBriscolaSwapModalOpen = false; }
+    
+    handleBriscolaSwap = (cardFromHand: Card) => {
+        if (this.briscolaCard) {
+            const oldBriscola = this.briscolaCard;
+            this.briscolaCard = cardFromHand;
+            this.briscolaSuit = cardFromHand.suit;
+            this.humanHand = [...this.humanHand.filter(c => c.id !== cardFromHand.id), oldBriscola];
+
+            const power = this.roguelikeState.activePowers.find(p => p.id === 'value_swap');
+            if (power) {
+                this.briscolaSwapCooldown = 4 - power.level;
+            }
+        }
+        this.closeBriscolaSwapModal();
     }
 }

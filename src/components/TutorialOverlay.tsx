@@ -5,7 +5,8 @@
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { translations } from '../core/translations';
-import { useState, useLayoutEffect, useRef } from 'react';
+// FIX: Import React to use React types like React.CSSProperties.
+import React, { useState, useLayoutEffect, useRef } from 'react';
 
 export const TutorialOverlay = observer(() => {
     const { uiStore, gameSettingsStore } = useStores();

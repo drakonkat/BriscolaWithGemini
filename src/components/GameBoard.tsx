@@ -2,7 +2,8 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { useState, useEffect } from 'react';
+// FIX: Import React to use React.Fragment.
+import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { CardView } from './CardView';
@@ -23,8 +24,8 @@ export const GameBoard = observer(() => {
         currentWaifu, aiScore, aiHand, humanScore, humanHand, briscolaCard, deck, cardsOnTable, message,
         isProcessing, turn, trickStarter, backgroundUrl, lastTrick, lastTrickHighlights, activeElements,
         roguelikeState, powerAnimation, cardForElementalChoice, elementalClash,
-        revealedAiHand, 
-        isTutorialGame,
+        revealedAiHand, isAiHandPermanentlyRevealed, lastTrickInsightCooldown, activateLastTrickInsight,
+        briscolaSwapCooldown, openBriscolaSwapModal, isTutorialGame,
     } = gameStateStore;
     const { animatingCard, drawingCards, unreadMessageCount, waifuBubbleMessage } = uiStore;
     const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle, isDiceAnimationEnabled } = gameSettingsStore;
@@ -32,7 +33,6 @@ export const GameBoard = observer(() => {
     const T = translations[language];
     const TC = T.elementalClash;
     const [isLegendExpanded, setIsLegendExpanded] = useState(true);
-    const [isInitialPowerLegendExpanded, setIsInitialPowerLegendExpanded] = useState(true);
     const [isDiceRolling, setIsDiceRolling] = useState(false);
 
     useEffect(() => {
@@ -54,17 +54,6 @@ export const GameBoard = observer(() => {
     const humanCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     const aiCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     
-    const initialPowerId = roguelikeState.initialPower;
-    const initialPowerState = initialPowerId ? roguelikeState.activePowers.find(p => p.id === initialPowerId) : null;
-    let initialPowerDef = null;
-    if (initialPowerState) {
-        initialPowerDef = {
-            name: POWER_UP_DEFINITIONS[initialPowerState.id].name(language),
-            description: POWER_UP_DEFINITIONS[initialPowerState.id].description(language, initialPowerState.level),
-            level: initialPowerState.level,
-        };
-    }
-
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
             <CachedImage 
@@ -142,7 +131,7 @@ export const GameBoard = observer(() => {
                 </button>
             </div>
             
-            {gameplayMode === 'roguelike' && activeElements.length > 0 && (
+            {gameplayMode === 'roguelike' && (activeElements.length > 0 || roguelikeState.activePowers.length > 0) && (
                 <div className={`elemental-powers-panel ${!isLegendExpanded ? 'collapsed' : ''}`} title={T.elementalPowersTitle}>
                     <button className="elemental-powers-toggle" onClick={() => setIsLegendExpanded(!isLegendExpanded)} title={T.toggleLegend}>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -161,21 +150,29 @@ export const GameBoard = observer(() => {
                             </div>
                         );
                     })}
-                </div>
-            )}
 
-            {gameplayMode === 'roguelike' && initialPowerDef && (
-                <div className={`initial-power-panel ${!isInitialPowerLegendExpanded ? 'collapsed' : ''}`}>
-                    <span className="initial-power-title">{T.roguelike.initialPowerTitle}</span>
-                    <button className="initial-power-toggle" onClick={() => setIsInitialPowerLegendExpanded(!isInitialPowerLegendExpanded)} title={T.toggleLegend}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
-                        </svg>
-                    </button>
-                    <div className="initial-power-content">
-                        <h4>{initialPowerDef.name} (Lv. {initialPowerDef.level})</h4>
-                        <p>{initialPowerDef.description}</p>
-                    </div>
+                    {activeElements.length > 0 && (
+                        <>
+                           <h4 className="abilities-subtitle">{T.roguelike.elementalCycleTitle}</h4>
+                           <div className="elemental-cycle-display">
+                               <ElementIcon element="water" /> &gt; <ElementIcon element="fire" /> &gt; <ElementIcon element="air" /> &gt; <ElementIcon element="earth" /> &gt; <ElementIcon element="water" />
+                           </div>
+                        </>
+                    )}
+
+                    {roguelikeState.activePowers.length > 0 && (
+                        <>
+                            <h4 className="abilities-subtitle">{T.roguelike.allPowersTitle}</h4>
+                            <div className="roguelike-powers-list">
+                                {roguelikeState.activePowers.map(power => (
+                                    <div key={power.id} className="roguelike-power-entry">
+                                        <h5>{POWER_UP_DEFINITIONS[power.id].name(language)} (Lv. {power.level})</h5>
+                                        <p>{POWER_UP_DEFINITIONS[power.id].description(language, power.level)}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
             
@@ -220,15 +217,16 @@ export const GameBoard = observer(() => {
 
             <div className="player-area ai-area">
                 <div className="hand">
-                    {(revealedAiHand || aiHand).map((card) => 
-                        <CardView 
-                            key={card.id} 
-                            card={card} 
-                            isFaceDown={!revealedAiHand} 
-                            lang={language}
-                            cardDeckStyle={cardDeckStyle}
-                        />
-                    )}
+                    {(revealedAiHand || aiHand).map((card) => (
+                        <React.Fragment key={card.id}>
+                            <CardView 
+                                card={card} 
+                                isFaceDown={!revealedAiHand} 
+                                lang={language}
+                                cardDeckStyle={cardDeckStyle}
+                            />
+                        </React.Fragment>
+                    ))}
                 </div>
             </div>
 
@@ -238,14 +236,15 @@ export const GameBoard = observer(() => {
                         const owner = index === 0 ? trickStarter : (trickStarter === 'human' ? 'ai' : 'human');
                         const status = lastTrickHighlights[owner];
                         return (
-                            <CardView 
-                                key={card.id} 
-                                card={card} 
-                                lang={language} 
-                                elementalEffectStatus={status === 'unset' ? undefined : status}
-                                className={''}
-                                cardDeckStyle={cardDeckStyle}
-                            />
+                            <React.Fragment key={card.id}>
+                                <CardView 
+                                    card={card} 
+                                    lang={language} 
+                                    elementalEffectStatus={status === 'unset' ? undefined : status}
+                                    className={''}
+                                    cardDeckStyle={cardDeckStyle}
+                                />
+                            </React.Fragment>
                         );
                     })}
                 </div>
@@ -254,15 +253,16 @@ export const GameBoard = observer(() => {
             <div className="player-area human-area">
                 <div className="hand" data-tutorial-id="player-hand">
                     {humanHand.map(card => (
-                        <CardView
-                            key={card.id}
-                            card={card}
-                            isPlayable={turn === 'human' && !isProcessing}
-                            onClick={() => gameStateStore.selectCardForPlay(card)}
-                            lang={language}
-                            className={''}
-                            cardDeckStyle={cardDeckStyle}
-                        />
+                        <React.Fragment key={card.id}>
+                            <CardView
+                                card={card}
+                                isPlayable={turn === 'human' && !isProcessing}
+                                onClick={() => gameStateStore.selectCardForPlay(card)}
+                                lang={language}
+                                className={''}
+                                cardDeckStyle={cardDeckStyle}
+                            />
+                        </React.Fragment>
                     ))}
                 </div>
             </div>
@@ -272,6 +272,50 @@ export const GameBoard = observer(() => {
                     <div className="player-score human-score" data-tutorial-id="player-score">
                         <span>{T.scoreYou}: {humanScore}</span>
                     </div>
+                    
+                    {(() => {
+                        const insightPower = roguelikeState.activePowers.find(p => p.id === 'last_trick_insight');
+                        const swapPower = roguelikeState.activePowers.find(p => p.id === 'value_swap');
+
+                        return (
+                            <>
+                                {insightPower && insightPower.level === 2 && (
+                                    <button
+                                        className={`ability-indicator player-human ${lastTrickInsightCooldown === 0 ? 'ready' : 'disabled'}`}
+                                        onClick={activateLastTrickInsight}
+                                        disabled={lastTrickInsightCooldown > 0 || turn !== 'human'}
+                                        title={POWER_UP_DEFINITIONS['last_trick_insight'].name(language)}
+                                    >
+                                        <div className="ability-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5 4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
+                                        </div>
+                                        {lastTrickInsightCooldown > 0 ? (
+                                            <span>{T.abilities.onCooldown(lastTrickInsightCooldown)}</span>
+                                        ) : (
+                                            <span>{T.abilities.revealHand}</span>
+                                        )}
+                                    </button>
+                                )}
+                                {swapPower && (
+                                    <button
+                                        className={`ability-indicator player-human ${briscolaSwapCooldown === 0 ? 'ready' : 'disabled'}`}
+                                        onClick={openBriscolaSwapModal}
+                                        disabled={briscolaSwapCooldown > 0 || turn !== 'human'}
+                                        title={POWER_UP_DEFINITIONS['value_swap'].name(language)}
+                                    >
+                                        <div className="ability-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.99 11 3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+                                        </div>
+                                        {briscolaSwapCooldown > 0 ? (
+                                            <span>{T.abilities.onCooldown(briscolaSwapCooldown)}</span>
+                                        ) : (
+                                            <span>{POWER_UP_DEFINITIONS['value_swap'].name(language)}</span>
+                                        )}
+                                    </button>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
 
                 {lastTrick && (

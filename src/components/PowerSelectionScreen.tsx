@@ -2,6 +2,8 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
+// FIX: Import React to use React.Fragment.
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { translations } from '../core/translations';
@@ -47,14 +49,16 @@ export const PowerSelectionScreen = observer(() => {
                     {newPowers.map(powerId => {
                         const def = POWER_UP_DEFINITIONS[powerId];
                         return (
-                            <PowerCard 
-                                key={powerId}
-                                title={def.name(language)}
-                                description={def.description(language, 1)}
-                                // FIX: `selectPowerUp` is now a valid method on GameStateStore.
-                                onClick={() => gameStateStore.selectPowerUp(powerId, false)}
-                                lang={language}
-                            />
+                            // FIX: Wrap PowerCard in React.Fragment to solve key prop type error.
+                            <React.Fragment key={powerId}>
+                                <PowerCard 
+                                    title={def.name(language)}
+                                    description={def.description(language, 1)}
+                                    // FIX: `selectPowerUp` is now a valid method on GameStateStore.
+                                    onClick={() => gameStateStore.selectPowerUp(powerId, false)}
+                                    lang={language}
+                                />
+                            </React.Fragment>
                         );
                     })}
                     {upgrade && (
