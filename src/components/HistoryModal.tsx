@@ -6,6 +6,7 @@ import { translations } from '../core/translations';
 import type { Language, TrickHistoryEntry, CardDeckStyle, GameplayMode } from '../core/types';
 import { CardView } from './CardView';
 import { ElementIcon } from './ElementIcon';
+import { useStores } from '../stores';
 
 interface HistoryModalProps {
     isOpen: boolean;
@@ -22,9 +23,13 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardD
         return null;
     }
 
+    const { gameStateStore } = useStores();
     const T = translations[language];
     const TH = T.history;
     const isClassicMode = gameplayMode === 'classic';
+
+    const canSeeFullHistory = isClassicMode || (gameplayMode === 'roguelike' && gameStateStore.roguelikeState.activePowers.some(p => p.id === 'third_eye'));
+    const historyToShow = canSeeFullHistory ? history : history.slice(-1);
 
     return (
         <div className="game-over-overlay" onClick={onClose}>
@@ -47,7 +52,7 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardD
                         {!isClassicMode && <span>{TH.bonus}</span>}
                     </div>
                     <div className="history-list">
-                        {[...history].reverse().map(entry => (
+                        {[...historyToShow].reverse().map(entry => (
                             <div key={entry.trickNumber} className="history-entry">
                                 <span>{entry.trickNumber}</span>
                                 <div><CardView card={entry.humanCard} lang={language} cardDeckStyle={cardDeckStyle} /></div>

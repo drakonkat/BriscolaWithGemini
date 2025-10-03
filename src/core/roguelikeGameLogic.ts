@@ -125,45 +125,40 @@ export const calculateRoguelikeTrickPoints = (
     // FIX: Added airBonus to be returned separately for animation purposes.
     let airBonus = 0;
 
-    const isHumanPowerActive = (humanCard.elementalEffectActivated ?? false) && clashWinner !== 'ai';
-    const isAiPowerActive = (aiCard.elementalEffectActivated ?? false) && clashWinner !== 'human';
-
-    // Water Power: Halves opponent's card points only if the user of the power loses the trick
-    if (isHumanPowerActive && humanCard.element === 'water' && winner === 'ai') {
+    // Water Power: Halves winning card's points if the power user loses the trick
+    if ((humanCard.elementalEffectActivated ?? false) && humanCard.element === 'water' && winner === 'ai' && clashWinner !== 'ai') {
         const reduction = Math.ceil(getCardPoints(aiCard) / 2);
         aiCardPoints -= reduction;
         if (reduction > 0) bonusReasons.push(`Water: -${reduction}`);
     }
-    if (isAiPowerActive && aiCard.element === 'water' && winner === 'human') {
+    if ((aiCard.elementalEffectActivated ?? false) && aiCard.element === 'water' && winner === 'human' && clashWinner !== 'human') {
         const reduction = Math.ceil(getCardPoints(humanCard) / 2);
         humanCardPoints -= reduction;
         if (reduction > 0) bonusReasons.push(`Water: -${reduction}`);
     }
 
     // Fire Power: +3 bonus points for winning with a fire card
-    if (winner === 'human' && isHumanPowerActive && humanCard.element === 'fire') {
+    if (winner === 'human' && (humanCard.elementalEffectActivated ?? false) && humanCard.element === 'fire' && clashWinner !== 'ai') {
         bonusPoints += 3;
         bonusReasons.push('Fire: +3');
     }
-    if (winner === 'ai' && isAiPowerActive && aiCard.element === 'fire') {
+    if (winner === 'ai' && (aiCard.elementalEffectActivated ?? false) && aiCard.element === 'fire' && clashWinner !== 'human') {
         bonusPoints += 3;
         bonusReasons.push('Fire: +3');
     }
 
     // Air Power: Bonus points for collected air cards
-    if (winner === 'human' && isHumanPowerActive && humanCard.element === 'air') {
+    if (winner === 'human' && (humanCard.elementalEffectActivated ?? false) && humanCard.element === 'air' && clashWinner !== 'ai') {
         const airCardsInPile = humanScorePile.filter(card => card.element === 'air').length;
         if (airCardsInPile > 0) {
-            // FIX: Store air bonus separately for animation trigger.
             airBonus = airCardsInPile;
             bonusPoints += airBonus;
             bonusReasons.push(`Air: +${airBonus}`);
         }
     }
-    if (winner === 'ai' && isAiPowerActive && aiCard.element === 'air') {
+    if (winner === 'ai' && (aiCard.elementalEffectActivated ?? false) && aiCard.element === 'air' && clashWinner !== 'human') {
         const airCardsInPile = aiScorePile.filter(card => card.element === 'air').length;
         if (airCardsInPile > 0) {
-            // FIX: Store air bonus separately for animation trigger.
             airBonus = airCardsInPile;
             bonusPoints += airBonus;
             bonusReasons.push(`Air: +${airBonus}`);
@@ -199,8 +194,8 @@ export const calculateRoguelikeTrickPoints = (
     const totalPoints = humanCardPoints + aiCardPoints + bonusPoints;
     
     // Earth power: recovers the original points of the card
-    const humanCardPointsReturned = (winner === 'ai' && isHumanPowerActive && humanCard.element === 'earth') ? getCardPoints(humanCard) : 0;
-    const aiCardPointsReturned = (winner === 'human' && isAiPowerActive && aiCard.element === 'earth') ? getCardPoints(aiCard) : 0;
+    const humanCardPointsReturned = (winner === 'ai' && (humanCard.elementalEffectActivated ?? false) && humanCard.element === 'earth' && clashWinner !== 'ai') ? getCardPoints(humanCard) : 0;
+    const aiCardPointsReturned = (winner === 'human' && (aiCard.elementalEffectActivated ?? false) && aiCard.element === 'earth' && clashWinner !== 'human') ? getCardPoints(aiCard) : 0;
     
     if (humanCardPointsReturned > 0) bonusReasons.push(`Earth: +${humanCardPointsReturned}`);
     if (aiCardPointsReturned > 0) bonusReasons.push(`Earth: +${aiCardPointsReturned}`);

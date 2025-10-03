@@ -50,8 +50,8 @@ export const GameBoard = observer(() => {
 
     const waifuIconAriaLabel = isChatEnabled ? T.chatWith(currentWaifu?.name ?? '') : T.waifuDetails(currentWaifu?.name ?? '');
     
-    const canOpenHistory = gameplayMode === 'classic' || (gameplayMode === 'roguelike' && roguelikeState.activePowers.some(p => p.id === 'third_eye'));
-    const historyButtonTitle = canOpenHistory ? TH.title : T_roguelike.powers.third_eye.historyLockedDesc;
+    const canSeeFullHistory = gameplayMode === 'classic' || (gameplayMode === 'roguelike' && roguelikeState.activePowers.some(p => p.id === 'third_eye'));
+    const historyButtonTitle = canSeeFullHistory ? TH.title : T_roguelike.powers.third_eye.historyLockedDesc;
 
     const humanCardForClash = elementalClash ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     const aiCardForClash = elementalClash ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
@@ -326,14 +326,10 @@ export const GameBoard = observer(() => {
                         <button
                             className="last-trick-recap"
                             onClick={() => {
-                                if (canOpenHistory) {
-                                    uiStore.openModal('history');
-                                }
+                                uiStore.openModal('history');
                             }}
                             title={historyButtonTitle}
                             disabled={!lastTrick}
-                            style={{ cursor: canOpenHistory ? 'pointer' : 'help' }}
-                            aria-disabled={!canOpenHistory}
                         >
                             <span>{TH.lastTrick}</span>
                             <CardView card={lastTrick.humanCard} lang={language} cardDeckStyle={cardDeckStyle} />
@@ -354,7 +350,7 @@ export const GameBoard = observer(() => {
                                         title={POWER_UP_DEFINITIONS['last_trick_insight'].name(language)}
                                     >
                                         <div className="ability-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5 4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5-4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
                                         </div>
                                         {lastTrickInsightCooldown > 0 ? (
                                             <span>{T.abilities.onCooldown(lastTrickInsightCooldown)}</span>

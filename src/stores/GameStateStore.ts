@@ -216,7 +216,8 @@ export class GameStateStore {
         const shouldClash = this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' &&
                             firstCardOnTable.element &&
                             secondCardOnTable.element &&
-                            firstCardOnTable.elementalEffectActivated;
+                            firstCardOnTable.elementalEffectActivated &&
+                            secondCardOnTable.elementalEffectActivated;
 
         if (shouldClash) {
             let clashWinner: 'human' | 'ai' | 'tie' | null = null;
