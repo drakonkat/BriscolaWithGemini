@@ -67,7 +67,8 @@ export type RoguelikePowerUpId =
   'ace_of_briscola_start' | 
   'briscola_mastery' | 
   'value_swap' |
-  'last_trick_insight';
+  'last_trick_insight' |
+  'third_eye';
 
 export interface RoguelikePowerUp {
   id: RoguelikePowerUpId;
@@ -104,6 +105,9 @@ export type TrickHistoryEntry = {
   winner: Player;
   points: number;
   clashResult?: ElementalClashResult;
+  basePoints: number;
+  bonusPoints: number;
+  bonusPointsReason: string;
 };
 
 // FIX: Added RoguelikeEvent type definition.

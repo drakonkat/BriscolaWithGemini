@@ -17,7 +17,7 @@ import { QuotaExceededError, getAIWaifuTrickMessage, getAIGenericTeasingMessage 
 import { getLocalAIMove } from '../core/localAI';
 import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
 // FIX: `RoguelikeEvent` is now correctly imported from `types.ts`.
-import type { GamePhase, Card, Player, Waifu, GameEmotionalState, Suit, Element, AbilityType, RoguelikeState, ElementalClashResult, TrickHistoryEntry, RoguelikePowerUp, RoguelikePowerUpId, Value } from '../core/types';
+import type { GamePhase, Card, Player, Waifu, GameEmotionalState, Suit, Element, AbilityType, RoguelikeState, ElementalClashResult, TrickHistoryEntry, RoguelikePowerUp, RoguelikePowerUpId, Value, RoguelikeEvent } from '../core/types';
 import { RANK } from '../core/constants';
 import { POWER_UP_DEFINITIONS } from '../core/roguelikePowers';
 
@@ -210,17 +210,28 @@ export class GameStateStore {
             this.resolveTrick(humanCard, aiCard, trickWinner, clashResult);
         };
 
-        if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' && humanCard.element && aiCard.element) {
-            // ... (rest of the logic remains the same)
+        const firstCardOnTable = this.cardsOnTable[0];
+        const secondCardOnTable = this.cardsOnTable[1];
+        
+        const shouldClash = this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' &&
+                            firstCardOnTable.element &&
+                            secondCardOnTable.element &&
+                            firstCardOnTable.elementalEffectActivated;
+
+        if (shouldClash) {
             let clashWinner: 'human' | 'ai' | 'tie' | null = null;
             let finalClashResult: ElementalClashResult | null = null;
             
+            const firstPlayerCard = this.trickStarter === 'human' ? humanCard : aiCard;
+            const secondPlayerCard = this.trickStarter === 'human' ? aiCard : humanCard;
+
             if (this.guaranteedClashWinner) {
                 clashWinner = this.guaranteedClashWinner;
                 this.guaranteedClashWinner = null;
             } else {
-                clashWinner = determineWeaknessWinner(humanCard.element, aiCard.element);
+                clashWinner = determineWeaknessWinner(firstPlayerCard.element!, secondPlayerCard.element!);
             }
+
             if (clashWinner) { 
                 finalClashResult = {
                     type: 'weakness',
@@ -246,9 +257,11 @@ export class GameStateStore {
 
             this.resolveTrickCallbackRef = () => resolve(finalClashResult);
             this.clashTimeoutRef = window.setTimeout(() => {
-                resolve(finalClashResult);
-                this.clashTimeoutRef = null;
-                this.resolveTrickCallbackRef = null;
+                if (this.resolveTrickCallbackRef) { // Ensure it hasn't been cleared
+                    resolve(finalClashResult);
+                    this.clashTimeoutRef = null;
+                    this.resolveTrickCallbackRef = null;
+                }
             }, 5000);
 
         } else {
@@ -283,7 +296,8 @@ export class GameStateStore {
                     if (isRoguelike) {
                         const activatedPotentialCard = { ...potentialCard, elementalEffectActivated: !!potentialCard.element };
                         const result = calculateRoguelikeTrickPoints(humanCard, activatedPotentialCard, 'ai', null, this.briscolaSuit!, this.roguelikeState.activePowers, [], []); // Note: score piles not available for prediction
-                        trickPoints = result.pointsForTrick;
+                        // FIX: Property 'pointsForTrick' does not exist on type '...'. Use 'totalPoints' instead.
+                        trickPoints = result.totalPoints;
                     } else {
                         trickPoints = getCardPoints(humanCard) + getCardPoints(potentialCard);
                     }
@@ -510,7 +524,7 @@ export class GameStateStore {
         const bgIndex = Math.floor(Math.random() * 21) + 1;
         const isDesktop = window.innerWidth > 1024;
         const backgroundPrefix = isDesktop ? 'landscape' : 'background';
-        this.backgroundUrl = `https://s3.tebi.io/waifubriscola/background/${backgroundPrefix}${bgIndex}.png`;
+        this.backgroundUrl = getImageUrl(`/background/${backgroundPrefix}${bgIndex}.png`);
         
         playSound('game-start');
         const newWaifu = selectedWaifu ?? WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
@@ -658,6 +672,8 @@ export class GameStateStore {
         const aiCardFinal = this.cardsOnTable.find(c => c.id === aiCard.id) || aiCard;
 
         let points;
+        // FIX: Declared result object to hold detailed point calculation for history.
+        let result: ReturnType<typeof calculateRoguelikeTrickPoints> | null = null;
         
         if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike') {
             const clashWinner = clashResult?.winner ?? null;
@@ -672,8 +688,11 @@ export class GameStateStore {
                 }
             });
 
-            const result = calculateRoguelikeTrickPoints(humanCardFinal, aiCardFinal, trickWinner, clashWinner, this.briscolaSuit!, this.roguelikeState.activePowers, humanScorePile, aiScorePile);
-            points = result.pointsForTrick;
+            // FIX: Assigned the detailed result to the new `result` variable.
+            result = calculateRoguelikeTrickPoints(humanCardFinal, aiCardFinal, trickWinner, clashWinner, this.briscolaSuit!, this.roguelikeState.activePowers, humanScorePile, aiScorePile);
+            // FIX: Property 'pointsForTrick' does not exist. Use 'totalPoints'.
+            points = result.totalPoints;
+            // FIX: Property 'airBonus' does not exist. This was fixed in roguelikeGameLogic.ts.
             const airBonus = result.airBonus;
 
             const isHumanPowerActive = (humanCardFinal.elementalEffectActivated ?? false) && clashWinner !== 'ai';
@@ -690,15 +709,28 @@ export class GameStateStore {
 
             if (trickWinner === 'human' && isHumanPowerActive && humanCardFinal.element === 'fire') { this.powerAnimation = {type: 'fire', player: 'human', points: 3}; playSound('element-fire'); setTimeout(() => runInAction(() => this.powerAnimation = null), 1500); }
             if (trickWinner === 'ai' && isAiPowerActive && aiCardFinal.element === 'fire') { this.powerAnimation = {type: 'fire', player: 'ai', points: 3}; playSound('element-fire'); setTimeout(() => runInAction(() => this.powerAnimation = null), 1500); }
-            if (trickWinner === 'ai' && isHumanPowerActive && humanCardFinal.element === 'earth') { this.humanScore += result.humanCardPoints; playSound('element-earth'); }
-            if (trickWinner === 'human' && isAiPowerActive && aiCardFinal.element === 'earth') { this.aiScore += result.aiCardPoints; playSound('element-earth'); }
+            // FIX: Property 'humanCardPoints' does not exist. Use 'humanCardPointsReturned'.
+            if (trickWinner === 'ai' && isHumanPowerActive && humanCardFinal.element === 'earth') { this.humanScore += result.humanCardPointsReturned; playSound('element-earth'); }
+            // FIX: Property 'aiCardPoints' does not exist. Use 'aiCardPointsReturned'.
+            if (trickWinner === 'human' && isAiPowerActive && aiCardFinal.element === 'earth') { this.aiScore += result.aiCardPointsReturned; playSound('element-earth'); }
         } else {
             points = getCardPoints(humanCardFinal) + getCardPoints(aiCardFinal);
         }
 
         this.trickCounter += 1;
 
-        const newTrickHistoryEntry: TrickHistoryEntry = { trickNumber: this.trickCounter, humanCard: humanCardFinal, aiCard: aiCardFinal, winner: trickWinner, points, clashResult: clashResult ?? undefined };
+        // FIX: Added missing properties (basePoints, bonusPoints, bonusPointsReason) to the history entry.
+        const newTrickHistoryEntry: TrickHistoryEntry = {
+            trickNumber: this.trickCounter,
+            humanCard: humanCardFinal,
+            aiCard: aiCardFinal,
+            winner: trickWinner,
+            points,
+            clashResult: clashResult ?? undefined,
+            basePoints: result ? result.basePoints : points,
+            bonusPoints: result ? result.bonusPoints : 0,
+            bonusPointsReason: result ? result.bonusReasons.join(', ') : '',
+        };
         this.trickHistory.push(newTrickHistoryEntry);
         this.lastTrick = newTrickHistoryEntry;
 
@@ -780,8 +812,7 @@ export class GameStateStore {
         if (this.turn !== 'human' || this.isProcessing) return;
 
         if (this.isTutorialGame) {
-            const { uiStore } = this.rootStore;
-            if (uiStore.tutorialStep === 'promptPlayCard' && card.id === 'tutorial-h-ace-bastoni') {
+            if (this.rootStore.uiStore.tutorialStep === 'promptPlayCard' && card.id === 'tutorial-h-ace-bastoni') {
                 playSound('card-place');
                 this.humanHand = this.humanHand.filter(c => c.id !== card.id);
                 this.cardsOnTable.push(card);

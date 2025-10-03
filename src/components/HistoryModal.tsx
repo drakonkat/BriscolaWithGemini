@@ -44,6 +44,7 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardD
                         {!isClassicMode && <span>{TH.clash}</span>}
                         <span>{TH.pointsYou}</span>
                         <span>{TH.pointsOpponent}</span>
+                        {!isClassicMode && <span>{TH.bonus}</span>}
                     </div>
                     <div className="history-list">
                         {[...history].reverse().map(entry => (
@@ -74,6 +75,11 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardD
                                 <span className={`history-points ${entry.winner === 'ai' ? 'ai' : ''}`}>
                                     {entry.winner === 'ai' ? entry.points : 0}
                                 </span>
+                                {!isClassicMode && (
+                                    <span className="history-bonus-reason">
+                                        {entry.bonusPointsReason || '-'}
+                                    </span>
+                                )}
                             </div>
                         ))}
                     </div>

@@ -119,60 +119,100 @@ export const calculateRoguelikeTrickPoints = (
 ) => {
     let humanCardPoints = getCardPoints(humanCard);
     let aiCardPoints = getCardPoints(aiCard);
+    const basePoints = humanCardPoints + aiCardPoints;
+    let bonusPoints = 0;
+    const bonusReasons: string[] = [];
+    // FIX: Added airBonus to be returned separately for animation purposes.
     let airBonus = 0;
 
-    // A power is active if the player activated it AND they didn't lose the clash.
     const isHumanPowerActive = (humanCard.elementalEffectActivated ?? false) && clashWinner !== 'ai';
     const isAiPowerActive = (aiCard.elementalEffectActivated ?? false) && clashWinner !== 'human';
 
     // Water Power: Halves opponent's card points only if the user of the power loses the trick
     if (isHumanPowerActive && humanCard.element === 'water' && winner === 'ai') {
-        aiCardPoints = Math.floor(aiCardPoints / 2);
+        const reduction = Math.ceil(getCardPoints(aiCard) / 2);
+        aiCardPoints -= reduction;
+        if (reduction > 0) bonusReasons.push(`Water: -${reduction}`);
     }
     if (isAiPowerActive && aiCard.element === 'water' && winner === 'human') {
-        humanCardPoints = Math.floor(humanCardPoints / 2);
+        const reduction = Math.ceil(getCardPoints(humanCard) / 2);
+        humanCardPoints -= reduction;
+        if (reduction > 0) bonusReasons.push(`Water: -${reduction}`);
     }
 
-    let pointsForTrick = humanCardPoints + aiCardPoints;
+    // Fire Power: +3 bonus points for winning with a fire card
+    if (winner === 'human' && isHumanPowerActive && humanCard.element === 'fire') {
+        bonusPoints += 3;
+        bonusReasons.push('Fire: +3');
+    }
+    if (winner === 'ai' && isAiPowerActive && aiCard.element === 'fire') {
+        bonusPoints += 3;
+        bonusReasons.push('Fire: +3');
+    }
 
     // Air Power: Bonus points for collected air cards
-    if (winner === 'human' && humanCard.element === 'air' && isHumanPowerActive) {
+    if (winner === 'human' && isHumanPowerActive && humanCard.element === 'air') {
         const airCardsInPile = humanScorePile.filter(card => card.element === 'air').length;
-        airBonus = airCardsInPile;
-        pointsForTrick += airBonus;
+        if (airCardsInPile > 0) {
+            // FIX: Store air bonus separately for animation trigger.
+            airBonus = airCardsInPile;
+            bonusPoints += airBonus;
+            bonusReasons.push(`Air: +${airBonus}`);
+        }
     }
-    if (winner === 'ai' && aiCard.element === 'air' && isAiPowerActive) {
+    if (winner === 'ai' && isAiPowerActive && aiCard.element === 'air') {
         const airCardsInPile = aiScorePile.filter(card => card.element === 'air').length;
-        airBonus = airCardsInPile;
-        pointsForTrick += airBonus;
+        if (airCardsInPile > 0) {
+            // FIX: Store air bonus separately for animation trigger.
+            airBonus = airCardsInPile;
+            bonusPoints += airBonus;
+            bonusReasons.push(`Air: +${airBonus}`);
+        }
     }
 
     // Roguelike passive power points
     if (winner === 'human') {
         const bonusPointPower = activePowers.find(p => p.id === 'bonus_point_per_trick');
         if (bonusPointPower) {
-            pointsForTrick += bonusPointPower.level;
+            bonusPoints += bonusPointPower.level;
+            bonusReasons.push(`Tribute: +${bonusPointPower.level}`);
         }
 
         const headhunterPower = activePowers.find(p => p.id === 'king_bonus');
         if (headhunterPower) {
             const playedCardValue = humanCard.value;
             if (playedCardValue === 'Fante' || playedCardValue === 'Cavallo' || playedCardValue === 'Re') {
-                pointsForTrick += headhunterPower.level * 2;
+                const headhunterBonus = headhunterPower.level * 2;
+                bonusPoints += headhunterBonus;
+                bonusReasons.push(`Headhunter: +${headhunterBonus}`);
             }
         }
 
         const briscolaMasteryPower = activePowers.find(p => p.id === 'briscola_mastery');
         if (briscolaMasteryPower && (humanCard.suit === briscolaSuit || humanCard.isTemporaryBriscola)) {
-            pointsForTrick += briscolaMasteryPower.level * 2;
+            const masteryBonus = briscolaMasteryPower.level * 2;
+            bonusPoints += masteryBonus;
+            bonusReasons.push(`Mastery: +${masteryBonus}`);
         }
     }
 
+    const totalPoints = humanCardPoints + aiCardPoints + bonusPoints;
+    
+    // Earth power: recovers the original points of the card
+    const humanCardPointsReturned = (winner === 'ai' && isHumanPowerActive && humanCard.element === 'earth') ? getCardPoints(humanCard) : 0;
+    const aiCardPointsReturned = (winner === 'human' && isAiPowerActive && aiCard.element === 'earth') ? getCardPoints(aiCard) : 0;
+    
+    if (humanCardPointsReturned > 0) bonusReasons.push(`Earth: +${humanCardPointsReturned}`);
+    if (aiCardPointsReturned > 0) bonusReasons.push(`Earth: +${aiCardPointsReturned}`);
 
     return {
-        pointsForTrick,
-        humanCardPoints, // Points to return for Earth power
-        aiCardPoints,    // Points to return for Earth power
+        totalPoints,
+        basePoints,
+        bonusPoints: totalPoints - basePoints,
+        bonusReasons,
+        humanCardPointsReturned,
+        aiCardPointsReturned,
+        // FIX: Return airBonus.
         airBonus,
     };
 };

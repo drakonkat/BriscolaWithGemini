@@ -153,6 +153,7 @@ export const translations = {
       clash: "Scontro",
       pointsYou: "Tuo Pti",
       pointsOpponent: "Pti Avv.",
+      bonus: "Bonus",
     },
     // Roguelike Mode
     roguelike: {
@@ -236,6 +237,11 @@ export const translations = {
             return "L'avversario gioca sempre con le carte scoperte.";
           }
         },
+        third_eye: {
+          name: "Il Terzo Occhio",
+          desc: "Sblocca lo storico completo dei turni per analizzare la partita.",
+          historyLockedDesc: "Sblocca 'Il Terzo Occhio' per vedere lo storico completo."
+        },
       }
     },
     elementalPowersTitle: "Poteri Elementali",
@@ -276,7 +282,7 @@ export const translations = {
     abilityReady: "Abilità Pronta!",
     abilityUsed: (playerName: string, abilityName: string) => `${playerName} ha usato ${abilityName}!`,
     incinerateDescription: "Incenerire: Rendi 0 i punti di una carta avversaria.",
-    tideDescription: "Marea: Vedi la mano del tuo avversario per 5 secondi.",
+    tideDescription: "Tide: Vedi la mano del tuo avversario per 5 secondi.",
     cycloneDescription: "Ciclone: Scambia una tua carta con una dal mazzo.",
     fortifyDescription: "Fortificare: Rende la prossima carta che giochi una Briscola temporanea.",
     cancelAbility: "Annulla",
@@ -632,6 +638,7 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
       clash: "Clash",
       pointsYou: "Your Pts",
       pointsOpponent: "Opp Pts",
+      bonus: "Bonus",
     },
     // Roguelike Mode
     roguelike: {
@@ -714,6 +721,11 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
             if (level === 2) return "Every 3 turns, you can activate an ability to see the opponent's hand for this turn.";
             return "The opponent always plays with their cards revealed.";
           }
+        },
+        third_eye: {
+          name: "The Third Eye",
+          desc: "Unlocks the full trick history to analyze the game.",
+          historyLockedDesc: "Unlock 'The Third Eye' to view the full history."
         },
       }
     },
