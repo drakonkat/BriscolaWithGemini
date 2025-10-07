@@ -40,6 +40,11 @@ export const POWER_UP_DEFINITIONS: Record<RoguelikePowerUpId, {
     description: (lang, level) => translations[lang].roguelike.powers.last_trick_insight.desc(level), 
     maxLevel: 3
   },
+  'third_eye': {
+    name: (lang) => translations[lang].roguelike.powers.third_eye.name,
+    description: (lang, level) => translations[lang].roguelike.powers.third_eye.desc,
+    maxLevel: 1
+  },
 };
 
 export const ALL_POWER_UP_IDS = Object.keys(POWER_UP_DEFINITIONS) as RoguelikePowerUpId[];

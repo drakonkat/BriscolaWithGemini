@@ -2,21 +2,18 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-// FIX: Import React to use React.Fragment.
 import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { CardView } from './CardView';
 import { getCardId, getImageUrl } from '../core/utils';
 import { translations } from '../core/translations';
-import type { Card, Element, Player, Waifu, RoguelikeState } from '../core/types';
+import type { Card } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
 import { ElementalChoiceModal } from './ElementalChoiceModal';
 import { POWER_UP_DEFINITIONS } from '../core/roguelikePowers';
 import { DiceRollAnimation } from './DiceRollAnimation';
-
-type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
 
 export const GameBoard = observer(() => {
     const { gameStateStore, uiStore, gameSettingsStore } = useStores();
@@ -24,14 +21,16 @@ export const GameBoard = observer(() => {
         currentWaifu, aiScore, aiHand, humanScore, humanHand, briscolaCard, deck, cardsOnTable, message,
         isProcessing, turn, trickStarter, backgroundUrl, lastTrick, lastTrickHighlights, activeElements,
         roguelikeState, powerAnimation, cardForElementalChoice, elementalClash,
-        revealedAiHand, isAiHandPermanentlyRevealed, lastTrickInsightCooldown, activateLastTrickInsight,
-        briscolaSwapCooldown, openBriscolaSwapModal, isTutorialGame,
+        revealedAiHand, lastTrickInsightCooldown, activateLastTrickInsight,
+        briscolaSwapCooldown, openBriscolaSwapModal,
+        confirmCardPlay, cancelCardPlay,
     } = gameStateStore;
     const { animatingCard, drawingCards, unreadMessageCount, waifuBubbleMessage } = uiStore;
     const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle, isDiceAnimationEnabled } = gameSettingsStore;
     
     const T = translations[language];
-    const TC = T.elementalClash;
+    const T_roguelike = T.roguelike;
+    const TH = T.history;
     const [isLegendExpanded, setIsLegendExpanded] = useState(true);
     const [isDiceRolling, setIsDiceRolling] = useState(false);
 
@@ -51,8 +50,11 @@ export const GameBoard = observer(() => {
 
     const waifuIconAriaLabel = isChatEnabled ? T.chatWith(currentWaifu?.name ?? '') : T.waifuDetails(currentWaifu?.name ?? '');
     
-    const humanCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
-    const aiCardOnTable = cardsOnTable.length > 0 ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
+    const canSeeFullHistory = gameplayMode === 'classic' || (gameplayMode === 'roguelike' && roguelikeState.activePowers.some(p => p.id === 'third_eye'));
+    const historyButtonTitle = canSeeFullHistory ? TH.title : T_roguelike.powers.third_eye.historyLockedDesc;
+
+    const humanCardForClash = elementalClash ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
+    const aiCardForClash = elementalClash ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
@@ -248,6 +250,54 @@ export const GameBoard = observer(() => {
                         );
                     })}
                 </div>
+                 {elementalClash && humanCardForClash && aiCardForClash && (
+                    <div className={`elemental-clash-overlay ${elementalClash.type === 'weakness' ? 'weakness' : ''}`}>
+                         <div className={`elemental-clash-modal ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={gameStateStore.forceCloseClashModal}>
+                            <h2>{elementalClash.type === 'weakness' ? T.elementalClash.weaknessTitle : T.elementalClash.title}</h2>
+                            {isDiceRolling ? (
+                                <div className="clash-rolling-container">
+                                    <div className="clash-cards-preview">
+                                        <CardView card={humanCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
+                                        <CardView card={aiCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
+                                    </div>
+                                    <DiceRollAnimation onAnimationComplete={() => setIsDiceRolling(false)} />
+                                </div>
+                            ) : (
+                                <>
+                                    {elementalClash.type === 'weakness' ? (
+                                        <>
+                                            <div className="clash-cards-preview">
+                                                <CardView card={humanCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
+                                                <CardView card={aiCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
+                                            </div>
+                                            <div className="weakness-indicator">
+                                                <ElementIcon element={elementalClash.winningElement} />
+                                                <span>{T.elementalClash.beats}</span>
+                                                <ElementIcon element={elementalClash.losingElement} />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="clash-results">
+                                            <div className="clash-player-result">
+                                                <h3>{T.scoreYou}</h3>
+                                                <CardView card={humanCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
+                                                <div className="clash-roll">{elementalClash.humanRoll}</div>
+                                            </div>
+                                             <div className="clash-player-result">
+                                                <h3>{currentWaifu?.name}</h3>
+                                                <CardView card={aiCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
+                                                <div className="clash-roll">{elementalClash.aiRoll}</div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <h3 className="clash-outcome">
+                                        {elementalClash.winner === 'human' ? `${T.scoreYou} ${T.elementalClash.winner}` : elementalClash.winner === 'ai' ? `${currentWaifu?.name} ${T.elementalClash.winner}` : T.elementalClash.tie}
+                                    </h3>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                 )}
             </div>
 
             <div className="player-area human-area">
@@ -272,7 +322,20 @@ export const GameBoard = observer(() => {
                     <div className="player-score human-score" data-tutorial-id="player-score">
                         <span>{T.scoreYou}: {humanScore}</span>
                     </div>
-                    
+                    {lastTrick && (
+                        <button
+                            className="last-trick-recap"
+                            onClick={() => {
+                                uiStore.openModal('history');
+                            }}
+                            title={historyButtonTitle}
+                            disabled={!lastTrick}
+                        >
+                            <span>{TH.lastTrick}</span>
+                            <CardView card={lastTrick.humanCard} lang={language} cardDeckStyle={cardDeckStyle} />
+                            <CardView card={lastTrick.aiCard} lang={language} cardDeckStyle={cardDeckStyle} />
+                        </button>
+                    )}
                     {(() => {
                         const insightPower = roguelikeState.activePowers.find(p => p.id === 'last_trick_insight');
                         const swapPower = roguelikeState.activePowers.find(p => p.id === 'value_swap');
@@ -287,7 +350,7 @@ export const GameBoard = observer(() => {
                                         title={POWER_UP_DEFINITIONS['last_trick_insight'].name(language)}
                                     >
                                         <div className="ability-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5 4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5-4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
                                         </div>
                                         {lastTrickInsightCooldown > 0 ? (
                                             <span>{T.abilities.onCooldown(lastTrickInsightCooldown)}</span>
@@ -317,104 +380,18 @@ export const GameBoard = observer(() => {
                         );
                     })()}
                 </div>
-
-                {lastTrick && (
-                    <button className="last-trick-recap" onClick={() => uiStore.openModal('history')} title={T.history.lastTrick}>
-                        <CardView card={lastTrick.humanCard} lang={language} cardDeckStyle={cardDeckStyle} />
-                        <CardView card={lastTrick.aiCard} lang={language} cardDeckStyle={cardDeckStyle} />
-                        <span>{lastTrick.winner === 'human' ? T.scoreYou : currentWaifu?.name} +{lastTrick.points}</span>
-                    </button>
-                )}
-                
-
-                <div className="turn-message" aria-live="polite">
+                <div className="turn-message">
                     {message}
                 </div>
             </div>
-
-            {cardForElementalChoice && (
-                <ElementalChoiceModal 
+             {cardForElementalChoice && (
+                <ElementalChoiceModal
                     card={cardForElementalChoice}
-                    onConfirm={gameStateStore.confirmCardPlay}
-                    onCancel={gameStateStore.cancelCardPlay}
+                    onConfirm={confirmCardPlay}
+                    onCancel={cancelCardPlay}
                     lang={language}
                     cardDeckStyle={cardDeckStyle}
                 />
-            )}
-
-            {elementalClash && humanCardOnTable && aiCardOnTable && (
-                <div className="elemental-clash-overlay">
-                    {elementalClash.type === 'dice' ? (
-                        <div className="elemental-clash-modal">
-                             <button className="modal-close-button" onClick={gameStateStore.forceCloseClashModal} aria-label={T.close}>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                                </svg>
-                            </button>
-                            <h2>{TC.title}</h2>
-                            <div className="clash-results">
-                                {isDiceRolling ? (
-                                    <div className="clash-rolling-container">
-                                        <div className="clash-cards-preview">
-                                            <div className="clash-player-result">
-                                                <CardView card={humanCardOnTable} lang={language} cardDeckStyle={cardDeckStyle} />
-                                                <h3>{T.scoreYou}</h3>
-                                            </div>
-                                            <div className="clash-player-result">
-                                                <CardView card={aiCardOnTable} lang={language} cardDeckStyle={cardDeckStyle} />
-                                                <h3>{currentWaifu?.name}</h3>
-                                            </div>
-                                        </div>
-                                        <DiceRollAnimation onAnimationComplete={() => setIsDiceRolling(false)} />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className={`clash-player-result ${elementalClash.winner === 'human' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
-                                            <CardView card={humanCardOnTable} lang={language} cardDeckStyle={cardDeckStyle} />
-                                            <h3>{TC.yourRoll}</h3>
-                                            <div className="clash-roll">{elementalClash.humanRoll}</div>
-                                        </div>
-                                        <div className={`clash-player-result ${elementalClash.winner === 'ai' ? 'winner' : ''} ${elementalClash.winner === 'tie' ? 'tie' : ''}`}>
-                                            <CardView card={aiCardOnTable} lang={language} cardDeckStyle={cardDeckStyle} />
-                                            <h3>{TC.opponentRoll}</h3>
-                                            <div className="clash-roll">{elementalClash.aiRoll}</div>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                            <div className="clash-outcome">
-                                {!isDiceRolling && (elementalClash.winner !== 'tie' ? TC.winner : TC.tie)}
-                            </div>
-                        </div>
-                    ) : (
-                         <div className="elemental-clash-modal weakness">
-                             <button className="modal-close-button" onClick={gameStateStore.forceCloseClashModal} aria-label={T.close}>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                                </svg>
-                            </button>
-                            <h2>{TC.weaknessTitle}</h2>
-                            <div className="weakness-indicator">
-                                <ElementIcon element={elementalClash.winningElement} />
-                                <span>{TC.beats}</span>
-                                <ElementIcon element={elementalClash.losingElement} />
-                            </div>
-                            <div className="clash-results">
-                                <div className={`clash-player-result ${elementalClash.winner === 'human' ? 'winner' : ''}`}>
-                                    <CardView card={humanCardOnTable} lang={language} cardDeckStyle={cardDeckStyle} />
-                                    <h3>{T.scoreYou}</h3>
-                                </div>
-                                <div className={`clash-player-result ${elementalClash.winner === 'ai' ? 'winner' : ''}`}>
-                                    <CardView card={aiCardOnTable} lang={language} cardDeckStyle={cardDeckStyle} />
-                                    <h3>{currentWaifu?.name}</h3>
-                                </div>
-                            </div>
-                            <div className="clash-outcome">
-                                {TC.winner}
-                            </div>
-                        </div>
-                    )}
-                </div>
             )}
         </main>
     );
