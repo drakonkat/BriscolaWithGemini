@@ -287,6 +287,7 @@ input:checked + .slider:before {
   margin-top: 2rem;
   width: 100%;
 }
+.menu-section h2,
 .waifu-selection h2 {
   font-size: 1.8rem;
   margin-bottom: 1.5rem;
@@ -566,11 +567,45 @@ input:checked + .slider:before {
     display: block;
     margin-bottom: 0.5rem;
 }
-.difficulty-selector {
+
+.difficulty-selection {
     display: flex;
+    gap: 1rem;
     justify-content: center;
-    width: 100%;
-    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.difficulty-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    flex: 1;
+    min-width: 120px;
+    max-width: 150px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    color: var(--font-color);
+}
+.difficulty-card:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-accent);
+}
+.difficulty-card.selected {
+    background-color: rgba(var(--primary-accent-rgb), 0.15);
+    border-color: var(--primary-accent);
+    box-shadow: 0 0 15px rgba(var(--primary-accent-rgb), 0.5);
+}
+.difficulty-card h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--font-color);
+}
+.difficulty-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
 }
 
 .featured-waifu-container {
@@ -701,7 +736,8 @@ input:checked + .slider:before {
   .gallery-promo-container { margin: 1rem 0; }
   .gallery-promo-button { font-size: 1.2rem; padding: 0.8rem 2rem; }
   .waifu-selection { margin-top: 1rem; }
-  .waifu-selection h2 { display: none; }
+  .menu-section h2,
+  .waifu-selection h2 { display: block; }
   .menu .project-description { display: none; }
 
   .waifu-carousel-wrapper {
