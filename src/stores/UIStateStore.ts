@@ -68,6 +68,7 @@ export class UIStateStore {
     isQuotaExceededModalOpen = false;
     isGachaSingleUnlockModalOpen = false;
     isGachaMultiUnlockModalOpen = false;
+    isLegendModalOpen = false;
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
 
     // Tutorial State
@@ -108,6 +109,7 @@ export class UIStateStore {
             case 'soundEditor': this.isSoundEditorModalOpen = true; break;
             case 'gachaSingleUnlock': this.isGachaSingleUnlockModalOpen = true; break;
             case 'gachaMultiUnlock': this.isGachaMultiUnlockModalOpen = true; break;
+            case 'legend': this.isLegendModalOpen = true; break;
             case 'chat': 
                 this.isChatModalOpen = true; 
                 this.setUnreadMessageCount(0);
@@ -128,6 +130,7 @@ export class UIStateStore {
             case 'soundEditor': this.isSoundEditorModalOpen = false; break;
             case 'gachaSingleUnlock': this.isGachaSingleUnlockModalOpen = false; break;
             case 'gachaMultiUnlock': this.isGachaMultiUnlockModalOpen = false; break;
+            case 'legend': this.isLegendModalOpen = false; break;
             case 'chat': this.isChatModalOpen = false; break;
         }
     }

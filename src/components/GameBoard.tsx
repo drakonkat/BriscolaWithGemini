@@ -32,7 +32,6 @@ export const GameBoard = observer(() => {
     const T = translations[language];
     const T_roguelike = T.roguelike;
     const TH = T.history;
-    const [isLegendExpanded, setIsLegendExpanded] = useState(true);
     const [isDiceRolling, setIsDiceRolling] = useState(false);
     const [isPlayerMenuOpen, setIsPlayerMenuOpen] = useState(false);
     const playerMenuRef = useRef<HTMLDivElement>(null);
@@ -161,47 +160,10 @@ export const GameBoard = observer(() => {
             </div>
             
             {gameplayMode === 'roguelike' && (activeElements.length > 0 || roguelikeState.activePowers.length > 0) && (
-                <div className={`elemental-powers-panel ${!isLegendExpanded ? 'collapsed' : ''}`} title={T.elementalPowersTitle}>
-                    <button className="elemental-powers-toggle" onClick={() => setIsLegendExpanded(!isLegendExpanded)} title={T.toggleLegend}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
-                        </svg>
+                <div className="bottom-left-actions">
+                    <button className="legend-button" onClick={() => uiStore.openModal('legend')} aria-label={T.elementalPowersTitle}>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99l1.5 1.5z"/></svg>
                     </button>
-                    {activeElements.map(element => {
-                        const descriptionKey = `${element}Description` as 'fireDescription' | 'waterDescription' | 'airDescription' | 'earthDescription';
-                        return (
-                            <div key={element} className="elemental-power-row">
-                               <ElementIcon element={element} />
-                               <div className="elemental-power-description">
-                                   <strong>{T[element]}:</strong>
-                                   <span>{T[descriptionKey] as string}</span>
-                               </div>
-                            </div>
-                        );
-                    })}
-
-                    {activeElements.length > 0 && (
-                        <>
-                           <h4 className="abilities-subtitle">{T.roguelike.elementalCycleTitle}</h4>
-                           <div className="elemental-cycle-display">
-                               <ElementIcon element="water" /> &gt; <ElementIcon element="fire" /> &gt; <ElementIcon element="air" /> &gt; <ElementIcon element="earth" /> &gt; <ElementIcon element="water" />
-                           </div>
-                        </>
-                    )}
-
-                    {roguelikeState.activePowers.length > 0 && (
-                        <>
-                            <h4 className="abilities-subtitle">{T.roguelike.allPowersTitle}</h4>
-                            <div className="roguelike-powers-list">
-                                {roguelikeState.activePowers.map(power => (
-                                    <div key={power.id} className="roguelike-power-entry">
-                                        <h5>{POWER_UP_DEFINITIONS[power.id].name(language)} (Lv. {power.level})</h5>
-                                        <p>{POWER_UP_DEFINITIONS[power.id].description(language, power.level)}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </>
-                    )}
                 </div>
             )}
             
@@ -349,6 +311,12 @@ export const GameBoard = observer(() => {
                                     </svg>
                                     <span>{T.supportModal.title}</span>
                                 </button>
+                                {gameplayMode === 'roguelike' && (activeElements.length > 0 || roguelikeState.activePowers.length > 0) && (
+                                    <button className="popup-action-button" onClick={() => { uiStore.openModal('legend'); setIsPlayerMenuOpen(false); }}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99l1.5 1.5z"/></svg>
+                                        <span>{T.elementalPowersTitle}</span>
+                                    </button>
+                                )}
                                 <button className={`popup-action-button ${isMusicEnabled ? 'active' : ''}`} onClick={() => { handleMusicButtonClick(); setIsPlayerMenuOpen(false); }}>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                                         {isMusicEnabled ? 

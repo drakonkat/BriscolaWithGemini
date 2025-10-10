@@ -5,7 +5,6 @@
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar } from '@capacitor/status-bar';
-import { SafeArea, type SafeAreaInsets } from 'capacitor-plugin-safe-area';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { translations } from '../core/translations';
@@ -22,45 +21,13 @@ export const App = observer(() => {
   const { cardDeckStyle } = gameSettingsStore;
 
   useEffect(() => {
-    const setupSafeArea = async () => {
+    const setupPlatformSpecifics = async () => {
       if (Capacitor.isNativePlatform()) {
         await StatusBar.setOverlaysWebView({ overlay: true });
-        if (Capacitor.getPlatform() === 'android') {
-          await SafeArea.setImmersiveNavigationBar();
-        }
-
-        // FIX: The type signature of `applyInsets` has been corrected to expect the `SafeAreaInsets` object directly, which contains the `insets` property.
-        const applyInsets = (result: SafeAreaInsets) => {
-          const root = document.documentElement;
-          // The result from the plugin is a wrapper object. Access its `insets` property.
-          const insets = result.insets;
-          if (root && insets) {
-            root.style.setProperty('--safe-area-inset-top', `${insets.top}px`);
-            root.style.setProperty('--safe-area-inset-bottom', `${insets.bottom}px`);
-            root.style.setProperty('--safe-area-inset-left', `${insets.left}px`);
-            root.style.setProperty('--safe-area-inset-right', `${insets.right}px`);
-          }
-        };
-        
-        // Get initial insets
-        try {
-            // FIX: Pass the object from getSafeAreaInsets directly to applyInsets.
-            const initialInsets = await SafeArea.getSafeAreaInsets();
-            if(initialInsets) applyInsets(initialInsets);
-        } catch (e) {
-            console.error('Failed to get initial safe area insets', e);
-        }
-
-
-        // Listen for changes
-        // FIX: Pass the data object from the listener directly to applyInsets.
-        SafeArea.addListener('safeAreaChanged', (data) => {
-          if (data) applyInsets(data);
-        });
       }
     };
 
-    setupSafeArea();
+    setupPlatformSpecifics();
 
     // Start tutorial for first-time users
     if (!gameSettingsStore.hasCompletedTutorial) {

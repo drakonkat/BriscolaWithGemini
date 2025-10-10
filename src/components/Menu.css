@@ -7,8 +7,6 @@
   height: 100%;
   text-align: center;
   padding: 3rem 1rem;
-  padding-top: calc(3rem + var(--safe-area-inset-top));
-  padding-bottom: calc(3rem + var(--safe-area-inset-bottom));
   position: relative;
   overflow-y: auto;
   overflow-x: hidden;
@@ -525,8 +523,8 @@ input:checked + .slider:before {
     align-items: center;
     text-align: center;
     padding: 2rem 1rem;
-    padding-top: calc(1.5rem + var(--safe-area-inset-top));
-    padding-bottom: calc(1.5rem + var(--safe-area-inset-bottom));
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
   }
   .menu-title-container { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: nowrap; }
   .menu h1 { grid-column: 2; margin: 0; font-size: clamp(1.8rem, 7vw, 2.5rem); }
