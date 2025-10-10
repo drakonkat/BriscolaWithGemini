@@ -41,16 +41,10 @@
 .human-area {
   justify-content: flex-end;
   padding-bottom: calc(var(--bottom-bar-height) + var(--safe-area-inset-bottom) + 1.5rem);
-  background:
-    radial-gradient(ellipse at bottom, rgba(255, 255, 255, 0.07) 0%, transparent 50%),
-    linear-gradient(to top, rgba(20, 20, 35, 0.9) 0%, rgba(42, 42, 62, 0.7) 60%, transparent 100%);
 }
 .ai-area {
   justify-content: flex-start;
   padding-top: calc(var(--top-bar-height) + var(--safe-area-inset-top) + 1rem);
-  background: 
-    radial-gradient(ellipse at top, rgba(255, 255, 255, 0.07) 0%, transparent 50%),
-    linear-gradient(to bottom, rgba(20, 20, 35, 0.9) 0%, rgba(42, 42, 62, 0.7) 60%, transparent 100%);
 }
 
 .table-area {
