@@ -91,8 +91,6 @@ export const GameBoard = observer(() => {
                 className="game-board-background"
                 style={backgroundStyle}
             />
-            <div className="player-mat ai-mat" />
-            <div className="player-mat human-mat" />
 
             {powerAnimation && (
                 <div className={`power-animation ${powerAnimation.player} element-${powerAnimation.type}`}>

@@ -1,3 +1,5 @@
+
+
 .game-board {
   flex: 3;
   display: flex;
@@ -26,31 +28,6 @@
   transition: filter 0.5s ease-out;
 }
 
-.player-mat {
-  position: absolute;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.ai-mat {
-  top: 0;
-  height: 33%;
-  background: linear-gradient(to bottom, rgba(10, 10, 20, 0.85) 0%, transparent 100%);
-  border-bottom: 1px solid rgba(199, 125, 255, 0.25);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.human-mat {
-  bottom: 0;
-  height: 33%;
-  background: linear-gradient(to top, rgba(10, 10, 20, 0.85) 0%, transparent 100%);
-  border-top: 1px solid rgba(199, 125, 255, 0.25);
-  box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
-}
-
 .player-area {
   flex: 1;
   display: flex;
@@ -59,15 +36,27 @@
   padding: 1rem;
   min-height: calc(var(--card-height) + 3rem);
   position: relative;
-  z-index: 2;
+  z-index: 1;
 }
 .human-area {
   justify-content: flex-end;
   padding-bottom: calc(var(--bottom-bar-height) + var(--safe-area-inset-bottom) + 1.5rem);
+  background:
+    radial-gradient(ellipse at bottom, rgba(255, 255, 255, 0.07) 0%, transparent 50%),
+    linear-gradient(to top, rgba(20, 20, 35, 0.9) 0%, rgba(42, 42, 62, 0.7) 60%, transparent 100%);
+  border-top: 1px solid rgba(199, 125, 255, 0.15);
+  box-shadow:
+    inset 0 -15px 25px -10px rgba(0,0,0,0.6);
 }
 .ai-area {
   justify-content: flex-start;
   padding-top: calc(var(--top-bar-height) + var(--safe-area-inset-top) + 1rem);
+  background: 
+    radial-gradient(ellipse at top, rgba(255, 255, 255, 0.07) 0%, transparent 50%),
+    linear-gradient(to bottom, rgba(20, 20, 35, 0.9) 0%, rgba(42, 42, 62, 0.7) 60%, transparent 100%);
+  border-bottom: 1px solid rgba(199, 125, 255, 0.15);
+  box-shadow: 
+    inset 0 15px 25px -10px rgba(0,0,0,0.6);
 }
 .table-area {
   flex: 2;
