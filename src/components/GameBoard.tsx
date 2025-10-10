@@ -12,7 +12,6 @@ import { defaultSoundSettings } from '../core/soundManager';
 import type { Card } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
-import { ElementalChoiceModal } from './ElementalChoiceModal';
 import { POWER_UP_DEFINITIONS } from '../core/roguelikePowers';
 import { DiceRollAnimation } from './DiceRollAnimation';
 
@@ -21,10 +20,10 @@ export const GameBoard = observer(() => {
     const { 
         currentWaifu, aiScore, aiHand, humanScore, humanHand, briscolaCard, deck, cardsOnTable, message,
         isProcessing, turn, trickStarter, backgroundUrl, lastTrick, lastTrickHighlights, activeElements,
-        roguelikeState, powerAnimation, cardForElementalChoice, elementalClash,
+        roguelikeState, powerAnimation, elementalClash,
         revealedAiHand, lastTrickInsightCooldown, activateLastTrickInsight,
         briscolaSwapCooldown, openBriscolaSwapModal,
-        confirmCardPlay, cancelCardPlay,
+        draggingCardId, handleCardDragStart, handleCardDragEnd, playDraggedCard
     } = gameStateStore;
     const { animatingCard, drawingCards, unreadMessageCount, waifuBubbleMessage } = uiStore;
     const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle, isDiceAnimationEnabled } = gameSettingsStore;
@@ -82,6 +81,22 @@ export const GameBoard = observer(() => {
         }
     };
 
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.currentTarget.classList.add('drag-over');
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+    };
+    
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>, activatePower: boolean) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        playDraggedCard(activatePower);
+    };
+
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
             <CachedImage 
@@ -90,6 +105,33 @@ export const GameBoard = observer(() => {
                 className="game-board-background"
                 style={backgroundStyle}
             />
+
+            {draggingCardId && (
+                <div className="drop-zones-container">
+                    <div
+                        className="drop-zone left"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => handleDrop(e, false)}
+                        onDragEnter={handleDragEnter}
+                        onDragLeave={handleDragLeave}
+                    >
+                        <div className="drop-zone-content">
+                            <h3>{T.playNormally}</h3>
+                        </div>
+                    </div>
+                    <div
+                        className="drop-zone right"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => handleDrop(e, true)}
+                        onDragEnter={handleDragEnter}
+                        onDragLeave={handleDragLeave}
+                    >
+                        <div className="drop-zone-content">
+                            <h3>{T.activatePower}</h3>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {powerAnimation && (
                 <div className={`power-animation ${powerAnimation.player} element-${powerAnimation.type}`}>
@@ -275,18 +317,35 @@ export const GameBoard = observer(() => {
 
             <div className="player-area human-area">
                 <div className="hand" data-tutorial-id="player-hand">
-                    {humanHand.map(card => (
-                        <React.Fragment key={card.id}>
-                            <CardView
-                                card={card}
-                                isPlayable={turn === 'human' && !isProcessing}
-                                onClick={() => gameStateStore.selectCardForPlay(card)}
-                                lang={language}
-                                className={''}
-                                cardDeckStyle={cardDeckStyle}
-                            />
-                        </React.Fragment>
-                    ))}
+                    {humanHand.map(card => {
+                        const isDraggable = turn === 'human' && !isProcessing && gameplayMode === 'roguelike' && !!card.element && !card.isTemporaryBriscola;
+                        const isClickable = turn === 'human' && !isProcessing && !isDraggable;
+                        
+                        return (
+                            <React.Fragment key={card.id}>
+                                <CardView
+                                    card={card}
+                                    isPlayable={isClickable}
+                                    onClick={isClickable ? () => gameStateStore.selectCardForPlay(card) : undefined}
+                                    lang={language}
+                                    cardDeckStyle={cardDeckStyle}
+                                    isDraggable={isDraggable}
+                                    onDragStart={(e) => {
+                                        e.dataTransfer.setData('text/plain', card.id);
+                                        const cardElement = e.currentTarget.cloneNode(true) as HTMLElement;
+                                        cardElement.style.transform = 'rotate(5deg) scale(1.1)';
+                                        cardElement.style.position = 'absolute';
+                                        cardElement.style.top = '-9999px';
+                                        document.body.appendChild(cardElement);
+                                        e.dataTransfer.setDragImage(cardElement, e.currentTarget.clientWidth / 2, e.currentTarget.clientHeight / 2);
+                                        setTimeout(() => document.body.removeChild(cardElement), 0);
+                                        handleCardDragStart(card);
+                                    }}
+                                    onDragEnd={handleCardDragEnd}
+                                />
+                            </React.Fragment>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -351,15 +410,7 @@ export const GameBoard = observer(() => {
                     <span className="turn-message">{message}</span>
                 </div>
             </div>
-             {cardForElementalChoice && (
-                <ElementalChoiceModal
-                    card={cardForElementalChoice}
-                    onConfirm={confirmCardPlay}
-                    onCancel={cancelCardPlay}
-                    lang={language}
-                    cardDeckStyle={cardDeckStyle}
-                />
-            )}
+            
             {elementalClash && humanCardForClash && aiCardForClash && (
                 <div className={`elemental-clash-overlay ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={gameStateStore.forceCloseClashModal}>
                      <div className={`elemental-clash-modal ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={(e) => e.stopPropagation()}>

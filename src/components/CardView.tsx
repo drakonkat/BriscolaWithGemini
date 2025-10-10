@@ -2,6 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
+import React from 'react';
 import { getCardId, getCardImagePath, getImageUrl } from '../core/utils';
 import type { Card, Language, CardDeckStyle } from '../core/types';
 import { translations } from '../core/translations';
@@ -10,7 +11,7 @@ import { ElementIcon } from './ElementIcon';
 
 type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
 
-export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus, cardDeckStyle }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, elementalEffectStatus?: ElementalEffectStatus, cardDeckStyle: CardDeckStyle }) => {
+export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus, cardDeckStyle, isDraggable, onDragStart, onDragEnd }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, elementalEffectStatus?: ElementalEffectStatus, cardDeckStyle: CardDeckStyle, isDraggable?: boolean, onDragStart?: React.DragEventHandler<HTMLDivElement>, onDragEnd?: React.DragEventHandler<HTMLDivElement> }) => {
   const T = translations[lang];
 
   if (isFaceDown) {
@@ -26,6 +27,7 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, classNam
   
   const stateClasses = [
     isPlayable ? 'playable' : '',
+    isDraggable ? 'draggable' : '',
     card.element ? `element-${card.element}` : '',
     elementalEffectStatus && elementalEffectStatus !== 'unset' ? `effect-${elementalEffectStatus}` : '',
     card.isFortified ? 'fortified' : '',
@@ -40,6 +42,9 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, classNam
       role="button"
       aria-label={cardId}
       tabIndex={isPlayable ? 0 : -1}
+      draggable={isDraggable}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
     >
       <CachedImage imageUrl={imagePath} alt={cardId} />
       {card.element && !isFaceDown && (

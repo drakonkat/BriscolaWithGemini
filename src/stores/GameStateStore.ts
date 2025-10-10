@@ -84,7 +84,7 @@ export class GameStateStore {
     lastGameWinnings = 0;
     isQuotaExceeded = false;
     gameMode: GameMode = 'online';
-    cardForElementalChoice: Card | null = null;
+    draggingCardId: string | null = null;
     
     roguelikeState: RoguelikeState = INITIAL_ROGUELIKE_STATE;
     powerAnimation: { type: Element; player: Player; points: number } | null = null;
@@ -752,6 +752,11 @@ export class GameStateStore {
     selectCardForPlay = (card: Card) => {
         if (this.turn !== 'human' || this.isProcessing) return;
 
+        if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' && card.element && !card.isTemporaryBriscola) {
+            // This interaction is now handled by drag and drop, so do nothing on click.
+            return;
+        }
+
         if (this.isTutorialGame) {
             if (this.rootStore.uiStore.tutorialStep === 'promptPlayCard' && card.id === 'tutorial-h-ace-bastoni') {
                 playSound('card-place');
@@ -762,27 +767,43 @@ export class GameStateStore {
             return;
         }
 
-        let cardToPlay = card;
-
-        if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' && card.element && !card.isTemporaryBriscola) {
-            this.cardForElementalChoice = cardToPlay;
-        } else {
-            playSound('card-place');
-            this.humanHand = this.humanHand.filter(c => c.id !== cardToPlay.id);
-            this.cardsOnTable.push(cardToPlay);
-            if (this.trickStarter === 'human') this.turn = 'ai';
-        }
-    };
-    confirmCardPlay = (activateEffect: boolean) => {
-        if (!this.cardForElementalChoice) return;
-        const cardToPlay = { ...this.cardForElementalChoice, elementalEffectActivated: activateEffect };
-        this.cardForElementalChoice = null;
+        const cardToPlay = card;
+        
         playSound('card-place');
         this.humanHand = this.humanHand.filter(c => c.id !== cardToPlay.id);
         this.cardsOnTable.push(cardToPlay);
         if (this.trickStarter === 'human') this.turn = 'ai';
     };
-    cancelCardPlay = () => this.cardForElementalChoice = null;
+
+    handleCardDragStart = (card: Card) => {
+        if (this.turn === 'human' && !this.isProcessing) {
+            this.draggingCardId = card.id;
+        }
+    }
+    
+    handleCardDragEnd = () => {
+        this.draggingCardId = null;
+    }
+
+    playDraggedCard = (activatePower: boolean) => {
+        if (!this.draggingCardId) return;
+
+        const cardToPlay = this.humanHand.find(c => c.id === this.draggingCardId);
+        if (!cardToPlay) {
+            this.draggingCardId = null; 
+            return;
+        }
+
+        const finalCardToPlay = { ...cardToPlay, elementalEffectActivated: activatePower };
+        
+        playSound('card-place');
+        this.humanHand = this.humanHand.filter(c => c.id !== finalCardToPlay.id);
+        this.cardsOnTable.push(finalCardToPlay);
+        if (this.trickStarter === 'human') this.turn = 'ai';
+
+        this.draggingCardId = null;
+    }
+
     activateFollowerAbility = (waifuName: string) => {
         let abilityArmed: 'sakura_blessing' | 'rei_analysis' | 'kasumi_gambit' | null = null;
         let abilityName = '';
@@ -892,7 +913,8 @@ export class GameStateStore {
                 humanScore: this.humanScore, aiScore: this.aiScore, trickStarter: this.trickStarter, message: this.message, backgroundUrl: this.backgroundUrl, aiEmotionalState: this.aiEmotionalState,
                 gameMode: this.gameMode, trickHistory: toJS(this.trickHistory), lastTrick: toJS(this.lastTrick), roguelikeState: toJS(this.roguelikeState), activeElements: toJS(this.activeElements),
                 lastResolvedTrick: toJS(this.lastResolvedTrick), trickCounter: this.trickCounter,
-                cardForElementalChoice: toJS(this.cardForElementalChoice), elementalClash: toJS(this.elementalClash), lastTrickHighlights: toJS(this.lastTrickHighlights),
+                
+                elementalClash: toJS(this.elementalClash), lastTrickHighlights: toJS(this.lastTrickHighlights),
                 // FIX: Cannot assign to 'revealedAiHand' because it is a read-only property.
                 // Switched to saving the underlying state property `isAiHandTemporarilyRevealed` instead.
                 isAiHandTemporarilyRevealed: this.isAiHandTemporarilyRevealed, isKasumiModalOpen: this.isKasumiModalOpen,
@@ -931,7 +953,8 @@ export class GameStateStore {
                 this.briscolaSuit = saved.briscolaSuit; this.cardsOnTable = saved.cardsOnTable; this.turn = saved.turn; this.humanScore = saved.humanScore;
                 this.aiScore = saved.aiScore; this.trickStarter = saved.trickStarter; this.message = saved.message; this.backgroundUrl = saved.backgroundUrl;
                 this.aiEmotionalState = saved.aiEmotionalState; this.gameMode = saved.gameMode; this.trickHistory = saved.trickHistory || []; this.lastTrick = saved.lastTrick || null;
-                this.roguelikeState = saved.roguelikeState; this.activeElements = saved.activeElements || []; this.cardForElementalChoice = saved.cardForElementalChoice; this.elementalClash = saved.elementalClash;
+                this.roguelikeState = saved.roguelikeState; this.activeElements = saved.activeElements || []; 
+                this.elementalClash = saved.elementalClash;
                 this.lastTrickHighlights = saved.lastTrickHighlights || { human: 'unset', ai: 'unset' };
                 // FIX: Cannot assign to 'revealedAiHand' because it is a read-only property.
                 // Restored the underlying state property `isAiHandTemporarilyRevealed` instead.
