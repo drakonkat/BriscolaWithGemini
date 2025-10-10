@@ -148,34 +148,40 @@ export const Menu = observer(() => {
                  <div className="menu-primary-settings">
                     <div className="settings-selector" data-tutorial-id="game-mode">
                         <label htmlFor="game-mode-select">{T.gameModeLabel}:</label>
-                        <select 
-                            id="game-mode-select" 
-                            value={gameplayMode} 
-                            onChange={(e) => gameSettingsStore.setGameplayMode(e.target.value as any)}
-                        >
-                            <option value="classic">{T.gameModeClassic}</option>
-                            <option value="roguelike">{T.gameModeRoguelike}</option>
-                        </select>
+                        <div className="select-wrapper">
+                            <select 
+                                id="game-mode-select" 
+                                value={gameplayMode} 
+                                onChange={(e) => gameSettingsStore.setGameplayMode(e.target.value as any)}
+                            >
+                                <option value="classic">{T.gameModeClassic}</option>
+                                <option value="roguelike">{T.gameModeRoguelike}</option>
+                            </select>
+                        </div>
                     </div>
                      <div className="settings-selector" data-tutorial-id="difficulty">
                         <label htmlFor="difficulty-select">{T.difficultyLabel}:</label>
-                        <select id="difficulty-select" value={difficulty} onChange={(e) => gameSettingsStore.setDifficulty(e.target.value as any)}>
-                            <option value="easy">{T.difficultyEasy}</option>
-                            <option value="medium">{T.difficultyMedium}</option>
-                            <option value="hard">{T.difficultyHard}</option>
-                            <option value="nightmare">{T.difficultyNightmare}</option>
-                        </select>
+                        <div className="select-wrapper">
+                            <select id="difficulty-select" value={difficulty} onChange={(e) => gameSettingsStore.setDifficulty(e.target.value as any)}>
+                                <option value="easy">{T.difficultyEasy}</option>
+                                <option value="medium">{T.difficultyMedium}</option>
+                                <option value="hard">{T.difficultyHard}</option>
+                                <option value="nightmare">{T.difficultyNightmare}</option>
+                            </select>
+                        </div>
                     </div>
                     <div className="settings-selector">
                         <label htmlFor="deck-style-select">{T.cardDeckStyleLabel}:</label>
-                        <select
-                            id="deck-style-select"
-                            value={cardDeckStyle}
-                            onChange={(e) => gameSettingsStore.setCardDeckStyle(e.target.value as any)}
-                        >
-                            <option value="classic">{T.cardDeckStyleClassic}</option>
-                            <option value="poker">{T.cardDeckStylePoker}</option>
-                        </select>
+                        <div className="select-wrapper">
+                            <select
+                                id="deck-style-select"
+                                value={cardDeckStyle}
+                                onChange={(e) => gameSettingsStore.setCardDeckStyle(e.target.value as any)}
+                            >
+                                <option value="classic">{T.cardDeckStyleClassic}</option>
+                                <option value="poker">{T.cardDeckStylePoker}</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -208,10 +214,12 @@ export const Menu = observer(() => {
                     )}
                      <div className="settings-selector">
                         <label htmlFor="language-select">{T.language}:</label>
-                        <select id="language-select" value={language} onChange={(e) => gameSettingsStore.setLanguage(e.target.value as any)}>
-                            <option value="it">Italiano</option>
-                            <option value="en">English</option>
-                        </select>
+                        <div className="select-wrapper">
+                            <select id="language-select" value={language} onChange={(e) => gameSettingsStore.setLanguage(e.target.value as any)}>
+                                <option value="it">Italiano</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 

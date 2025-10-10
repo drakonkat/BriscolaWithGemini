@@ -4,7 +4,8 @@
 */
 import { translations } from '../core/translations';
 import { VALUES_IT } from '../core/constants';
-import type { Language, Difficulty } from '../core/types';
+import type { Language, Difficulty, RoguelikePowerUpId } from '../core/types';
+import { POWER_UP_DEFINITIONS, ALL_POWER_UP_IDS } from '../core/roguelikePowers';
 
 interface RulesModalProps {
     isOpen: boolean;
@@ -95,16 +96,42 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                 </ul>
 
                 <h3 className="rules-subtitle">{T.gachaRulesTitle}</h3>
-                <p>{T.gachaRule50Percent}</p>
-                <p>{T.gachaRuleRarityTitle}</p>
                 <ul className="rules-info-list">
-                    <li className="rules-info-item">{T.gachaRuleRarityR}</li>
-                    <li className="rules-info-item">{T.gachaRuleRaritySR}</li>
-                    <li className="rules-info-item">{T.gachaRuleRaritySSR}</li>
+                    <li className="rules-info-item">{T.gachaFreeFirstRoll}</li>
+                    <li className="rules-info-item">{T.gachaCostSingle}</li>
+                    <li className="rules-info-item">{T.gachaCostMulti}</li>
+                    <li className="rules-info-item">{T.gachaRule50Percent}</li>
+                    <li className="rules-info-item">{T.gachaRefundDescription}</li>
+                    <li className="rules-info-item">{T.gachaRuleRarityTitle}
+                        <ul style={{ listStyle: 'circle', paddingLeft: '20px', marginTop: '0.5rem' }}>
+                            <li>{T.gachaRuleRarityR}</li>
+                            <li>{T.gachaRuleRaritySR}</li>
+                            <li>{T.gachaRuleRaritySSR}</li>
+                        </ul>
+                    </li>
+                    <li className="rules-info-item">{T.gachaPitySystem}</li>
                 </ul>
 
-                <div className="modal-actions">
-                    <button onClick={onClose}>{T.close}</button>
+                <h3 className="rules-subtitle">{T.roguelike.roguelikeRulesTitle}</h3>
+                <p>{T.roguelike.roguelikeRulesDescription}</p>
+
+                <h4 className="rules-subtitle" style={{ fontSize: '1.3rem', marginTop: '1.5rem' }}>{T.roguelike.roguelikePowersTitle}</h4>
+                <div className="roguelike-powers-rules-list">
+                    {ALL_POWER_UP_IDS.map(powerId => {
+                        const powerDef = POWER_UP_DEFINITIONS[powerId as RoguelikePowerUpId];
+                        return (
+                            <div key={powerId} className="power-rule-entry">
+                                <strong>{powerDef.name(language)}</strong>
+                                <ul>
+                                    {Array.from({ length: powerDef.maxLevel }, (_, i) => i + 1).map(level => (
+                                        <li key={level}>
+                                            <span>Lv. {level}:</span> {powerDef.description(language, level)}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>

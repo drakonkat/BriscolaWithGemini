@@ -46,9 +46,6 @@ export const BriscolaSwapModal = ({ isOpen, onClose, onCardSelect, briscolaCard,
                             </React.Fragment>
                         ))}
                     </div>
-                     <div className="modal-actions">
-                        <button onClick={onClose} className="button-secondary">{T.close}</button>
-                    </div>
                 </div>
             </div>
         </div>

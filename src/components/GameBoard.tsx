@@ -2,12 +2,13 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { CardView } from './CardView';
 import { getCardId, getImageUrl } from '../core/utils';
 import { translations } from '../core/translations';
+import { defaultSoundSettings } from '../core/soundManager';
 import type { Card } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
@@ -33,12 +34,26 @@ export const GameBoard = observer(() => {
     const TH = T.history;
     const [isLegendExpanded, setIsLegendExpanded] = useState(true);
     const [isDiceRolling, setIsDiceRolling] = useState(false);
+    const [isPlayerMenuOpen, setIsPlayerMenuOpen] = useState(false);
+    const playerMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (elementalClash?.type === 'dice' && isDiceAnimationEnabled) {
             setIsDiceRolling(true);
         }
     }, [elementalClash, isDiceAnimationEnabled]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (playerMenuRef.current && !playerMenuRef.current.contains(event.target as Node)) {
+                setIsPlayerMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const winningScore = 60;
     const maxBlur = 25;
@@ -56,6 +71,18 @@ export const GameBoard = observer(() => {
     const humanCardForClash = elementalClash ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     const aiCardForClash = elementalClash ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     
+    const insightPower = roguelikeState.activePowers.find(p => p.id === 'last_trick_insight');
+    const swapPower = roguelikeState.activePowers.find(p => p.id === 'value_swap');
+
+    const handleMusicButtonClick = () => {
+        const isMusicConfigured = JSON.stringify(gameSettingsStore.soundEditorSettings) !== JSON.stringify(defaultSoundSettings);
+        if (isMusicConfigured) {
+            gameSettingsStore.setIsMusicEnabled(!isMusicEnabled);
+        } else {
+            uiStore.openModal('soundEditor');
+        }
+    };
+
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
             <CachedImage 
@@ -123,7 +150,7 @@ export const GameBoard = observer(() => {
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                     </svg>
                 </button>
-                <button className={`music-button ${isMusicEnabled ? 'active' : ''}`} onClick={() => gameSettingsStore.setIsMusicEnabled(!isMusicEnabled)} aria-label={T.toggleMusic}>
+                <button className={`music-button ${isMusicEnabled ? 'active' : ''}`} onClick={handleMusicButtonClick} aria-label={T.toggleMusic}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         {isMusicEnabled ? 
                             <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/> :
@@ -216,6 +243,38 @@ export const GameBoard = observer(() => {
                 </div>
             )}
 
+            <div className="human-abilities-container">
+                {insightPower && insightPower.level === 2 && (
+                    <button
+                        className={`ability-indicator player-human ${lastTrickInsightCooldown === 0 ? 'ready' : 'disabled'}`}
+                        onClick={activateLastTrickInsight}
+                        disabled={lastTrickInsightCooldown > 0 || turn !== 'human'}
+                        title={POWER_UP_DEFINITIONS['last_trick_insight'].name(language)}
+                    >
+                        <div className="ability-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5-4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
+                        </div>
+                        {lastTrickInsightCooldown > 0 && (
+                            <span className="cooldown-badge">{lastTrickInsightCooldown}</span>
+                        )}
+                    </button>
+                )}
+                {swapPower && (
+                    <button
+                        className={`ability-indicator player-human ${briscolaSwapCooldown === 0 ? 'ready' : 'disabled'}`}
+                        onClick={openBriscolaSwapModal}
+                        disabled={briscolaSwapCooldown > 0 || turn !== 'human'}
+                        title={POWER_UP_DEFINITIONS['value_swap'].name(language)}
+                    >
+                        <div className="ability-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.99 11 3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+                        </div>
+                        {briscolaSwapCooldown > 0 && (
+                           <span className="cooldown-badge">{briscolaSwapCooldown}</span>
+                        )}
+                    </button>
+                )}
+            </div>
 
             <div className="player-area ai-area">
                 <div className="hand">
@@ -250,54 +309,6 @@ export const GameBoard = observer(() => {
                         );
                     })}
                 </div>
-                 {elementalClash && humanCardForClash && aiCardForClash && (
-                    <div className={`elemental-clash-overlay ${elementalClash.type === 'weakness' ? 'weakness' : ''}`}>
-                         <div className={`elemental-clash-modal ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={gameStateStore.forceCloseClashModal}>
-                            <h2>{elementalClash.type === 'weakness' ? T.elementalClash.weaknessTitle : T.elementalClash.title}</h2>
-                            {isDiceRolling ? (
-                                <div className="clash-rolling-container">
-                                    <div className="clash-cards-preview">
-                                        <CardView card={humanCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
-                                        <CardView card={aiCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
-                                    </div>
-                                    <DiceRollAnimation onAnimationComplete={() => setIsDiceRolling(false)} />
-                                </div>
-                            ) : (
-                                <>
-                                    {elementalClash.type === 'weakness' ? (
-                                        <>
-                                            <div className="clash-cards-preview">
-                                                <CardView card={humanCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
-                                                <CardView card={aiCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
-                                            </div>
-                                            <div className="weakness-indicator">
-                                                <ElementIcon element={elementalClash.winningElement} />
-                                                <span>{T.elementalClash.beats}</span>
-                                                <ElementIcon element={elementalClash.losingElement} />
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="clash-results">
-                                            <div className="clash-player-result">
-                                                <h3>{T.scoreYou}</h3>
-                                                <CardView card={humanCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
-                                                <div className="clash-roll">{elementalClash.humanRoll}</div>
-                                            </div>
-                                             <div className="clash-player-result">
-                                                <h3>{currentWaifu?.name}</h3>
-                                                <CardView card={aiCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
-                                                <div className="clash-roll">{elementalClash.aiRoll}</div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <h3 className="clash-outcome">
-                                        {elementalClash.winner === 'human' ? `${T.scoreYou} ${T.elementalClash.winner}` : elementalClash.winner === 'ai' ? `${currentWaifu?.name} ${T.elementalClash.winner}` : T.elementalClash.tie}
-                                    </h3>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                 )}
             </div>
 
             <div className="player-area human-area">
@@ -316,72 +327,60 @@ export const GameBoard = observer(() => {
                     ))}
                 </div>
             </div>
-            
+
             <div className="bottom-bar">
                 <div className="player-info-group">
-                    <div className="player-score human-score" data-tutorial-id="player-score">
-                        <span>{T.scoreYou}: {humanScore}</span>
-                    </div>
-                    {lastTrick && (
-                        <button
-                            className="last-trick-recap"
-                            onClick={() => {
-                                uiStore.openModal('history');
-                            }}
-                            title={historyButtonTitle}
-                            disabled={!lastTrick}
-                        >
-                            <span>{TH.lastTrick}</span>
-                            <CardView card={lastTrick.humanCard} lang={language} cardDeckStyle={cardDeckStyle} />
-                            <CardView card={lastTrick.aiCard} lang={language} cardDeckStyle={cardDeckStyle} />
+                    <div className="human-score-container" ref={playerMenuRef}>
+                        <button className="player-score human-score" data-tutorial-id="player-score" onClick={() => setIsPlayerMenuOpen(!isPlayerMenuOpen)} aria-haspopup="true" aria-expanded={isPlayerMenuOpen}>
+                            <svg className="menu-burger-icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+                            <span>{T.scoreYou}: {humanScore}</span>
                         </button>
-                    )}
-                    {(() => {
-                        const insightPower = roguelikeState.activePowers.find(p => p.id === 'last_trick_insight');
-                        const swapPower = roguelikeState.activePowers.find(p => p.id === 'value_swap');
-
-                        return (
-                            <>
-                                {insightPower && insightPower.level === 2 && (
-                                    <button
-                                        className={`ability-indicator player-human ${lastTrickInsightCooldown === 0 ? 'ready' : 'disabled'}`}
-                                        onClick={activateLastTrickInsight}
-                                        disabled={lastTrickInsightCooldown > 0 || turn !== 'human'}
-                                        title={POWER_UP_DEFINITIONS['last_trick_insight'].name(language)}
-                                    >
-                                        <div className="ability-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5-4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
-                                        </div>
-                                        {lastTrickInsightCooldown > 0 ? (
-                                            <span>{T.abilities.onCooldown(lastTrickInsightCooldown)}</span>
-                                        ) : (
-                                            <span>{T.abilities.revealHand}</span>
-                                        )}
-                                    </button>
-                                )}
-                                {swapPower && (
-                                    <button
-                                        className={`ability-indicator player-human ${briscolaSwapCooldown === 0 ? 'ready' : 'disabled'}`}
-                                        onClick={openBriscolaSwapModal}
-                                        disabled={briscolaSwapCooldown > 0 || turn !== 'human'}
-                                        title={POWER_UP_DEFINITIONS['value_swap'].name(language)}
-                                    >
-                                        <div className="ability-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.99 11 3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
-                                        </div>
-                                        {briscolaSwapCooldown > 0 ? (
-                                            <span>{T.abilities.onCooldown(briscolaSwapCooldown)}</span>
-                                        ) : (
-                                            <span>{POWER_UP_DEFINITIONS['value_swap'].name(language)}</span>
-                                        )}
-                                    </button>
-                                )}
-                            </>
-                        );
-                    })()}
+                        {isPlayerMenuOpen && (
+                            <div className="player-actions-popup">
+                                <button className="popup-action-button" onClick={() => { uiStore.openModal('confirmLeave'); setIsPlayerMenuOpen(false); }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                                    </svg>
+                                    <span>{T.backToMenu}</span>
+                                </button>
+                                <button className="popup-action-button" onClick={() => { uiStore.openModal('support'); setIsPlayerMenuOpen(false); }}>
+                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
+                                    <span>{T.supportModal.title}</span>
+                                </button>
+                                <button className={`popup-action-button ${isMusicEnabled ? 'active' : ''}`} onClick={() => { handleMusicButtonClick(); setIsPlayerMenuOpen(false); }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        {isMusicEnabled ? 
+                                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/> :
+                                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3z"></path>
+                                        }
+                                    </svg>
+                                    <span>{T.toggleMusic}</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
-                <div className="turn-message">
-                    {message}
+
+                {lastTrick && (
+                    <button
+                        className="last-trick-recap"
+                        onClick={() => {
+                            uiStore.openModal('history');
+                        }}
+                        title={historyButtonTitle}
+                        disabled={!lastTrick}
+                    >
+                        <span className="last-trick-text">{TH.lastTrick}</span>
+                        <svg className="last-trick-icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8z"/></svg>
+                        <CardView card={lastTrick.humanCard} lang={language} cardDeckStyle={cardDeckStyle} />
+                        <CardView card={lastTrick.aiCard} lang={language} cardDeckStyle={cardDeckStyle} />
+                    </button>
+                )}
+                
+                <div className="turn-message-container">
+                    <span className="turn-message">{message}</span>
                 </div>
             </div>
              {cardForElementalChoice && (
@@ -392,6 +391,59 @@ export const GameBoard = observer(() => {
                     lang={language}
                     cardDeckStyle={cardDeckStyle}
                 />
+            )}
+            {elementalClash && humanCardForClash && aiCardForClash && (
+                <div className={`elemental-clash-overlay ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={gameStateStore.forceCloseClashModal}>
+                     <div className={`elemental-clash-modal ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={(e) => e.stopPropagation()}>
+                        <button className="modal-close-button" onClick={gameStateStore.forceCloseClashModal} aria-label={T.close}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                        </button>
+                        <h2>{elementalClash.type === 'weakness' ? T.elementalClash.weaknessTitle : T.elementalClash.title}</h2>
+                        {isDiceRolling ? (
+                            <div className="clash-rolling-container">
+                                <div className="clash-cards-preview">
+                                    <CardView card={humanCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
+                                    <CardView card={aiCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
+                                </div>
+                                <DiceRollAnimation onAnimationComplete={() => setIsDiceRolling(false)} />
+                            </div>
+                        ) : (
+                            <>
+                                {elementalClash.type === 'weakness' ? (
+                                    <>
+                                        <div className="clash-cards-preview">
+                                            <CardView card={humanCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
+                                            <CardView card={aiCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
+                                        </div>
+                                        <div className="weakness-indicator">
+                                            <ElementIcon element={elementalClash.winningElement} />
+                                            <span>{T.elementalClash.beats}</span>
+                                            <ElementIcon element={elementalClash.losingElement} />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="clash-results">
+                                        <div className="clash-player-result">
+                                            <h3>{T.scoreYou}</h3>
+                                            <CardView card={humanCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
+                                            <div className="clash-roll">{elementalClash.humanRoll}</div>
+                                        </div>
+                                         <div className="clash-player-result">
+                                            <h3>{currentWaifu?.name}</h3>
+                                            <CardView card={aiCardForClash} lang={language} cardDeckStyle={cardDeckStyle} />
+                                            <div className="clash-roll">{elementalClash.aiRoll}</div>
+                                        </div>
+                                    </div>
+                                )}
+                                <h3 className="clash-outcome">
+                                    {elementalClash.winner === 'human' ? `${T.scoreYou} ${T.elementalClash.winner}` : elementalClash.winner === 'ai' ? `${currentWaifu?.name} ${T.elementalClash.winner}` : T.elementalClash.tie}
+                                </h3>
+                            </>
+                        )}
+                    </div>
+                </div>
             )}
         </main>
     );

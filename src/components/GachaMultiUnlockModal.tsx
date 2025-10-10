@@ -45,10 +45,6 @@ export const GachaMultiUnlockModal = observer(({ isOpen, onClose, language }: Ga
                         </div>
                     ))}
                 </div>
-
-                 <div className="modal-actions">
-                    <button onClick={onClose}>{T.close}</button>
-                </div>
             </div>
         </div>
     );
