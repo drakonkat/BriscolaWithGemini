@@ -23,16 +23,27 @@ export const WaifuSelector = ({ language, onWaifuSelected, selectedWaifu, isRand
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
     useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
         const selectedIndex = selectedWaifu
             ? WAIFUS.findIndex(w => w.name === selectedWaifu.name)
             : isRandomSelected ? WAIFUS.length : -1;
 
         if (selectedIndex !== -1 && cardRefs.current[selectedIndex]) {
-            cardRefs.current[selectedIndex]?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-                inline: 'center'
-            });
+            const selectedCard = cardRefs.current[selectedIndex];
+            if (selectedCard) {
+                // Manually calculate scroll position to center the card horizontally
+                // without affecting the parent's vertical scroll.
+                const containerRect = container.getBoundingClientRect();
+                const cardRect = selectedCard.getBoundingClientRect();
+                const scrollLeft = container.scrollLeft + cardRect.left - containerRect.left - (containerRect.width / 2) + (cardRect.width / 2);
+                
+                container.scrollTo({
+                    left: scrollLeft,
+                    behavior: 'smooth'
+                });
+            }
         }
     }, [selectedWaifu, isRandomSelected]);
 
