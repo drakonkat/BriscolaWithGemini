@@ -246,9 +246,24 @@
 .weakness-indicator .element-icon { width: 48px; height: 48px; }
 .weakness-indicator span { font-size: 1.5rem; font-weight: bold; color: var(--font-color-secondary); }
 .clash-outcome { font-size: 1.8rem; font-weight: bold; color: #a0d8a2; animation: pulse-outcome 1s infinite; min-height: 2.2rem; }
-.clash-rolling-container { display: flex; flex-direction: column; align-items: center; justify-content: space-between; width: 100%; height: 100%; }
+.clash-rolling-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    width: 100%;
+}
 .clash-cards-preview { display: flex; justify-content: space-around; width: 100%; gap: 2rem; }
-.dice-animation-wrapper { width: 100%; height: 100%; display: flex; justify-content: space-around; align-items: center; perspective: 1000px; gap: 2rem; }
+.dice-animation-wrapper {
+    width: 100%;
+    min-height: 120px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    perspective: 1000px;
+    gap: 2rem;
+}
 .dice-container {
   position: relative;
   width: 80px;
