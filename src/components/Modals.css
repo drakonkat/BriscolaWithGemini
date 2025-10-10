@@ -549,6 +549,24 @@
 .support-modal-poll .poll-actions button { min-width: 100px; margin-top: 0; font-size: 1rem; padding: 0.5rem 1rem; border-radius: var(--radius-full); cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
 .support-modal-poll .poll-thanks { font-size: 1.2rem; font-weight: bold; color: var(--primary-accent); }
 
+/* --- Settings Modal --- */
+.settings-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  text-align: left;
+}
+.settings-modal-content .settings-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.settings-modal-content .settings-selector label {
+  font-size: 1.1rem;
+}
+
+
 @media (max-width: 1024px) {
     .gallery-modal { width: 90%; }
 }

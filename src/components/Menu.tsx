@@ -12,7 +12,7 @@ import { CachedImage } from './CachedImage';
 
 export const Menu = observer(() => {
     const { gameSettingsStore, gameStateStore, uiStore, gachaStore } = useStores();
-    const { language, gameplayMode, difficulty, isChatEnabled, waitForWaifuResponse, cardDeckStyle, isDiceAnimationEnabled } = gameSettingsStore;
+    const { language, gameplayMode, difficulty } = gameSettingsStore;
     const { hasSavedGame } = gameStateStore;
     const { menuBackgroundUrl } = uiStore;
     const { waifuCoins } = gachaStore;
@@ -99,6 +99,12 @@ export const Menu = observer(() => {
                                 </svg>
                                 <span>{T.soundEditorTitle}</span>
                             </button>
+                            <button className="rules-button" onClick={() => { uiStore.openModal('settings'); setIsMoreMenuOpen(false); }}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                                    <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                                </svg>
+                                <span>{T.settingsTitle}</span>
+                            </button>
                             <button className="rules-button" onClick={() => { uiStore.refreshMenuBackground(); setIsMoreMenuOpen(false); }}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
@@ -167,57 +173,6 @@ export const Menu = observer(() => {
                                 <option value="medium">{T.difficultyMedium}</option>
                                 <option value="hard">{T.difficultyHard}</option>
                                 <option value="nightmare">{T.difficultyNightmare}</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div className="settings-selector">
-                        <label htmlFor="deck-style-select">{T.cardDeckStyleLabel}:</label>
-                        <div className="select-wrapper">
-                            <select
-                                id="deck-style-select"
-                                value={cardDeckStyle}
-                                onChange={(e) => gameSettingsStore.setCardDeckStyle(e.target.value as any)}
-                            >
-                                <option value="classic">{T.cardDeckStyleClassic}</option>
-                                <option value="poker">{T.cardDeckStylePoker}</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="menu-settings">
-                    <div className="settings-selector">
-                        <label htmlFor="chat-toggle">{T.toggleChatLabel}:</label>
-                        <label className="toggle-switch">
-                            <input id="chat-toggle" type="checkbox" checked={isChatEnabled} onChange={(e) => gameSettingsStore.setIsChatEnabled(e.target.checked)} />
-                            <span className="slider"></span>
-                        </label>
-                    </div>
-                    <div className={`settings-selector ${!isChatEnabled ? 'disabled' : ''}`}>
-                        <label htmlFor="wait-toggle">{T.toggleWaitForWaifuLabel}:</label>
-                        <label className="toggle-switch">
-                            <input id="wait-toggle" type="checkbox" checked={waitForWaifuResponse} onChange={(e) => {
-                                gameSettingsStore.setWaitForWaifuResponse(e.target.checked);
-                                if (!e.target.checked) uiStore.showSnackbar(T.fastModeEnabled, 'success');
-                            }} disabled={!isChatEnabled} />
-                            <span className="slider"></span>
-                        </label>
-                    </div>
-                    {gameplayMode === 'roguelike' && (
-                        <div className="settings-selector">
-                            <label htmlFor="dice-animation-toggle">{T.diceAnimationLabel}:</label>
-                            <label className="toggle-switch">
-                                <input id="dice-animation-toggle" type="checkbox" checked={isDiceAnimationEnabled} onChange={(e) => gameSettingsStore.setIsDiceAnimationEnabled(e.target.checked)} />
-                                <span className="slider"></span>
-                            </label>
-                        </div>
-                    )}
-                     <div className="settings-selector">
-                        <label htmlFor="language-select">{T.language}:</label>
-                        <div className="select-wrapper">
-                            <select id="language-select" value={language} onChange={(e) => gameSettingsStore.setLanguage(e.target.value as any)}>
-                                <option value="it">Italiano</option>
-                                <option value="en">English</option>
                             </select>
                         </div>
                     </div>

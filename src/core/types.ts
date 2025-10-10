@@ -29,7 +29,7 @@ export type Soundtrack = 'epic' | 'chill';
 export type Element = 'fire' | 'water' | 'air' | 'earth';
 export type AbilityType = 'incinerate' | 'tide' | 'cyclone' | 'fortify';
 export type SnackbarType = 'success' | 'warning';
-export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock' | 'legend';
+export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock' | 'legend' | 'settings';
 export type CardDeckStyle = 'classic' | 'poker';
 export type SoundName =
   | 'game-start'

@@ -69,6 +69,7 @@ export class UIStateStore {
     isGachaSingleUnlockModalOpen = false;
     isGachaMultiUnlockModalOpen = false;
     isLegendModalOpen = false;
+    isSettingsModalOpen = false;
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
 
     // Tutorial State
@@ -110,6 +111,7 @@ export class UIStateStore {
             case 'gachaSingleUnlock': this.isGachaSingleUnlockModalOpen = true; break;
             case 'gachaMultiUnlock': this.isGachaMultiUnlockModalOpen = true; break;
             case 'legend': this.isLegendModalOpen = true; break;
+            case 'settings': this.isSettingsModalOpen = true; break;
             case 'chat': 
                 this.isChatModalOpen = true; 
                 this.setUnreadMessageCount(0);
@@ -131,6 +133,7 @@ export class UIStateStore {
             case 'gachaSingleUnlock': this.isGachaSingleUnlockModalOpen = false; break;
             case 'gachaMultiUnlock': this.isGachaMultiUnlockModalOpen = false; break;
             case 'legend': this.isLegendModalOpen = false; break;
+            case 'settings': this.isSettingsModalOpen = false; break;
             case 'chat': this.isChatModalOpen = false; break;
         }
     }
