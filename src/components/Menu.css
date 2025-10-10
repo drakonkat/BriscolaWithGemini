@@ -331,7 +331,7 @@ input:checked + .slider:before {
   flex-wrap: nowrap;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  padding: 1rem 0;
+  padding: 2rem 0;
   margin: 0;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
@@ -619,26 +619,15 @@ input:checked + .slider:before {
 
 @media (min-width: 769px) {
     .waifu-carousel-wrapper {
-        padding: 0 40px; /* Space for buttons */
+        padding: 0; /* Remove space for buttons */
     }
 
     .carousel-nav-button {
-        width: 44px;
-        height: 44px;
-    }
-    .carousel-nav-button.prev {
-        left: -10px;
-    }
-    .carousel-nav-button.next {
-        right: -10px;
-    }
-    .carousel-nav-button svg {
-        width: 28px;
-        height: 28px;
+        display: none;
     }
     
     .waifu-selector-container {
-        padding: 1rem 2rem;
+        padding: 2rem;
     }
 }
 
@@ -729,10 +718,10 @@ input:checked + .slider:before {
       right: -5px;
   }
 
-  /* Reorder for mobile */
-  .menu-section { order: 1; }
-  .menu-title-container { order: 2; }
-  .menu-subtitle { order: 3; }
+  /* Reorder for mobile to match desktop flow */
+  .menu-title-container { order: 1; }
+  .menu-subtitle { order: 2; }
+  .menu-section { order: 3; } /* Game Mode */
   .difficulty-selector { order: 4; }
   .waifu-selection { order: 5; }
   .featured-waifu-container { order: 6; }
