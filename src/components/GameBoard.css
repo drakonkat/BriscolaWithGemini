@@ -1,5 +1,3 @@
-
-
 .game-board {
   flex: 3;
   display: flex;
@@ -252,6 +250,15 @@
 .bottom-bar { bottom: 0; height: var(--bottom-bar-height); padding-bottom: var(--safe-area-inset-bottom); border-top: 1px solid rgba(var(--primary-accent-rgb), 0.2); }
 .player-info-group { display: flex; align-items: center; gap: 1rem; }
 .player-score { background: rgba(0, 0, 0, 0.4); padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 1rem; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: relative; display: flex; align-items: center; gap: 0.75rem; }
+.player-score.human-score {
+  border: none;
+  cursor: default;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
 .last-trick-recap { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-color); color: white; padding: 0.3rem 0.6rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; transition: background-color 0.2s; }
 .last-trick-recap:hover { background: rgba(0, 0, 0, 0.8); }
 .last-trick-recap .card { --card-height: 36px; --card-width: 20px; --card-border-radius: 3px; box-shadow: none; }
