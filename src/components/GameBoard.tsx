@@ -12,7 +12,6 @@ import { defaultSoundSettings } from '../core/soundManager';
 import type { Card } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
-import { ElementalChoiceModal } from './ElementalChoiceModal';
 import { POWER_UP_DEFINITIONS } from '../core/roguelikePowers';
 import { DiceRollAnimation } from './DiceRollAnimation';
 
@@ -21,10 +20,11 @@ export const GameBoard = observer(() => {
     const { 
         currentWaifu, aiScore, aiHand, humanScore, humanHand, briscolaCard, deck, cardsOnTable, message,
         isProcessing, turn, trickStarter, backgroundUrl, lastTrick, lastTrickHighlights, activeElements,
-        roguelikeState, powerAnimation, cardForElementalChoice, elementalClash,
+        roguelikeState, powerAnimation, elementalClash,
         revealedAiHand, lastTrickInsightCooldown, activateLastTrickInsight,
         briscolaSwapCooldown, openBriscolaSwapModal,
-        confirmCardPlay, cancelCardPlay,
+        draggingCardInfo, clonePosition, currentDropZone,
+        handleDragStart, handleDragMove, handleDragEnd,
     } = gameStateStore;
     const { animatingCard, drawingCards, unreadMessageCount, waifuBubbleMessage } = uiStore;
     const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle, isDiceAnimationEnabled } = gameSettingsStore;
@@ -32,10 +32,13 @@ export const GameBoard = observer(() => {
     const T = translations[language];
     const T_roguelike = T.roguelike;
     const TH = T.history;
-    const [isLegendExpanded, setIsLegendExpanded] = useState(true);
     const [isDiceRolling, setIsDiceRolling] = useState(false);
     const [isPlayerMenuOpen, setIsPlayerMenuOpen] = useState(false);
     const playerMenuRef = useRef<HTMLDivElement>(null);
+
+    const normalZoneRef = useRef<HTMLDivElement>(null);
+    const powerZoneRef = useRef<HTMLDivElement>(null);
+    const cancelZoneRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (elementalClash?.type === 'dice' && isDiceAnimationEnabled) {
@@ -54,6 +57,41 @@ export const GameBoard = observer(() => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    useEffect(() => {
+        const zoneElements = {
+            normal: normalZoneRef.current,
+            power: powerZoneRef.current,
+            cancel: cancelZoneRef.current,
+        };
+
+        const moveHandler = (e: MouseEvent | TouchEvent) => {
+            gameStateStore.handleDragMove(e, zoneElements);
+        };
+
+        const endHandler = () => {
+            gameStateStore.handleDragEnd();
+        };
+
+        if (draggingCardInfo) {
+            window.addEventListener('mousemove', moveHandler, { passive: false });
+            window.addEventListener('touchmove', moveHandler, { passive: false });
+            window.addEventListener('mouseup', endHandler);
+            window.addEventListener('touchend', endHandler);
+            window.addEventListener('touchcancel', endHandler);
+            document.addEventListener('mouseleave', endHandler);
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', moveHandler);
+            window.removeEventListener('touchmove', moveHandler);
+            window.removeEventListener('mouseup', endHandler);
+            window.removeEventListener('touchend', endHandler);
+            window.removeEventListener('touchcancel', endHandler);
+            document.removeEventListener('mouseleave', endHandler);
+        };
+    }, [draggingCardInfo, gameStateStore]);
+
 
     const winningScore = 60;
     const maxBlur = 25;
@@ -91,6 +129,54 @@ export const GameBoard = observer(() => {
                 className="game-board-background"
                 style={backgroundStyle}
             />
+            
+            {draggingCardInfo && clonePosition && (
+                <div 
+                    className="card-drag-clone"
+                    style={{ 
+                        position: 'fixed',
+                        left: clonePosition.x,
+                        top: clonePosition.y,
+                        transform: 'translate(-50%, -50%) scale(1.15)',
+                        pointerEvents: 'none',
+                        zIndex: 1000,
+                        willChange: 'transform'
+                    }}
+                >
+                    <CardView card={draggingCardInfo.card} lang={language} cardDeckStyle={cardDeckStyle} />
+                </div>
+            )}
+
+            {draggingCardInfo && (
+                <>
+                    <div className="drop-zones-container">
+                        <div
+                            ref={normalZoneRef}
+                            className={`drop-zone left ${currentDropZone === 'normal' ? 'active' : ''}`}
+                        >
+                            <div className="drop-zone-content">
+                                <h3>{T.playNormally}</h3>
+                            </div>
+                        </div>
+                        <div
+                            ref={powerZoneRef}
+                            className={`drop-zone right ${currentDropZone === 'power' ? 'active' : ''}`}
+                        >
+                            <div className="drop-zone-content">
+                                <h3>{T.activatePower}</h3>
+                            </div>
+                        </div>
+                    </div>
+                     <div 
+                        ref={cancelZoneRef}
+                        className={`drop-zone cancel ${currentDropZone === 'cancel' ? 'active' : ''}`}
+                    >
+                        <div className="drop-zone-content">
+                            <h3>{T.cancelAbility}</h3> 
+                        </div>
+                    </div>
+                </>
+            )}
 
             {powerAnimation && (
                 <div className={`power-animation ${powerAnimation.player} element-${powerAnimation.type}`}>
@@ -161,47 +247,10 @@ export const GameBoard = observer(() => {
             </div>
             
             {gameplayMode === 'roguelike' && (activeElements.length > 0 || roguelikeState.activePowers.length > 0) && (
-                <div className={`elemental-powers-panel ${!isLegendExpanded ? 'collapsed' : ''}`} title={T.elementalPowersTitle}>
-                    <button className="elemental-powers-toggle" onClick={() => setIsLegendExpanded(!isLegendExpanded)} title={T.toggleLegend}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
-                        </svg>
+                <div className="bottom-left-actions">
+                    <button className="legend-button" onClick={() => uiStore.openModal('legend')} aria-label={T.elementalPowersTitle}>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99l1.5 1.5z"/></svg>
                     </button>
-                    {activeElements.map(element => {
-                        const descriptionKey = `${element}Description` as 'fireDescription' | 'waterDescription' | 'airDescription' | 'earthDescription';
-                        return (
-                            <div key={element} className="elemental-power-row">
-                               <ElementIcon element={element} />
-                               <div className="elemental-power-description">
-                                   <strong>{T[element]}:</strong>
-                                   <span>{T[descriptionKey] as string}</span>
-                               </div>
-                            </div>
-                        );
-                    })}
-
-                    {activeElements.length > 0 && (
-                        <>
-                           <h4 className="abilities-subtitle">{T.roguelike.elementalCycleTitle}</h4>
-                           <div className="elemental-cycle-display">
-                               <ElementIcon element="water" /> &gt; <ElementIcon element="fire" /> &gt; <ElementIcon element="air" /> &gt; <ElementIcon element="earth" /> &gt; <ElementIcon element="water" />
-                           </div>
-                        </>
-                    )}
-
-                    {roguelikeState.activePowers.length > 0 && (
-                        <>
-                            <h4 className="abilities-subtitle">{T.roguelike.allPowersTitle}</h4>
-                            <div className="roguelike-powers-list">
-                                {roguelikeState.activePowers.map(power => (
-                                    <div key={power.id} className="roguelike-power-entry">
-                                        <h5>{POWER_UP_DEFINITIONS[power.id].name(language)} (Lv. {power.level})</h5>
-                                        <p>{POWER_UP_DEFINITIONS[power.id].description(language, power.level)}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </>
-                    )}
                 </div>
             )}
             
@@ -252,7 +301,7 @@ export const GameBoard = observer(() => {
                         title={POWER_UP_DEFINITIONS['last_trick_insight'].name(language)}
                     >
                         <div className="ability-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5-4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5 4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
                         </div>
                         {lastTrickInsightCooldown > 0 && (
                             <span className="cooldown-badge">{lastTrickInsightCooldown}</span>
@@ -313,18 +362,27 @@ export const GameBoard = observer(() => {
 
             <div className="player-area human-area">
                 <div className="hand" data-tutorial-id="player-hand">
-                    {humanHand.map(card => (
-                        <React.Fragment key={card.id}>
-                            <CardView
-                                card={card}
-                                isPlayable={turn === 'human' && !isProcessing}
-                                onClick={() => gameStateStore.selectCardForPlay(card)}
-                                lang={language}
-                                className={''}
-                                cardDeckStyle={cardDeckStyle}
-                            />
-                        </React.Fragment>
-                    ))}
+                    {humanHand.map(card => {
+                        const isDraggable = turn === 'human' && !isProcessing && gameplayMode === 'roguelike' && !!card.element && !card.isTemporaryBriscola;
+                        const isClickable = turn === 'human' && !isProcessing && !isDraggable;
+                        const isBeingDragged = draggingCardInfo?.card.id === card.id;
+                        
+                        return (
+                            <React.Fragment key={card.id}>
+                                <CardView
+                                    card={card}
+                                    isPlayable={isClickable}
+                                    onClick={isClickable ? () => gameStateStore.selectCardForPlay(card) : undefined}
+                                    lang={language}
+                                    cardDeckStyle={cardDeckStyle}
+                                    isDraggable={isDraggable}
+                                    className={isBeingDragged ? 'is-dragging' : ''}
+                                    onMouseDown={isDraggable ? (e) => handleDragStart(card, e) : undefined}
+                                    onTouchStart={isDraggable ? (e) => handleDragStart(card, e) : undefined}
+                                />
+                            </React.Fragment>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -349,6 +407,12 @@ export const GameBoard = observer(() => {
                                     </svg>
                                     <span>{T.supportModal.title}</span>
                                 </button>
+                                {gameplayMode === 'roguelike' && (activeElements.length > 0 || roguelikeState.activePowers.length > 0) && (
+                                    <button className="popup-action-button" onClick={() => { uiStore.openModal('legend'); setIsPlayerMenuOpen(false); }}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99l1.5 1.5z"/></svg>
+                                        <span>{T.elementalPowersTitle}</span>
+                                    </button>
+                                )}
                                 <button className={`popup-action-button ${isMusicEnabled ? 'active' : ''}`} onClick={() => { handleMusicButtonClick(); setIsPlayerMenuOpen(false); }}>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                                         {isMusicEnabled ? 
@@ -383,15 +447,7 @@ export const GameBoard = observer(() => {
                     <span className="turn-message">{message}</span>
                 </div>
             </div>
-             {cardForElementalChoice && (
-                <ElementalChoiceModal
-                    card={cardForElementalChoice}
-                    onConfirm={confirmCardPlay}
-                    onCancel={cancelCardPlay}
-                    lang={language}
-                    cardDeckStyle={cardDeckStyle}
-                />
-            )}
+            
             {elementalClash && humanCardForClash && aiCardForClash && (
                 <div className={`elemental-clash-overlay ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={gameStateStore.forceCloseClashModal}>
                      <div className={`elemental-clash-modal ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={(e) => e.stopPropagation()}>

@@ -19,7 +19,6 @@
     "@capacitor/screen-orientation": "^7.0.2",
     "@capacitor/status-bar": "^7.0.3",
     "@google/genai": "^0.7.0",
-    "capacitor-plugin-safe-area": "^4.0.0",
     "mobx": "^6.13.0",
     "mobx-react-lite": "^4.0.7",
     "posthog-js": "^1.261.0",

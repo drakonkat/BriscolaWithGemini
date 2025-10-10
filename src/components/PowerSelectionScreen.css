@@ -127,8 +127,8 @@
     align-items: center;
     text-align: center;
     padding: 2rem 1rem;
-    padding-top: calc(1.5rem + var(--safe-area-inset-top));
-    padding-bottom: calc(1.5rem + var(--safe-area-inset-bottom));
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
   }
   .power-selection-screen h1 {
     font-size: clamp(2rem, 7vw, 2.5rem);
