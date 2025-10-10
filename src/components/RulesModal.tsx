@@ -102,10 +102,6 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                     <li className="rules-info-item">{T.gachaRuleRaritySR}</li>
                     <li className="rules-info-item">{T.gachaRuleRaritySSR}</li>
                 </ul>
-
-                <div className="modal-actions">
-                    <button onClick={onClose}>{T.close}</button>
-                </div>
             </div>
         </div>
     );
