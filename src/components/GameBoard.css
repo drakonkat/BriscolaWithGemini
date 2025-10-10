@@ -1,5 +1,3 @@
-
-
 .game-board {
   flex: 3;
   display: flex;
@@ -481,6 +479,9 @@
   }
   .last-trick-recap .last-trick-icon {
     display: block;
+  }
+  .human-abilities-container {
+    bottom: calc(var(--bottom-bar-height) + var(--safe-area-inset-bottom) + 3.5rem);
   }
 }
 
