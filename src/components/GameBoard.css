@@ -28,6 +28,25 @@
   transition: filter 0.5s ease-out;
 }
 
+.player-mat {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120%;
+  height: 60%;
+  background: radial-gradient(ellipse at center, rgba(10, 10, 20, 0.3) 0%, rgba(10, 10, 20, 0) 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.ai-mat {
+  top: -15%;
+}
+
+.human-mat {
+  bottom: -15%;
+}
+
 .player-area {
   flex: 1;
   display: flex;
@@ -36,7 +55,7 @@
   padding: 1rem;
   min-height: calc(var(--card-height) + 3rem);
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 .human-area {
   justify-content: flex-end;
@@ -52,6 +71,7 @@
   justify-content: center;
   align-items: center;
   position: relative;
+  z-index: 2;
 }
 
 .hand {
@@ -236,6 +256,9 @@
 .last-trick-recap:hover { background: rgba(0, 0, 0, 0.8); }
 .last-trick-recap .card { --card-height: 36px; --card-width: 20px; --card-border-radius: 3px; box-shadow: none; }
 .bottom-bar .turn-message { font-size: 0.9rem; font-style: italic; color: #eee; text-align: right; flex-grow: 1; min-height: 1.2em; }
+.menu-burger-icon {
+  display: none;
+}
 
 /* --- Roguelike Mode UI --- */
 .elemental-powers-panel {
@@ -367,6 +390,74 @@
   .deck-container { height: var(--card-height); }
   .followers-container { top: auto; bottom: calc(var(--bottom-bar-height) + var(--safe-area-inset-bottom) + 1rem); left: calc(15px + var(--safe-area-inset-left)); transform: none; flex-direction: row; gap: 0.5rem; }
   .follower-waifu-avatar { width: 40px; height: 40px; }
+
+  .top-left-actions {
+    display: none;
+  }
+  .human-score-container {
+    position: relative;
+  }
+  .player-score.human-score {
+    cursor: pointer;
+    border: none;
+    background: rgba(0, 0, 0, 0.4);
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+  }
+  .player-score.human-score:hover, .player-score.human-score:focus {
+    background: rgba(0, 0, 0, 0.6);
+    outline: none;
+  }
+  .menu-burger-icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+    color: var(--font-color-secondary);
+  }
+  .player-actions-popup {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 0;
+    background-color: var(--ui-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+    z-index: 100;
+    width: max-content;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fade-in 0.2s ease-out;
+  }
+  .popup-action-button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--font-color);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+  }
+  .popup-action-button:hover, .popup-action-button:focus {
+    background-color: rgba(var(--primary-accent-rgb), 0.2);
+    outline: none;
+  }
+  .popup-action-button svg {
+    width: 20px;
+    height: 20px;
+    color: var(--font-color-secondary);
+  }
+  .popup-action-button.active, .popup-action-button.active svg {
+    color: var(--primary-accent);
+  }
 }
 
 @media (max-width: 768px) {

@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { CardView } from './CardView';
@@ -34,12 +34,26 @@ export const GameBoard = observer(() => {
     const TH = T.history;
     const [isLegendExpanded, setIsLegendExpanded] = useState(true);
     const [isDiceRolling, setIsDiceRolling] = useState(false);
+    const [isPlayerMenuOpen, setIsPlayerMenuOpen] = useState(false);
+    const playerMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (elementalClash?.type === 'dice' && isDiceAnimationEnabled) {
             setIsDiceRolling(true);
         }
     }, [elementalClash, isDiceAnimationEnabled]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (playerMenuRef.current && !playerMenuRef.current.contains(event.target as Node)) {
+                setIsPlayerMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const winningScore = 60;
     const maxBlur = 25;
@@ -77,6 +91,8 @@ export const GameBoard = observer(() => {
                 className="game-board-background"
                 style={backgroundStyle}
             />
+            <div className="player-mat ai-mat" />
+            <div className="player-mat human-mat" />
 
             {powerAnimation && (
                 <div className={`power-animation ${powerAnimation.player} element-${powerAnimation.type}`}>
@@ -369,8 +385,36 @@ export const GameBoard = observer(() => {
             
             <div className="bottom-bar">
                 <div className="player-info-group">
-                    <div className="player-score human-score" data-tutorial-id="player-score">
-                        <span>{T.scoreYou}: {humanScore}</span>
+                    <div className="human-score-container" ref={playerMenuRef}>
+                        <button className="player-score human-score" data-tutorial-id="player-score" onClick={() => setIsPlayerMenuOpen(!isPlayerMenuOpen)} aria-haspopup="true" aria-expanded={isPlayerMenuOpen}>
+                            <svg className="menu-burger-icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+                            <span>{T.scoreYou}: {humanScore}</span>
+                        </button>
+                        {isPlayerMenuOpen && (
+                            <div className="player-actions-popup">
+                                <button className="popup-action-button" onClick={() => { uiStore.openModal('confirmLeave'); setIsPlayerMenuOpen(false); }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                                    </svg>
+                                    <span>{T.backToMenu}</span>
+                                </button>
+                                <button className="popup-action-button" onClick={() => { uiStore.openModal('support'); setIsPlayerMenuOpen(false); }}>
+                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
+                                    <span>{T.supportModal.title}</span>
+                                </button>
+                                <button className={`popup-action-button ${isMusicEnabled ? 'active' : ''}`} onClick={() => { handleMusicButtonClick(); setIsPlayerMenuOpen(false); }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        {isMusicEnabled ? 
+                                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/> :
+                                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3z"></path>
+                                        }
+                                    </svg>
+                                    <span>{T.toggleMusic}</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                     {lastTrick && (
                         <button
