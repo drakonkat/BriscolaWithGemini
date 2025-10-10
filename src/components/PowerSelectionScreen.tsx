@@ -72,6 +72,17 @@ export const PowerSelectionScreen = observer(() => {
                         />
                     )}
                 </div>
+
+                {!upgrade && (
+                    <div className="power-selection-actions">
+                        <button
+                            className="button-secondary"
+                            onClick={gameStateStore.goToMenu}
+                        >
+                            {T.backToMenu}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

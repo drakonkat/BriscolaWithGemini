@@ -41,7 +41,8 @@ export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedB
     const allUnlocked = unlockedBackgrounds.length >= backgrounds.length;
     const canAfford = waifuCoins >= GACHA_COST;
     const canAffordX10 = waifuCoins >= GACHA_COST_X10;
-    const buttonText = isFirstRoll ? T.gallery.gachaButtonFree : T.gallery.gachaButton;
+    // FIX: Called the `gachaButton` function with the cost to generate the button text string.
+    const buttonText = isFirstRoll ? T.gallery.gachaButtonFree : T.gallery.gachaButton(GACHA_COST);
 
     return (
         <div className="game-over-overlay" onClick={onClose}>
@@ -68,7 +69,6 @@ export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedB
                         <button onClick={onGachaMultiRoll} disabled={allUnlocked || isFirstRoll || !canAffordX10 || isRolling}>
                             {T.gallery.gachaButtonX10(GACHA_COST_X10)}
                         </button>
-                        <button onClick={onClose} className="button-secondary">{T.close}</button>
                     </div>
                 </div>
                 <div className="gallery-grid">

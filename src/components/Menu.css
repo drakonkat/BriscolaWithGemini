@@ -1,0 +1,520 @@
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  text-align: center;
+  padding: 3rem 1rem;
+  padding-top: calc(3rem + var(--safe-area-inset-top));
+  padding-bottom: calc(3rem + var(--safe-area-inset-bottom));
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 1;
+}
+.menu-content {
+  background-color: var(--ui-bg-glass);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  max-width: 95%;
+  width: 1200px;
+  z-index: 2;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  position: relative;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+.menu-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: brightness(0.8);
+  transform: scale(1.1);
+  z-index: -1;
+}
+
+.waifu-coins-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+  z-index: 3;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.waifu-coins-display svg {
+  width: 24px;
+  height: 24px;
+  color: var(--gold-accent);
+}
+
+.menu-title-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.menu h1 {
+  font-size: clamp(2.5rem, 10vw, 4rem);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.menu-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.actions-popup {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.actions-popup .rules-button {
+    display: flex;
+    gap: 0.5rem;
+    width: auto;
+    padding: 0.5rem;
+}
+.actions-popup .rules-button span {
+    display: none;
+}
+
+.more-menu-button {
+    display: none;
+}
+
+.rules-button {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--font-color-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+.rules-button:hover, .rules-button:focus {
+    background-color: var(--primary-accent);
+    color: white;
+    border-color: var(--primary-accent);
+    transform: scale(1.1);
+    outline: none;
+    box-shadow: 0 0 10px rgba(var(--primary-accent-rgb), 0.5);
+}
+.rules-button.active {
+    background-color: var(--primary-accent);
+    color: white;
+    border-color: var(--primary-accent);
+}
+.rules-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+.menu-subtitle {
+  font-size: clamp(1rem, 4vw, 1.2rem);
+  margin: 1rem 0 1.5rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--font-color-secondary);
+}
+
+.project-description {
+    display: none;
+}
+
+.menu-primary-settings {
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.menu-settings {
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.settings-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.settings-selector label {
+  font-size: 1.1rem;
+  color: var(--font-color-secondary);
+  transition: color 0.2s;
+}
+
+.settings-selector select {
+  font-size: 1rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background-color: rgba(0,0,0,0.3);
+  color: white;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+}
+
+.settings-selector select option:disabled {
+  color: #888;
+  cursor: not-allowed;
+}
+
+.settings-selector.disabled > label {
+    color: #888;
+    cursor: not-allowed;
+}
+
+/* Toggle Switch Styles */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: .4s;
+  border-radius: 28px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--primary-accent);
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+.toggle-switch input:disabled + .slider {
+  cursor: not-allowed;
+  background-color: #444;
+}
+
+.toggle-switch input:disabled + .slider:before {
+  background-color: #ccc;
+}
+
+
+.waifu-selection {
+  margin-top: 2rem;
+}
+.waifu-selection h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary-accent);
+}
+
+.waifu-selector-container {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.waifu-card, .random-waifu-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  width: 220px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+.waifu-card:hover, .random-waifu-card:hover {
+  transform: translateY(-10px);
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.waifu-card.selected, .random-waifu-card.selected {
+  transform: translateY(-10px) scale(1.05);
+  background-color: rgba(var(--primary-accent-rgb), 0.15);
+  box-shadow: 0 0 25px rgba(var(--primary-accent-rgb), 0.7), 0 8px 20px rgba(0,0,0,0.3);
+  border-color: var(--primary-accent);
+}
+
+.waifu-card.disabled, .random-waifu-card.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    filter: grayscale(80%);
+}
+.waifu-card.disabled:hover, .random-waifu-card.disabled:hover {
+    transform: none;
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+}
+
+.waifu-card img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  margin-bottom: 1rem;
+  border: 3px solid var(--primary-accent);
+}
+
+.waifu-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.waifu-card p {
+  font-size: 0.9rem;
+  color: var(--font-color-secondary);
+  margin: 0;
+}
+.random-waifu-card {
+  justify-content: center;
+}
+.random-waifu-card svg {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+  color: var(--primary-accent);
+}
+.random-waifu-card h3 {
+  font-size: 1.4rem;
+}
+
+.waifu-selector-mobile {
+    display: none;
+}
+
+.start-game-container {
+    margin-top: 2.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.start-game-button {
+    font-size: 1.8rem;
+    padding: 1rem 3rem;
+    border-radius: var(--radius-full);
+    border: none;
+    background: linear-gradient(45deg, var(--primary-accent), var(--primary-accent-hover));
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.start-game-button:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3), 0 0 20px rgba(var(--primary-accent-rgb), 0.5);
+}
+
+.start-game-button:disabled {
+    background: #555;
+    color: #999;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+
+.gallery-promo-container {
+  margin: 2.5rem 0;
+  text-align: center;
+}
+
+.gallery-promo-button {
+  background: linear-gradient(45deg, var(--gold-accent), #f7971e);
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--black-suit);
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
+  font-weight: bold;
+  padding: 1rem 2.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 5px rgba(var(--gold-accent-rgb), 0.7);
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.3);
+  display: inline-block;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.gallery-promo-button:hover, .gallery-promo-button:focus {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 10px rgba(var(--gold-accent-rgb), 1);
+  outline: none;
+}
+
+.gallery-promo-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transition: all 0.6s ease;
+}
+
+.gallery-promo-button:hover::before {
+  left: 100%;
+}
+
+.menu-footer {
+  margin-top: 2.5rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  text-align: center;
+}
+.menu-footer button.link-button {
+  background: none;
+  border: none;
+  color: var(--font-color-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+.menu-footer button.link-button:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+.app-version {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+
+@media (max-width: 1024px) {
+  .menu { justify-content: flex-start; }
+  .waifu-card, .random-waifu-card { width: 180px; }
+  .waifu-card img { width: 100px; height: 100px; }
+}
+
+@media (max-width: 768px) {
+  .menu {
+    padding: 0;
+    overflow-y: hidden;
+  }
+  .menu-content {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 1rem;
+    padding-top: calc(1.5rem + var(--safe-area-inset-top));
+    padding-bottom: calc(1.5rem + var(--safe-area-inset-bottom));
+  }
+  .menu-title-container { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: nowrap; }
+  .menu h1 { grid-column: 2; margin: 0; font-size: clamp(1.8rem, 7vw, 2.5rem); }
+  .menu-subtitle { margin: 0.5rem 0 1rem; font-size: 1rem; }
+  .waifu-coins-display { grid-column: 1; justify-self: start; position: static; padding: 0.3rem 0.6rem; font-size: 1rem; margin: 0; background: none; border: none; }
+  .menu-actions { grid-column: 3; justify-self: end; position: relative; }
+  .more-menu-button { display: flex; background: none; border: none; color: rgba(255, 255, 255, 0.8); cursor: pointer; padding: 0; width: 36px; height: 36px; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s; }
+  .actions-popup { display: none; flex-direction: column; position: absolute; top: calc(100% + 8px); right: 0; background-color: #3e3e3e; border-radius: var(--radius-sm); box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 10; border: 1px solid #555; width: max-content; overflow: hidden; }
+  .actions-popup.open { display: flex; }
+  .actions-popup .rules-button { width: 100%; border-radius: 0; border: none; padding: 0.75rem 1rem; justify-content: flex-start; gap: 0.75rem; font-size: 1rem; font-weight: normal; }
+  .actions-popup .rules-button span { display: inline; color: #eee; }
+  .actions-popup .rules-button svg { color: #ccc; }
+  .menu-title-container > .rules-button { display: none; }
+  .start-game-container { margin: 1rem 0; }
+  .start-game-button { font-size: 1.5rem; padding: 0.8rem 2rem; }
+  .gallery-promo-container { margin: 1rem 0; }
+  .gallery-promo-button { font-size: 1.2rem; padding: 0.8rem 2rem; }
+  .waifu-selection { margin-top: 1rem; }
+  .waifu-selection h2 { display: none; }
+  .menu .project-description { display: none; }
+  .menu-primary-settings, .menu-settings { margin-top: 1.5rem; margin-bottom: 0; }
+
+  /* Mobile Waifu Selector */
+  .waifu-selector-container { display: none; }
+  .waifu-selector-mobile { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-top: 1rem; }
+  .waifu-selector-mobile-picker { display: flex; align-items: center; gap: 1rem; width: 100%; max-width: 350px; }
+  .waifu-selector-mobile-avatar { width: 70px; height: 70px; flex-shrink: 0; position: relative; }
+  .waifu-selector-mobile-avatar img, .waifu-selector-mobile-avatar svg { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: top; border: 3px solid var(--primary-accent); background-color: rgba(255, 255, 255, 0.05); }
+  .waifu-selector-mobile-avatar svg { padding: 12px; color: var(--primary-accent); }
+  .waifu-selector-mobile-picker select { font-size: 1.1rem; padding: 0.7rem; border-radius: var(--radius-sm); background-color: #333; color: white; border: 1px solid #555; cursor: pointer; width: 100%; }
+  .waifu-personality { font-size: 0.9rem; color: #ccc; min-height: 1.2em; }
+  .menu-settings { flex-direction: column; width: 100%; max-width: 400px; gap: 1rem; margin-left: auto; margin-right: auto; }
+  .settings-selector { width: 100%; justify-content: space-between; }
+  .settings-selector > label:first-child { width: 60%; text-align: left; }
+  .settings-selector select { width: auto; min-width: 0; }
+}
+
+@media (max-width: 480px) {
+  .waifu-selector-container { gap: 1rem; }
+  .waifu-card, .random-waifu-card { width: 130px; }
+  .waifu-card img { width: 70px; height: 70px; }
+}

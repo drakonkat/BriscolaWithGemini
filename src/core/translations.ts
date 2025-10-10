@@ -118,7 +118,7 @@ export const translations = {
       // In-game tutorial steps
       playerHand: "Questa è la tua mano. Le carte hanno un valore (come l'Asso) e un seme.",
       promptPlayCard: "È il tuo turno. Giochiamo l'Asso di Bastoni, una carta di alto valore. Clicca su di essa.",
-      aiResponds: "Perfetto! Ora l'IA gioca la sua carta. Poiché hai iniziato con Bastoni, deve rispondere con lo stesso seme se ne ha uno.",
+      aiResponds: "Perfetto! Ora l'IA gioca la sua carta. Poiché hai iniziato con Bastoni, se l'IA non gioca una carta di Bastoni più alta o una Briscola, la presa sarà tua.",
       trickWon: "Hai vinto il turno! Nel seme di Bastoni, il tuo Asso batte il 2 dell'IA.",
       scoreUpdate: "I punti delle carte vinte (11 per il tuo Asso) vengono aggiunti al tuo punteggio. Te ne servono più di 60 per vincere!",
       drawingCards: "Dopo ogni turno, entrambi i giocatori pescano una nuova carta. Chi ha vinto pesca per primo.",
@@ -603,7 +603,7 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
       // In-game tutorial steps
       playerHand: "This is your hand. The cards have a value (like the Ace) and a suit.",
       promptPlayCard: "It's your turn. Let's play the Ace of Batons, a high-value card. Click on it.",
-      aiResponds: "Perfect! Now the AI plays its card. Since you started with Batons, it must respond with the same suit if it has one.",
+      aiResponds: "Perfect! Now the AI plays its card. Since you started with Batons, if the AI doesn't play a higher Batons card or a Briscola (trump), the trick will be yours.",
       trickWon: "You won the trick! In the Batons suit, your Ace beats the AI's 2.",
       scoreUpdate: "The points from the won cards (11 for your Ace) are added to your score. You need more than 60 to win!",
       drawingCards: "After each trick, both players draw a new card. The winner draws first.",
