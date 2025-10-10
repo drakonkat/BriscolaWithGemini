@@ -28,21 +28,22 @@
 
 .player-mat {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120%;
-  height: 60%;
-  background: radial-gradient(ellipse at center, rgba(10, 10, 20, 0.3) 0%, rgba(10, 10, 20, 0) 70%);
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 45%;
   z-index: 1;
   pointer-events: none;
 }
 
 .ai-mat {
-  top: -15%;
+  top: 0;
+  background: linear-gradient(to bottom, rgba(10, 10, 20, 0.55) 0%, transparent 100%);
 }
 
 .human-mat {
-  bottom: -15%;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(10, 10, 20, 0.55) 0%, transparent 100%);
 }
 
 .player-area {
@@ -252,20 +253,45 @@
 .player-score { background: rgba(0, 0, 0, 0.4); padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 1rem; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: relative; display: flex; align-items: center; gap: 0.75rem; }
 .player-score.human-score {
   border: none;
-  cursor: default;
   background: none;
   padding: 0;
   font: inherit;
   color: inherit;
   text-align: left;
+  pointer-events: none;
 }
 .last-trick-recap { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-color); color: white; padding: 0.3rem 0.6rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; transition: background-color 0.2s; }
 .last-trick-recap:hover { background: rgba(0, 0, 0, 0.8); }
 .last-trick-recap .card { --card-height: 36px; --card-width: 20px; --card-border-radius: 3px; box-shadow: none; }
-.bottom-bar .turn-message { font-size: 0.9rem; font-style: italic; color: #eee; text-align: right; flex-grow: 1; min-height: 1.2em; }
+.last-trick-recap .last-trick-icon { display: none; }
 .menu-burger-icon {
   display: none;
 }
+
+.turn-status-container {
+    position: absolute;
+    bottom: calc(var(--bottom-bar-height) + var(--safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5rem;
+    pointer-events: none;
+    z-index: 26;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.turn-status-container .turn-message {
+    font-size: 1rem;
+    font-style: italic;
+    color: #fff;
+    background: rgba(10, 10, 20, 0.75);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius-full);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    pointer-events: auto;
+    white-space: nowrap;
+}
+
 
 /* --- Roguelike Mode UI --- */
 .elemental-powers-panel {
@@ -406,6 +432,7 @@
   }
   .player-score.human-score {
     cursor: pointer;
+    pointer-events: auto;
     border: none;
     background: rgba(0, 0, 0, 0.4);
     transition: background-color 0.2s;
@@ -464,6 +491,12 @@
   }
   .popup-action-button.active, .popup-action-button.active svg {
     color: var(--primary-accent);
+  }
+  .last-trick-recap .last-trick-text {
+    display: none;
+  }
+  .last-trick-recap .last-trick-icon {
+    display: block;
   }
 }
 
