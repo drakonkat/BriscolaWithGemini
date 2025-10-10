@@ -138,27 +138,29 @@ export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, 
                         <div className="sound-editor-control">
                             <label htmlFor="preset-select">{T.decadePresets}</label>
                             <div className="preset-select-wrapper">
-                                <select 
-                                    id="preset-select" 
-                                    value={selectedPresetKey} 
-                                    onChange={(e) => handlePresetChange(e.target.value)}
-                                >
-                                    <option value="">{T.loadPresetPlaceholder}</option>
-                                    <optgroup label={T.defaultPresets}>
-                                        {allDefaultPresets.map(key => {
-                                            const translationKey = `decade_${key}` as keyof typeof T;
-                                            const label = T[translationKey] as string || key;
-                                            return <option key={key} value={key}>{label}</option>;
-                                        })}
-                                    </optgroup>
-                                    {Object.keys(gameSettingsStore.customSoundPresets).length > 0 && (
-                                        <optgroup label={T.customPresets}>
-                                            {Object.keys(gameSettingsStore.customSoundPresets).map(name => (
-                                                <option key={name} value={name}>{name}</option>
-                                            ))}
+                                <div className="select-wrapper">
+                                    <select 
+                                        id="preset-select" 
+                                        value={selectedPresetKey} 
+                                        onChange={(e) => handlePresetChange(e.target.value)}
+                                    >
+                                        <option value="">{T.loadPresetPlaceholder}</option>
+                                        <optgroup label={T.defaultPresets}>
+                                            {allDefaultPresets.map(key => {
+                                                const translationKey = `decade_${key}` as keyof typeof T;
+                                                const label = T[translationKey] as string || key;
+                                                return <option key={key} value={key}>{label}</option>;
+                                            })}
                                         </optgroup>
-                                    )}
-                                </select>
+                                        {Object.keys(gameSettingsStore.customSoundPresets).length > 0 && (
+                                            <optgroup label={T.customPresets}>
+                                                {Object.keys(gameSettingsStore.customSoundPresets).map(name => (
+                                                    <option key={name} value={name}>{name}</option>
+                                                ))}
+                                            </optgroup>
+                                        )}
+                                    </select>
+                                </div>
                                 {isCustomPresetSelected && (
                                     <button className="delete-preset-button" onClick={handleDeletePreset}>{T.deletePreset}</button>
                                 )}
@@ -169,12 +171,14 @@ export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, 
                         <ControlSlider label={T.tempo} value={settings.tempo} min={60} max={360} step={1} onChange={(v) => handleSettingChange('tempo', v)} />
                         <div className="sound-editor-control">
                             <label htmlFor="osc-type-select">{T.oscillatorType}</label>
-                            <select id="osc-type-select" value={settings.oscillatorType} onChange={(e) => handleSettingChange('oscillatorType', e.target.value as OscillatorType)}>
-                                <option value="sine">{T.oscSine}</option>
-                                <option value="sawtooth">{T.oscSawtooth}</option>
-                                <option value="square">{T.oscSquare}</option>
-                                <option value="triangle">{T.oscTriangle}</option>
-                            </select>
+                            <div className="select-wrapper">
+                                <select id="osc-type-select" value={settings.oscillatorType} onChange={(e) => handleSettingChange('oscillatorType', e.target.value as OscillatorType)}>
+                                    <option value="sine">{T.oscSine}</option>
+                                    <option value="sawtooth">{T.oscSawtooth}</option>
+                                    <option value="square">{T.oscSquare}</option>
+                                    <option value="triangle">{T.oscTriangle}</option>
+                                </select>
+                            </div>
                         </div>
                         <ControlSlider label={T.filterFrequency} value={settings.filterCutoff} min={100} max={10000} step={100} onChange={(v) => handleSettingChange('filterCutoff', v)} displayValue={`${settings.filterCutoff} Hz`} />
                         <ControlSlider label={T.lfoFrequency} value={settings.lfoFrequency} min={0.1} max={10} step={0.1} onChange={(v) => handleSettingChange('lfoFrequency', v)} displayValue={`${settings.lfoFrequency} Hz`} />

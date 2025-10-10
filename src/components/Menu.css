@@ -174,25 +174,73 @@
   transition: color 0.2s;
 }
 
-.settings-selector select {
-  font-size: 1rem;
-  padding: 0.5rem 0.8rem;
-  border-radius: var(--radius-sm);
-  background-color: rgba(0,0,0,0.3);
-  color: white;
-  border: 1px solid var(--border-color);
-  cursor: pointer;
-}
-
-.settings-selector select option:disabled {
-  color: #888;
-  cursor: not-allowed;
-}
-
 .settings-selector.disabled > label {
     color: #888;
     cursor: not-allowed;
 }
+
+/* --- Custom Select Dropdown --- */
+.select-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  background-color: rgba(0,0,0,0.3);
+  border: 1px solid var(--border-color);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.select-wrapper:hover, .select-wrapper:focus-within {
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 5px rgba(var(--primary-accent-rgb), 0.5);
+}
+
+.select-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0.8rem;
+  width: 7px;
+  height: 7px;
+  border-bottom: 2px solid var(--font-color-secondary);
+  border-right: 2px solid var(--font-color-secondary);
+  transform: translateY(-75%) rotate(45deg);
+  pointer-events: none;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.select-wrapper:focus-within::after {
+    border-color: white;
+}
+
+.select-wrapper select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  padding: 0.5rem 2.5rem 0.5rem 0.8rem;
+  width: 100%;
+  cursor: pointer;
+  outline: none;
+}
+
+.select-wrapper select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 #fff;
+}
+
+.select-wrapper select option {
+  background-color: #3e3e3e;
+  color: white;
+}
+
+.preset-select-wrapper > .select-wrapper {
+  flex-grow: 1;
+}
+
 
 /* Toggle Switch Styles */
 .toggle-switch {
@@ -505,12 +553,11 @@ input:checked + .slider:before {
   .waifu-selector-mobile-avatar { width: 70px; height: 70px; flex-shrink: 0; position: relative; }
   .waifu-selector-mobile-avatar img, .waifu-selector-mobile-avatar svg { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: top; border: 3px solid var(--primary-accent); background-color: rgba(255, 255, 255, 0.05); }
   .waifu-selector-mobile-avatar svg { padding: 12px; color: var(--primary-accent); }
-  .waifu-selector-mobile-picker select { font-size: 1.1rem; padding: 0.7rem; border-radius: var(--radius-sm); background-color: #333; color: white; border: 1px solid #555; cursor: pointer; width: 100%; }
+  .waifu-selector-mobile-picker .select-wrapper { flex-grow: 1; }
   .waifu-personality { font-size: 0.9rem; color: #ccc; min-height: 1.2em; }
   .menu-settings { flex-direction: column; width: 100%; max-width: 400px; gap: 1rem; margin-left: auto; margin-right: auto; }
   .settings-selector { width: 100%; justify-content: space-between; }
   .settings-selector > label:first-child { width: 60%; text-align: left; }
-  .settings-selector select { width: auto; min-width: 0; }
 }
 
 @media (max-width: 480px) {
