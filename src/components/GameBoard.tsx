@@ -56,6 +56,9 @@ export const GameBoard = observer(() => {
     const humanCardForClash = elementalClash ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     const aiCardForClash = elementalClash ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     
+    const insightPower = roguelikeState.activePowers.find(p => p.id === 'last_trick_insight');
+    const swapPower = roguelikeState.activePowers.find(p => p.id === 'value_swap');
+
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
             <CachedImage 
@@ -216,6 +219,38 @@ export const GameBoard = observer(() => {
                 </div>
             )}
 
+            <div className="human-abilities-container">
+                {insightPower && insightPower.level === 2 && (
+                    <button
+                        className={`ability-indicator player-human ${lastTrickInsightCooldown === 0 ? 'ready' : 'disabled'}`}
+                        onClick={activateLastTrickInsight}
+                        disabled={lastTrickInsightCooldown > 0 || turn !== 'human'}
+                        title={POWER_UP_DEFINITIONS['last_trick_insight'].name(language)}
+                    >
+                        <div className="ability-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5-4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
+                        </div>
+                        {lastTrickInsightCooldown > 0 && (
+                            <span className="cooldown-badge">{lastTrickInsightCooldown}</span>
+                        )}
+                    </button>
+                )}
+                {swapPower && (
+                    <button
+                        className={`ability-indicator player-human ${briscolaSwapCooldown === 0 ? 'ready' : 'disabled'}`}
+                        onClick={openBriscolaSwapModal}
+                        disabled={briscolaSwapCooldown > 0 || turn !== 'human'}
+                        title={POWER_UP_DEFINITIONS['value_swap'].name(language)}
+                    >
+                        <div className="ability-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.99 11 3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+                        </div>
+                        {briscolaSwapCooldown > 0 && (
+                           <span className="cooldown-badge">{briscolaSwapCooldown}</span>
+                        )}
+                    </button>
+                )}
+            </div>
 
             <div className="player-area ai-area">
                 <div className="hand">
@@ -251,8 +286,13 @@ export const GameBoard = observer(() => {
                     })}
                 </div>
                  {elementalClash && humanCardForClash && aiCardForClash && (
-                    <div className={`elemental-clash-overlay ${elementalClash.type === 'weakness' ? 'weakness' : ''}`}>
-                         <div className={`elemental-clash-modal ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={gameStateStore.forceCloseClashModal}>
+                    <div className={`elemental-clash-overlay ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={gameStateStore.forceCloseClashModal}>
+                         <div className={`elemental-clash-modal ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={(e) => e.stopPropagation()}>
+                            <button className="modal-close-button" onClick={gameStateStore.forceCloseClashModal} aria-label={T.close}>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
                             <h2>{elementalClash.type === 'weakness' ? T.elementalClash.weaknessTitle : T.elementalClash.title}</h2>
                             {isDiceRolling ? (
                                 <div className="clash-rolling-container">
@@ -336,49 +376,6 @@ export const GameBoard = observer(() => {
                             <CardView card={lastTrick.aiCard} lang={language} cardDeckStyle={cardDeckStyle} />
                         </button>
                     )}
-                    {(() => {
-                        const insightPower = roguelikeState.activePowers.find(p => p.id === 'last_trick_insight');
-                        const swapPower = roguelikeState.activePowers.find(p => p.id === 'value_swap');
-
-                        return (
-                            <>
-                                {insightPower && insightPower.level === 2 && (
-                                    <button
-                                        className={`ability-indicator player-human ${lastTrickInsightCooldown === 0 ? 'ready' : 'disabled'}`}
-                                        onClick={activateLastTrickInsight}
-                                        disabled={lastTrickInsightCooldown > 0 || turn !== 'human'}
-                                        title={POWER_UP_DEFINITIONS['last_trick_insight'].name(language)}
-                                    >
-                                        <div className="ability-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5-4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
-                                        </div>
-                                        {lastTrickInsightCooldown > 0 ? (
-                                            <span>{T.abilities.onCooldown(lastTrickInsightCooldown)}</span>
-                                        ) : (
-                                            <span>{T.abilities.revealHand}</span>
-                                        )}
-                                    </button>
-                                )}
-                                {swapPower && (
-                                    <button
-                                        className={`ability-indicator player-human ${briscolaSwapCooldown === 0 ? 'ready' : 'disabled'}`}
-                                        onClick={openBriscolaSwapModal}
-                                        disabled={briscolaSwapCooldown > 0 || turn !== 'human'}
-                                        title={POWER_UP_DEFINITIONS['value_swap'].name(language)}
-                                    >
-                                        <div className="ability-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.99 11 3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
-                                        </div>
-                                        {briscolaSwapCooldown > 0 ? (
-                                            <span>{T.abilities.onCooldown(briscolaSwapCooldown)}</span>
-                                        ) : (
-                                            <span>{POWER_UP_DEFINITIONS['value_swap'].name(language)}</span>
-                                        )}
-                                    </button>
-                                )}
-                            </>
-                        );
-                    })()}
                 </div>
                 <div className="turn-message">
                     {message}
