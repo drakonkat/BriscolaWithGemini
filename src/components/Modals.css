@@ -55,6 +55,42 @@
 .rules-info-item.active-difficulty { border-left-color: var(--gold-accent); background-color: rgba(var(--gold-accent-rgb), 0.1); font-weight: bold; }
 .rules-modal .modal-actions { text-align: center; }
 
+.roguelike-powers-rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+.power-rule-entry {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    border-left: 4px solid #a0d8a2;
+}
+.power-rule-entry strong {
+    font-size: 1.2rem;
+    color: #a0d8a2;
+}
+.power-rule-entry ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.power-rule-entry li {
+    font-size: 0.95rem;
+    color: var(--font-color-secondary);
+    line-height: 1.4;
+}
+.power-rule-entry li span {
+    font-weight: bold;
+    color: #ccc;
+    margin-right: 0.5rem;
+}
+
+
 /* --- Waifu Details Modal --- */
 .waifu-details-modal { padding: 2rem; width: 400px; max-height: 90vh; overflow-y: auto; text-align: center; }
 .waifu-details-image { width: 200px; height: 200px; border-radius: 50%; object-fit: cover; object-position: top; margin: 0 auto 1.5rem auto; border: 5px solid var(--primary-accent); box-shadow: 0 5px 15px rgba(0,0,0,0.3), 0 0 15px rgba(var(--primary-accent-rgb), 0.5); }

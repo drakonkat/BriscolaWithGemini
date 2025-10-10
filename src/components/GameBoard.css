@@ -498,6 +498,9 @@
   .human-abilities-container {
     bottom: calc(var(--bottom-bar-height) + var(--safe-area-inset-bottom) + 4.5rem);
   }
+  .elemental-powers-panel {
+    bottom: calc(var(--bottom-bar-height) + var(--safe-area-inset-bottom) + 3.5rem);
+  }
 }
 
 @media (max-width: 768px) {
