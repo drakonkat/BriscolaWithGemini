@@ -11,7 +11,7 @@ import { ElementIcon } from './ElementIcon';
 
 type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
 
-export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus, cardDeckStyle, isDraggable, onDragStart, onDragEnd }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, elementalEffectStatus?: ElementalEffectStatus, cardDeckStyle: CardDeckStyle, isDraggable?: boolean, onDragStart?: React.DragEventHandler<HTMLDivElement>, onDragEnd?: React.DragEventHandler<HTMLDivElement> }) => {
+export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus, cardDeckStyle, isDraggable, onMouseDown, onTouchStart }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, elementalEffectStatus?: ElementalEffectStatus, cardDeckStyle: CardDeckStyle, isDraggable?: boolean, onMouseDown?: React.MouseEventHandler<HTMLDivElement>, onTouchStart?: React.TouchEventHandler<HTMLDivElement> }) => {
   const T = translations[lang];
 
   if (isFaceDown) {
@@ -42,9 +42,9 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, classNam
       role="button"
       aria-label={cardId}
       tabIndex={isPlayable ? 0 : -1}
-      draggable={isDraggable}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
+      draggable={false}
+      onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
     >
       <CachedImage imageUrl={imagePath} alt={cardId} />
       {card.element && !isFaceDown && (

@@ -5,6 +5,8 @@
 import { makeAutoObservable, runInAction, reaction, toJS } from 'mobx';
 import { Capacitor } from '@capacitor/core';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
+// FIX: Added missing React import to resolve namespace error for TouchEvent.
+import type React from 'react';
 
 import type { RootStore } from '.';
 import { playSound, startMusic, stopMusic, updateSoundSettings } from '../core/soundManager';
@@ -84,7 +86,10 @@ export class GameStateStore {
     lastGameWinnings = 0;
     isQuotaExceeded = false;
     gameMode: GameMode = 'online';
-    draggingCardId: string | null = null;
+
+    draggingCardInfo: { card: Card; isTouch: boolean } | null = null;
+    clonePosition: { x: number; y: number } | null = null;
+    currentDropZone: 'normal' | 'power' | 'cancel' | null = null;
     
     roguelikeState: RoguelikeState = INITIAL_ROGUELIKE_STATE;
     powerAnimation: { type: Element; player: Player; points: number } | null = null;
@@ -752,10 +757,8 @@ export class GameStateStore {
     selectCardForPlay = (card: Card) => {
         if (this.turn !== 'human' || this.isProcessing) return;
 
-        if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' && card.element && !card.isTemporaryBriscola) {
-            // This interaction is now handled by drag and drop, so do nothing on click.
-            return;
-        }
+        const isDraggable = this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' && !!card.element && !card.isTemporaryBriscola;
+        if (isDraggable) return;
 
         if (this.isTutorialGame) {
             if (this.rootStore.uiStore.tutorialStep === 'promptPlayCard' && card.id === 'tutorial-h-ace-bastoni') {
@@ -775,33 +778,84 @@ export class GameStateStore {
         if (this.trickStarter === 'human') this.turn = 'ai';
     };
 
-    handleCardDragStart = (card: Card) => {
-        if (this.turn === 'human' && !this.isProcessing) {
-            this.draggingCardId = card.id;
+    playCardFromDrop = (activatePower: boolean) => {
+        if (!this.draggingCardInfo) return;
+        const cardToPlay = { ...this.draggingCardInfo.card, elementalEffectActivated: activatePower };
+        playSound('card-place');
+        this.humanHand = this.humanHand.filter(c => c.id !== cardToPlay.id);
+        this.cardsOnTable.push(cardToPlay);
+        if (this.trickStarter === 'human') this.turn = 'ai';
+    };
+
+    handleDragStart = (card: Card, event: React.MouseEvent | React.TouchEvent) => {
+        if (this.turn !== 'human' || this.isProcessing) return;
+    
+        if (event.cancelable) {
+            event.preventDefault();
         }
+        
+        const isTouch = 'touches' in event;
+        const point = isTouch ? (event as React.TouchEvent).touches[0] : (event as React.MouseEvent);
+    
+        this.draggingCardInfo = { card, isTouch };
+        this.clonePosition = { x: point.clientX, y: point.clientY };
     }
     
-    handleCardDragEnd = () => {
-        this.draggingCardId = null;
-    }
-
-    playDraggedCard = (activatePower: boolean) => {
-        if (!this.draggingCardId) return;
-
-        const cardToPlay = this.humanHand.find(c => c.id === this.draggingCardId);
-        if (!cardToPlay) {
-            this.draggingCardId = null; 
-            return;
+    handleDragMove = (event: MouseEvent | TouchEvent, zoneElements: { normal: HTMLDivElement | null, power: HTMLDivElement | null, cancel: HTMLDivElement | null }) => {
+        if (!this.draggingCardInfo) return;
+    
+        if (event.cancelable) {
+            event.preventDefault();
         }
-
-        const finalCardToPlay = { ...cardToPlay, elementalEffectActivated: activatePower };
         
-        playSound('card-place');
-        this.humanHand = this.humanHand.filter(c => c.id !== finalCardToPlay.id);
-        this.cardsOnTable.push(finalCardToPlay);
-        if (this.trickStarter === 'human') this.turn = 'ai';
-
-        this.draggingCardId = null;
+        const point = this.draggingCardInfo.isTouch ? (event as TouchEvent).touches[0] : (event as MouseEvent);
+        if (!point) return;
+    
+        runInAction(() => {
+            this.clonePosition = { x: point.clientX, y: point.clientY };
+    
+            const getRect = (el: HTMLDivElement | null) => el ? el.getBoundingClientRect() : null;
+    
+            const zoneRects = {
+                normal: getRect(zoneElements.normal),
+                power: getRect(zoneElements.power),
+                cancel: getRect(zoneElements.cancel),
+            };
+    
+            let overZone: 'normal' | 'power' | 'cancel' | null = null;
+            const { clientX, clientY } = point;
+    
+            if (zoneRects.cancel && clientX > zoneRects.cancel.left && clientX < zoneRects.cancel.right && clientY > zoneRects.cancel.top && clientY < zoneRects.cancel.bottom) {
+                overZone = 'cancel';
+            } else if (zoneRects.power && clientX > zoneRects.power.left && clientX < zoneRects.power.right && clientY > zoneRects.power.top && clientY < zoneRects.power.bottom) {
+                overZone = 'power';
+            } else if (zoneRects.normal && clientX > zoneRects.normal.left && clientX < zoneRects.normal.right && clientY > zoneRects.normal.top && clientY < zoneRects.normal.bottom) {
+                overZone = 'normal';
+            }
+            
+            this.currentDropZone = overZone;
+        });
+    }
+    
+    handleDragEnd = () => {
+        if (!this.draggingCardInfo) return;
+    
+        runInAction(() => {
+            switch (this.currentDropZone) {
+                case 'normal':
+                    this.playCardFromDrop(false);
+                    break;
+                case 'power':
+                    this.playCardFromDrop(true);
+                    break;
+                case 'cancel':
+                default:
+                    break;
+            }
+            this.draggingCardInfo = null;
+            this.clonePosition = null;
+            this.currentDropZone = null;
+        });
     }
 
     activateFollowerAbility = (waifuName: string) => {

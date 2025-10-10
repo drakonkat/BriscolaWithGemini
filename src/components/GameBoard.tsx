@@ -23,7 +23,8 @@ export const GameBoard = observer(() => {
         roguelikeState, powerAnimation, elementalClash,
         revealedAiHand, lastTrickInsightCooldown, activateLastTrickInsight,
         briscolaSwapCooldown, openBriscolaSwapModal,
-        draggingCardId, handleCardDragStart, handleCardDragEnd, playDraggedCard
+        draggingCardInfo, clonePosition, currentDropZone,
+        handleDragStart, handleDragMove, handleDragEnd,
     } = gameStateStore;
     const { animatingCard, drawingCards, unreadMessageCount, waifuBubbleMessage } = uiStore;
     const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle, isDiceAnimationEnabled } = gameSettingsStore;
@@ -34,6 +35,10 @@ export const GameBoard = observer(() => {
     const [isDiceRolling, setIsDiceRolling] = useState(false);
     const [isPlayerMenuOpen, setIsPlayerMenuOpen] = useState(false);
     const playerMenuRef = useRef<HTMLDivElement>(null);
+
+    const normalZoneRef = useRef<HTMLDivElement>(null);
+    const powerZoneRef = useRef<HTMLDivElement>(null);
+    const cancelZoneRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (elementalClash?.type === 'dice' && isDiceAnimationEnabled) {
@@ -52,6 +57,41 @@ export const GameBoard = observer(() => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    useEffect(() => {
+        const zoneElements = {
+            normal: normalZoneRef.current,
+            power: powerZoneRef.current,
+            cancel: cancelZoneRef.current,
+        };
+
+        const moveHandler = (e: MouseEvent | TouchEvent) => {
+            gameStateStore.handleDragMove(e, zoneElements);
+        };
+
+        const endHandler = () => {
+            gameStateStore.handleDragEnd();
+        };
+
+        if (draggingCardInfo) {
+            window.addEventListener('mousemove', moveHandler, { passive: false });
+            window.addEventListener('touchmove', moveHandler, { passive: false });
+            window.addEventListener('mouseup', endHandler);
+            window.addEventListener('touchend', endHandler);
+            window.addEventListener('touchcancel', endHandler);
+            document.addEventListener('mouseleave', endHandler);
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', moveHandler);
+            window.removeEventListener('touchmove', moveHandler);
+            window.removeEventListener('mouseup', endHandler);
+            window.removeEventListener('touchend', endHandler);
+            window.removeEventListener('touchcancel', endHandler);
+            document.removeEventListener('mouseleave', endHandler);
+        };
+    }, [draggingCardInfo, gameStateStore]);
+
 
     const winningScore = 60;
     const maxBlur = 25;
@@ -81,22 +121,6 @@ export const GameBoard = observer(() => {
         }
     };
 
-    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.currentTarget.classList.add('drag-over');
-    };
-
-    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.currentTarget.classList.remove('drag-over');
-    };
-    
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>, activatePower: boolean) => {
-        e.preventDefault();
-        e.currentTarget.classList.remove('drag-over');
-        playDraggedCard(activatePower);
-    };
-
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
             <CachedImage 
@@ -105,32 +129,53 @@ export const GameBoard = observer(() => {
                 className="game-board-background"
                 style={backgroundStyle}
             />
-
-            {draggingCardId && (
-                <div className="drop-zones-container">
-                    <div
-                        className="drop-zone left"
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => handleDrop(e, false)}
-                        onDragEnter={handleDragEnter}
-                        onDragLeave={handleDragLeave}
-                    >
-                        <div className="drop-zone-content">
-                            <h3>{T.playNormally}</h3>
-                        </div>
-                    </div>
-                    <div
-                        className="drop-zone right"
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => handleDrop(e, true)}
-                        onDragEnter={handleDragEnter}
-                        onDragLeave={handleDragLeave}
-                    >
-                        <div className="drop-zone-content">
-                            <h3>{T.activatePower}</h3>
-                        </div>
-                    </div>
+            
+            {draggingCardInfo && clonePosition && (
+                <div 
+                    className="card-drag-clone"
+                    style={{ 
+                        position: 'fixed',
+                        left: clonePosition.x,
+                        top: clonePosition.y,
+                        transform: 'translate(-50%, -50%) scale(1.15)',
+                        pointerEvents: 'none',
+                        zIndex: 1000,
+                        willChange: 'transform'
+                    }}
+                >
+                    <CardView card={draggingCardInfo.card} lang={language} cardDeckStyle={cardDeckStyle} />
                 </div>
+            )}
+
+            {draggingCardInfo && (
+                <>
+                    <div className="drop-zones-container">
+                        <div
+                            ref={normalZoneRef}
+                            className={`drop-zone left ${currentDropZone === 'normal' ? 'active' : ''}`}
+                        >
+                            <div className="drop-zone-content">
+                                <h3>{T.playNormally}</h3>
+                            </div>
+                        </div>
+                        <div
+                            ref={powerZoneRef}
+                            className={`drop-zone right ${currentDropZone === 'power' ? 'active' : ''}`}
+                        >
+                            <div className="drop-zone-content">
+                                <h3>{T.activatePower}</h3>
+                            </div>
+                        </div>
+                    </div>
+                     <div 
+                        ref={cancelZoneRef}
+                        className={`drop-zone cancel ${currentDropZone === 'cancel' ? 'active' : ''}`}
+                    >
+                        <div className="drop-zone-content">
+                            <h3>{T.cancelAbility}</h3> 
+                        </div>
+                    </div>
+                </>
             )}
 
             {powerAnimation && (
@@ -256,7 +301,7 @@ export const GameBoard = observer(() => {
                         title={POWER_UP_DEFINITIONS['last_trick_insight'].name(language)}
                     >
                         <div className="ability-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5-4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12c-2.48 0-4.5-2.02-4.5-4.5s2.02-4.5 4.5-4.5 4.5 2.02 4.5 4.5-2.02 4.5-4.5 4.5zm0-7c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>
                         </div>
                         {lastTrickInsightCooldown > 0 && (
                             <span className="cooldown-badge">{lastTrickInsightCooldown}</span>
@@ -320,6 +365,7 @@ export const GameBoard = observer(() => {
                     {humanHand.map(card => {
                         const isDraggable = turn === 'human' && !isProcessing && gameplayMode === 'roguelike' && !!card.element && !card.isTemporaryBriscola;
                         const isClickable = turn === 'human' && !isProcessing && !isDraggable;
+                        const isBeingDragged = draggingCardInfo?.card.id === card.id;
                         
                         return (
                             <React.Fragment key={card.id}>
@@ -330,18 +376,9 @@ export const GameBoard = observer(() => {
                                     lang={language}
                                     cardDeckStyle={cardDeckStyle}
                                     isDraggable={isDraggable}
-                                    onDragStart={(e) => {
-                                        e.dataTransfer.setData('text/plain', card.id);
-                                        const cardElement = e.currentTarget.cloneNode(true) as HTMLElement;
-                                        cardElement.style.transform = 'rotate(5deg) scale(1.1)';
-                                        cardElement.style.position = 'absolute';
-                                        cardElement.style.top = '-9999px';
-                                        document.body.appendChild(cardElement);
-                                        e.dataTransfer.setDragImage(cardElement, e.currentTarget.clientWidth / 2, e.currentTarget.clientHeight / 2);
-                                        setTimeout(() => document.body.removeChild(cardElement), 0);
-                                        handleCardDragStart(card);
-                                    }}
-                                    onDragEnd={handleCardDragEnd}
+                                    className={isBeingDragged ? 'is-dragging' : ''}
+                                    onMouseDown={isDraggable ? (e) => handleDragStart(card, e) : undefined}
+                                    onTouchStart={isDraggable ? (e) => handleDragStart(card, e) : undefined}
                                 />
                             </React.Fragment>
                         );
