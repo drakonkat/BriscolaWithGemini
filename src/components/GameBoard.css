@@ -1,3 +1,5 @@
+
+
 .game-board {
   flex: 3;
   display: flex;
@@ -50,7 +52,6 @@
   justify-content: center;
   align-items: center;
   position: relative;
-  z-index: 1;
 }
 
 .hand {
