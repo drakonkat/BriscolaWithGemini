@@ -651,6 +651,18 @@ input:checked + .slider:before {
     margin: 0;
 }
 
+.featured-waifu-display.random .featured-waifu-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0,0,0,0.2);
+}
+.featured-waifu-display.random .featured-waifu-avatar svg {
+    width: 60%;
+    height: 60%;
+    color: var(--primary-accent);
+}
+
 
 @media (min-width: 769px) {
     .waifu-carousel-wrapper {
