@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -249,7 +250,6 @@ export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, 
                 <div className="modal-actions">
                     <button onClick={handleTogglePlay} className="button-primary">{isPlaying ? T.stop : T.play}</button>
                     <button onClick={handleReset} className="button-secondary">{T.resetToDefaults}</button>
-                    <button onClick={onClose} className="button-secondary">{T.close}</button>
                 </div>
             </div>
         </div>

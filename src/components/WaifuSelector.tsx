@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -88,17 +89,19 @@ export const WaifuSelector = ({ language, onWaifuSelected, selectedWaifu, isRand
                     <div className="waifu-selector-mobile-avatar">
                         {avatar}
                     </div>
-                    <select 
-                        value={selectedValue} 
-                        onChange={handleSelectChange}
-                        disabled={disabled}
-                        aria-label={T.chooseOpponent}
-                    >
-                        <option value="random">{T.randomOpponent}</option>
-                        {WAIFUS.map(waifu => (
-                            <option key={waifu.name} value={waifu.name}>{waifu.name}</option>
-                        ))}
-                    </select>
+                    <div className="select-wrapper">
+                        <select 
+                            value={selectedValue} 
+                            onChange={handleSelectChange}
+                            disabled={disabled}
+                            aria-label={T.chooseOpponent}
+                        >
+                            <option value="random">{T.randomOpponent}</option>
+                            {WAIFUS.map(waifu => (
+                                <option key={waifu.name} value={waifu.name}>{waifu.name}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
                 <p className="waifu-personality">
                     {selectedWaifu ? selectedWaifu.personality[language] : ''}

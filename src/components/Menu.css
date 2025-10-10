@@ -1,3 +1,4 @@
+
 .menu {
   display: flex;
   flex-direction: column;
@@ -233,8 +234,9 @@
 }
 
 .select-wrapper select option {
-  background-color: #3e3e3e;
-  color: white;
+  background-color: var(--table-bg-dark);
+  color: var(--font-color);
+  padding: 0.5rem 0.8rem; /* For browsers that support it */
 }
 
 .preset-select-wrapper > .select-wrapper {
@@ -550,10 +552,10 @@ input:checked + .slider:before {
   .waifu-selector-container { display: none; }
   .waifu-selector-mobile { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-top: 1rem; }
   .waifu-selector-mobile-picker { display: flex; align-items: center; gap: 1rem; width: 100%; max-width: 350px; }
+  .waifu-selector-mobile-picker .select-wrapper { flex-grow: 1; }
   .waifu-selector-mobile-avatar { width: 70px; height: 70px; flex-shrink: 0; position: relative; }
   .waifu-selector-mobile-avatar img, .waifu-selector-mobile-avatar svg { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: top; border: 3px solid var(--primary-accent); background-color: rgba(255, 255, 255, 0.05); }
   .waifu-selector-mobile-avatar svg { padding: 12px; color: var(--primary-accent); }
-  .waifu-selector-mobile-picker .select-wrapper { flex-grow: 1; }
   .waifu-personality { font-size: 0.9rem; color: #ccc; min-height: 1.2em; }
   .menu-settings { flex-direction: column; width: 100%; max-width: 400px; gap: 1rem; margin-left: auto; margin-right: auto; }
   .settings-selector { width: 100%; justify-content: space-between; }
