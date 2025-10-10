@@ -89,10 +89,6 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardD
                         ))}
                     </div>
                 </div>
-
-                <div className="modal-actions">
-                    <button onClick={onClose}>{T.close}</button>
-                </div>
             </div>
         </div>
     );

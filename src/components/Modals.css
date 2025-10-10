@@ -227,7 +227,20 @@
 .clash-player-result.winner { transform: scale(1.1); background-color: rgba(var(--primary-accent-rgb), 0.2); box-shadow: 0 0 15px var(--primary-accent); }
 .clash-player-result.tie { background-color: rgba(255, 255, 255, 0.1); }
 .clash-player-result h3 { font-size: 1.2rem; margin-bottom: 0; color: var(--font-color-secondary); }
-.clash-roll { font-size: 4rem; font-weight: bold; color: white; }
+.clash-roll {
+  font-size: 3rem;
+  font-weight: bold;
+  color: white;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.5);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
 .weakness-indicator { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem; }
 .weakness-indicator .element-icon { width: 48px; height: 48px; }
 .weakness-indicator span { font-size: 1.5rem; font-weight: bold; color: var(--font-color-secondary); }
@@ -443,7 +456,7 @@
   .locked-overlay svg { width: 30px; height: 30px; }
   .elemental-clash-modal h2 { font-size: 1.8rem; }
   .clash-results { gap: 1rem; }
-  .clash-roll { font-size: 3rem; }
+  .clash-roll { font-size: 3rem; width: 80px; height: 80px; }
   .history-header, .history-entry { font-size: 0.8rem; grid-template-columns: 0.4fr 1fr 1fr 1fr 0.5fr 0.5fr 1.2fr; gap: 0.5rem; }
   .history-modal.classic-mode .history-header, .history-modal.classic-mode .history-entry { grid-template-columns: 0.4fr 1fr 1fr 0.5fr 0.5fr; }
   .history-entry .card { --card-height: 45px; --card-width: 25px; }
