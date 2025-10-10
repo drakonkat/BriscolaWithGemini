@@ -275,95 +275,23 @@ export class GameStateStore {
     }
 
     performNightmareAiTurn = () => {
-        const briscolaSuit = this.briscolaSuit!;
-    
-        let cardToPlay: Card;
-    
-        const isRoguelike = this.rootStore.gameSettingsStore.gameplayMode === 'roguelike';
-        const getTrickWinnerLogic = isRoguelike ? getRoguelikeTrickWinner : getClassicTrickWinner;
-        
-        // AI plays second
-        if (this.cardsOnTable.length > 0) {
-            const humanCard = this.cardsOnTable[0];
-            const potentialCards = [...this.aiHand, ...this.deck]; // In Nightmare, AI knows the deck
-            let bestWinningMove: { card: Card | null; points: number } = { card: null, points: -1 };
-    
-            // Find the best winning move from all available cards to maximize points
-            for (const potentialCard of potentialCards) {
-                let isWinner = getTrickWinnerLogic([humanCard, potentialCard], 'human', briscolaSuit, this.roguelikeState.activePowers) === 'ai';
-    
-                if (isWinner) {
-                    let trickPoints;
-                    if (isRoguelike) {
-                        const activatedPotentialCard = { ...potentialCard, elementalEffectActivated: !!potentialCard.element };
-                        const result = calculateRoguelikeTrickPoints(humanCard, activatedPotentialCard, 'ai', null, this.briscolaSuit!, this.roguelikeState.activePowers, [], []); // Note: score piles not available for prediction
-                        // FIX: Property 'pointsForTrick' does not exist on type '...'. Use 'totalPoints' instead.
-                        trickPoints = result.totalPoints;
-                    } else {
-                        trickPoints = getCardPoints(humanCard) + getCardPoints(potentialCard);
-                    }
-    
-                    if (trickPoints > bestWinningMove.points) {
-                        bestWinningMove = { card: potentialCard, points: trickPoints };
-                    } else if (trickPoints === bestWinningMove.points && bestWinningMove.card && RANK[potentialCard.value] < RANK[bestWinningMove.card.value]) {
-                        bestWinningMove.card = potentialCard;
-                    }
-                }
-            }
-    
-            // If a winning move is found
-            if (bestWinningMove.card) {
-                cardToPlay = bestWinningMove.card;
-                const isCardInHand = this.aiHand.some(c => c.id === cardToPlay.id);
-    
-                // If the best card is not in hand, swap it
-                if (!isCardInHand) {
-                    const worstCardInHand = [...this.aiHand].sort((a, b) => {
-                        const pointsA = getCardPoints(a);
-                        const pointsB = getCardPoints(b);
-                        if (pointsA !== pointsB) return pointsA - pointsB;
-                        return RANK[a.value] - RANK[b.value];
-                    })[0];
-                    
-                    const newAiHand = this.aiHand.filter(c => c.id !== worstCardInHand.id);
-                    newAiHand.push(cardToPlay);
-                    this.aiHand = newAiHand;
-                    
-                    const newDeck = this.deck.filter(c => c.id !== cardToPlay.id);
-                    newDeck.push(worstCardInHand);
-                    this.deck = newDeck;
-                }
-            } else {
-                // No winning move possible, discard the worst card from hand
-                cardToPlay = [...this.aiHand].sort((a, b) => {
-                    const pointsA = getCardPoints(a);
-                    const pointsB = getCardPoints(b);
-                    if (pointsA !== pointsB) return pointsA - pointsB;
-                    return RANK[a.value] - RANK[b.value];
-                })[0];
-            }
-    
-        } else { // AI plays first
-            const nonPointCards = this.aiHand.filter(c => getCardPoints(c) === 0);
-            
-            if (nonPointCards.length > 0) {
-                cardToPlay = nonPointCards.sort((a,b) => RANK[a.value] - RANK[b.value])[0];
-            } else {
-                cardToPlay = [...this.aiHand].sort((a,b) => RANK[a.value] - RANK[b.value])[0];
-            }
-        }
+        // This is a simplified, but stabler, version of Nightmare AI.
+        // It uses the 'hard' logic as a base, which is deterministic and safe,
+        // preventing the state corruption issues caused by the previous deck-swapping logic.
+        const cardToPlay = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, 'hard');
     
         if (cardToPlay.element) {
-            cardToPlay = { ...cardToPlay, elementalEffectActivated: true };
+            // In the future, a "true" nightmare AI would make this decision based on perfect knowledge.
+            // For now, always activating is a reasonable aggressive strategy.
+            cardToPlay.elementalEffectActivated = true;
         }
+    
         playSound('card-place');
         this.message = this.T.aiPlayedYourTurn(this.currentWaifu!.name);
         this.aiHand = this.aiHand.filter(c => c.id !== cardToPlay.id);
         this.cardsOnTable.push(cardToPlay);
         
-        // FIX: Aggressively clean up temporary states from the AI's hand immediately after it plays a card.
-        // This prevents state corruption that could cause the AI to freeze on subsequent turns, especially
-        // after using an ability like "Fortify" on a card that it ultimately decides not to play.
+        // Aggressively clean up temporary states from the AI's hand immediately after it plays a card.
         this.aiHand = this.aiHand.map(c => {
             if (c.isTemporaryBriscola) {
                 const { isTemporaryBriscola, ...rest } = c;
@@ -371,7 +299,7 @@ export class GameStateStore {
             }
             return c;
         });
-
+    
         if (this.trickStarter === 'ai') {
             this.turn = 'human';
         }
@@ -788,9 +716,21 @@ export class GameStateStore {
             const drawOrder: Player[] = trickWinner === 'human' ? ['human', 'ai'] : ['ai', 'human'];
 
             for (const player of drawOrder) {
-                let cardDrawn = newDeck.length > 0 ? newDeck.shift()! : (newBriscolaCard ? newBriscolaCard : null);
-                if (cardDrawn && newBriscolaCard && cardDrawn.id === newBriscolaCard.id) newBriscolaCard = null;
-                if (cardDrawn) player === 'human' ? newHumanHand.push(cardDrawn) : newAiHand.push(cardDrawn);
+                let cardDrawn: Card | null = null;
+                if (newDeck.length > 0) {
+                    cardDrawn = newDeck.shift()!;
+                } else if (newBriscolaCard) {
+                    cardDrawn = newBriscolaCard;
+                    newBriscolaCard = null; // Consume the briscola card so it can't be drawn again
+                }
+            
+                if (cardDrawn) {
+                    if (player === 'human') {
+                        newHumanHand.push(cardDrawn);
+                    } else {
+                        newAiHand.push(cardDrawn);
+                    }
+                }
             }
             
             this.humanHand = newHumanHand;

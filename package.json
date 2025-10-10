@@ -1,7 +1,7 @@
 {
   "name": "waifubriscola",
   "private": true,
-  "version": "0.7.0",
+  "version": "1.11.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

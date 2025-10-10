@@ -33,7 +33,7 @@ export const App = observer(() => {
         const applyInsets = (result: SafeAreaInsets) => {
           const root = document.documentElement;
           // The result from the plugin is a wrapper object. Access its `insets` property.
-          const insets = (result as any).insets;
+          const insets = result.insets;
           if (root && insets) {
             root.style.setProperty('--safe-area-inset-top', `${insets.top}px`);
             root.style.setProperty('--safe-area-inset-bottom', `${insets.bottom}px`);
