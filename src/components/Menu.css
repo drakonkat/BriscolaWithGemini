@@ -1,4 +1,5 @@
 
+
 .menu {
   display: flex;
   flex-direction: column;
@@ -533,11 +534,41 @@ input:checked + .slider:before {
   .waifu-coins-display { grid-column: 1; justify-self: start; position: static; padding: 0.3rem 0.6rem; font-size: 1rem; margin: 0; background: none; border: none; }
   .menu-actions { grid-column: 3; justify-self: end; position: relative; }
   .more-menu-button { display: flex; background: none; border: none; color: rgba(255, 255, 255, 0.8); cursor: pointer; padding: 0; width: 36px; height: 36px; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s; }
-  .actions-popup { display: none; flex-direction: column; position: absolute; top: calc(100% + 8px); right: 0; background-color: #3e3e3e; border-radius: var(--radius-sm); box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 10; border: 1px solid #555; width: max-content; overflow: hidden; }
+  .actions-popup {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background-color: var(--ui-bg);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 10;
+    border: 1px solid var(--border-color);
+    width: max-content;
+    overflow: hidden;
+    animation: fade-in 0.2s ease-out;
+  }
   .actions-popup.open { display: flex; }
-  .actions-popup .rules-button { width: 100%; border-radius: 0; border: none; padding: 0.75rem 1rem; justify-content: flex-start; gap: 0.75rem; font-size: 1rem; font-weight: normal; }
-  .actions-popup .rules-button span { display: inline; color: #eee; }
-  .actions-popup .rules-button svg { color: #ccc; }
+  .actions-popup .rules-button {
+    width: 100%;
+    border-radius: 0;
+    border: none;
+    padding: 0.75rem 1rem;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    font-size: 1rem;
+    font-weight: normal;
+    transition: background-color 0.2s;
+  }
+  .actions-popup .rules-button:hover, .actions-popup .rules-button:focus {
+    background-color: rgba(var(--primary-accent-rgb), 0.2);
+    transform: none;
+    box-shadow: none;
+    outline: none;
+  }
+  .actions-popup .rules-button span { display: inline; color: var(--font-color); }
+  .actions-popup .rules-button svg { color: var(--font-color-secondary); }
   .menu-title-container > .rules-button { display: none; }
   .start-game-container { margin: 1rem 0; }
   .start-game-button { font-size: 1.5rem; padding: 0.8rem 2rem; }

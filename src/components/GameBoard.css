@@ -31,19 +31,24 @@
   left: 0;
   right: 0;
   width: 100%;
-  height: 45%;
   z-index: 1;
   pointer-events: none;
 }
 
 .ai-mat {
   top: 0;
-  background: linear-gradient(to bottom, rgba(10, 10, 20, 0.55) 0%, transparent 100%);
+  height: 33%;
+  background: linear-gradient(to bottom, rgba(10, 10, 20, 0.85) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(199, 125, 255, 0.25);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
 .human-mat {
   bottom: 0;
-  background: linear-gradient(to top, rgba(10, 10, 20, 0.55) 0%, transparent 100%);
+  height: 33%;
+  background: linear-gradient(to top, rgba(10, 10, 20, 0.85) 0%, transparent 100%);
+  border-top: 1px solid rgba(199, 125, 255, 0.25);
+  box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
 }
 
 .player-area {
@@ -245,51 +250,38 @@
 
 /* --- New UI Bar Styles --- */
 .top-bar, .bottom-bar {
-    position: absolute; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; padding-right: calc(15px + var(--safe-area-inset-right)); padding-left: calc(15px + var(--safe-area-inset-left)); background: rgba(30, 30, 45, 0.5); backdrop-filter: blur(8px); z-index: 25;
+    position: absolute; left: 0; right: 0; display: flex; align-items: center; padding: 0 15px; padding-right: calc(15px + var(--safe-area-inset-right)); padding-left: calc(15px + var(--safe-area-inset-left)); background: rgba(30, 30, 45, 0.5); backdrop-filter: blur(8px); z-index: 25;
 }
-.top-bar { top: 0; height: var(--top-bar-height); padding-top: var(--safe-area-inset-top); border-bottom: 1px solid rgba(var(--primary-accent-rgb), 0.2); }
-.bottom-bar { bottom: 0; height: var(--bottom-bar-height); padding-bottom: var(--safe-area-inset-bottom); border-top: 1px solid rgba(var(--primary-accent-rgb), 0.2); }
+.top-bar { top: 0; height: var(--top-bar-height); padding-top: var(--safe-area-inset-top); border-bottom: 1px solid rgba(var(--primary-accent-rgb), 0.2); justify-content: space-between; }
+.bottom-bar { bottom: 0; height: var(--bottom-bar-height); padding-bottom: var(--safe-area-inset-bottom); border-top: 1px solid rgba(var(--primary-accent-rgb), 0.2); justify-content: flex-start; gap: 1rem; }
 .player-info-group { display: flex; align-items: center; gap: 1rem; }
-.player-score { background: rgba(0, 0, 0, 0.4); padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 1rem; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: relative; display: flex; align-items: center; gap: 0.75rem; }
+.player-score { background: rgba(0, 0, 0, 0.4); padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 1rem; font-weight: bold; box-shadow: none; position: relative; display: flex; align-items: center; gap: 0.75rem; }
+
 .player-score.human-score {
-  border: none;
-  background: none;
-  padding: 0;
-  font: inherit;
-  color: inherit;
-  text-align: left;
   pointer-events: none;
+  cursor: default;
+  border: none;
 }
+
 .last-trick-recap { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-color); color: white; padding: 0.3rem 0.6rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; transition: background-color 0.2s; }
 .last-trick-recap:hover { background: rgba(0, 0, 0, 0.8); }
 .last-trick-recap .card { --card-height: 36px; --card-width: 20px; --card-border-radius: 3px; box-shadow: none; }
 .last-trick-recap .last-trick-icon { display: none; }
+
 .menu-burger-icon {
   display: none;
 }
-
-.turn-status-container {
-    position: absolute;
-    bottom: calc(var(--bottom-bar-height) + var(--safe-area-inset-bottom));
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 0.5rem;
-    pointer-events: none;
-    z-index: 26;
-    width: 100%;
-    display: flex;
-    justify-content: center;
+.turn-message-container {
+  font-size: 1rem;
+  font-style: italic;
+  color: #fff;
+  white-space: nowrap;
+  margin-left: auto;
 }
-.turn-status-container .turn-message {
-    font-size: 1rem;
-    font-style: italic;
-    color: #fff;
-    background: rgba(10, 10, 20, 0.75);
-    padding: 0.4rem 1rem;
-    border-radius: var(--radius-full);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    pointer-events: auto;
-    white-space: nowrap;
+.turn-message {
+  padding: 0;
+  background: none;
+  box-shadow: none;
 }
 
 
@@ -423,9 +415,29 @@
   .deck-container { height: var(--card-height); }
   .followers-container { top: auto; bottom: calc(var(--bottom-bar-height) + var(--safe-area-inset-bottom) + 1rem); left: calc(15px + var(--safe-area-inset-left)); transform: none; flex-direction: row; gap: 0.5rem; }
   .follower-waifu-avatar { width: 40px; height: 40px; }
-
   .top-left-actions {
     display: none;
+  }
+  .bottom-bar {
+    justify-content: space-between;
+    gap: 0;
+  }
+  .turn-message-container {
+    position: absolute;
+    bottom: calc(var(--bottom-bar-height) + var(--safe-area-inset-bottom));
+    left: 0;
+    width: 100%;
+    z-index: 26;
+    margin-left: 0;
+    background: rgba(10, 10, 20, 0.75);
+    padding: 0.4rem 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+  .turn-message {
+    padding: 0;
+    background: none;
+    box-shadow: none;
   }
   .human-score-container {
     position: relative;
@@ -433,13 +445,8 @@
   .player-score.human-score {
     cursor: pointer;
     pointer-events: auto;
-    border: none;
     background: rgba(0, 0, 0, 0.4);
     transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.6rem;
   }
   .player-score.human-score:hover, .player-score.human-score:focus {
     background: rgba(0, 0, 0, 0.6);
