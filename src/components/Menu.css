@@ -25,6 +25,8 @@
   position: relative;
   margin-top: auto;
   margin-bottom: auto;
+  display: flex;
+  flex-direction: column;
 }
 .menu-background {
   position: absolute;
@@ -281,9 +283,9 @@ input:checked + .slider:before {
   background-color: #ccc;
 }
 
-
 .waifu-selection {
   margin-top: 2rem;
+  width: 100%;
 }
 .waifu-selection h2 {
   font-size: 1.8rem;
@@ -291,14 +293,60 @@ input:checked + .slider:before {
   color: var(--primary-accent);
 }
 
+.waifu-carousel-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.carousel-nav-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border-color);
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.carousel-nav-button:hover, .carousel-nav-button:focus {
+    background-color: var(--primary-accent);
+    transform: translateY(-50%) scale(1.1);
+    outline: none;
+}
+.carousel-nav-button svg {
+    width: 24px;
+    height: 24px;
+}
+
 .waifu-selector-container {
   display: flex;
   justify-content: center;
   gap: 1.5rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 1rem 0;
+  margin: 0;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* For Firefox */
+  flex-grow: 1;
 }
 
+.waifu-selector-container::-webkit-scrollbar {
+  display: none;
+}
+
+
 .waifu-card, .random-waifu-card {
+  flex-shrink: 0;
+  scroll-snap-align: center;
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -475,10 +523,125 @@ input:checked + .slider:before {
   color: #888;
 }
 
-/* New Sections (hidden on desktop) */
-.menu-section, .featured-waifu-display {
-    display: none;
+/* Unified New Sections */
+.menu-section {
+    display: block;
+    width: 100%;
+    margin-bottom: 1.5rem;
 }
+
+.game-mode-selection {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+}
+.game-mode-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    flex: 1;
+    max-width: 280px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    color: var(--font-color);
+}
+.game-mode-card:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-accent);
+}
+.game-mode-card.selected {
+    background-color: rgba(var(--primary-accent-rgb), 0.15);
+    border-color: var(--primary-accent);
+    box-shadow: 0 0 15px rgba(var(--primary-accent-rgb), 0.5);
+}
+.game-mode-card h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--font-color);
+}
+.game-mode-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+.difficulty-selector {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.featured-waifu-container {
+  margin: 2rem auto 1rem;
+  width: 100%;
+  max-width: 700px;
+  min-height: 160px; /* Prevent layout shift */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.featured-waifu-placeholder {
+  width: 100%;
+  height: 100%;
+}
+
+.featured-waifu-display {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.5rem;
+    width: 100%;
+    background-color: rgba(0,0,0,0.2);
+    border-radius: var(--radius-md);
+    text-align: left;
+}
+.featured-waifu-avatar {
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 3px solid var(--primary-accent);
+    object-fit: cover;
+    object-position: top;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.featured-waifu-desc {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--font-color-secondary);
+    margin: 0;
+}
+
+
+@media (min-width: 769px) {
+    .waifu-carousel-wrapper {
+        padding: 0 40px; /* Space for buttons */
+    }
+
+    .carousel-nav-button {
+        width: 44px;
+        height: 44px;
+    }
+    .carousel-nav-button.prev {
+        left: -10px;
+    }
+    .carousel-nav-button.next {
+        right: -10px;
+    }
+    .carousel-nav-button svg {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .waifu-selector-container {
+        padding: 1rem 2rem;
+    }
+}
+
 
 @media (max-width: 1024px) {
   .menu { justify-content: flex-start; }
@@ -500,11 +663,6 @@ input:checked + .slider:before {
     box-shadow: none;
     margin: 0;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    text-align: center;
     padding: 1.5rem 1rem;
   }
   .menu-title-container { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: nowrap; }
@@ -553,46 +711,53 @@ input:checked + .slider:before {
   .start-game-button { font-size: 1.5rem; padding: 0.8rem 2rem; }
   .gallery-promo-container { margin: 1rem 0; }
   .gallery-promo-button { font-size: 1.2rem; padding: 0.8rem 2rem; }
-  .waifu-selection { margin-top: 1rem; width: 100%; }
+  .waifu-selection { margin-top: 1rem; }
   .waifu-selection h2 { display: none; }
   .menu .project-description { display: none; }
 
-  /* Reorder for mobile */
-  .menu-content {
-      display: flex;
-      flex-direction: column;
+  .waifu-carousel-wrapper {
+      padding: 0 30px;
   }
+  .carousel-nav-button {
+      width: 36px;
+      height: 36px;
+  }
+  .carousel-nav-button.prev {
+      left: -5px;
+  }
+  .carousel-nav-button.next {
+      right: -5px;
+  }
+
+  /* Reorder for mobile */
   .menu-section { order: 1; }
-  [data-tutorial-id="waifu-selector"] { order: 2; }
-  .featured-waifu-display { order: 3; }
-  .start-game-container { order: 4; }
-  .gallery-promo-container { order: 5; }
-  .menu-footer { order: 6; margin-top: auto; }
+  .menu-title-container { order: 2; }
+  .menu-subtitle { order: 3; }
+  .difficulty-selector { order: 4; }
+  .waifu-selection { order: 5; }
+  .featured-waifu-container { order: 6; }
+  .start-game-container { order: 7; }
+  .gallery-promo-container { order: 8; }
+  .menu-footer { order: 9; margin-top: auto; }
 
   /* Mobile Waifu Carousel */
   .waifu-selector-container {
-    display: flex;
-    justify-content: flex-start;
+    justify-content: flex-start; /* Override for mobile */
     gap: 1rem;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
     padding: 1rem;
-    margin: 0 -1rem;
+    margin: 0 -1rem; /* Restore negative margin for edge-to-edge scroll on mobile */
   }
   .waifu-selector-container::-webkit-scrollbar { display: none; }
   .waifu-card, .random-waifu-card {
-    flex-shrink: 0;
     width: 160px;
-    scroll-snap-align: center;
     transform: scale(0.9);
     opacity: 0.7;
     transition: transform 0.3s ease, opacity 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   }
-  .waifu-card:hover {
-      transform: scale(0.9);
-      background-color: rgba(255, 255, 255, 0.05);
+  .waifu-card:hover, .random-waifu-card:hover {
+      transform: scale(0.95);
+      opacity: 0.9;
+      background-color: rgba(255, 255, 255, 0.1);
       box-shadow: none;
   }
   .waifu-card.selected, .random-waifu-card.selected {
@@ -603,81 +768,30 @@ input:checked + .slider:before {
   }
   
   /* Featured Waifu display on mobile */
+  .featured-waifu-container {
+      margin: 1.5rem 0;
+  }
   .featured-waifu-display {
-    display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
     padding: 1.5rem 1rem;
-    margin: 1.5rem 0;
-    background-color: rgba(0,0,0,0.2);
-    border-radius: var(--radius-md);
-    animation: fade-in 0.3s ease;
     text-align: center;
   }
   .featured-waifu-avatar {
     width: 100px;
     height: 100px;
-    border-radius: 50%;
-    border: 3px solid var(--primary-accent);
-    object-fit: cover;
-    object-position: top;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   }
   .featured-waifu-desc {
     font-size: 0.9rem;
-    line-height: 1.5;
-    color: var(--font-color-secondary);
-    margin: 0;
   }
   
-  /* Game Mode Cards */
-  .menu-section {
-    display: block;
-    width: 100%;
-    margin-bottom: 1.5rem;
-  }
-  .game-mode-selection {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    margin-bottom: 1.5rem;
-  }
-  .game-mode-card {
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 1rem;
-    flex: 1;
-    max-width: 250px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
-    color: var(--font-color);
-  }
-  .game-mode-card:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: var(--primary-accent);
-  }
-  .game-mode-card.selected {
-    background-color: rgba(var(--primary-accent-rgb), 0.15);
-    border-color: var(--primary-accent);
-    box-shadow: 0 0 15px rgba(var(--primary-accent-rgb), 0.5);
-  }
+  /* Game Mode Cards on mobile */
   .game-mode-card h3 {
-    margin: 0;
     font-size: 1rem;
-    color: var(--font-color);
   }
   .game-mode-icon {
     font-size: 2rem;
-    display: block;
-    margin-bottom: 0.5rem;
-  }
-  .difficulty-selector {
-    display: flex;
-    justify-content: center;
-    width: 100%;
   }
 }
 

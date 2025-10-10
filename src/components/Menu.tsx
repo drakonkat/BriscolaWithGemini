@@ -135,16 +135,16 @@ export const Menu = observer(() => {
                             <h3>{T.gameModeRoguelike}</h3>
                         </button>
                     </div>
-                    <div className="settings-selector difficulty-selector" data-tutorial-id="difficulty">
-                        <label htmlFor="difficulty-select">{T.difficultyLabel}:</label>
-                        <div className="select-wrapper">
-                            <select id="difficulty-select" value={difficulty} onChange={(e) => gameSettingsStore.setDifficulty(e.target.value as any)}>
-                                <option value="easy">{T.difficultyEasy}</option>
-                                <option value="medium">{T.difficultyMedium}</option>
-                                <option value="hard">{T.difficultyHard}</option>
-                                <option value="nightmare">{T.difficultyNightmare}</option>
-                            </select>
-                        </div>
+                </div>
+                <div className="settings-selector difficulty-selector" data-tutorial-id="difficulty">
+                    <label htmlFor="difficulty-select">{T.difficultyLabel}:</label>
+                    <div className="select-wrapper">
+                        <select id="difficulty-select" value={difficulty} onChange={(e) => gameSettingsStore.setDifficulty(e.target.value as any)}>
+                            <option value="easy">{T.difficultyEasy}</option>
+                            <option value="medium">{T.difficultyMedium}</option>
+                            <option value="hard">{T.difficultyHard}</option>
+                            <option value="nightmare">{T.difficultyNightmare}</option>
+                        </select>
                     </div>
                 </div>
                 
@@ -158,12 +158,16 @@ export const Menu = observer(() => {
                     />
                 </div>
 
-                {selectedWaifu && (
-                    <div className="featured-waifu-display">
-                        <CachedImage imageUrl={getImageUrl(selectedWaifu.avatar)} alt={selectedWaifu.name} className="featured-waifu-avatar" />
-                        <p className="featured-waifu-desc">{selectedWaifu.fullDescription[language]}</p>
-                    </div>
-                )}
+                <div className="featured-waifu-container">
+                    {selectedWaifu ? (
+                        <div className="featured-waifu-display fade-in-up">
+                            <CachedImage imageUrl={getImageUrl(selectedWaifu.avatar)} alt={selectedWaifu.name} className="featured-waifu-avatar" />
+                            <p className="featured-waifu-desc">{selectedWaifu.fullDescription[language]}</p>
+                        </div>
+                    ) : (
+                        <div className="featured-waifu-placeholder" />
+                    )}
+                </div>
                 
                 <div className="start-game-container" data-tutorial-id="start-game">
                     {hasSavedGame && (
