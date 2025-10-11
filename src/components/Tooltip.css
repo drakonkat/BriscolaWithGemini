@@ -1,50 +1,64 @@
+/*
+  Tooltip styles rewritten for robustness.
+  - Uses `display: inline-block` for better layout stability with various children.
+  - Increased selector specificity to prevent overrides from other stylesheets.
+  - Hardcoded colors to ensure high contrast and fix reported visibility issues.
+*/
 .tooltip-wrapper {
   position: relative;
-  display: inline-flex; /* Use inline-flex to not break layout and contain the tooltip */
-  justify-content: center; /* Center the child if it's smaller than the wrapper */
-  align-items: center; /* Vertically align child */
+  display: inline-block; /* More stable than inline-flex for wrapping unknown children */
+  vertical-align: middle; /* Align with surrounding text/elements */
+  line-height: 1; /* Prevents extra spacing */
 }
 
-.tooltip-content {
+/* Use high specificity to ensure these styles are not overridden */
+div.tooltip-wrapper > div[role="tooltip"].tooltip-content {
+  /* Positioning */
   position: absolute;
-  bottom: calc(100% + 12px); /* Position above the element with more space */
+  bottom: calc(100% + 12px);
   left: 50%;
   transform: translateX(-50%);
-  background-color: var(--table-bg-dark); /* Solid background for readability */
-  color: var(--font-color);
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-  font-size: 0.9rem;
   z-index: 1000;
-  opacity: 0;
-  animation: fade-in 0.2s 0.1s forwards; /* Add a small delay */
-  pointer-events: none; /* So it doesn't interfere with mouse events */
+  
+  /* Appearance - using explicit colors to ensure visibility */
+  background-color: #2a2a3e; /* From var(--table-bg-dark) */
+  color: #e8e8f5;            /* From var(--font-color) */
+  border: 1px solid #5a5a78; /* From var(--border-color) */
+  border-radius: 8px;      /* From var(--radius-sm) */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  padding: 0.75rem 1rem;
+  
+  /* Text & Sizing */
+  font-size: 0.9rem;
   width: max-content;
   max-width: 280px;
   text-align: left;
+
+  /* Animation & Interaction */
+  opacity: 0;
+  animation: fade-in 0.2s 0.1s forwards;
+  pointer-events: none;
 }
 
-.tooltip-content strong {
+div.tooltip-wrapper > div[role="tooltip"].tooltip-content strong {
   display: block;
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
-  color: var(--primary-accent);
+  color: #c77dff; /* From var(--primary-accent) */
   font-weight: bold;
 }
 
-.tooltip-content p {
+div.tooltip-wrapper > div[role="tooltip"].tooltip-content p {
   margin: 0;
   font-size: 0.95rem;
   line-height: 1.5;
-  color: var(--font-color-secondary);
+  color: #b0b0c8; /* From var(--font-color-secondary) */
   white-space: normal;
 }
 
-/* Arrow with border */
-.tooltip-content::before,
-.tooltip-content::after {
+/* Arrow - also using high specificity */
+div.tooltip-wrapper > div[role="tooltip"].tooltip-content::before,
+div.tooltip-wrapper > div[role="tooltip"].tooltip-content::after {
     content: '';
     position: absolute;
     top: 100%;
@@ -52,13 +66,13 @@
     transform: translateX(-50%);
     border-style: solid;
     border-color: transparent;
-    border-top-color: var(--border-color);
+    border-top-color: #5a5a78; /* From var(--border-color) */
 }
-.tooltip-content::before {
+div.tooltip-wrapper > div[role="tooltip"].tooltip-content::before {
     border-width: 7px;
 }
-.tooltip-content::after {
+div.tooltip-wrapper > div[role="tooltip"].tooltip-content::after {
     border-width: 6px;
-    border-top-color: var(--table-bg-dark);
-    top: calc(100% - 1px);
+    border-top-color: #2a2a3e; /* From var(--table-bg-dark) */
+    top: calc(100% - 1px); /* Position inside the border to create the outline effect */
 }
