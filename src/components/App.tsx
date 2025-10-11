@@ -25,6 +25,8 @@ export const App = observer(() => {
       if (Capacitor.isNativePlatform()) {
         await StatusBar.setOverlaysWebView({ overlay: true });
       }
+      const buildTarget = process.env.VITE_BUILD_TARGET || 'web';
+      document.body.classList.add(`platform-${buildTarget}`);
     };
 
     setupPlatformSpecifics();
@@ -32,6 +34,11 @@ export const App = observer(() => {
     // Start tutorial for first-time users
     if (!gameSettingsStore.hasCompletedTutorial) {
       uiStore.startTutorial();
+    }
+
+    return () => {
+      const buildTarget = process.env.VITE_BUILD_TARGET || 'web';
+      document.body.classList.remove(`platform-${buildTarget}`);
     }
   }, []);
 

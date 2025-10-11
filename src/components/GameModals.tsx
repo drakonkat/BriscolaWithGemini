@@ -25,6 +25,7 @@ import { GachaMultiUnlockModal } from './GachaMultiUnlockModal';
 import { translations } from '../core/translations';
 import { BriscolaSwapModal } from './BriscolaSwapModal';
 import { LegendModal } from './LegendModal';
+import { SettingsModal } from './SettingsModal';
 
 export const GameModals = observer(() => {
     const { uiStore, gameStateStore, gachaStore, gameSettingsStore } = useStores();
@@ -174,6 +175,12 @@ export const GameModals = observer(() => {
                 onClose={() => uiStore.closeModal('soundEditor')}
                 settings={gameSettingsStore.soundEditorSettings}
                 onSettingsChange={(v) => gameSettingsStore.soundEditorSettings = typeof v === 'function' ? v(gameSettingsStore.soundEditorSettings) : v}
+                language={language}
+            />
+
+            <SettingsModal
+                isOpen={uiStore.isSettingsModalOpen}
+                onClose={() => uiStore.closeModal('settings')}
                 language={language}
             />
 

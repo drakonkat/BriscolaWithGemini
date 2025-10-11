@@ -90,6 +90,45 @@
     margin-right: 0.5rem;
 }
 
+.roguelike-rewards-rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+}
+.reward-difficulty-column strong {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    text-align: center;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid;
+}
+.reward-difficulty-column ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.reward-difficulty-column li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+}
+.reward-difficulty-column li span:last-child {
+    font-weight: bold;
+    color: var(--gold-accent);
+}
+.reward-difficulty-column.difficulty-easy strong { border-color: var(--element-earth-color); color: var(--element-earth-color); }
+.reward-difficulty-column.difficulty-medium strong { border-color: var(--element-water-color); color: var(--element-water-color); }
+.reward-difficulty-column.difficulty-hard strong { border-color: var(--element-fire-color); color: var(--element-fire-color); }
+.reward-difficulty-column.difficulty-nightmare strong { border-color: var(--rarity-r-color); color: var(--rarity-r-color); }
+
 /* --- Legend Modal --- */
 .elemental-powers-legend-list {
   display: flex;
@@ -549,6 +588,24 @@
 .support-modal-poll .poll-actions button { min-width: 100px; margin-top: 0; font-size: 1rem; padding: 0.5rem 1rem; border-radius: var(--radius-full); cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
 .support-modal-poll .poll-thanks { font-size: 1.2rem; font-weight: bold; color: var(--primary-accent); }
 
+/* --- Settings Modal --- */
+.settings-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  text-align: left;
+}
+.settings-modal-content .settings-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.settings-modal-content .settings-selector label {
+  font-size: 1.1rem;
+}
+
+
 @media (max-width: 1024px) {
     .gallery-modal { width: 90%; }
 }
@@ -571,4 +628,5 @@
   .history-header, .history-entry { font-size: 0.8rem; grid-template-columns: 0.4fr 1fr 1fr 1fr 0.5fr 0.5fr 1.2fr; gap: 0.5rem; }
   .history-modal.classic-mode .history-header, .history-modal.classic-mode .history-entry { grid-template-columns: 0.4fr 1fr 1fr 0.5fr 0.5fr; }
   .history-entry .card { --card-height: 45px; --card-width: 25px; }
+  .roguelike-rewards-rules-grid { grid-template-columns: 1fr; }
 }

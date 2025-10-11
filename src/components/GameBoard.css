@@ -642,3 +642,16 @@
   .played-cards { order: 2; }
   .waifu-message-bubble { max-width: 90%; min-width: 90%; font-size: 0.9rem; }
 }
+
+@media (min-width: 1025px) {
+  .drop-zone.cancel {
+    width: 240px;
+    height: 160px;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    transform: none; /* unset transform in case it was set elsewhere */
+    bottom: calc(var(--bottom-bar-height) + 1rem);
+  }
+}
