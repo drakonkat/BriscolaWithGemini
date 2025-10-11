@@ -116,6 +116,8 @@ export const Menu = observer(() => {
     const [selectedWaifu, setSelectedWaifu] = useState<Waifu | null>(null);
     const [isRandomCardSelected, setIsRandomCardSelected] = useState(false);
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+    const [isDifficultyDetailsOpen, setIsDifficultyDetailsOpen] = useState(false);
+    const [isWaifuDetailsOpen, setIsWaifuDetailsOpen] = useState(false);
 
     const moreMenuRef = useRef<HTMLDivElement>(null);
 
@@ -230,42 +232,51 @@ export const Menu = observer(() => {
                         </button>
                     </div>
                 </div>
-                <div className="menu-section" data-tutorial-id="difficulty">
-                    <h2>{T.difficultyLabel}</h2>
-                    <div className="difficulty-selection">
-                        <button
-                            className={`difficulty-card ${difficulty === 'easy' ? 'selected' : ''}`}
-                            onClick={() => gameSettingsStore.setDifficulty('easy')}
-                        >
-                            <span className="difficulty-icon">❤️</span>
-                            <h3>{T.difficultyEasy}</h3>
-                        </button>
-                        <button
-                            className={`difficulty-card ${difficulty === 'medium' ? 'selected' : ''}`}
-                            onClick={() => gameSettingsStore.setDifficulty('medium')}
-                        >
-                            <span className="difficulty-icon">❤️❤️</span>
-                            <h3>{T.difficultyMedium}</h3>
-                        </button>
-                        <button
-                            className={`difficulty-card ${difficulty === 'hard' ? 'selected' : ''}`}
-                            onClick={() => gameSettingsStore.setDifficulty('hard')}
-                        >
-                            <span className="difficulty-icon">❤️❤️❤️</span>
-                            <h3>{T.difficultyHard}</h3>
-                        </button>
-                        <button
-                            className={`difficulty-card ${difficulty === 'nightmare' ? 'selected' : ''}`}
-                            onClick={() => gameSettingsStore.setDifficulty('nightmare')}
-                        >
-                            <span className="difficulty-icon nightmare-icon">🖤🖤🖤</span>
-                            <h3>{T.difficultyNightmare}</h3>
+                <div className="menu-section is-collapsible-mobile" data-tutorial-id="difficulty">
+                    <div className="menu-section-header" onClick={() => setIsDifficultyDetailsOpen(!isDifficultyDetailsOpen)}>
+                        <h2>{T.difficultyLabel}</h2>
+                        <button className={`collapse-button ${isDifficultyDetailsOpen ? 'open' : ''}`} aria-expanded={isDifficultyDetailsOpen}>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
                         </button>
                     </div>
-                    <DifficultyDetails difficulty={difficulty} language={language} gameplayMode={gameplayMode} />
+                    <div className={`collapsible-content ${isDifficultyDetailsOpen ? 'open' : ''}`}>
+                        <div>
+                            <div className="difficulty-selection">
+                                <button
+                                    className={`difficulty-card ${difficulty === 'easy' ? 'selected' : ''}`}
+                                    onClick={() => gameSettingsStore.setDifficulty('easy')}
+                                >
+                                    <span className="difficulty-icon">❤️</span>
+                                    <h3>{T.difficultyEasy}</h3>
+                                </button>
+                                <button
+                                    className={`difficulty-card ${difficulty === 'medium' ? 'selected' : ''}`}
+                                    onClick={() => gameSettingsStore.setDifficulty('medium')}
+                                >
+                                    <span className="difficulty-icon">❤️❤️</span>
+                                    <h3>{T.difficultyMedium}</h3>
+                                </button>
+                                <button
+                                    className={`difficulty-card ${difficulty === 'hard' ? 'selected' : ''}`}
+                                    onClick={() => gameSettingsStore.setDifficulty('hard')}
+                                >
+                                    <span className="difficulty-icon">❤️❤️❤️</span>
+                                    <h3>{T.difficultyHard}</h3>
+                                </button>
+                                <button
+                                    className={`difficulty-card ${difficulty === 'nightmare' ? 'selected' : ''}`}
+                                    onClick={() => gameSettingsStore.setDifficulty('nightmare')}
+                                >
+                                    <span className="difficulty-icon nightmare-icon">🖤🖤🖤</span>
+                                    <h3>{T.difficultyNightmare}</h3>
+                                </button>
+                            </div>
+                            <DifficultyDetails difficulty={difficulty} language={language} gameplayMode={gameplayMode} />
+                        </div>
+                    </div>
                 </div>
                 
-                 <div data-tutorial-id="waifu-selector">
+                 <div className="menu-section" data-tutorial-id="waifu-selector">
                     <WaifuSelector 
                         language={language}
                         onWaifuSelected={handleWaifuSelection}
@@ -275,24 +286,36 @@ export const Menu = observer(() => {
                     />
                 </div>
 
-                <div className={`featured-waifu-container difficulty-${difficulty}`}>
-                    {selectedWaifu ? (
-                        <div className="featured-waifu-display fade-in-up">
-                            <CachedImage imageUrl={getImageUrl(selectedWaifu.avatar)} alt={selectedWaifu.name} className="featured-waifu-avatar" />
-                            <p className="featured-waifu-desc">{selectedWaifu.fullDescription[language]}</p>
-                        </div>
-                    ) : isRandomCardSelected ? (
-                        <div className="featured-waifu-display random fade-in-up">
-                            <div className="featured-waifu-avatar random-avatar">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 6.25a6.25 6.25 0 0 0-4.6 10.98c.2-.28.34-.6.4-.95.14-.77.2-1.57.14-2.43-.05-.8-.18-1.63-.4-2.45-.1-.38-.2-.77-.28-1.16-.07-.32-.1-.63-.12-.95 0-.28.02-.55.06-.82.09-.54.27-.99.5-1.39.43-.76 1.05-1.28 1.8-1.55.37-.13.76-.2 1.15-.2.43 0 .85.08 1.25.25.72.3 1.28.82 1.63 1.5.3.58.46 1.24.46 1.95 0 .3-.03.6-.08.88-.05.28-.13.56-.23.85-.09.28-.2.56-.3.85-.14.41-.28.83-.4 1.25-.13.43-.23.86-.3 1.3-.07.41-.1.83-.1 1.25 0 .23.03.45.08.66.03.14.06.28.1.41.3.92.74 1.63 1.25 2.25A6.25 6.25 0 0 0 12 6.25zM12 4c1.89 0 3.63.66 5 1.75.52.41.97.9 1.34 1.45.24.36.45.75.6 1.15.2.5.34 1.02.4 1.55.08.55.1 1.1.1 1.65s-.02 1.1-.08 1.65c-.06.53-.2 1.05-.38 1.55-.18.49-.4.95-.68 1.4-.35.56-.78 1.05-1.28 1.45-1.38 1.1-3.13 1.75-5.03 1.75s-3.65-.65-5-1.75c-.5-.4-1-1-1.35-1.5-.27-.45-.5-.9-.68-1.4-.18-.5-.32-1.02-.38-1.55-.06-1.1-.06-2.2 0-3.3.06-.53.2-1.05.4-1.55.15-.4.35-.8.6-1.15.37-.55.82-1.04 1.34-1.45C8.37 4.66 10.11 4 12 4z"/>
-                                </svg>
+                <div className="is-collapsible-mobile">
+                    <div className="menu-section-header" onClick={() => setIsWaifuDetailsOpen(!isWaifuDetailsOpen)}>
+                        <h2>{T.waifuDetails(selectedWaifu?.name ?? (isRandomCardSelected ? T.randomOpponent : '...'))}</h2>
+                        <button className={`collapse-button ${isWaifuDetailsOpen ? 'open' : ''}`} aria-expanded={isWaifuDetailsOpen}>
+                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                        </button>
+                    </div>
+                    <div className={`collapsible-content ${isWaifuDetailsOpen ? 'open' : ''}`}>
+                        <div>
+                            <div className={`featured-waifu-container difficulty-${difficulty}`}>
+                                {selectedWaifu ? (
+                                    <div className="featured-waifu-display fade-in-up">
+                                        <CachedImage imageUrl={getImageUrl(selectedWaifu.avatar)} alt={selectedWaifu.name} className="featured-waifu-avatar" />
+                                        <p className="featured-waifu-desc">{selectedWaifu.fullDescription[language]}</p>
+                                    </div>
+                                ) : isRandomCardSelected ? (
+                                    <div className="featured-waifu-display random fade-in-up">
+                                        <div className="featured-waifu-avatar random-avatar">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 6.25a6.25 6.25 0 0 0-4.6 10.98c.2-.28.34-.6.4-.95.14-.77.2-1.57.14-2.43-.05-.8-.18-1.63-.4-2.45-.1-.38-.2-.77-.28-1.16-.07-.32-.1-.63-.12-.95 0-.28.02-.55.06-.82.09-.54.27-.99.5-1.39.43-.76 1.05-1.28 1.8-1.55.37-.13.76-.2 1.15-.2.43 0 .85.08 1.25.25.72.3 1.28.82 1.63 1.5.3.58.46 1.24.46 1.95 0 .3-.03.6-.08.88-.05.28-.13.56-.23.85-.09.28-.2.56-.3.85-.14.41-.28.83-.4 1.25-.13.43-.23.86-.3 1.3-.07.41-.1.83-.1 1.25 0 .23.03.45.08.66.03.14.06.28.1.41.3.92.74 1.63 1.25 2.25A6.25 6.25 0 0 0 12 6.25zM12 4c1.89 0 3.63.66 5 1.75.52.41.97.9 1.34 1.45.24.36.45.75.6 1.15.2.5.34 1.02.4 1.55.08.55.1 1.1.1 1.65s-.02 1.1-.08 1.65c-.06.53-.2 1.05-.38 1.55-.18.49-.4.95-.68 1.4-.35.56-.78 1.05-1.28 1.45-1.38 1.1-3.13 1.75-5.03 1.75s-3.65-.65-5-1.75c-.5-.4-1-1-1.35-1.5-.27-.45-.5-.9-.68-1.4-.18-.5-.32-1.02-.38-1.55-.06-1.1-.06-2.2 0-3.3.06-.53.2-1.05.4-1.55.15-.4.35-.8.6-1.15.37-.55.82-1.04 1.34-1.45C8.37 4.66 10.11 4 12 4z"/>
+                                            </svg>
+                                        </div>
+                                        <p className="featured-waifu-desc">{T.randomOpponentDesc}</p>
+                                    </div>
+                                ) : (
+                                    <div className="featured-waifu-placeholder" />
+                                )}
                             </div>
-                            <p className="featured-waifu-desc">{T.randomOpponentDesc}</p>
                         </div>
-                    ) : (
-                        <div className="featured-waifu-placeholder" />
-                    )}
+                    </div>
                 </div>
                 
                 <div className="start-game-container" data-tutorial-id="start-game">

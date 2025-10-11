@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { translations } from '../core/translations';
-import { VALUES_IT } from '../core/constants';
+import { VALUES_IT, ROGUELIKE_REWARDS } from '../core/constants';
 import type { Language, Difficulty, RoguelikePowerUpId } from '../core/types';
 import { POWER_UP_DEFINITIONS, ALL_POWER_UP_IDS } from '../core/roguelikePowers';
 
@@ -114,6 +114,25 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
 
                 <h3 className="rules-subtitle">{T.roguelike.roguelikeRulesTitle}</h3>
                 <p>{T.roguelike.roguelikeRulesDescription}</p>
+
+                <h4 className="rules-subtitle" style={{ fontSize: '1.3rem', marginTop: '1.5rem' }}>{T.roguelike.rewardsTitle}</h4>
+                <div className="roguelike-rewards-rules-grid">
+                    {(['easy', 'medium', 'hard', 'nightmare'] as Difficulty[]).map(diff => {
+                        const rewards = ROGUELIKE_REWARDS[diff];
+                        const difficultyKey = `difficulty${diff.charAt(0).toUpperCase() + diff.slice(1)}` as keyof typeof T;
+                        return (
+                            <div key={diff} className={`reward-difficulty-column difficulty-${diff}`}>
+                                <strong>{T[difficultyKey] as string}</strong>
+                                <ul>
+                                    <li><span>{T.roguelike.rewardWinRun}:</span> <span>+{rewards.win} WC</span></li>
+                                    {rewards.loss.slice(1).map((loss, i) => (
+                                        <li key={i}><span>{T.roguelike.rewardLossLevel(i + 1)}:</span> <span>+{loss} WC</span></li>
+                                    ))}
+                                </ul>
+                            </div>
+                        );
+                    })}
+                </div>
 
                 <h4 className="rules-subtitle" style={{ fontSize: '1.3rem', marginTop: '1.5rem' }}>{T.roguelike.roguelikePowersTitle}</h4>
                 <div className="roguelike-powers-rules-list">
