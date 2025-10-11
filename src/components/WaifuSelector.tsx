@@ -33,11 +33,7 @@ export const WaifuSelector = ({ language, onWaifuSelected, selectedWaifu, isRand
         if (selectedIndex !== -1 && cardRefs.current[selectedIndex]) {
             const selectedCard = cardRefs.current[selectedIndex];
             if (selectedCard) {
-                // Manually calculate scroll position to center the card horizontally
-                // without affecting the parent's vertical scroll.
-                const containerRect = container.getBoundingClientRect();
-                const cardRect = selectedCard.getBoundingClientRect();
-                const scrollLeft = container.scrollLeft + cardRect.left - containerRect.left - (containerRect.width / 2) + (cardRect.width / 2);
+                const scrollLeft = selectedCard.offsetLeft + (selectedCard.offsetWidth / 2) - (container.offsetWidth / 2);
                 
                 container.scrollTo({
                     left: scrollLeft,
@@ -47,10 +43,20 @@ export const WaifuSelector = ({ language, onWaifuSelected, selectedWaifu, isRand
         }
     }, [selectedWaifu, isRandomSelected]);
 
-    const scrollContainer = (amount: number) => {
-        if (containerRef.current) {
-            containerRef.current.scrollBy({ left: amount, behavior: 'smooth' });
-        }
+    const changeWaifuSelection = (direction: number) => {
+        if (disabled) return;
+    
+        const items = [...WAIFUS, null]; // null represents the random card
+        const totalItems = items.length;
+    
+        const currentIndex = isRandomSelected
+            ? totalItems - 1
+            : selectedWaifu
+            ? WAIFUS.findIndex(w => w.name === selectedWaifu.name)
+            : 0; 
+        
+        const newIndex = (currentIndex + direction + totalItems) % totalItems;
+        onWaifuSelected(items[newIndex]);
     };
 
     return (
@@ -60,7 +66,7 @@ export const WaifuSelector = ({ language, onWaifuSelected, selectedWaifu, isRand
             <div className="waifu-carousel-wrapper">
                 <button 
                     className="carousel-nav-button prev" 
-                    onClick={() => scrollContainer(-300)}
+                    onClick={() => changeWaifuSelection(-1)}
                     aria-label="Previous waifu"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12l4.58-4.59z"/></svg>
@@ -107,7 +113,7 @@ export const WaifuSelector = ({ language, onWaifuSelected, selectedWaifu, isRand
 
                 <button 
                     className="carousel-nav-button next" 
-                    onClick={() => scrollContainer(300)}
+                    onClick={() => changeWaifuSelection(1)}
                     aria-label="Next waifu"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
