@@ -1,5 +1,3 @@
-
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -62,9 +60,9 @@ export const translations = {
     waifuCoinDifficultyMultiplierInfo: "Il guadagno di monete cambia in base alla difficoltà selezionata nel menu:",
     waifuCoinDifficultyMultiplierEasy: "Facile: 50% delle monete base.",
     waifuCoinDifficultyMultiplierMedium: "Normale: 100% delle monete base.",
-    waifuCoinDifficultyMultiplierHard: "Hard: 150% delle monete base.",
-    waifuCoinDifficultyMultiplierNightmare: "Incubo: Ricompensa speciale di 750 WC per la vittoria.",
-    waifuCoinDifficultyMultiplierApocalypse: "Apocalisse: Ricompensa speciale di 1000 WC per la vittoria.",
+    waifuCoinDifficultyMultiplierHard: "Difficile: 150% delle monete base.",
+    waifuCoinDifficultyMultiplierNightmare: "Incubo: Ricompensa speciale di 250 WC per la vittoria.",
+    waifuCoinDifficultyMultiplierApocalypse: "Apocalisse: Ricompensa speciale di 500 WC per la vittoria.",
     gachaRulesTitle: "Regole del Gacha",
     gachaCostSingle: "Costo Tiro Singolo: 100 Waifu Coins.",
     gachaCostMulti: "Costo Tiro Multiplo (x10): 900 Waifu Coins (1 tiro gratis!).",
@@ -587,8 +585,8 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     waifuCoinDifficultyMultiplierEasy: "Easy: 50% of base coins.",
     waifuCoinDifficultyMultiplierMedium: "Normal: 100% of base coins.",
     waifuCoinDifficultyMultiplierHard: "Hard: 150% of base coins.",
-    waifuCoinDifficultyMultiplierNightmare: "Nightmare: Special reward of 750 WC for winning.",
-    waifuCoinDifficultyMultiplierApocalypse: "Apocalypse: Special reward of 1000 WC for winning.",
+    waifuCoinDifficultyMultiplierNightmare: "Nightmare: Special reward of 250 WC for winning.",
+    waifuCoinDifficultyMultiplierApocalypse: "Apocalypse: Special reward of 500 WC for winning.",
     gachaRulesTitle: "Gacha Rules",
     gachaCostSingle: "Single Pull Cost: 100 Waifu Coins.",
     gachaCostMulti: "Multi-Pull Cost (x10): 900 Waifu Coins (1 free pull!).",

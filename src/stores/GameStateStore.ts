@@ -474,9 +474,9 @@ export class GameStateStore {
 
                 if (winner === 'human') {
                     if (difficulty === 'apocalypse') {
-                        winnings = 1000;
+                        winnings = 500;
                     } else if (difficulty === 'nightmare') {
-                        winnings = 750;
+                        winnings = 250;
                     } else {
                         if (this.humanScore >= 101) winnings = Math.round(100 * difficultyMultiplier);
                         else if (this.humanScore >= 81) winnings = Math.round(70 * difficultyMultiplier);

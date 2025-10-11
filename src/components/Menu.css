@@ -786,21 +786,24 @@ input:checked + .slider:before {
 }
 
 .featured-waifu-container.difficulty-easy .featured-waifu-avatar {
-    border-color: var(--element-earth-color);
+    border-color: var(--element-earth-color); /* Green */
 }
 
 .featured-waifu-container.difficulty-medium .featured-waifu-avatar {
-    border-color: var(--element-water-color);
+    border-color: var(--element-water-color); /* Light Blue */
 }
 
 .featured-waifu-container.difficulty-hard .featured-waifu-avatar {
-    border-color: var(--element-fire-color);
+    border-color: var(--gold-accent); /* Yellow */
 }
 
 .featured-waifu-container.difficulty-nightmare .featured-waifu-avatar {
-    border-color: var(--rarity-r-color); /* The purple color */
+    border-color: var(--element-fire-color); /* Orange */
 }
 
+.featured-waifu-container.difficulty-apocalypse .featured-waifu-avatar {
+    border-color: var(--red-suit); /* Red */
+}
 
 @media (min-width: 769px) {
     .waifu-carousel-wrapper {
@@ -970,6 +973,17 @@ input:checked + .slider:before {
   .waifu-selector-container { gap: 0.75rem; }
   .waifu-card, .random-waifu-card { width: 140px; }
   .waifu-card img { width: 70px; height: 70px; }
+
+  .difficulty-card {
+    flex-basis: 120px;
+    padding: 0.75rem;
+  }
+  .difficulty-icon {
+    font-size: 1.5rem;
+  }
+  .difficulty-card h3 {
+    font-size: 0.9rem;
+  }
 }
 
 /* --- Collapsible Sections --- */

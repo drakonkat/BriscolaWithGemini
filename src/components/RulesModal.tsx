@@ -74,12 +74,12 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                     {difficulty === 'nightmare' ? (
                          <>
                             <li className="rules-info-item">{T.waifuCoinRuleLoss(rewards.loss)}</li>
-                            <li className="rules-info-item">{T.waifuCoinRuleWinNightmare(750)}</li>
+                            <li className="rules-info-item">{T.waifuCoinRuleWinNightmare(250)}</li>
                         </>
                     ) : difficulty === 'apocalypse' ? (
                         <>
                             <li className="rules-info-item">{T.waifuCoinRuleLoss(rewards.loss)}</li>
-                            <li className="rules-info-item">{T.waifuCoinRuleWinApocalypse(1000)}</li>
+                            <li className="rules-info-item">{T.waifuCoinRuleWinApocalypse(500)}</li>
                        </>
                     ) : (
                         <>

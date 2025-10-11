@@ -65,14 +65,14 @@ const DifficultyDetails = ({ difficulty, language, gameplayMode }: { difficulty:
             multiplier: T.rewardSpecial,
             multiplierVal: 1.5, // for loss calculation
             isSpecial: true,
-            winAmount: 750,
+            winAmount: 250,
         },
         apocalypse: {
             desc: T.difficultyApocalypseDesc,
             multiplier: T.rewardSpecial,
             multiplierVal: 1.5, // for loss calculation
             isSpecial: true,
-            winAmount: 1000,
+            winAmount: 500,
         }
     }[difficulty];
 
