@@ -704,6 +704,9 @@
   }
   .last-trick-recap .last-trick-icon {
     display: block;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
   }
   .human-abilities-container {
     bottom: calc(var(--bottom-bar-height) + 4.5rem);
