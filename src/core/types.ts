@@ -78,7 +78,6 @@ export interface RoguelikePowerUp {
 // FIX: Added missing properties to RoguelikeState to support game state management.
 export type RoguelikeState = {
     currentLevel: number; // 0 = before starting, 1-4 = in progress
-    runCoins: number;
     encounteredWaifus: string[];
     followers: Waifu[];
     followerAbilitiesUsedThisMatch: string[];

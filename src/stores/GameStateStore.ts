@@ -20,7 +20,7 @@ import { getLocalAIMove } from '../core/localAI';
 import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
 // FIX: `RoguelikeEvent` is now correctly imported from `types.ts`.
 import type { GamePhase, Card, Player, Waifu, GameEmotionalState, Suit, Element, AbilityType, RoguelikeState, ElementalClashResult, TrickHistoryEntry, RoguelikePowerUp, RoguelikePowerUpId, Value, RoguelikeEvent } from '../core/types';
-import { RANK } from '../core/constants';
+import { RANK, ROGUELIKE_REWARDS } from '../core/constants';
 import { POWER_UP_DEFINITIONS } from '../core/roguelikePowers';
 
 const SCORE_THRESHOLD = 15;
@@ -32,15 +32,12 @@ const SAVED_GAME_KEY = 'waifu_briscola_saved_game';
 // FIX: Corrected the initialization of RoguelikeState to include all required properties and fix the `activePowerUp` property name error.
 const INITIAL_ROGUELIKE_STATE: RoguelikeState = {
     currentLevel: 0,
-    runCoins: 0,
     encounteredWaifus: [],
     followers: [],
     followerAbilitiesUsedThisMatch: [],
     initialPower: null,
     activePowers: [],
 };
-
-const ROGUELIKE_LEVEL_REWARDS = [0, 25, 50, 75, 150];
 
 // --- Tutorial Constants ---
 const TUTORIAL_HUMAN_HAND: Card[] = [
@@ -401,13 +398,12 @@ export class GameStateStore {
             } else { // Roguelike
                 if (winner === 'human') {
                     const levelJustWon = this.roguelikeState.currentLevel;
-                    winnings = ROGUELIKE_LEVEL_REWARDS[levelJustWon];
-                    const newRunCoins = this.roguelikeState.runCoins + winnings;
 
                     if (levelJustWon >= 4) {
                         // Run is complete
-                        this.rootStore.gachaStore.addCoins(newRunCoins);
-                        this.lastGameWinnings = newRunCoins;
+                        winnings = ROGUELIKE_REWARDS[difficulty].win;
+                        this.rootStore.gachaStore.addCoins(winnings);
+                        this.lastGameWinnings = winnings;
                         this.gameResult = winner;
                         this.phase = 'gameOver';
                         this.roguelikeState = INITIAL_ROGUELIKE_STATE;
@@ -415,30 +411,15 @@ export class GameStateStore {
                         // Level is won, but run continues
                         this.roguelikeState = {
                             ...this.roguelikeState,
-                            runCoins: newRunCoins,
                             currentLevel: this.roguelikeState.currentLevel + 1,
                             followers: this.roguelikeState.currentLevel <= 3 && this.currentWaifu ? [...this.roguelikeState.followers, this.currentWaifu] : this.roguelikeState.followers,
                             followerAbilitiesUsedThisMatch: [],
                         };
-                        this.rootStore.uiStore.showSnackbar(`${this.T.coinsEarned(winnings)}`, 'success');
                         this.showPowerSelectionScreen(false);
                     }
                 } else { // AI won, run failed
-                    let level1LossReward;
-                    switch(difficulty) {
-                        case 'easy': level1LossReward = 10; break;
-                        case 'medium': level1LossReward = 20; break;
-                        case 'hard': level1LossReward = 30; break;
-                        case 'nightmare': level1LossReward = 50; break; // Increased reward
-                        default: level1LossReward = 20;
-                    }
-
-                    let consolationCoins = Math.round(this.roguelikeState.runCoins / 2);
-                    if (difficulty === 'nightmare') {
-                        consolationCoins = Math.round(this.roguelikeState.runCoins * 0.75);
-                    }
-                    
-                    winnings = this.roguelikeState.currentLevel === 1 ? level1LossReward : consolationCoins;
+                    const levelLostAt = this.roguelikeState.currentLevel;
+                    winnings = ROGUELIKE_REWARDS[difficulty].loss[levelLostAt];
 
                     this.rootStore.gachaStore.addCoins(winnings);
                     this.lastGameWinnings = winnings;

@@ -1,6 +1,7 @@
 
 
 
+
 .menu {
   display: flex;
   flex-direction: column;
@@ -699,6 +700,27 @@ input:checked + .slider:before {
 
 .reward-item.multiplier strong {
     color: var(--primary-accent);
+}
+
+.difficulty-rewards.roguelike {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+.difficulty-rewards.roguelike .reward-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+}
+.difficulty-rewards.roguelike .reward-item:first-child {
+    font-size: 1.1em;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0.5rem;
+}
+.difficulty-rewards.roguelike .reward-item:first-child strong {
+    color: var(--gold-accent);
 }
 
 .featured-waifu-container {
