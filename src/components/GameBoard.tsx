@@ -323,6 +323,17 @@ export const GameBoard = observer(() => {
                 })}
             </div>
 
+            <div className="player-area ai-area">
+                <div className="hand">
+                    {aiHand.map((card, index) => (
+                        // FIX: Wrapped CardView in React.Fragment to solve key prop type error.
+                        <React.Fragment key={card.id || index}>
+                            <CardView card={revealedAiHand ? card : { id: 'facedown', suit: 'Spade', value: '2' }} isFaceDown={!revealedAiHand} lang={language} cardDeckStyle={cardDeckStyle}/>
+                        </React.Fragment>
+                    ))}
+                </div>
+            </div>
+
             <div className="table-area">
                 <div className="deck-area-wrapper" data-tutorial-id="briscola-deck">
                     <div className="deck-container">
@@ -357,17 +368,6 @@ export const GameBoard = observer(() => {
                 </div>
             </div>
 
-            <div className="player-area ai-area">
-                <div className="hand">
-                    {aiHand.map((card, index) => (
-                        // FIX: Wrapped CardView in React.Fragment to solve key prop type error.
-                        <React.Fragment key={card.id || index}>
-                            <CardView card={revealedAiHand ? card : { id: 'facedown', suit: 'Spade', value: '2' }} isFaceDown={!revealedAiHand} lang={language} cardDeckStyle={cardDeckStyle}/>
-                        </React.Fragment>
-                    ))}
-                </div>
-            </div>
-            
             <div className="player-area human-area">
                  <div className="hand" data-tutorial-id="player-hand">
                     {humanHand.map((card, index) => (
