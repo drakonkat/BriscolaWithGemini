@@ -274,19 +274,31 @@ export const GameBoard = observer(() => {
                 <div className="followers-container">
                     {roguelikeState.followers.map(follower => {
                         const isUsed = roguelikeState.followerAbilitiesUsedThisMatch.includes(follower.name);
-                        const abilityKey = `${follower.name.toLowerCase()}_${isUsed ? 'used' : 'ready'}`;
-                        const abilityName = T[`${follower.name.toLowerCase()}_blessing` as keyof typeof T] || T[`${follower.name.toLowerCase()}_analysis` as keyof typeof T] || T[`${follower.name.toLowerCase()}_gambit` as keyof typeof T];
-                        const abilityDesc = T[`${follower.name.toLowerCase()}_blessing_desc` as keyof typeof T] || T[`${follower.name.toLowerCase()}_analysis_desc` as keyof typeof T] || T[`${follower.name.toLowerCase()}_gambit_desc` as keyof typeof T];
+                        const abilityNameKey = `${follower.name.toLowerCase()}_blessing` as const || `${follower.name.toLowerCase()}_analysis` as const || `${follower.name.toLowerCase()}_gambit` as const;
+                        const abilityName = T[abilityNameKey];
+                        const abilityDescKey = `${abilityNameKey}_desc` as const;
+                        const abilityDesc = T[abilityDescKey];
+                        const isDisabled = isUsed || (follower.name === 'Rei' && aiScore < 5);
 
                         return (
-                            <div
+                            <button
                                 key={follower.name}
-                                className={`follower-waifu ${isUsed ? 'disabled' : ''}`}
+                                className={`follower-ability-button ${isDisabled ? 'disabled' : ''}`}
                                 title={`${abilityName}: ${abilityDesc}`}
-                                onClick={() => !isUsed && gameStateStore.activateFollowerAbility(follower.name)}
+                                onClick={() => !isDisabled && gameStateStore.activateFollowerAbility(follower.name)}
+                                aria-label={`Activate ${abilityName}`}
+                                disabled={isDisabled}
                             >
                                 <CachedImage imageUrl={getImageUrl(follower.avatar)} alt={follower.name} className="follower-waifu-avatar" />
-                            </div>
+                                <span className="follower-ability-name">{abilityName}</span>
+                                {isUsed && (
+                                    <div className="used-overlay">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.59-13L12 10.59 8.41 7 7 8.41 10.59 12 7 15.59 8.41 17 12 13.41 15.59 17 17 15.59 13.41 12 17 8.41z"/>
+                                        </svg>
+                                    </div>
+                                )}
+                            </button>
                         );
                     })}
                 </div>

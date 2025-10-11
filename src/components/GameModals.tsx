@@ -26,6 +26,7 @@ import { translations } from '../core/translations';
 import { BriscolaSwapModal } from './BriscolaSwapModal';
 import { LegendModal } from './LegendModal';
 import { SettingsModal } from './SettingsModal';
+import { NewFollowerModal } from './NewFollowerModal';
 
 export const GameModals = observer(() => {
     const { uiStore, gameStateStore, gachaStore, gameSettingsStore } = useStores();
@@ -33,7 +34,7 @@ export const GameModals = observer(() => {
     const { 
         phase, gameResult, lastGameWinnings, currentWaifu, gameMode, humanScore, aiScore, 
         trickHistory, isKasumiModalOpen, briscolaCard, humanHand, isBriscolaSwapModalOpen,
-        closeBriscolaSwapModal, handleBriscolaSwap
+        closeBriscolaSwapModal, handleBriscolaSwap, newFollower, acknowledgeNewFollower,
     } = gameStateStore;
 
     const T = translations[language];
@@ -189,6 +190,13 @@ export const GameModals = observer(() => {
                 onClose={() => uiStore.closeModal('legend')}
                 language={language}
             />
+
+            {newFollower && (
+                <NewFollowerModal
+                    waifu={newFollower}
+                    onContinue={acknowledgeNewFollower}
+                />
+            )}
         </>
     );
 });
