@@ -5,6 +5,8 @@
 import { makeAutoObservable, runInAction, reaction, toJS } from 'mobx';
 import { Capacitor } from '@capacitor/core';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
+// FIX: Added missing React import to resolve namespace error for TouchEvent.
+import type React from 'react';
 
 import type { RootStore } from '.';
 import { playSound, startMusic, stopMusic, updateSoundSettings } from '../core/soundManager';
@@ -18,7 +20,7 @@ import { getLocalAIMove } from '../core/localAI';
 import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
 // FIX: `RoguelikeEvent` is now correctly imported from `types.ts`.
 import type { GamePhase, Card, Player, Waifu, GameEmotionalState, Suit, Element, AbilityType, RoguelikeState, ElementalClashResult, TrickHistoryEntry, RoguelikePowerUp, RoguelikePowerUpId, Value, RoguelikeEvent } from '../core/types';
-import { RANK } from '../core/constants';
+import { RANK, ROGUELIKE_REWARDS } from '../core/constants';
 import { POWER_UP_DEFINITIONS } from '../core/roguelikePowers';
 
 const SCORE_THRESHOLD = 15;
@@ -30,15 +32,12 @@ const SAVED_GAME_KEY = 'waifu_briscola_saved_game';
 // FIX: Corrected the initialization of RoguelikeState to include all required properties and fix the `activePowerUp` property name error.
 const INITIAL_ROGUELIKE_STATE: RoguelikeState = {
     currentLevel: 0,
-    runCoins: 0,
     encounteredWaifus: [],
     followers: [],
     followerAbilitiesUsedThisMatch: [],
     initialPower: null,
     activePowers: [],
 };
-
-const ROGUELIKE_LEVEL_REWARDS = [0, 25, 50, 75, 150];
 
 // --- Tutorial Constants ---
 const TUTORIAL_HUMAN_HAND: Card[] = [
@@ -84,7 +83,10 @@ export class GameStateStore {
     lastGameWinnings = 0;
     isQuotaExceeded = false;
     gameMode: GameMode = 'online';
-    cardForElementalChoice: Card | null = null;
+
+    draggingCardInfo: { card: Card; isTouch: boolean } | null = null;
+    clonePosition: { x: number; y: number } | null = null;
+    currentDropZone: 'normal' | 'power' | 'cancel' | null = null;
     
     roguelikeState: RoguelikeState = INITIAL_ROGUELIKE_STATE;
     powerAnimation: { type: Element; player: Player; points: number } | null = null;
@@ -275,95 +277,23 @@ export class GameStateStore {
     }
 
     performNightmareAiTurn = () => {
-        const briscolaSuit = this.briscolaSuit!;
-    
-        let cardToPlay: Card;
-    
-        const isRoguelike = this.rootStore.gameSettingsStore.gameplayMode === 'roguelike';
-        const getTrickWinnerLogic = isRoguelike ? getRoguelikeTrickWinner : getClassicTrickWinner;
-        
-        // AI plays second
-        if (this.cardsOnTable.length > 0) {
-            const humanCard = this.cardsOnTable[0];
-            const potentialCards = [...this.aiHand, ...this.deck]; // In Nightmare, AI knows the deck
-            let bestWinningMove: { card: Card | null; points: number } = { card: null, points: -1 };
-    
-            // Find the best winning move from all available cards to maximize points
-            for (const potentialCard of potentialCards) {
-                let isWinner = getTrickWinnerLogic([humanCard, potentialCard], 'human', briscolaSuit, this.roguelikeState.activePowers) === 'ai';
-    
-                if (isWinner) {
-                    let trickPoints;
-                    if (isRoguelike) {
-                        const activatedPotentialCard = { ...potentialCard, elementalEffectActivated: !!potentialCard.element };
-                        const result = calculateRoguelikeTrickPoints(humanCard, activatedPotentialCard, 'ai', null, this.briscolaSuit!, this.roguelikeState.activePowers, [], []); // Note: score piles not available for prediction
-                        // FIX: Property 'pointsForTrick' does not exist on type '...'. Use 'totalPoints' instead.
-                        trickPoints = result.totalPoints;
-                    } else {
-                        trickPoints = getCardPoints(humanCard) + getCardPoints(potentialCard);
-                    }
-    
-                    if (trickPoints > bestWinningMove.points) {
-                        bestWinningMove = { card: potentialCard, points: trickPoints };
-                    } else if (trickPoints === bestWinningMove.points && bestWinningMove.card && RANK[potentialCard.value] < RANK[bestWinningMove.card.value]) {
-                        bestWinningMove.card = potentialCard;
-                    }
-                }
-            }
-    
-            // If a winning move is found
-            if (bestWinningMove.card) {
-                cardToPlay = bestWinningMove.card;
-                const isCardInHand = this.aiHand.some(c => c.id === cardToPlay.id);
-    
-                // If the best card is not in hand, swap it
-                if (!isCardInHand) {
-                    const worstCardInHand = [...this.aiHand].sort((a, b) => {
-                        const pointsA = getCardPoints(a);
-                        const pointsB = getCardPoints(b);
-                        if (pointsA !== pointsB) return pointsA - pointsB;
-                        return RANK[a.value] - RANK[b.value];
-                    })[0];
-                    
-                    const newAiHand = this.aiHand.filter(c => c.id !== worstCardInHand.id);
-                    newAiHand.push(cardToPlay);
-                    this.aiHand = newAiHand;
-                    
-                    const newDeck = this.deck.filter(c => c.id !== cardToPlay.id);
-                    newDeck.push(worstCardInHand);
-                    this.deck = newDeck;
-                }
-            } else {
-                // No winning move possible, discard the worst card from hand
-                cardToPlay = [...this.aiHand].sort((a, b) => {
-                    const pointsA = getCardPoints(a);
-                    const pointsB = getCardPoints(b);
-                    if (pointsA !== pointsB) return pointsA - pointsB;
-                    return RANK[a.value] - RANK[b.value];
-                })[0];
-            }
-    
-        } else { // AI plays first
-            const nonPointCards = this.aiHand.filter(c => getCardPoints(c) === 0);
-            
-            if (nonPointCards.length > 0) {
-                cardToPlay = nonPointCards.sort((a,b) => RANK[a.value] - RANK[b.value])[0];
-            } else {
-                cardToPlay = [...this.aiHand].sort((a,b) => RANK[a.value] - RANK[b.value])[0];
-            }
-        }
+        // This is a simplified, but stabler, version of Nightmare AI.
+        // It uses the 'hard' logic as a base, which is deterministic and safe,
+        // preventing the state corruption issues caused by the previous deck-swapping logic.
+        const cardToPlay = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, 'hard');
     
         if (cardToPlay.element) {
-            cardToPlay = { ...cardToPlay, elementalEffectActivated: true };
+            // In the future, a "true" nightmare AI would make this decision based on perfect knowledge.
+            // For now, always activating is a reasonable aggressive strategy.
+            cardToPlay.elementalEffectActivated = true;
         }
+    
         playSound('card-place');
         this.message = this.T.aiPlayedYourTurn(this.currentWaifu!.name);
         this.aiHand = this.aiHand.filter(c => c.id !== cardToPlay.id);
         this.cardsOnTable.push(cardToPlay);
         
-        // FIX: Aggressively clean up temporary states from the AI's hand immediately after it plays a card.
-        // This prevents state corruption that could cause the AI to freeze on subsequent turns, especially
-        // after using an ability like "Fortify" on a card that it ultimately decides not to play.
+        // Aggressively clean up temporary states from the AI's hand immediately after it plays a card.
         this.aiHand = this.aiHand.map(c => {
             if (c.isTemporaryBriscola) {
                 const { isTemporaryBriscola, ...rest } = c;
@@ -371,7 +301,7 @@ export class GameStateStore {
             }
             return c;
         });
-
+    
         if (this.trickStarter === 'ai') {
             this.turn = 'human';
         }
@@ -468,13 +398,12 @@ export class GameStateStore {
             } else { // Roguelike
                 if (winner === 'human') {
                     const levelJustWon = this.roguelikeState.currentLevel;
-                    winnings = ROGUELIKE_LEVEL_REWARDS[levelJustWon];
-                    const newRunCoins = this.roguelikeState.runCoins + winnings;
 
                     if (levelJustWon >= 4) {
                         // Run is complete
-                        this.rootStore.gachaStore.addCoins(newRunCoins);
-                        this.lastGameWinnings = newRunCoins;
+                        winnings = ROGUELIKE_REWARDS[difficulty].win;
+                        this.rootStore.gachaStore.addCoins(winnings);
+                        this.lastGameWinnings = winnings;
                         this.gameResult = winner;
                         this.phase = 'gameOver';
                         this.roguelikeState = INITIAL_ROGUELIKE_STATE;
@@ -482,30 +411,15 @@ export class GameStateStore {
                         // Level is won, but run continues
                         this.roguelikeState = {
                             ...this.roguelikeState,
-                            runCoins: newRunCoins,
                             currentLevel: this.roguelikeState.currentLevel + 1,
                             followers: this.roguelikeState.currentLevel <= 3 && this.currentWaifu ? [...this.roguelikeState.followers, this.currentWaifu] : this.roguelikeState.followers,
                             followerAbilitiesUsedThisMatch: [],
                         };
-                        this.rootStore.uiStore.showSnackbar(`${this.T.coinsEarned(winnings)}`, 'success');
                         this.showPowerSelectionScreen(false);
                     }
                 } else { // AI won, run failed
-                    let level1LossReward;
-                    switch(difficulty) {
-                        case 'easy': level1LossReward = 10; break;
-                        case 'medium': level1LossReward = 20; break;
-                        case 'hard': level1LossReward = 30; break;
-                        case 'nightmare': level1LossReward = 50; break; // Increased reward
-                        default: level1LossReward = 20;
-                    }
-
-                    let consolationCoins = Math.round(this.roguelikeState.runCoins / 2);
-                    if (difficulty === 'nightmare') {
-                        consolationCoins = Math.round(this.roguelikeState.runCoins * 0.75);
-                    }
-                    
-                    winnings = this.roguelikeState.currentLevel === 1 ? level1LossReward : consolationCoins;
+                    const levelLostAt = this.roguelikeState.currentLevel;
+                    winnings = ROGUELIKE_REWARDS[difficulty].loss[levelLostAt];
 
                     this.rootStore.gachaStore.addCoins(winnings);
                     this.lastGameWinnings = winnings;
@@ -788,9 +702,21 @@ export class GameStateStore {
             const drawOrder: Player[] = trickWinner === 'human' ? ['human', 'ai'] : ['ai', 'human'];
 
             for (const player of drawOrder) {
-                let cardDrawn = newDeck.length > 0 ? newDeck.shift()! : (newBriscolaCard ? newBriscolaCard : null);
-                if (cardDrawn && newBriscolaCard && cardDrawn.id === newBriscolaCard.id) newBriscolaCard = null;
-                if (cardDrawn) player === 'human' ? newHumanHand.push(cardDrawn) : newAiHand.push(cardDrawn);
+                let cardDrawn: Card | null = null;
+                if (newDeck.length > 0) {
+                    cardDrawn = newDeck.shift()!;
+                } else if (newBriscolaCard) {
+                    cardDrawn = newBriscolaCard;
+                    newBriscolaCard = null; // Consume the briscola card so it can't be drawn again
+                }
+            
+                if (cardDrawn) {
+                    if (player === 'human') {
+                        newHumanHand.push(cardDrawn);
+                    } else {
+                        newAiHand.push(cardDrawn);
+                    }
+                }
             }
             
             this.humanHand = newHumanHand;
@@ -812,6 +738,9 @@ export class GameStateStore {
     selectCardForPlay = (card: Card) => {
         if (this.turn !== 'human' || this.isProcessing) return;
 
+        const isDraggable = this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' && !!card.element && !card.isTemporaryBriscola;
+        if (isDraggable) return;
+
         if (this.isTutorialGame) {
             if (this.rootStore.uiStore.tutorialStep === 'promptPlayCard' && card.id === 'tutorial-h-ace-bastoni') {
                 playSound('card-place');
@@ -822,27 +751,94 @@ export class GameStateStore {
             return;
         }
 
-        let cardToPlay = card;
-
-        if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' && card.element && !card.isTemporaryBriscola) {
-            this.cardForElementalChoice = cardToPlay;
-        } else {
-            playSound('card-place');
-            this.humanHand = this.humanHand.filter(c => c.id !== cardToPlay.id);
-            this.cardsOnTable.push(cardToPlay);
-            if (this.trickStarter === 'human') this.turn = 'ai';
-        }
-    };
-    confirmCardPlay = (activateEffect: boolean) => {
-        if (!this.cardForElementalChoice) return;
-        const cardToPlay = { ...this.cardForElementalChoice, elementalEffectActivated: activateEffect };
-        this.cardForElementalChoice = null;
+        const cardToPlay = card;
+        
         playSound('card-place');
         this.humanHand = this.humanHand.filter(c => c.id !== cardToPlay.id);
         this.cardsOnTable.push(cardToPlay);
         if (this.trickStarter === 'human') this.turn = 'ai';
     };
-    cancelCardPlay = () => this.cardForElementalChoice = null;
+
+    playCardFromDrop = (activatePower: boolean) => {
+        if (!this.draggingCardInfo) return;
+        const cardToPlay = { ...this.draggingCardInfo.card, elementalEffectActivated: activatePower };
+        playSound('card-place');
+        this.humanHand = this.humanHand.filter(c => c.id !== cardToPlay.id);
+        this.cardsOnTable.push(cardToPlay);
+        if (this.trickStarter === 'human') this.turn = 'ai';
+    };
+
+    handleDragStart = (card: Card, event: React.MouseEvent | React.TouchEvent) => {
+        if (this.turn !== 'human' || this.isProcessing) return;
+    
+        if (event.cancelable) {
+            event.preventDefault();
+        }
+        
+        const isTouch = 'touches' in event;
+        const point = isTouch ? (event as React.TouchEvent).touches[0] : (event as React.MouseEvent);
+    
+        this.draggingCardInfo = { card, isTouch };
+        this.clonePosition = { x: point.clientX, y: point.clientY };
+    }
+    
+    handleDragMove = (event: MouseEvent | TouchEvent, zoneElements: { normal: HTMLDivElement | null, power: HTMLDivElement | null, cancel: HTMLDivElement | null }) => {
+        if (!this.draggingCardInfo) return;
+    
+        if (event.cancelable) {
+            event.preventDefault();
+        }
+        
+        const point = this.draggingCardInfo.isTouch ? (event as TouchEvent).touches[0] : (event as MouseEvent);
+        if (!point) return;
+    
+        runInAction(() => {
+            this.clonePosition = { x: point.clientX, y: point.clientY };
+    
+            const getRect = (el: HTMLDivElement | null) => el ? el.getBoundingClientRect() : null;
+    
+            const zoneRects = {
+                normal: getRect(zoneElements.normal),
+                power: getRect(zoneElements.power),
+                cancel: getRect(zoneElements.cancel),
+            };
+    
+            let overZone: 'normal' | 'power' | 'cancel' | null = null;
+            const { clientX, clientY } = point;
+    
+            if (zoneRects.cancel && clientX > zoneRects.cancel.left && clientX < zoneRects.cancel.right && clientY > zoneRects.cancel.top && clientY < zoneRects.cancel.bottom) {
+                overZone = 'cancel';
+            } else if (zoneRects.power && clientX > zoneRects.power.left && clientX < zoneRects.power.right && clientY > zoneRects.power.top && clientY < zoneRects.power.bottom) {
+                overZone = 'power';
+            } else if (zoneRects.normal && clientX > zoneRects.normal.left && clientX < zoneRects.normal.right && clientY > zoneRects.normal.top && clientY < zoneRects.normal.bottom) {
+                overZone = 'normal';
+            }
+            
+            this.currentDropZone = overZone;
+        });
+    }
+    
+    handleDragEnd = () => {
+        if (!this.draggingCardInfo) return;
+    
+        runInAction(() => {
+            switch (this.currentDropZone) {
+                case 'normal':
+                    this.playCardFromDrop(false);
+                    break;
+                case 'power':
+                    this.playCardFromDrop(true);
+                    break;
+                case 'cancel':
+                default:
+                    break;
+            }
+            this.draggingCardInfo = null;
+            this.clonePosition = null;
+            this.currentDropZone = null;
+        });
+    }
+
     activateFollowerAbility = (waifuName: string) => {
         let abilityArmed: 'sakura_blessing' | 'rei_analysis' | 'kasumi_gambit' | null = null;
         let abilityName = '';
@@ -915,7 +911,7 @@ export class GameStateStore {
         this.turn = 'human';
         this.trickStarter = 'human';
         this.message = this.T.yourTurn;
-        this.rootStore.uiStore.setTutorialStep('playerHand');
+        this.rootStore.uiStore.switchToInGameTutorial();
     };
 
     resolveTrickForTutorial = () => {
@@ -952,7 +948,8 @@ export class GameStateStore {
                 humanScore: this.humanScore, aiScore: this.aiScore, trickStarter: this.trickStarter, message: this.message, backgroundUrl: this.backgroundUrl, aiEmotionalState: this.aiEmotionalState,
                 gameMode: this.gameMode, trickHistory: toJS(this.trickHistory), lastTrick: toJS(this.lastTrick), roguelikeState: toJS(this.roguelikeState), activeElements: toJS(this.activeElements),
                 lastResolvedTrick: toJS(this.lastResolvedTrick), trickCounter: this.trickCounter,
-                cardForElementalChoice: toJS(this.cardForElementalChoice), elementalClash: toJS(this.elementalClash), lastTrickHighlights: toJS(this.lastTrickHighlights),
+                
+                elementalClash: toJS(this.elementalClash), lastTrickHighlights: toJS(this.lastTrickHighlights),
                 // FIX: Cannot assign to 'revealedAiHand' because it is a read-only property.
                 // Switched to saving the underlying state property `isAiHandTemporarilyRevealed` instead.
                 isAiHandTemporarilyRevealed: this.isAiHandTemporarilyRevealed, isKasumiModalOpen: this.isKasumiModalOpen,
@@ -991,7 +988,8 @@ export class GameStateStore {
                 this.briscolaSuit = saved.briscolaSuit; this.cardsOnTable = saved.cardsOnTable; this.turn = saved.turn; this.humanScore = saved.humanScore;
                 this.aiScore = saved.aiScore; this.trickStarter = saved.trickStarter; this.message = saved.message; this.backgroundUrl = saved.backgroundUrl;
                 this.aiEmotionalState = saved.aiEmotionalState; this.gameMode = saved.gameMode; this.trickHistory = saved.trickHistory || []; this.lastTrick = saved.lastTrick || null;
-                this.roguelikeState = saved.roguelikeState; this.activeElements = saved.activeElements || []; this.cardForElementalChoice = saved.cardForElementalChoice; this.elementalClash = saved.elementalClash;
+                this.roguelikeState = saved.roguelikeState; this.activeElements = saved.activeElements || []; 
+                this.elementalClash = saved.elementalClash;
                 this.lastTrickHighlights = saved.lastTrickHighlights || { human: 'unset', ai: 'unset' };
                 // FIX: Cannot assign to 'revealedAiHand' because it is a read-only property.
                 // Restored the underlying state property `isAiHandTemporarilyRevealed` instead.

@@ -37,9 +37,6 @@ export const GachaSingleUnlockModal = observer(({ isOpen, onClose, language }: G
                     {T.gallery.rarityUnlocked(rarity)}
                 </h2>
                 <CachedImage imageUrl={lastGachaResult.url} alt={T.gallery.backgroundAlt} className="unlocked-image" />
-                <div className="modal-actions">
-                    <button onClick={onClose}>{T.close}</button>
-                </div>
             </div>
         </div>
     );

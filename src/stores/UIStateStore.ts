@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, runInAction, autorun } from 'mobx';
 import type { RootStore } from '.';
 import type { Player, Card, ModalType, SnackbarType } from '../core/types';
 import { getImageUrl } from '../core/utils';
@@ -34,21 +34,25 @@ const TUTORIAL_STEPS: Record<TutorialStepId, TutorialStepDetails> = {
     gameMode: { elementQuery: '[data-tutorial-id="game-mode"]', textKey: 'gameMode', position: 'bottom' },
     difficulty: { elementQuery: '[data-tutorial-id="difficulty"]', textKey: 'difficulty', position: 'bottom' },
     waifu: { elementQuery: '[data-tutorial-id="waifu-selector"]', textKey: 'waifu', position: 'top' },
-    gallery: { elementQuery: '[data-tutorial-id="gallery"]', textKey: 'gallery', position: 'bottom' },
+    gallery: { elementQuery: '[data-tutorial-id="gallery"]', textKey: 'gallery', position: 'top' },
     start: { elementQuery: '[data-tutorial-id="start-game"]', textKey: 'start', position: 'top', action: (store) => store.rootStore.gameStateStore.startTutorialGame() },
     // In-Game
     playerHand: { elementQuery: '[data-tutorial-id="player-hand"]', textKey: 'playerHand', position: 'top' },
     promptPlayCard: { elementQuery: '[data-tutorial-id="player-hand"]', textKey: 'promptPlayCard', position: 'top', waitForInput: true },
     aiResponds: { elementQuery: '.played-cards', textKey: 'aiResponds', position: 'bottom' },
     trickWon: { elementQuery: '.played-cards', textKey: 'trickWon', position: 'bottom' },
-    scoreUpdate: { elementQuery: '[data-tutorial-id="player-score"]', textKey: 'scoreUpdate', position: 'left' },
+    scoreUpdate: { elementQuery: '[data-tutorial-id="player-score"]', textKey: 'scoreUpdate', position: 'top' },
     drawingCards: { elementQuery: '[data-tutorial-id="briscola-deck"]', textKey: 'drawingCards', position: 'right' },
     briscola: { elementQuery: '[data-tutorial-id="briscola-deck"]', textKey: 'briscola', position: 'right' },
     end: { elementQuery: null, textKey: 'end', position: 'bottom' },
 };
 
-const TUTORIAL_SEQUENCE: TutorialStepId[] = [
+const TUTORIAL_MENU_SEQUENCE: TutorialStepId[] = [
     'welcome', 'gameMode', 'difficulty', 'waifu', 'gallery', 'start'
+];
+
+const TUTORIAL_INGAME_SEQUENCE: TutorialStepId[] = [
+    'playerHand', 'promptPlayCard', 'aiResponds', 'trickWon', 'scoreUpdate', 'drawingCards', 'briscola', 'end'
 ];
 
 export class UIStateStore {
@@ -68,7 +72,13 @@ export class UIStateStore {
     isQuotaExceededModalOpen = false;
     isGachaSingleUnlockModalOpen = false;
     isGachaMultiUnlockModalOpen = false;
+    isLegendModalOpen = false;
+    isSettingsModalOpen = false;
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
+
+    // Menu collapsible sections
+    isDifficultyDetailsOpen: boolean = loadFromLocalStorage('ui_difficulty_details_open', window.innerWidth > 768);
+    isWaifuDetailsOpen: boolean = loadFromLocalStorage('ui_waifu_details_open', window.innerWidth > 768);
 
     // Tutorial State
     isTutorialActive = false;
@@ -77,6 +87,7 @@ export class UIStateStore {
     tutorialText = '';
     tutorialPosition: 'top' | 'bottom' | 'left' | 'right' = 'bottom';
     isTutorialWaitingForInput = false;
+    currentTutorialSequence: TutorialStepId[] = TUTORIAL_MENU_SEQUENCE;
 
     // UI Element States
     menuBackgroundUrl = getImageUrl(`/background/landscape${Math.floor(Math.random() * 19) + 3}.png`);
@@ -92,6 +103,18 @@ export class UIStateStore {
     constructor(rootStore: RootStore) {
         makeAutoObservable(this, { rootStore: false, bubbleTimeoutRef: false });
         this.rootStore = rootStore;
+
+        autorun(() => localStorage.setItem('ui_difficulty_details_open', JSON.stringify(this.isDifficultyDetailsOpen)));
+        autorun(() => localStorage.setItem('ui_waifu_details_open', JSON.stringify(this.isWaifuDetailsOpen)));
+    }
+
+    get currentTutorialStepIndex() {
+        if (!this.tutorialStep) return 0;
+        return this.currentTutorialSequence.indexOf(this.tutorialStep);
+    }
+
+    get totalTutorialSteps() {
+        return this.currentTutorialSequence.length;
     }
 
     openModal = (type: ModalType) => {
@@ -108,6 +131,8 @@ export class UIStateStore {
             case 'soundEditor': this.isSoundEditorModalOpen = true; break;
             case 'gachaSingleUnlock': this.isGachaSingleUnlockModalOpen = true; break;
             case 'gachaMultiUnlock': this.isGachaMultiUnlockModalOpen = true; break;
+            case 'legend': this.isLegendModalOpen = true; break;
+            case 'settings': this.isSettingsModalOpen = true; break;
             case 'chat': 
                 this.isChatModalOpen = true; 
                 this.setUnreadMessageCount(0);
@@ -128,6 +153,8 @@ export class UIStateStore {
             case 'soundEditor': this.isSoundEditorModalOpen = false; break;
             case 'gachaSingleUnlock': this.isGachaSingleUnlockModalOpen = false; break;
             case 'gachaMultiUnlock': this.isGachaMultiUnlockModalOpen = false; break;
+            case 'legend': this.isLegendModalOpen = false; break;
+            case 'settings': this.isSettingsModalOpen = false; break;
             case 'chat': this.isChatModalOpen = false; break;
         }
     }
@@ -192,10 +219,24 @@ export class UIStateStore {
         localStorage.setItem('has_voted_subscription', JSON.stringify(voted));
     }
 
+    toggleDifficultyDetails = () => {
+        this.isDifficultyDetailsOpen = !this.isDifficultyDetailsOpen;
+    }
+
+    toggleWaifuDetails = () => {
+        this.isWaifuDetailsOpen = !this.isWaifuDetailsOpen;
+    }
+
     // --- Tutorial Methods ---
     startTutorial = () => {
         this.isTutorialActive = true;
+        this.currentTutorialSequence = TUTORIAL_MENU_SEQUENCE;
         this.setTutorialStep('welcome');
+    }
+
+    switchToInGameTutorial = () => {
+        this.currentTutorialSequence = TUTORIAL_INGAME_SEQUENCE;
+        this.setTutorialStep('playerHand');
     }
 
     endTutorial = () => {
@@ -220,7 +261,7 @@ export class UIStateStore {
         this.tutorialText = T[details.textKey] as string;
         this.tutorialPosition = details.position ?? 'bottom';
         this.isTutorialWaitingForInput = details.waitForInput ?? false;
-        this.setHighlightedElementByQuery(details.elementQuery);
+        this.setHighlightedElementByQuery(details.elementQuery, stepId);
 
         if (details.action) {
             details.action(this);
@@ -230,45 +271,31 @@ export class UIStateStore {
     nextTutorialStep = () => {
         if (!this.tutorialStep) return;
     
-        // Handle menu tutorial steps first with the sequence array
-        const currentIndex = TUTORIAL_SEQUENCE.indexOf(this.tutorialStep);
-        if (currentIndex > -1 && currentIndex < TUTORIAL_SEQUENCE.length - 1) {
-            const nextStepId = TUTORIAL_SEQUENCE[currentIndex + 1];
-            this.setTutorialStep(nextStepId);
+        // Special actions on "Next" click that trigger game events
+        if (this.tutorialStep === 'aiResponds') {
+            this.rootStore.gameStateStore.resolveTrickForTutorial();
+            // Hide bubble and wait for 'trickResolved' event to show next step
+            this.tutorialStep = null; 
+            this.highlightedElementRect = null;
             return;
         }
-
-        // Handle in-game tutorial steps
-        switch(this.tutorialStep) {
-            case 'start':
-                // This is the last menu step. Its action starts the game. The tutorial continues via game events.
-                break;
-            case 'playerHand':
-                this.setTutorialStep('promptPlayCard');
-                break;
-            case 'aiResponds':
-                this.rootStore.gameStateStore.resolveTrickForTutorial();
-                // Hide the bubble and wait for the 'trickResolved' event to show the next step.
-                this.tutorialStep = null;
-                this.highlightedElementRect = null;
-                break;
-            case 'trickWon':
-                this.setTutorialStep('scoreUpdate');
-                break;
-            case 'scoreUpdate':
-                // The game will automatically draw cards and fire the 'cardsDrawn' event,
-                // which shows the 'drawingCards' step. Hiding this bubble makes the transition smooth.
-                this.tutorialStep = null;
-                this.highlightedElementRect = null;
-                break;
-            case 'drawingCards':
-                this.setTutorialStep('briscola');
-                break;
-            case 'briscola':
-                this.setTutorialStep('end');
-                break;
+        if (this.tutorialStep === 'scoreUpdate') {
+            // The game will automatically draw cards and trigger the 'cardsDrawn' event.
+            // Hiding this bubble makes the transition smooth.
+            this.tutorialStep = null;
+            this.highlightedElementRect = null;
+            return;
         }
-    }
+    
+        // General logic: advance to the next step in the current sequence
+        const currentIndex = this.currentTutorialSequence.indexOf(this.tutorialStep);
+        if (currentIndex > -1 && currentIndex < this.currentTutorialSequence.length - 1) {
+            const nextStepId = this.currentTutorialSequence[currentIndex + 1];
+            this.setTutorialStep(nextStepId);
+        } else if (this.tutorialStep === 'end') {
+            this.endTutorial();
+        }
+    };
     
     onTutorialGameEvent(event: 'aiResponded' | 'trickResolved' | 'cardsDrawn') {
         if (!this.isTutorialActive) return;
@@ -286,13 +313,24 @@ export class UIStateStore {
         }
     }
 
-    setHighlightedElementByQuery(query?: string | null) {
+    setHighlightedElementByQuery(query?: string | null, stepId?: TutorialStepId) {
         setTimeout(() => {
             runInAction(() => {
                 if (query) {
-                    const element = document.querySelector(query);
+                    const element = document.querySelector(query) as HTMLElement;
                     if (element) {
-                        this.highlightedElementRect = element.getBoundingClientRect();
+                        // Special handling to scroll sections into view on mobile
+                        if (stepId === 'waifu' || stepId === 'gallery') {
+                            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            // Wait for the smooth scroll to finish before getting the element's position
+                            setTimeout(() => {
+                                runInAction(() => {
+                                    this.highlightedElementRect = element.getBoundingClientRect();
+                                });
+                            }, 400); 
+                        } else {
+                            this.highlightedElementRect = element.getBoundingClientRect();
+                        }
                     } else {
                         console.warn(`Tutorial element not found: ${query}`);
                         this.highlightedElementRect = null;
