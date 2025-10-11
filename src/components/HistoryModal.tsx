@@ -23,13 +23,25 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardD
         return null;
     }
 
-    const { gameStateStore } = useStores();
+    const { gameStateStore, gameSettingsStore } = useStores();
+    const { difficulty } = gameSettingsStore;
     const T = translations[language];
     const TH = T.history;
     const isClassicMode = gameplayMode === 'classic';
 
-    const canSeeFullHistory = isClassicMode || (gameplayMode === 'roguelike' && gameStateStore.roguelikeState.activePowers.some(p => p.id === 'third_eye'));
-    const historyToShow = canSeeFullHistory ? history : history.slice(-1);
+    let historyToShow: HistoryEntry[] = [];
+
+    if (gameplayMode === 'roguelike') {
+        const canSeeFullHistory = gameStateStore.roguelikeState.activePowers.some(p => p.id === 'third_eye');
+        historyToShow = canSeeFullHistory ? history : history.slice(-1);
+    } else if (isClassicMode) {
+        if (difficulty === 'easy') {
+            historyToShow = history;
+        } else if (difficulty === 'medium' || difficulty === 'hard') {
+            historyToShow = history.slice(-1);
+        }
+        // For nightmare, historyToShow remains an empty array.
+    }
 
     return (
         <div className="game-over-overlay" onClick={onClose}>

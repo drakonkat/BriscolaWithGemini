@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -285,23 +284,109 @@ export class GameStateStore {
     }
 
     performNightmareAiTurn = () => {
-        // This is a simplified, but stabler, version of Nightmare AI.
-        // It uses the 'hard' logic as a base, which is deterministic and safe,
-        // preventing the state corruption issues caused by the previous deck-swapping logic.
-        const cardToPlay = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, 'hard');
-    
-        if (cardToPlay.element) {
-            // In the future, a "true" nightmare AI would make this decision based on perfect knowledge.
-            // For now, always activating is a reasonable aggressive strategy.
-            cardToPlay.elementalEffectActivated = true;
+        const { aiHand, humanHand, briscolaSuit, cardsOnTable, deck } = this;
+        if (!briscolaSuit) return;
+        let cardToPlay: Card;
+
+        // AI can play any card from its hand or the deck.
+        const availableCards = [...aiHand, ...deck];
+
+        const isBriscola = (card: Card) => card.suit === briscolaSuit;
+
+        if (cardsOnTable.length === 0) {
+            // AI is leading the trick. It knows human's hand.
+            let bestCardToPlay: Card | null = null;
+            let maxPointsSecured = -1;
+
+            // Find a card that human cannot beat, to secure points.
+            for (const candidateCard of availableCards) {
+                // Check if human can beat this candidate card.
+                const humanCanBeat = humanHand.some(humanCard => {
+                    const isHumanCardBriscola = isBriscola(humanCard);
+                    const isCandidateBriscola = isBriscola(candidateCard);
+                    if (isHumanCardBriscola && !isCandidateBriscola) return true; // Human trumps
+                    if (!isHumanCardBriscola && isCandidateBriscola) return false; // Human can't trump
+                    if (isHumanCardBriscola && isCandidateBriscola) return RANK[humanCard.value] > RANK[candidateCard.value]; // Both briscola
+                    if (humanCard.suit === candidateCard.suit) return RANK[humanCard.value] > RANK[candidateCard.value]; // Same suit
+                    return false; // Human must follow suit and can't, or plays another suit without trumping
+                });
+
+                if (!humanCanBeat) {
+                    // This is a "safe" card. Let's see how many points it's worth.
+                    // The human will discard their lowest value card.
+                    const humanDiscardCard = [...humanHand].sort((a, b) => getCardPoints(a) - getCardPoints(b) || RANK[a.value] - RANK[b.value])[0];
+                    const points = getCardPoints(candidateCard) + (humanDiscardCard ? getCardPoints(humanDiscardCard) : 0);
+                    if (points > maxPointsSecured) {
+                        maxPointsSecured = points;
+                        bestCardToPlay = candidateCard;
+                    }
+                }
+            }
+
+            if (bestCardToPlay) {
+                // Found a safe card to play to maximize points.
+                cardToPlay = bestCardToPlay;
+            } else {
+                // No safe card found. This means human can beat any card AI plays.
+                // AI must sacrifice a card. Choose the one with the lowest value.
+                // Prefer non-briscola.
+                const nonBriscolaCards = availableCards.filter(c => !isBriscola(c));
+                const cardsToSacrificeFrom = nonBriscolaCards.length > 0 ? nonBriscolaCards : availableCards;
+                cardToPlay = cardsToSacrificeFrom.sort((a, b) => getCardPoints(a) - getCardPoints(b) || RANK[a.value] - RANK[b.value])[0];
+            }
+        } else {
+            // AI is second to play.
+            const humanCard = cardsOnTable[0];
+            const isHumanCardBriscola = isBriscola(humanCard);
+
+            const winningCards = availableCards.filter(aiCard => {
+                const aiIsBriscola = isBriscola(aiCard);
+                if (aiIsBriscola && !isHumanCardBriscola) return true;
+                if (!aiIsBriscola && isHumanCardBriscola) return false;
+                if (aiIsBriscola && isHumanCardBriscola) return RANK[aiCard.value] > RANK[humanCard.value];
+                if (aiCard.suit === humanCard.suit) return RANK[aiCard.value] > RANK[humanCard.value];
+                return false;
+            });
+
+            if (winningCards.length > 0) {
+                // AI can win. Choose the cheapest winning card.
+                cardToPlay = winningCards.sort((a, b) => RANK[a.value] - RANK[b.value])[0];
+            } else {
+                // AI cannot win. Discard the least valuable card.
+                // Prefer non-briscola.
+                const nonBriscolaCards = availableCards.filter(c => !isBriscola(c));
+                const cardsToDiscardFrom = nonBriscolaCards.length > 0 ? nonBriscolaCards : availableCards;
+                cardToPlay = cardsToDiscardFrom.sort((a, b) => getCardPoints(a) - getCardPoints(b) || RANK[a.value] - RANK[b.value])[0];
+            }
         }
-    
+
+        // Now, update the state based on where the card came from, ensuring hand size is correct.
+        let finalCardToPlay = cardToPlay;
+        if (finalCardToPlay.element) {
+            finalCardToPlay = { ...finalCardToPlay, elementalEffectActivated: true };
+        }
+
         playSound('card-place');
         this.message = this.T.aiPlayedYourTurn(this.currentWaifu!.name);
-        this.aiHand = this.aiHand.filter(c => c.id !== cardToPlay.id);
-        this.cardsOnTable.push(cardToPlay);
         
-        // Aggressively clean up temporary states from the AI's hand immediately after it plays a card.
+        const isFromHand = this.aiHand.some(c => c.id === finalCardToPlay.id);
+        if (isFromHand) {
+            this.aiHand = this.aiHand.filter(c => c.id !== finalCardToPlay.id);
+        } else {
+            // Card is from the deck. Remove it from deck...
+            this.deck = this.deck.filter(c => c.id !== finalCardToPlay.id);
+            // ...then remove the worst card from hand and put it back in the deck.
+            if (this.aiHand.length > 0) {
+                 const worstCardInHand = [...this.aiHand]
+                    .sort((a, b) => (getCardPoints(a) - getCardPoints(b)) || (RANK[a.value] - RANK[b.value]))[0];
+                this.aiHand = this.aiHand.filter(c => c.id !== worstCardInHand.id);
+                this.deck.push(worstCardInHand);
+                this.deck = shuffleDeck(this.deck);
+            }
+        }
+
+        this.cardsOnTable.push(finalCardToPlay);
+        
         this.aiHand = this.aiHand.map(c => {
             if (c.isTemporaryBriscola) {
                 const { isTemporaryBriscola, ...rest } = c;
@@ -309,12 +394,12 @@ export class GameStateStore {
             }
             return c;
         });
-    
+
         if (this.trickStarter === 'ai') {
             this.turn = 'human';
         }
     };
-
+    
     handleAiTurn = () => {
         if (this.phase !== 'playing' || this.turn !== 'ai' || this.isProcessing || this.cardsOnTable.length >= 2 || this.aiHand.length === 0) {
             return;
