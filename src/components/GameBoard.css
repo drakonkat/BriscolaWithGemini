@@ -230,20 +230,14 @@
     opacity: 0.7;
     animation: fade-in 0.5s;
 }
-.briscola-reminder .card {
-    --card-height: 70px;
-    /* width is calculated by aspect ratio automatically */
-    pointer-events: none;
-    filter: grayscale(50%) sepia(0.5);
-    box-shadow: none;
-}
 .briscola-reminder-label {
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     font-weight: bold;
     color: white;
     background: rgba(0,0,0,0.6);
-    padding: 0.25rem 0.6rem;
+    padding: 0.5rem 1rem;
     border-radius: var(--radius-sm);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 .waifu-status-button {

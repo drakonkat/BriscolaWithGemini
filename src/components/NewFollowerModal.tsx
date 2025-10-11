@@ -18,10 +18,10 @@ export const NewFollowerModal = observer(({ waifu, onContinue }: NewFollowerModa
     const { gameSettingsStore } = useStores();
     const T = translations[gameSettingsStore.language];
     
-    const abilityNameKey = `${waifu.name.toLowerCase()}_blessing` as const || `${waifu.name.toLowerCase()}_analysis` as const || `${waifu.name.toLowerCase()}_gambit` as const;
-    const abilityName = T[abilityNameKey];
-    const abilityDescKey = `${abilityNameKey}_desc` as const;
-    const abilityDesc = T[abilityDescKey];
+    const abilityId = waifu.followerAbilityId;
+    const abilityName = abilityId ? (T as any)[abilityId] as string : '';
+    const abilityDescKey = abilityId ? `${abilityId}_desc` as keyof typeof T : null;
+    const abilityDesc = abilityDescKey ? T[abilityDescKey] as string : '';
 
 
     return (

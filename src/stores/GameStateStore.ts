@@ -606,7 +606,7 @@ export class GameStateStore {
             });
 
             // FIX: Assigned the detailed result to the new `result` variable.
-            result = calculateRoguelikeTrickPoints(humanCardFinal, aiCardFinal, trickWinner, clashWinner, this.briscolaSuit!, this.roguelikeState.activePowers, humanScorePile, aiScorePile);
+            result = calculateRoguelikeTrickPoints(humanCardFinal, aiCardFinal, trickWinner, clashWinner, this.briscolaSuit!, this.roguelikeState.activePowers, humanScorePile, aiScorePile, this.T);
             // FIX: Property 'pointsForTrick' does not exist. Use 'totalPoints'.
             points = result.totalPoints;
             // FIX: Property 'airBonus' does not exist. This was fixed in roguelikeGameLogic.ts.

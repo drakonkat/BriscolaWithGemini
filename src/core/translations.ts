@@ -170,6 +170,15 @@ export const translations = {
       pointsOpponent: "Pti Avv.",
       bonus: "Bonus",
       abilityUsed: (name: string, ability: string) => `Hai usato l'abilità "${ability}" di ${name}.`,
+      bonusReasons: {
+        water: (points: number) => `Acqua: -${points}`,
+        fire: `Fuoco: +3`,
+        air: (points: number) => `Aria: +${points}`,
+        earth: (points: number) => `Terra: +${points}`,
+        tribute: (points: number) => `Tributo: +${points}`,
+        headhunter: (points: number) => `Cacciatore di Teste: +${points}`,
+        mastery: (points: number) => `Maestria: +${points}`,
+      },
     },
     // Roguelike Mode
     roguelike: {
@@ -679,6 +688,15 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
       pointsOpponent: "Opp Pts",
       bonus: "Bonus",
       abilityUsed: (name: string, ability: string) => `You used ${name}'s ability "${ability}".`,
+      bonusReasons: {
+        water: (points: number) => `Water: -${points}`,
+        fire: `Fire: +3`,
+        air: (points: number) => `Air: +${points}`,
+        earth: (points: number) => `Earth: +${points}`,
+        tribute: (points: number) => `Tribute: +${points}`,
+        headhunter: (points: number) => `Headhunter: +${points}`,
+        mastery: (points: number) => `Mastery: +${points}`,
+      },
     },
     // Roguelike Mode
     roguelike: {

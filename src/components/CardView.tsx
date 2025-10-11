@@ -12,7 +12,22 @@ import { Tooltip } from './Tooltip';
 
 type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
 
-export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus, cardDeckStyle, isDraggable, onMouseDown, onTouchStart }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, elementalEffectStatus?: ElementalEffectStatus, cardDeckStyle: CardDeckStyle, isDraggable?: boolean, onMouseDown?: React.MouseEventHandler<HTMLDivElement>, onTouchStart?: React.TouchEventHandler<HTMLDivElement> }) => {
+// FIX: Define props as a separate type and use React.FC to allow React to handle special props like `key` without type errors.
+type CardViewProps = {
+  card: Card;
+  isFaceDown?: boolean;
+  onClick?: () => void;
+  isPlayable?: boolean;
+  lang: Language;
+  className?: string;
+  elementalEffectStatus?: ElementalEffectStatus;
+  cardDeckStyle: CardDeckStyle;
+  isDraggable?: boolean;
+  onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
+  onTouchStart?: React.TouchEventHandler<HTMLDivElement>;
+};
+
+export const CardView: React.FC<CardViewProps> = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus, cardDeckStyle, isDraggable, onMouseDown, onTouchStart }) => {
   const T = translations[lang];
 
   if (isFaceDown) {
@@ -49,6 +64,7 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, classNam
     >
       <CachedImage imageUrl={imagePath} alt={cardId} />
       {card.element && !isFaceDown && (
+          // FIX: The Tooltip component was updated to correctly handle children, fixing this error.
           <Tooltip content={T[card.element]}>
               <div className="card-element-icon">
                   <ElementIcon element={card.element} />

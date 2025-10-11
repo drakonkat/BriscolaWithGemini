@@ -4,12 +4,12 @@
 */
 import React, { useState, useRef, useEffect } from 'react';
 
+// FIX: Define props with React.FC to correctly type the component, resolving issues with `key` props and `children`.
 interface TooltipProps {
     content: React.ReactNode;
-    children: React.ReactElement;
 }
 
-export const Tooltip = ({ content, children }: TooltipProps) => {
+export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
     const [isVisible, setIsVisible] = useState(false);
     const timeoutRef = useRef<number | null>(null);
 
