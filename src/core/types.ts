@@ -111,3 +111,12 @@ export type TrickHistoryEntry = {
 
 // FIX: Added RoguelikeEvent type definition.
 export type RoguelikeEvent = { type: 'market' | 'witch_hut' | 'healing_fountain' | 'challenge_altar' };
+
+export type AbilityUseHistoryEntry = {
+  isAbilityUse: true;
+  trickNumber: number;
+  waifuName: string;
+  abilityName: string;
+};
+
+export type HistoryEntry = TrickHistoryEntry | AbilityUseHistoryEntry;

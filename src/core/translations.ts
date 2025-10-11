@@ -169,6 +169,7 @@ export const translations = {
       pointsYou: "Tuo Pti",
       pointsOpponent: "Pti Avv.",
       bonus: "Bonus",
+      abilityUsed: (name: string, ability: string) => `Hai usato l'abilità "${ability}" di ${name}.`,
     },
     // Roguelike Mode
     roguelike: {
@@ -677,6 +678,7 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
       pointsYou: "Your Pts",
       pointsOpponent: "Opp Pts",
       bonus: "Bonus",
+      abilityUsed: (name: string, ability: string) => `You used ${name}'s ability "${ability}".`,
     },
     // Roguelike Mode
     roguelike: {

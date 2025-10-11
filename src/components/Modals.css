@@ -416,6 +416,18 @@
 .history-points.ai { color: #e57373; font-weight: bold; }
 .history-bonus-reason { font-size: 0.8rem; color: var(--font-color-secondary); line-height: 1.3; }
 
+.history-ability-entry {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 0.75rem;
+    font-style: italic;
+    background-color: rgba(var(--primary-accent-rgb), 0.1);
+    border-radius: var(--radius-sm);
+    margin: 0.5rem 0;
+    color: var(--font-color);
+    font-size: 0.95rem;
+}
+
 /* --- Kasumi Swap Modal --- */
 .kasumi-swap-modal .modal-content { display: flex; flex-direction: column; gap: 1.5rem; align-items: center; }
 .kasumi-swap-modal p { font-size: 1.1rem; margin: 0; }
