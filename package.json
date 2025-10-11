@@ -1,21 +1,38 @@
 {
   "name": "waifubriscola",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.11.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "assets": "capacitor-assets generate",
+    "android": "npm run build && npx cap sync android && npx cap open android",
+    "android:apk": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug && cd .."
   },
   "dependencies": {
+  "@capacitor/android": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/file-transfer": "^1.0.5",
+    "@capacitor/filesystem": "^7.1.4",
+    "@capacitor/screen-orientation": "^7.0.2",
+    "@capacitor/status-bar": "^7.0.3",
     "@google/genai": "^0.7.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "mobx": "^6.13.0",
+    "mobx-react-lite": "^4.0.7",
+    "posthog-js": "^1.261.0",
+    "react": "^19.0.0-rc.0",
+    "react-dom": "^19.0.0-rc.0"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.0.0",
+    "@types/node": "^20.12.12",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.3.1"
   }
 }

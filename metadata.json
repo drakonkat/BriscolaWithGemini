@@ -1,5 +1,5 @@
 {
   "name": "WaifuBriscola",
-  "description": "Un gioco di Briscola per un singolo giocatore contro un'intelligenza artificiale avanzata basata su Gemini.",
+  "description": "Un gioco di Briscola per un singolo giocatore contro un'avversaria AI basata su Gemini, con una chat interattiva.",
   "requestFramePermissions": []
 }

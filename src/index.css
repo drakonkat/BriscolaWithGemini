@@ -1,0 +1,135 @@
+:root {
+  /* New Soft Gaming Theme Palette */
+  --bg-dark-gradient: linear-gradient(135deg, #3a3a5e 0%, #2a2a3e 100%);
+  --bg-color: #2a2a3e;
+  --table-bg-dark: #2a2a3e;
+  --table-bg-light: #4a4a68;
+  --table-bg-gradient: radial-gradient(circle, var(--table-bg-light) 0%, var(--table-bg-dark) 100%);
+  --ui-bg: rgba(44, 44, 62, 0.85);
+  --ui-bg-glass: rgba(44, 44, 62, 0.6);
+  --border-color: #5a5a78;
+  --font-color: #e8e8f5;
+  --font-color-secondary: #b0b0c8;
+  --card-bg: #fdfaf4;
+
+  --primary-accent: #c77dff; /* Softer purple */
+  --primary-accent-hover: #d99fff;
+  --primary-accent-rgb: 199, 125, 255;
+  
+  --gold-accent: #FFD700;
+  --gold-accent-rgb: 255, 215, 0;
+
+  --red-suit: #ff6b6b;
+  --black-suit: #2c2c3e;
+  --waifu-bubble: #e9e0f8;
+  --human-bubble: #d4eaf7;
+  
+  /* Sizing & Radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 999px;
+
+  /* Elemental & Rarity Colors */
+  --element-fire-color: #ff7f50;
+  --element-water-color: #4fc3f7;
+  --element-air-color: #fff176;
+  --element-earth-color: #aed581;
+  --rarity-r-color: #c77dff;
+  --rarity-sr-color: #4dd0e1;
+  --rarity-ssr-color: #FFD700;
+
+
+  /* Responsive Card Sizing */
+  --classic-card-aspect-ratio: 1.7857;
+  --poker-card-aspect-ratio: 1.4;
+  --card-aspect-ratio: var(--classic-card-aspect-ratio);
+  --card-width-clamp: clamp(54px, 6.5vw, 90px);
+  --card-height-from-vw: calc(var(--card-width-clamp) * var(--card-aspect-ratio));
+  --card-height-from-vh: calc(30vh - 50px);
+  --card-height: min(var(--card-height-from-vw), var(--card-height-from-vh));
+  --card-width: calc(var(--card-height) / var(--card-aspect-ratio));
+  --card-border-radius: clamp(6px, 1.2vw, 10px);
+  --played-card-offset: calc(var(--card-width) * 0.5 + 0.25rem);
+
+  --top-bar-height: 55px;
+  --bottom-bar-height: 55px;
+}
+
+html {
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg-dark-gradient);
+  color: var(--font-color);
+  height: 100%;
+  overflow: hidden;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  max-width: 1600px;
+  margin: auto;
+  position: relative;
+}
+
+.app-container.deck-style-poker {
+  --card-aspect-ratio: var(--poker-card-aspect-ratio);
+}
+
+/* When chat is disabled, game board takes full width */
+.app-container.chat-disabled .game-board {
+  flex: 1;
+  border-radius: var(--radius-lg);
+  border-right-width: 2px;
+}
+
+
+.spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 4px solid #fff; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: auto;
+}
+
+.element-icon.fire { color: var(--element-fire-color); }
+.element-icon.water { color: var(--element-water-color); }
+.element-icon.air { color: var(--element-air-color); }
+.element-icon.earth { color: var(--element-earth-color); }
+
+/* --- Responsive Design --- */
+@media (max-width: 1024px) {
+  .app-container { flex-direction: column; height: 100%; max-height: none; }
+  .app-container.chat-disabled .game-board { border-radius: 0; border-right-width: 0; }
+  .app-container.chat-open-mobile .chat-panel { transform: translateX(0); }
+  .app-container.chat-open-mobile::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 999; }
+}
+
+@media (max-width: 768px) {
+  :root { --card-width-clamp: clamp(70px, 18vw, 90px); }
+}
+
+@media (max-width: 480px) {
+  /* Global responsive styles */
+}
+
+/* --- Safe Area for Web Builds --- */
+body.platform-web {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}

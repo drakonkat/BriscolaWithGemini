@@ -1,0 +1,80 @@
+/* --- Keyframe Animations --- */
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+@keyframes rise {
+  0% { transform: translateY(0) scale(0.5); opacity: 1; }
+  100% { transform: translateY(-100%) scale(1); opacity: 0; }
+}
+
+@keyframes pulse-cyan {
+  0% { box-shadow: 0 0 12px 4px #00e5ff, 0 4px 8px rgba(0,0,0,0.2); }
+  50% { box-shadow: 0 0 20px 8px #00e5ff, 0 4px 8px rgba(0,0,0,0.2); }
+  100% { box-shadow: 0 0 12px 4px #00e5ff, 0 4px 8px rgba(0,0,0,0.2); }
+}
+
+@keyframes pulse-badge { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(217, 45, 45, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(217, 45, 45, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(217, 45, 45, 0); } }
+
+@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+
+@keyframes fade-in-out { 0% { opacity: 0; transform: translateY(10px); } 10% { opacity: 1; transform: translateY(0); } 90% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(10px); } }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-up { 
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up {
+    animation: fade-in-up 0.4s ease-out forwards;
+}
+
+
+@keyframes float-up { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-30px) scale(1.2); } }
+
+@keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+@keyframes pulse-outcome { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+@keyframes dice-spin { 0% { transform: rotateX(0deg) rotateY(0deg) scale(0.5); } 100% { transform: rotateX(1080deg) rotateY(720deg) scale(1); } }
+
+@keyframes coin-spin { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+
+@keyframes gacha-particle-fly { 0% { transform: rotate(0) translateY(0) scale(1); opacity: 1; } 100% { transform: rotate(var(--angle)) translateY(var(--distance, 70vh)) scale(0); opacity: 0; } }
+
+@keyframes gacha-flash { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0.7; } 50% { opacity: 0.4; } 100% { transform: translate(-50%, -50%) scale(3); opacity: 0; } }
+
+/* --- Card Playing Animation --- */
+@keyframes play-human-p1 { from { top: 85%; transform: translateX(calc(-50%)) scale(1.1); } to { top: 50%; transform: translate(calc(-50% + var(--played-card-offset)), -50%) scale(1); } }
+@keyframes play-ai-p0 { from { top: 15%; transform: translateX(calc(-50%)) scale(1); } to { top: 50%; transform: translate(calc(-50% - var(--played-card-offset)), -50%) scale(1); } }
+@keyframes play-ai-p1 { from { top: 15%; transform: translateX(calc(-50%)) scale(1); } to { top: 50%; transform: translate(calc(-50% + var(--played-card-offset)), -50%) scale(1); } }
+@keyframes play-human-p0 { from { top: 85%; transform: translateX(calc(-50%)) scale(1.1); } to { top: 50%; transform: translate(calc(-50% - var(--played-card-offset)), -50%) scale(1); } }
+
+.animating-card-container { position: absolute; left: 50%; z-index: 50; pointer-events: none; transform: translateX(4vw); }
+.animating-card-container .card, .drawing-card-container .card { opacity: 0; animation: fade-in 0.1s forwards; }
+.animating-card-container.player-human.position-1 { animation: play-human-p1 0.5s ease-in-out forwards; }
+.animating-card-container.player-ai.position-0 { animation: play-ai-p0 0.5s ease-in-out forwards; }
+.animating-card-container.player-ai.position-1 { animation: play-ai-p1 0.5s ease-in-out forwards; }
+
+
+/* --- Card Drawing Animation --- */
+@keyframes draw-to-human { from { top: 50%; left: 10%; transform: translateY(-50%) rotate(0deg) scale(1); opacity: 1; } to { top: 90%; left: 50%; transform: translate(-50%, -50%) rotate(180deg) scale(0.5); opacity: 0; } }
+@keyframes draw-to-ai { from { top: 50%; left: 10%; transform: translateY(-50%) rotate(0deg) scale(1); opacity: 1; } to { top: 10%; left: 50%; transform: translate(-50%, -50%) rotate(-180deg) scale(0.5); opacity: 0; } }
+
+.drawing-card-container { position: absolute; top: 50%; left: 10%; transform: translateY(-50%); z-index: 40; pointer-events: none; }
+.drawing-card-container.destination-human { animation-name: draw-to-human; animation-duration: 0.5s; animation-timing-function: ease-out; animation-fill-mode: forwards; }
+.drawing-card-container.destination-ai { animation-name: draw-to-ai; animation-duration: 0.5s; animation-timing-function: ease-out; animation-fill-mode: forwards; }
+.drawing-card-container.order-1 { animation-delay: 0.15s; }
+
+
+@media (max-width: 1024px) {
+  .animating-card-container { transform: translateX(0); }
+  @keyframes play-human-p0 { from { top: 85%; transform: translateX(-50%) scale(1.1); } to { top: 50%; transform: translate(calc(-50% - var(--played-card-offset)), -50%) scale(1); } }
+  @keyframes play-human-p1 { from { top: 85%; transform: translateX(-50%) scale(1.1); } to { top: 50%; transform: translate(calc(-50% + var(--played-card-offset)), -50%) scale(1); } }
+  @keyframes play-ai-p0 { from { top: 15%; transform: translateX(-50%) scale(1); } to { top: 50%; transform: translate(calc(-50% - var(--played-card-offset)), -50%) scale(1); } }
+  @keyframes play-ai-p1 { from { top: 15%; transform: translateX(-50%) scale(1); } to { top: 50%; transform: translate(calc(-50% + var(--played-card-offset)), -50%) scale(1); } }
+}
