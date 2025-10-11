@@ -21,7 +21,7 @@ export const SettingsModal = observer(({ isOpen, onClose, language }: SettingsMo
     const { gameSettingsStore, uiStore } = useStores();
     const { 
         cardDeckStyle, isChatEnabled, waitForWaifuResponse, 
-        isDiceAnimationEnabled, language: currentLanguage, gameplayMode 
+        isDiceAnimationEnabled, language: currentLanguage, gameplayMode, isNsfwEnabled
     } = gameSettingsStore;
 
     const T = translations[currentLanguage];
@@ -37,6 +37,14 @@ export const SettingsModal = observer(({ isOpen, onClose, language }: SettingsMo
                 <h2>{T.settingsTitle}</h2>
                 
                 <div className="settings-modal-content">
+                    <div className="settings-selector">
+                        <label htmlFor="nsfw-toggle-modal">{T.toggleNsfwLabel}:</label>
+                        <label className="toggle-switch">
+                            <input id="nsfw-toggle-modal" type="checkbox" checked={isNsfwEnabled} onChange={(e) => gameSettingsStore.setIsNsfwEnabled(e.target.checked)} />
+                            <span className="slider"></span>
+                        </label>
+                    </div>
+
                     <div className="settings-selector">
                         <label htmlFor="deck-style-select-modal">{T.cardDeckStyleLabel}:</label>
                         <div className="select-wrapper">

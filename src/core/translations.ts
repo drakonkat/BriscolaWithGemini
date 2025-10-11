@@ -1,4 +1,5 @@
 
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -33,6 +34,7 @@ export const translations = {
     cardDeckStyleClassic: "Classico",
     cardDeckStylePoker: "Poker",
     diceAnimationLabel: "Animazione Dadi",
+    toggleNsfwLabel: "Contenuti NSFW",
     toggleChatLabel: "Abilita Chat Waifu",
     toggleWaitForWaifuLabel: "Attendi Risposta Waifu",
     fastModeEnabled: "Modalità veloce attivata: il gioco non attenderà più la risposta della Waifu.",
@@ -552,6 +554,7 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     cardDeckStyleClassic: "Classic",
     cardDeckStylePoker: "Poker",
     diceAnimationLabel: "Dice Animation",
+    toggleNsfwLabel: "NSFW Content",
     toggleChatLabel: "Enable Waifu Chat",
     toggleWaitForWaifuLabel: "Wait for Waifu Response",
     fastModeEnabled: "Fast mode enabled: the game will no longer wait for the Waifu's response.",

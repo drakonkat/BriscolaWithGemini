@@ -2,6 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
+import React, { useEffect } from 'react';
 import { translations } from '../core/translations';
 import type { Language } from '../core/types';
 import { CachedImage } from './CachedImage';
@@ -27,10 +28,17 @@ interface GalleryModalProps {
     gachaAnimationState: { active: boolean; rarity: 'R' | 'SR' | 'SSR' | null };
     onAnimationEnd: () => void;
     onImageSelect: (url: string) => void;
+    isNsfwEnabled: boolean;
 }
 
-export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onGachaMultiRoll, hasRolledGacha, isRolling, gachaAnimationState, onAnimationEnd, onImageSelect }: GalleryModalProps) => {
-    if (!isOpen) {
+export const GalleryModal = ({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onGachaMultiRoll, hasRolledGacha, isRolling, gachaAnimationState, onAnimationEnd, onImageSelect, isNsfwEnabled }: GalleryModalProps) => {
+    useEffect(() => {
+        if (isOpen && !isNsfwEnabled) {
+            onClose();
+        }
+    }, [isOpen, isNsfwEnabled, onClose]);
+
+    if (!isOpen || !isNsfwEnabled) {
         return null;
     }
 

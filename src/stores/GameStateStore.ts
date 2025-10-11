@@ -531,12 +531,16 @@ export class GameStateStore {
     // Actions
     
     startGame = (selectedWaifu: Waifu | null) => {
-        const { language, gameplayMode, difficulty, isChatEnabled } = this.rootStore.gameSettingsStore;
+        const { language, gameplayMode, difficulty, isChatEnabled, isNsfwEnabled } = this.rootStore.gameSettingsStore;
         
-        const bgIndex = Math.floor(Math.random() * 21) + 1;
-        const isDesktop = window.innerWidth > 1024;
-        const backgroundPrefix = isDesktop ? 'landscape' : 'background';
-        this.backgroundUrl = getImageUrl(`/background/${backgroundPrefix}${bgIndex}.png`);
+        if (isNsfwEnabled) {
+            const bgIndex = Math.floor(Math.random() * 21) + 1;
+            const isDesktop = window.innerWidth > 1024;
+            const backgroundPrefix = isDesktop ? 'landscape' : 'background';
+            this.backgroundUrl = getImageUrl(`/background/${backgroundPrefix}${bgIndex}.png`);
+        } else {
+            this.backgroundUrl = '';
+        }
         
         playSound('game-start');
         const newWaifu = selectedWaifu ?? WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
@@ -1028,18 +1032,7 @@ export class GameStateStore {
 
     saveGame = () => {
         if (this.phase === 'playing') {
-            const {
-                language, gameplayMode, difficulty, isChatEnabled, waitForWaifuResponse,
-                soundtrack, isMusicEnabled, soundEditorSettings, cardDeckStyle,
-            } = this.rootStore.gameSettingsStore;
-    
-            const settingsToSave = {
-                language, gameplayMode, difficulty, isChatEnabled, waitForWaifuResponse,
-                soundtrack, isMusicEnabled, soundEditorSettings, cardDeckStyle,
-            };
-
             const stateToSave = {
-                settings: settingsToSave,
                 currentWaifuName: this.currentWaifu?.name ?? null,
                 deck: toJS(this.deck), humanHand: toJS(this.humanHand), aiHand: toJS(this.aiHand), briscolaCard: toJS(this.briscolaCard), briscolaSuit: this.briscolaSuit, cardsOnTable: toJS(this.cardsOnTable), turn: this.turn,
                 humanScore: this.humanScore, aiScore: this.aiScore, trickStarter: this.trickStarter, message: this.message, backgroundUrl: this.backgroundUrl, aiEmotionalState: this.aiEmotionalState,
@@ -1069,14 +1062,6 @@ export class GameStateStore {
             const saved = JSON.parse(savedGameJson);
             const { gameSettingsStore } = this.rootStore;
 
-            gameSettingsStore.setLanguage(saved.settings.language);
-            gameSettingsStore.setGameplayMode(saved.settings.gameplayMode);
-            gameSettingsStore.setDifficulty(saved.settings.difficulty);
-            gameSettingsStore.setIsChatEnabled(saved.settings.isChatEnabled);
-            gameSettingsStore.setWaitForWaifuResponse(saved.settings.waitForWaifuResponse);
-            gameSettingsStore.setSoundtrack(saved.settings.soundtrack);
-            gameSettingsStore.setCardDeckStyle(saved.settings.cardDeckStyle || 'classic');
-
             const waifu = WAIFUS.find(w => w.name === saved.currentWaifuName) || (BOSS_WAIFU.name === saved.currentWaifuName ? BOSS_WAIFU : null);
             
             runInAction(() => {
@@ -1092,6 +1077,11 @@ export class GameStateStore {
                 // Restored the underlying state property `isAiHandTemporarilyRevealed` instead.
                 this.isAiHandTemporarilyRevealed = saved.isAiHandTemporarilyRevealed || false;
                 this.isKasumiModalOpen = saved.isKasumiModalOpen; this.lastResolvedTrick = saved.lastResolvedTrick || []; this.trickCounter = saved.trickCounter || 0;
+
+                if (!gameSettingsStore.isNsfwEnabled) {
+                    this.backgroundUrl = '';
+                }
+                
                 this.phase = 'playing';
             });
             this.rootStore.posthog?.capture('game_resumed');

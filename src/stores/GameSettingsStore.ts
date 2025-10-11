@@ -58,6 +58,7 @@ export class GameSettingsStore {
     soundEditorSettings: SoundSettings = loadSoundSettings();
     cardDeckStyle: CardDeckStyle = loadFromLocalStorage('card_deck_style', 'classic');
     isDiceAnimationEnabled: boolean = loadFromLocalStorage('is_dice_animation_enabled', true);
+    isNsfwEnabled: boolean = loadFromLocalStorage('is_nsfw_enabled', true);
     hasCompletedTutorial: boolean = loadFromLocalStorage('has_completed_tutorial', false);
     customSoundPresets: Record<string, SoundSettings> = loadFromLocalStorage('custom_sound_presets', {});
 
@@ -75,6 +76,7 @@ export class GameSettingsStore {
         autorun(() => localStorage.setItem('sound_editor_settings', JSON.stringify(this.soundEditorSettings)));
         autorun(() => localStorage.setItem('card_deck_style', JSON.stringify(this.cardDeckStyle)));
         autorun(() => localStorage.setItem('is_dice_animation_enabled', JSON.stringify(this.isDiceAnimationEnabled)));
+        autorun(() => localStorage.setItem('is_nsfw_enabled', JSON.stringify(this.isNsfwEnabled)));
         autorun(() => localStorage.setItem('has_completed_tutorial', JSON.stringify(this.hasCompletedTutorial)));
         autorun(() => localStorage.setItem('custom_sound_presets', JSON.stringify(this.customSoundPresets)));
     }
@@ -89,6 +91,7 @@ export class GameSettingsStore {
     setSoundEditorSettings = (settings: SoundSettings) => this.soundEditorSettings = settings;
     setCardDeckStyle = (style: CardDeckStyle) => this.cardDeckStyle = style;
     setIsDiceAnimationEnabled = (enabled: boolean) => this.isDiceAnimationEnabled = enabled;
+    setIsNsfwEnabled = (enabled: boolean) => this.isNsfwEnabled = enabled;
     setTutorialCompleted = (completed: boolean) => this.hasCompletedTutorial = completed;
     
     saveCustomPreset = (name: string, settings: SoundSettings) => {

@@ -30,7 +30,7 @@ import { NewFollowerModal } from './NewFollowerModal';
 
 export const GameModals = observer(() => {
     const { uiStore, gameStateStore, gachaStore, gameSettingsStore } = useStores();
-    const { language, difficulty, gameplayMode, cardDeckStyle } = gameSettingsStore;
+    const { language, difficulty, gameplayMode, cardDeckStyle, isNsfwEnabled } = gameSettingsStore;
     const { 
         phase, gameResult, lastGameWinnings, currentWaifu, gameMode, humanScore, aiScore, 
         trickHistory, isKasumiModalOpen, briscolaCard, humanHand, isBriscolaSwapModalOpen,
@@ -89,6 +89,7 @@ export const GameModals = observer(() => {
               isRolling={gachaStore.isRolling}
               gachaAnimationState={gachaStore.gachaAnimationState}
               onAnimationEnd={gachaStore.endGachaAnimation}
+              isNsfwEnabled={isNsfwEnabled}
             />
             
             <FullscreenImageModal

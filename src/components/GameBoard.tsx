@@ -31,7 +31,7 @@ export const GameBoard = observer(() => {
         handleDragStart, handleDragMove, handleDragEnd, forceCloseClashModal
     } = gameStateStore;
     const { animatingCard, drawingCards, unreadMessageCount, waifuBubbleMessage } = uiStore;
-    const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle, isDiceAnimationEnabled, difficulty } = gameSettingsStore;
+    const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle, isDiceAnimationEnabled, difficulty, isNsfwEnabled } = gameSettingsStore;
     
     const T = translations[language];
     const T_roguelike = T.roguelike;
@@ -132,14 +132,16 @@ export const GameBoard = observer(() => {
 
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
-            <div className="game-board-background-wrapper">
-                <CachedImage 
-                    imageUrl={backgroundUrl} 
-                    alt={T.gameBoardBackground} 
-                    className="game-board-background"
-                    style={backgroundStyle}
-                />
-            </div>
+            {isNsfwEnabled && (
+                <div className="game-board-background-wrapper">
+                    <CachedImage 
+                        imageUrl={backgroundUrl} 
+                        alt={T.gameBoardBackground} 
+                        className="game-board-background"
+                        style={backgroundStyle}
+                    />
+                </div>
+            )}
 
             {elementalClash && (
                 <div className="elemental-clash-overlay" onClick={forceCloseClashModal}>
