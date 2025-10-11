@@ -10,7 +10,10 @@ import React, { useState, useLayoutEffect, useRef } from 'react';
 
 export const TutorialOverlay = observer(() => {
     const { uiStore, gameSettingsStore } = useStores();
-    const { highlightedElementRect, tutorialText, tutorialPosition, isTutorialWaitingForInput, tutorialStep } = uiStore;
+    const { 
+        highlightedElementRect, tutorialText, tutorialPosition, isTutorialWaitingForInput, tutorialStep,
+        currentTutorialStepIndex, totalTutorialSteps
+    } = uiStore;
     const T = translations[gameSettingsStore.language];
     const bubbleRef = useRef<HTMLDivElement>(null);
     const [bubbleStyle, setBubbleStyle] = useState<React.CSSProperties>({
@@ -82,6 +85,9 @@ export const TutorialOverlay = observer(() => {
                 <p>{tutorialText}</p>
                 <div className="tutorial-buttons">
                     <button className="skip-button" onClick={uiStore.endTutorial}>{T.tutorial.skip}</button>
+                    <span className="tutorial-step-counter">
+                        {currentTutorialStepIndex + 1} / {totalTutorialSteps}
+                    </span>
                     {!isTutorialWaitingForInput && (
                         <button onClick={isLastStep ? uiStore.endTutorial : uiStore.nextTutorialStep}>
                             {isLastStep ? T.tutorial.finish : T.tutorial.next}

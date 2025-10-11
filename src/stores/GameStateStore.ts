@@ -911,7 +911,7 @@ export class GameStateStore {
         this.turn = 'human';
         this.trickStarter = 'human';
         this.message = this.T.yourTurn;
-        this.rootStore.uiStore.setTutorialStep('playerHand');
+        this.rootStore.uiStore.switchToInGameTutorial();
     };
 
     resolveTrickForTutorial = () => {
