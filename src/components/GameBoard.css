@@ -221,6 +221,31 @@
   transform: none; box-shadow: 0 2px 4px rgba(0,0,0,0.3); outline: none; cursor: default;
 }
 
+/* Briscola Reminder */
+.briscola-reminder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.7;
+    animation: fade-in 0.5s;
+}
+.briscola-reminder .card {
+    --card-height: 70px;
+    /* width is calculated by aspect ratio automatically */
+    pointer-events: none;
+    filter: grayscale(50%) sepia(0.5);
+    box-shadow: none;
+}
+.briscola-reminder-label {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: white;
+    background: rgba(0,0,0,0.6);
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius-sm);
+}
+
 .waifu-status-button {
     background: none; border: none; padding: 0; cursor: pointer; border-radius: 50%; position: relative; line-height: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: transform 0.2s ease;
 }
@@ -367,14 +392,81 @@
 .undo-ability-button:hover { background: #e67e22; }
 
 /* --- Follower UI --- */
-.followers-container { position: absolute; top: 50%; left: 15px; transform: translateY(-50%); z-index: 20; display: flex; flex-direction: column; gap: 1rem; }
-.follower-waifu { position: relative; cursor: pointer; transition: all 0.2s ease; }
-.follower-waifu-avatar { width: 50px; height: 50px; border-radius: 50%; border: 3px solid var(--primary-accent); box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
-.follower-waifu:hover:not(.disabled) { transform: scale(1.1); }
-.follower-waifu.disabled { cursor: not-allowed; filter: grayscale(1); opacity: 0.6; }
-.follower-waifu.armed { transform: scale(1.1); box-shadow: 0 0 15px var(--gold-accent); }
-.cancel-follower-ability-button { background: var(--red-suit); color: white; border: none; padding: 0.4rem 0.8rem; font-size: 0.8rem; font-weight: bold; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.3); margin-top: 1rem; }
-.cancel-follower-ability-button:hover { background: #e53e3e; }
+.followers-container {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.follower-ability-button {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(0,0,0,0.4);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 90px;
+  color: var(--font-color);
+  font-family: inherit;
+  font-size: inherit;
+}
+.followers-container .tooltip-wrapper:hover .follower-ability-button:not(:disabled) {
+  transform: scale(1.05);
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 10px rgba(var(--primary-accent-rgb), 0.5);
+  z-index: 1; /* bring to front */
+}
+.follower-ability-button .follower-waifu-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.follower-ability-name {
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1.2;
+  min-height: calc(0.8rem * 1.2 * 2); /* two lines */
+}
+.follower-ability-button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+.followers-container .tooltip-wrapper:hover .follower-ability-button:disabled {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--border-color);
+}
+.used-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: calc(var(--radius-md) - 2px); /* adjust for border */
+}
+.used-overlay svg {
+  width: 40px;
+  height: 40px;
+  color: var(--red-suit);
+}
 
 .human-abilities-container {
     position: absolute;
@@ -480,7 +572,7 @@
   .played-cards { transform: translateX(0); }
   .deck-container { height: var(--card-height); }
   .followers-container { top: auto; bottom: calc(var(--bottom-bar-height) + 1rem); left: 15px; transform: none; flex-direction: row; gap: 0.5rem; }
-  .follower-waifu-avatar { width: 40px; height: 40px; }
+  .follower-ability-button .follower-waifu-avatar { width: 40px; height: 40px; }
   .top-left-actions, .bottom-left-actions {
     display: none;
   }

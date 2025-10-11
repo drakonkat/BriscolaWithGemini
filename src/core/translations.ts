@@ -219,6 +219,8 @@ export const translations = {
       insightPotionDesc: "Vedi la mano della tua avversaria per i primi 3 turni del prossimo livello.",
       coinPouch: "Sacchetto di Monete",
       coinPouchDesc: "Ottieni subito 50 Waifu Coins extra.",
+      newFollowerTitle: "Nuova Compagna!",
+      newFollowerMessage: (name: string) => `${name} si è unita a te! Puoi usare la sua abilità una volta per partita.`,
       // FIX: Added missing translations for power selection screen
       chooseYourPower: "Scegli il tuo Potere Iniziale",
       initialPowerMessage: "Questo potere ti aiuterà per tutta la durata della tua run. Scegli saggiamente!",
@@ -725,6 +727,8 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
       insightPotionDesc: "See your opponent's hand for the first 3 turns of the next level.",
       coinPouch: "Pouch of Coins",
       coinPouchDesc: "Immediately get 50 extra Waifu Coins.",
+      newFollowerTitle: "New Follower!",
+      newFollowerMessage: (name: string) => `${name} has joined you! You can use her ability once per match.`,
       // Power selection screen translations
       chooseYourPower: "Choose Your Initial Power",
       initialPowerMessage: "This power will help you throughout your run. Choose wisely!",

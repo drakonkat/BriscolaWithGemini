@@ -1,0 +1,54 @@
+.tooltip-wrapper {
+  position: relative;
+  display: inline-flex; /* Use inline-flex to not break layout and contain the tooltip */
+  justify-content: center; /* Center the child if it's smaller than the wrapper */
+  align-items: center; /* Vertically align child */
+}
+
+.tooltip-content {
+  position: absolute;
+  bottom: calc(100% + 8px); /* Position above the element */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--ui-bg);
+  color: var(--font-color);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  font-size: 0.9rem;
+  z-index: 1000;
+  opacity: 0;
+  animation: fade-in 0.2s 0.1s forwards; /* Add a small delay */
+  pointer-events: none; /* So it doesn't interfere with mouse events */
+  width: max-content;
+  max-width: 250px;
+  text-align: left;
+}
+
+.tooltip-content strong {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  color: var(--primary-accent);
+}
+
+.tooltip-content p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--font-color-secondary);
+  white-space: normal;
+}
+
+/* Arrow */
+.tooltip-content::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--border-color) transparent transparent transparent;
+}

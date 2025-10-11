@@ -89,6 +89,7 @@ export class GameStateStore {
     currentDropZone: 'normal' | 'power' | 'cancel' | null = null;
     
     roguelikeState: RoguelikeState = INITIAL_ROGUELIKE_STATE;
+    newFollower: Waifu | null = null;
     powerAnimation: { type: Element; player: Player; points: number } | null = null;
     elementalClash: ElementalClashResult | null = null;
     lastTrickHighlights: { human: ElementalEffectStatus, ai: ElementalEffectStatus } = { human: 'unset', ai: 'unset' };
@@ -224,15 +225,12 @@ export class GameStateStore {
         if (shouldClash) {
             let clashWinner: 'human' | 'ai' | 'tie' | null = null;
             let finalClashResult: ElementalClashResult | null = null;
-            
-            const firstPlayerCard = this.trickStarter === 'human' ? humanCard : aiCard;
-            const secondPlayerCard = this.trickStarter === 'human' ? aiCard : humanCard;
 
             if (this.guaranteedClashWinner) {
                 clashWinner = this.guaranteedClashWinner;
                 this.guaranteedClashWinner = null;
             } else {
-                clashWinner = determineWeaknessWinner(firstPlayerCard.element!, secondPlayerCard.element!);
+                clashWinner = determineWeaknessWinner(humanCard.element!, aiCard.element!);
             }
 
             if (clashWinner) { 
@@ -398,7 +396,7 @@ export class GameStateStore {
             } else { // Roguelike
                 if (winner === 'human') {
                     const levelJustWon = this.roguelikeState.currentLevel;
-
+    
                     if (levelJustWon >= 4) {
                         // Run is complete
                         winnings = ROGUELIKE_REWARDS[difficulty].win;
@@ -408,14 +406,18 @@ export class GameStateStore {
                         this.phase = 'gameOver';
                         this.roguelikeState = INITIAL_ROGUELIKE_STATE;
                     } else {
-                        // Level is won, but run continues
-                        this.roguelikeState = {
-                            ...this.roguelikeState,
-                            currentLevel: this.roguelikeState.currentLevel + 1,
-                            followers: this.roguelikeState.currentLevel <= 3 && this.currentWaifu ? [...this.roguelikeState.followers, this.currentWaifu] : this.roguelikeState.followers,
-                            followerAbilitiesUsedThisMatch: [],
-                        };
-                        this.showPowerSelectionScreen(false);
+                        // Level is won, show new follower before power selection
+                        if (this.currentWaifu) {
+                            this.newFollower = this.currentWaifu;
+                        } else {
+                            // Should not happen, but as a fallback, go to power selection
+                            this.roguelikeState = {
+                                ...this.roguelikeState,
+                                currentLevel: this.roguelikeState.currentLevel + 1,
+                                followerAbilitiesUsedThisMatch: [],
+                            };
+                            this.showPowerSelectionScreen(false);
+                        }
                     }
                 } else { // AI won, run failed
                     const levelLostAt = this.roguelikeState.currentLevel;
@@ -1049,6 +1051,19 @@ export class GameStateStore {
         
         this.powerSelectionOptions = null;
         this.startRoguelikeLevel();
+    }
+    
+    acknowledgeNewFollower = () => {
+        if (!this.newFollower) return;
+    
+        this.roguelikeState = {
+            ...this.roguelikeState,
+            currentLevel: this.roguelikeState.currentLevel + 1,
+            followers: [...this.roguelikeState.followers, this.newFollower],
+            followerAbilitiesUsedThisMatch: [],
+        };
+        this.newFollower = null;
+        this.showPowerSelectionScreen(false);
     }
 
     activateLastTrickInsight = () => {
