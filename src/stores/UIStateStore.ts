@@ -33,7 +33,7 @@ const TUTORIAL_STEPS: Record<TutorialStepId, TutorialStepDetails> = {
     welcome: { elementQuery: '[data-tutorial-id="welcome"]', textKey: 'welcome', position: 'bottom' },
     gameMode: { elementQuery: '[data-tutorial-id="game-mode"]', textKey: 'gameMode', position: 'bottom' },
     difficulty: { elementQuery: '[data-tutorial-id="difficulty"]', textKey: 'difficulty', position: 'bottom' },
-    waifu: { elementQuery: '[data-tutorial-id="waifu-selector"]', textKey: 'waifu', position: 'bottom' },
+    waifu: { elementQuery: '[data-tutorial-id="waifu-selector"]', textKey: 'waifu', position: 'top' },
     gallery: { elementQuery: '[data-tutorial-id="gallery"]', textKey: 'gallery', position: 'top' },
     start: { elementQuery: '[data-tutorial-id="start-game"]', textKey: 'start', position: 'top', action: (store) => store.rootStore.gameStateStore.startTutorialGame() },
     // In-Game
@@ -246,7 +246,7 @@ export class UIStateStore {
         this.tutorialText = T[details.textKey] as string;
         this.tutorialPosition = details.position ?? 'bottom';
         this.isTutorialWaitingForInput = details.waitForInput ?? false;
-        this.setHighlightedElementByQuery(details.elementQuery);
+        this.setHighlightedElementByQuery(details.elementQuery, stepId);
 
         if (details.action) {
             details.action(this);
@@ -298,13 +298,24 @@ export class UIStateStore {
         }
     }
 
-    setHighlightedElementByQuery(query?: string | null) {
+    setHighlightedElementByQuery(query?: string | null, stepId?: TutorialStepId) {
         setTimeout(() => {
             runInAction(() => {
                 if (query) {
-                    const element = document.querySelector(query);
+                    const element = document.querySelector(query) as HTMLElement;
                     if (element) {
-                        this.highlightedElementRect = element.getBoundingClientRect();
+                        // Special handling to scroll sections into view on mobile
+                        if (stepId === 'waifu' || stepId === 'gallery') {
+                            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            // Wait for the smooth scroll to finish before getting the element's position
+                            setTimeout(() => {
+                                runInAction(() => {
+                                    this.highlightedElementRect = element.getBoundingClientRect();
+                                });
+                            }, 400); 
+                        } else {
+                            this.highlightedElementRect = element.getBoundingClientRect();
+                        }
                     } else {
                         console.warn(`Tutorial element not found: ${query}`);
                         this.highlightedElementRect = null;
