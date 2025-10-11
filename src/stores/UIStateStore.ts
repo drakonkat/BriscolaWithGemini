@@ -77,8 +77,8 @@ export class UIStateStore {
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
 
     // Menu collapsible sections
-    isDifficultyDetailsOpen: boolean;
-    isWaifuDetailsOpen: boolean;
+    isDifficultyDetailsOpen: boolean = loadFromLocalStorage('ui_difficulty_details_open', window.innerWidth > 768);
+    isWaifuDetailsOpen: boolean = loadFromLocalStorage('ui_waifu_details_open', window.innerWidth > 768);
 
     // Tutorial State
     isTutorialActive = false;
@@ -103,10 +103,6 @@ export class UIStateStore {
     constructor(rootStore: RootStore) {
         makeAutoObservable(this, { rootStore: false, bubbleTimeoutRef: false });
         this.rootStore = rootStore;
-
-        // Default to open on desktop, closed on mobile, if not in localStorage
-        this.isDifficultyDetailsOpen = loadFromLocalStorage('ui_difficulty_details_open', window.innerWidth > 768);
-        this.isWaifuDetailsOpen = loadFromLocalStorage('ui_waifu_details_open', window.innerWidth > 768);
 
         autorun(() => localStorage.setItem('ui_difficulty_details_open', JSON.stringify(this.isDifficultyDetailsOpen)));
         autorun(() => localStorage.setItem('ui_waifu_details_open', JSON.stringify(this.isWaifuDetailsOpen)));

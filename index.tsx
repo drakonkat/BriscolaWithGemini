@@ -27,6 +27,7 @@ const options = {
   disabled: !apiKey,
 };
 
+
 const Main = () => {
     const posthog = usePostHog();
     useEffect(() => {
