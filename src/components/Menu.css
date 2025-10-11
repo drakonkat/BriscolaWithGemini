@@ -35,7 +35,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center top;
+  object-position: center;
   filter: brightness(0.8);
   transform: scale(1.1);
   z-index: -1;
@@ -961,6 +961,9 @@ input:checked + .slider:before {
   .menu-footer {
     margin-top: 1.5rem;
   }
+  .menu-section-header h2 {
+    font-size: 1.5rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -970,93 +973,89 @@ input:checked + .slider:before {
 }
 
 /* --- Collapsible Sections --- */
-.details-header {
-    display: none; /* Hidden on desktop */
-}
 .menu-section-header {
+    cursor: pointer;
     display: flex;
-    justify-content: center; /* Center titles on desktop */
+    justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+    margin-bottom: 0;
 }
+
+.menu-section-header::before {
+    content: '';
+    width: 36px; /* Placeholder to balance the collapse button and center the title */
+}
+
+/* Rule for the NON-collapsible "Difficulty" header */
+.menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header) {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 1.5rem;
+    cursor: default;
+    justify-content: center;
+}
+
+.menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header)::before {
+    display: none;
+}
+
+.menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header) > .collapse-button {
+    display: none;
+}
+
+.details-header {
+    display: flex;
+    margin-top: 1.5rem;
+}
+
 .menu-section-header h2 {
     color: var(--primary-accent);
     font-size: 1.8rem;
     margin-bottom: 0;
 }
-.collapse-button {
-    display: none;
+
+.details-header h3 {
+    color: var(--primary-accent);
+    font-size: 1.3rem;
+    margin-bottom: 0;
 }
-.collapsible-content {
+
+.collapse-button {
     display: block;
+    background: none;
+    border: none;
+    color: var(--font-color-secondary);
+    padding: 0.25rem;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+.collapse-button svg {
+    width: 28px;
+    height: 28px;
+    transition: transform 0.3s ease;
+}
+.collapse-button.open svg {
+    transform: rotate(180deg);
+}
+
+.collapsible-content {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s ease-in-out;
+    overflow: hidden;
+}
+.collapsible-content.open {
+    grid-template-rows: 1fr;
 }
 .collapsible-content > div {
     min-height: 0;
 }
 
 @media (max-width: 768px) {
-    .menu-section-header {
-        cursor: pointer;
-        justify-content: space-between; /* Align to space-between on mobile for collapse button */
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 0.75rem;
-        margin-bottom: 0;
-    }
-    
-    .menu-section-header::before {
-        content: '';
-        width: 36px; /* Placeholder to balance the collapse button and center the title */
-    }
-
-    .menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header) {
-        border-bottom: none;
-        padding-bottom: 0;
-        margin-bottom: 0;
-        cursor: default;
-        justify-content: center; /* Center since there's no button */
-    }
-
-    .menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header)::before {
-        display: none; /* No spacer for this one */
-    }
-
-    .menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header) > .collapse-button {
-        display: none;
-    }
-    .details-header {
-        display: flex;
-        margin-top: 1.5rem;
-    }
     .menu-section-header h2 {
         font-size: 1.5rem;
-        margin-bottom: 0;
-    }
-    
-    .collapse-button {
-        display: block;
-        background: none;
-        border: none;
-        color: var(--font-color-secondary);
-        padding: 0.25rem;
-        flex-shrink: 0;
-    }
-    .collapse-button svg {
-        width: 28px;
-        height: 28px;
-        transition: transform 0.3s ease;
-    }
-    .collapse-button.open svg {
-        transform: rotate(180deg);
-    }
-
-    .collapsible-content {
-        display: grid;
-        grid-template-rows: 0fr;
-        transition: grid-template-rows 0.35s ease-in-out;
-        overflow: hidden;
-    }
-    .collapsible-content.open {
-        grid-template-rows: 1fr;
     }
 }

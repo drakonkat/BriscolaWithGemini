@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, runInAction, autorun } from 'mobx';
 import type { RootStore } from '.';
 import type { Player, Card, ModalType, SnackbarType } from '../core/types';
 import { getImageUrl } from '../core/utils';
@@ -76,6 +76,10 @@ export class UIStateStore {
     isSettingsModalOpen = false;
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
 
+    // Menu collapsible sections
+    isDifficultyDetailsOpen: boolean;
+    isWaifuDetailsOpen: boolean;
+
     // Tutorial State
     isTutorialActive = false;
     tutorialStep: TutorialStepId | null = null;
@@ -99,6 +103,13 @@ export class UIStateStore {
     constructor(rootStore: RootStore) {
         makeAutoObservable(this, { rootStore: false, bubbleTimeoutRef: false });
         this.rootStore = rootStore;
+
+        // Default to open on desktop, closed on mobile, if not in localStorage
+        this.isDifficultyDetailsOpen = loadFromLocalStorage('ui_difficulty_details_open', window.innerWidth > 768);
+        this.isWaifuDetailsOpen = loadFromLocalStorage('ui_waifu_details_open', window.innerWidth > 768);
+
+        autorun(() => localStorage.setItem('ui_difficulty_details_open', JSON.stringify(this.isDifficultyDetailsOpen)));
+        autorun(() => localStorage.setItem('ui_waifu_details_open', JSON.stringify(this.isWaifuDetailsOpen)));
     }
 
     get currentTutorialStepIndex() {
@@ -210,6 +221,14 @@ export class UIStateStore {
     setHasVotedForSubscription = (voted: boolean) => {
         this.hasVotedForSubscription = voted;
         localStorage.setItem('has_voted_subscription', JSON.stringify(voted));
+    }
+
+    toggleDifficultyDetails = () => {
+        this.isDifficultyDetailsOpen = !this.isDifficultyDetailsOpen;
+    }
+
+    toggleWaifuDetails = () => {
+        this.isWaifuDetailsOpen = !this.isWaifuDetailsOpen;
     }
 
     // --- Tutorial Methods ---
