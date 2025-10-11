@@ -6,14 +6,53 @@ import { useState, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { translations } from '../core/translations';
-import type { Waifu, Difficulty } from '../core/types';
+import type { Waifu, Difficulty, GameplayMode } from '../core/types';
 import { WaifuSelector } from './WaifuSelector';
 import { CachedImage } from './CachedImage';
 import { getImageUrl } from '../core/utils';
 import { WAIFUS } from '../core/waifus';
 
-const DifficultyDetails = ({ difficulty, language }: { difficulty: Difficulty, language: 'it' | 'en' }) => {
+const DifficultyDetails = ({ difficulty, language, gameplayMode }: { difficulty: Difficulty, language: 'it' | 'en', gameplayMode: GameplayMode }) => {
     const T = translations[language];
+
+    if (gameplayMode === 'roguelike') {
+        const rewards = {
+            win: 300,
+            loss: {
+                easy: 10,
+                medium: 20,
+                hard: 30,
+                nightmare: 50,
+            }[difficulty],
+        };
+        
+        const difficultyDesc = {
+            easy: T.difficultyEasyDesc,
+            medium: T.difficultyMediumDesc,
+            hard: T.difficultyHardDesc,
+            nightmare: T.difficultyNightmareDesc,
+        }[difficulty];
+
+        return (
+            <div className="difficulty-details-panel fade-in-up" key={`${difficulty}-roguelike`}>
+                <p className="difficulty-description">{difficultyDesc}</p>
+                <div className="difficulty-rewards">
+                    <div className="reward-item multiplier">
+                        <span>{T.roguelike.rewardsTitle}</span>
+                        <strong>{T.roguelike.roguelikeRulesTitle}</strong>
+                    </div>
+                    <div className="reward-item">
+                        <span>{T.roguelike.rewardWinRun}</span>
+                        <strong>+{rewards.win} WC</strong>
+                    </div>
+                    <div className="reward-item">
+                        <span>{T.roguelike.rewardLossConsolation}</span>
+                        <strong>+{rewards.loss} WC</strong>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const details = {
         easy: {
@@ -232,7 +271,7 @@ export const Menu = observer(() => {
                             <h3>{T.difficultyNightmare}</h3>
                         </button>
                     </div>
-                    <DifficultyDetails difficulty={difficulty} language={language} />
+                    <DifficultyDetails difficulty={difficulty} language={language} gameplayMode={gameplayMode} />
                 </div>
                 
                  <div data-tutorial-id="waifu-selector">
