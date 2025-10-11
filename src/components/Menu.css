@@ -611,6 +611,7 @@ input:checked + .slider:before {
     gap: 1rem;
     justify-content: center;
     flex-wrap: wrap;
+    padding-top: 10px;
 }
 
 .difficulty-card {
@@ -840,7 +841,7 @@ input:checked + .slider:before {
     padding: 0.4rem 0.8rem;
     border-radius: var(--radius-full);
     font-size: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--border-color);
   }
   .menu-actions { grid-column: 3; justify-self: end; position: relative; }
   .start-game-container { margin: 1.5rem 0; }
@@ -939,43 +940,59 @@ input:checked + .slider:before {
   .waifu-card img { width: 70px; height: 70px; }
 }
 
-/* --- Collapsible Sections (Mobile) --- */
-.is-collapsible-mobile,
-.menu-section-header,
+/* --- Collapsible Sections --- */
+.details-header {
+    display: none; /* Hidden on desktop */
+}
+.details-header h3 {
+    font-size: 1.5rem;
+    color: var(--primary-accent);
+    margin-bottom: 0;
+}
+.menu-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+.menu-section-header h2 {
+    color: var(--primary-accent);
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+}
+.collapse-button {
+    display: none;
+}
 .collapsible-content {
-    display: contents; /* By default, these wrappers have no layout effect on desktop */
+    display: block;
+}
+.collapsible-content > div {
+    min-height: 0;
 }
 
 @media (max-width: 768px) {
-    .is-collapsible-mobile {
-        display: block; /* The wrapper becomes a block container on mobile */
+    .menu-section-header {
+        cursor: pointer;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.75rem;
+        margin-bottom: 0;
     }
-
-    .menu-section.is-collapsible-mobile > .difficulty-selection,
-    .menu-section.is-collapsible-mobile > .difficulty-details-panel {
-        display: none; /* Hide the original desktop elements */
+    .menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header) {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+        cursor: default;
     }
-
-    .is-collapsible-mobile > .featured-waifu-container {
+    .menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header) > .collapse-button {
         display: none;
     }
-
-    .menu-section-header {
+    .details-header {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        cursor: pointer;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid var(--border-color);
         margin-top: 1.5rem;
     }
-
     .menu-section-header h2 {
-        display: block;
-        margin: 0;
         font-size: 1.5rem;
-        color: var(--primary-accent);
+        margin-bottom: 0;
     }
     
     .collapse-button {
@@ -983,16 +1000,13 @@ input:checked + .slider:before {
         background: none;
         border: none;
         color: var(--font-color-secondary);
-        cursor: pointer;
         padding: 0.25rem;
     }
-
     .collapse-button svg {
         width: 28px;
         height: 28px;
         transition: transform 0.3s ease;
     }
-
     .collapse-button.open svg {
         transform: rotate(180deg);
     }
@@ -1003,16 +1017,7 @@ input:checked + .slider:before {
         transition: grid-template-rows 0.35s ease-in-out;
         overflow: hidden;
     }
-
-    .collapsible-content > div { /* The single child wrapper for the grid trick */
-        min-height: 0;
-    }
-
     .collapsible-content.open {
         grid-template-rows: 1fr;
-    }
-    
-    .collapsible-content > div > .difficulty-selection {
-        margin-top: 1.5rem;
     }
 }

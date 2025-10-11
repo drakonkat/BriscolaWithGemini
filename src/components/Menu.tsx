@@ -232,45 +232,52 @@ export const Menu = observer(() => {
                         </button>
                     </div>
                 </div>
-                <div className="menu-section is-collapsible-mobile" data-tutorial-id="difficulty">
-                    <div className="menu-section-header" onClick={() => setIsDifficultyDetailsOpen(!isDifficultyDetailsOpen)}>
+                <div className="menu-section" data-tutorial-id="difficulty">
+                    <div className="menu-section-header">
                         <h2>{T.difficultyLabel}</h2>
+                        <button className="collapse-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                        </button>
+                    </div>
+                    <div className="difficulty-selection">
+                        <button
+                            className={`difficulty-card ${difficulty === 'easy' ? 'selected' : ''}`}
+                            onClick={() => gameSettingsStore.setDifficulty('easy')}
+                        >
+                            <span className="difficulty-icon">❤️</span>
+                            <h3>{T.difficultyEasy}</h3>
+                        </button>
+                        <button
+                            className={`difficulty-card ${difficulty === 'medium' ? 'selected' : ''}`}
+                            onClick={() => gameSettingsStore.setDifficulty('medium')}
+                        >
+                            <span className="difficulty-icon">❤️❤️</span>
+                            <h3>{T.difficultyMedium}</h3>
+                        </button>
+                        <button
+                            className={`difficulty-card ${difficulty === 'hard' ? 'selected' : ''}`}
+                            onClick={() => gameSettingsStore.setDifficulty('hard')}
+                        >
+                            <span className="difficulty-icon">❤️❤️❤️</span>
+                            <h3>{T.difficultyHard}</h3>
+                        </button>
+                        <button
+                            className={`difficulty-card ${difficulty === 'nightmare' ? 'selected' : ''}`}
+                            onClick={() => gameSettingsStore.setDifficulty('nightmare')}
+                        >
+                            <span className="difficulty-icon nightmare-icon">🖤🖤🖤</span>
+                            <h3>{T.difficultyNightmare}</h3>
+                        </button>
+                    </div>
+                    
+                    <div className="menu-section-header details-header" onClick={() => setIsDifficultyDetailsOpen(!isDifficultyDetailsOpen)}>
+                        <h3>{T.waifuCoinRulesTitle}</h3>
                         <button className={`collapse-button ${isDifficultyDetailsOpen ? 'open' : ''}`} aria-expanded={isDifficultyDetailsOpen}>
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
                         </button>
                     </div>
                     <div className={`collapsible-content ${isDifficultyDetailsOpen ? 'open' : ''}`}>
                         <div>
-                            <div className="difficulty-selection">
-                                <button
-                                    className={`difficulty-card ${difficulty === 'easy' ? 'selected' : ''}`}
-                                    onClick={() => gameSettingsStore.setDifficulty('easy')}
-                                >
-                                    <span className="difficulty-icon">❤️</span>
-                                    <h3>{T.difficultyEasy}</h3>
-                                </button>
-                                <button
-                                    className={`difficulty-card ${difficulty === 'medium' ? 'selected' : ''}`}
-                                    onClick={() => gameSettingsStore.setDifficulty('medium')}
-                                >
-                                    <span className="difficulty-icon">❤️❤️</span>
-                                    <h3>{T.difficultyMedium}</h3>
-                                </button>
-                                <button
-                                    className={`difficulty-card ${difficulty === 'hard' ? 'selected' : ''}`}
-                                    onClick={() => gameSettingsStore.setDifficulty('hard')}
-                                >
-                                    <span className="difficulty-icon">❤️❤️❤️</span>
-                                    <h3>{T.difficultyHard}</h3>
-                                </button>
-                                <button
-                                    className={`difficulty-card ${difficulty === 'nightmare' ? 'selected' : ''}`}
-                                    onClick={() => gameSettingsStore.setDifficulty('nightmare')}
-                                >
-                                    <span className="difficulty-icon nightmare-icon">🖤🖤🖤</span>
-                                    <h3>{T.difficultyNightmare}</h3>
-                                </button>
-                            </div>
                             <DifficultyDetails difficulty={difficulty} language={language} gameplayMode={gameplayMode} />
                         </div>
                     </div>
@@ -286,7 +293,7 @@ export const Menu = observer(() => {
                     />
                 </div>
 
-                <div className="is-collapsible-mobile">
+                <div className="menu-section">
                     <div className="menu-section-header" onClick={() => setIsWaifuDetailsOpen(!isWaifuDetailsOpen)}>
                         <h2>{T.waifuDetails(selectedWaifu?.name ?? (isRandomCardSelected ? T.randomOpponent : '...'))}</h2>
                         <button className={`collapse-button ${isWaifuDetailsOpen ? 'open' : ''}`} aria-expanded={isWaifuDetailsOpen}>

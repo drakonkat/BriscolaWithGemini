@@ -14,7 +14,8 @@ export default defineConfig(({ mode }) => {
         'process.env.VITE_PUBLIC_POSTHOG_HOST': JSON.stringify(env.VITE_PUBLIC_POSTHOG_HOST),
         'process.env.VITE_PUBLIC_POSTHOG_KEY': JSON.stringify(env.VITE_PUBLIC_POSTHOG_KEY),
         'process.env.APP_VERSION': JSON.stringify(process.env.npm_package_version),
-        'process.env.FETCH_IMAGE_FROM_WEB': JSON.stringify(env.FETCH_IMAGE_FROM_WEB)
+        'process.env.FETCH_IMAGE_FROM_WEB': JSON.stringify(env.FETCH_IMAGE_FROM_WEB),
+        'process.env.VITE_BUILD_TARGET': JSON.stringify(env.VITE_BUILD_TARGET || 'web')
       },
       resolve: {
         alias: {
