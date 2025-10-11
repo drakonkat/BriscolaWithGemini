@@ -96,6 +96,11 @@ export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, 
     };
 
     const handleTogglePlay = () => {
+        if (!isPlaying && !selectedPresetKey && JSON.stringify(settings) === JSON.stringify(defaultSoundSettings)) {
+            gameSettingsStore.rootStore.uiStore.showSnackbar(T.loadPresetPlaceholder, 'warning');
+            return;
+        }
+
         if (isPlaying) {
             stopMusic();
             setIsPlaying(false);
@@ -185,6 +190,7 @@ export const SoundEditorModal = ({ isOpen, onClose, settings, onSettingsChange, 
                         <ControlSlider label={T.lfoFrequency} value={settings.lfoFrequency} min={0.1} max={10} step={0.1} onChange={(v) => handleSettingChange('lfoFrequency', v)} displayValue={`${settings.lfoFrequency} Hz`} />
                         <ControlSlider label={T.lfoDepth} value={settings.lfoDepth} min={0} max={5000} step={100} onChange={(v) => handleSettingChange('lfoDepth', v)} />
                         <ControlSlider label={T.reverbAmount} value={settings.reverbWetness} min={0} max={1} step={0.05} onChange={(v) => handleSettingChange('reverbWetness', v)} />
+                        <ControlSlider label={T.masterVolume} value={settings.masterVolume} min={0} max={1} step={0.05} onChange={(v) => handleSettingChange('masterVolume', v)} />
                     </div>
 
                     {/* Chord Sequencer */}

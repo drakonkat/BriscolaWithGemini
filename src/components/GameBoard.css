@@ -1,3 +1,4 @@
+
 .game-board {
   flex: 3;
   display: flex;
@@ -273,25 +274,51 @@
   cursor: default;
 }
 
-.last-trick-recap { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-color); color: white; padding: 0.3rem 0.6rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; transition: background-color 0.2s; }
-.last-trick-recap:hover { background: rgba(0, 0, 0, 0.8); }
-.last-trick-recap .card { --card-height: 36px; --card-width: 20px; --card-border-radius: 3px; box-shadow: none; }
+.human-score-container {
+  display: none;
+}
+
+.last-trick-recap {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-color);
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+.last-trick-recap:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: none; /* Prevent movement on hover */
+}
+.last-trick-recap .card {
+  --card-height: 40px;
+  --card-width: calc(40px / var(--card-aspect-ratio));
+  --card-border-radius: 3px;
+  box-shadow: none;
+}
 .last-trick-recap .last-trick-icon { display: none; }
 
 .menu-burger-icon {
   display: none;
 }
 .turn-message-container {
+  flex-grow: 1;
+  text-align: center;
   font-size: 1rem;
   font-style: italic;
   color: #fff;
   white-space: nowrap;
-  margin-left: auto;
 }
 .turn-message {
   padding: 0;
   background: none;
   box-shadow: none;
+  justify-content: center;
 }
 
 
@@ -570,6 +597,10 @@
   .top-left-actions, .bottom-left-actions {
     display: none;
   }
+  .top-bar {
+    justify-content: flex-start;
+    gap: 1rem;
+  }
   .bottom-bar {
     justify-content: space-between;
     gap: 0;
@@ -592,6 +623,7 @@
     box-shadow: none;
   }
   .human-score-container {
+    display: block;
     position: relative;
   }
   .player-score.human-score {
@@ -612,12 +644,13 @@
   }
   .player-actions-popup {
     position: absolute;
+    top: auto;
     bottom: calc(100% + 10px);
     left: 0;
     background-color: var(--ui-bg);
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
-    box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     z-index: 100;
     width: max-content;
     display: flex;
@@ -650,6 +683,10 @@
   }
   .popup-action-button.active, .popup-action-button.active svg {
     color: var(--primary-accent);
+  }
+  .last-trick-recap {
+    width: 130px;
+    justify-content: center;
   }
   .last-trick-recap .last-trick-text {
     display: none;

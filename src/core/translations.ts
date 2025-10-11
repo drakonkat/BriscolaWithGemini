@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -90,6 +91,7 @@ export const translations = {
     lfoFrequency: "Velocità Modulazione",
     lfoDepth: "Profondità Modulazione",
     reverbAmount: "Quantità Riverbero",
+    masterVolume: "Volume Master",
     resetToDefaults: "Ripristina",
     oscSine: "Sinusoidale",
     oscSawtooth: "Dente di Sega",
@@ -608,6 +610,7 @@ Usa gli asterischi per enfatizzare le parole, ad esempio *così*. Sii creativa, 
     lfoFrequency: "LFO Speed",
     lfoDepth: "LFO Depth",
     reverbAmount: "Reverb Amount",
+    masterVolume: "Master Volume",
     resetToDefaults: "Reset to Defaults",
     oscSine: "Sine",
     oscSawtooth: "Sawtooth",

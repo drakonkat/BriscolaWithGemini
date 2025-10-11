@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -256,15 +257,24 @@ export class GameStateStore {
                 ai: (clashWinner === 'ai' && aiCard.elementalEffectActivated) ? 'active' : 'inactive'
             };
 
-            this.resolveTrickCallbackRef = () => resolve(finalClashResult);
-            this.clashTimeoutRef = window.setTimeout(() => {
-                if (this.resolveTrickCallbackRef) { // Ensure it hasn't been cleared
-                    resolve(finalClashResult);
-                    this.clashTimeoutRef = null;
-                    this.resolveTrickCallbackRef = null;
-                }
-            }, 5000);
+            const isDiceClash = finalClashResult?.type === 'dice';
+            const isAnimationEnabled = this.rootStore.gameSettingsStore.isDiceAnimationEnabled;
+            const delay = isDiceClash ? (isAnimationEnabled ? 5000 : 0) : 1500;
 
+            this.resolveTrickCallbackRef = () => resolve(finalClashResult);
+
+            if (delay > 0) {
+                 this.clashTimeoutRef = window.setTimeout(() => {
+                    if (this.resolveTrickCallbackRef) {
+                        this.resolveTrickCallbackRef();
+                        this.clashTimeoutRef = null;
+                        this.resolveTrickCallbackRef = null;
+                    }
+                }, delay);
+            } else {
+                this.resolveTrickCallbackRef();
+                this.resolveTrickCallbackRef = null;
+            }
         } else {
             this.lastTrickHighlights = {
                 human: humanCard.elementalEffectActivated ? 'active' : (humanCard.element ? 'inactive' : 'unset'),
