@@ -328,9 +328,9 @@
 .event-choice-button span { font-size: 0.9rem; color: #bbb; }
 
 /* --- Elemental Clash Modal --- */
-.elemental-clash-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 10001; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-.elemental-clash-modal { background-color: var(--ui-bg); padding: 2rem; border-radius: var(--radius-md); text-align: center; border: 2px solid var(--gold-accent); box-shadow: 0 0 30px rgba(var(--gold-accent-rgb), 0.5); animation: fade-in 0.3s ease-out; min-width: 400px; position: relative; }
-.elemental-clash-modal h2 { font-size: 2.5rem; color: var(--gold-accent); margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
+.elemental-clash-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 10001; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(4px); cursor: pointer; }
+.elemental-clash-modal { background-color: var(--ui-bg); padding: 2rem; border-radius: var(--radius-md); text-align: center; border: 2px solid var(--gold-accent); box-shadow: 0 0 30px rgba(var(--gold-accent-rgb), 0.5); animation: fade-in 0.3s ease-out; min-width: 400px; position: relative; cursor: default; }
+.elemental-clash-modal h2 { font-size: 2.5rem; color: var(--gold-accent); margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 2px; padding-right: 0; }
 .elemental-clash-modal.weakness { border-color: var(--primary-accent); box-shadow: 0 0 30px rgba(var(--primary-accent-rgb), 0.5); }
 .elemental-clash-modal.weakness h2 { color: var(--primary-accent); }
 .clash-results { display: flex; justify-content: space-around; gap: 3rem; margin-bottom: 2rem; min-height: 280px; align-items: center; }
@@ -634,9 +634,10 @@
   .gallery-modal .modal-actions button { font-size: 1rem; padding: 0.6rem 1.2rem; }
   .gallery-grid { grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
   .locked-overlay svg { width: 30px; height: 30px; }
+  .elemental-clash-modal { min-width: 0; }
   .elemental-clash-modal h2 { font-size: 1.8rem; }
   .clash-results { gap: 1rem; }
-  .clash-roll { font-size: 3rem; width: 80px; height: 80px; }
+  .clash-roll { font-size: 2rem; width: 60px; height: 60px; }
   .history-header, .history-entry { font-size: 0.8rem; grid-template-columns: 0.4fr 1fr 1fr 1fr 0.5fr 0.5fr 1.2fr; gap: 0.5rem; }
   .history-modal.classic-mode .history-header, .history-modal.classic-mode .history-entry { grid-template-columns: 0.4fr 1fr 1fr 0.5fr 0.5fr; }
   .history-entry .card { --card-height: 45px; --card-width: 25px; }

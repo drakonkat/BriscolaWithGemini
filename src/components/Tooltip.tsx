@@ -7,6 +7,8 @@ import React, { useState, useRef, useEffect } from 'react';
 // FIX: Define props with React.FC to correctly type the component, resolving issues with `key` props and `children`.
 interface TooltipProps {
     content: React.ReactNode;
+    // FIX: Explicitly add `children` to the `TooltipProps` interface to comply with modern React type definitions, where `children` is no longer an implicit prop on `React.FC`.
+    children: React.ReactNode;
 }
 
 export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
