@@ -283,7 +283,7 @@ export class GameStateStore {
         }
     }
 
-    performNightmareAiTurn = () => {
+    performApocalypseAiTurn = () => {
         const { aiHand, humanHand, briscolaSuit, cardsOnTable, deck } = this;
         if (!briscolaSuit) return;
         let cardToPlay: Card;
@@ -421,10 +421,13 @@ export class GameStateStore {
         const playCardAction = () => {
             if (!this.currentWaifu) return;
     
-            if (this.rootStore.gameSettingsStore.difficulty === 'nightmare') {
-                this.performNightmareAiTurn();
+            if (this.rootStore.gameSettingsStore.difficulty === 'apocalypse') {
+                this.performApocalypseAiTurn();
             } else {
-                let chosenCard = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, this.rootStore.gameSettingsStore.difficulty);
+                const difficultyForLocalAI = this.rootStore.gameSettingsStore.difficulty === 'nightmare' 
+                    ? 'hard'
+                    : this.rootStore.gameSettingsStore.difficulty;
+                let chosenCard = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, difficultyForLocalAI);
     
                 if (chosenCard.element) chosenCard = { ...chosenCard, elementalEffectActivated: true };
     
@@ -467,22 +470,20 @@ export class GameStateStore {
             if (gameplayMode === 'classic') {
                 let difficultyMultiplier = 1.0;
                 if (difficulty === 'easy') difficultyMultiplier = 0.5;
-                else if (difficulty === 'hard') difficultyMultiplier = 1.5;
+                else if (difficulty === 'hard' || difficulty === 'nightmare' || difficulty === 'apocalypse') difficultyMultiplier = 1.5;
 
                 if (winner === 'human') {
-                    if (difficulty === 'nightmare') {
-                        winnings = 500;
+                    if (difficulty === 'apocalypse') {
+                        winnings = 1000;
+                    } else if (difficulty === 'nightmare') {
+                        winnings = 750;
                     } else {
                         if (this.humanScore >= 101) winnings = Math.round(100 * difficultyMultiplier);
                         else if (this.humanScore >= 81) winnings = Math.round(70 * difficultyMultiplier);
                         else winnings = Math.round(45 * difficultyMultiplier);
                     }
                 } else {
-                    if (difficulty === 'nightmare') {
-                        winnings = Math.round(20 * 1.5);
-                    } else {
-                        winnings = Math.round(20 * difficultyMultiplier);
-                    }
+                    winnings = Math.round(20 * difficultyMultiplier);
                 }
                 this.rootStore.gachaStore.addCoins(winnings);
                 this.lastGameWinnings = winnings;
@@ -803,19 +804,84 @@ export class GameStateStore {
             const drawOrder: Player[] = trickWinner === 'human' ? ['human', 'ai'] : ['ai', 'human'];
 
             for (const player of drawOrder) {
-                let cardDrawn: Card | null = null;
-                if (newDeck.length > 0) {
-                    cardDrawn = newDeck.shift()!;
-                } else if (newBriscolaCard) {
-                    cardDrawn = newBriscolaCard;
-                    newBriscolaCard = null; // Consume the briscola card so it can't be drawn again
-                }
-            
-                if (cardDrawn) {
-                    if (player === 'human') {
-                        newHumanHand.push(cardDrawn);
+                if (player === 'ai' && this.rootStore.gameSettingsStore.difficulty === 'nightmare' && (newDeck.length > 0 || newBriscolaCard)) {
+                    // AI CHEAT DRAW LOGIC
+                    const availableToDraw = [...newDeck];
+                    if (newBriscolaCard) {
+                        availableToDraw.push(newBriscolaCard);
+                    }
+                    if(availableToDraw.length === 0) continue;
+
+                    const bestCardToDraw = [...availableToDraw].sort((a, b) => {
+                        const aIsBriscola = a.suit === this.briscolaSuit;
+                        const bIsBriscola = b.suit === this.briscolaSuit;
+                        if (aIsBriscola !== bIsBriscola) return aIsBriscola ? -1 : 1;
+                        return RANK[b.value] - RANK[a.value];
+                    })[0];
+                    
+                    const worstCardInHand = newAiHand.length > 0 ? [...newAiHand].sort((a, b) => {
+                        const aIsBriscola = a.suit === this.briscolaSuit;
+                        const bIsBriscola = b.suit === this.briscolaSuit;
+                        if (aIsBriscola !== bIsBriscola) return aIsBriscola ? 1 : -1;
+                        return RANK[a.value] - RANK[b.value];
+                    })[0] : null;
+
+                    const isBetter = (best: Card, worst: Card | null) => {
+                        if (!worst) return true;
+                        const bestIsBriscola = best.suit === this.briscolaSuit;
+                        const worstIsBriscola = worst.suit === this.briscolaSuit;
+                        if (bestIsBriscola && !worstIsBriscola) return true;
+                        if (bestIsBriscola === worstIsBriscola) return RANK[best.value] > RANK[worst.value];
+                        // if both are not briscola, any card with points is better than a liscio
+                        if (!bestIsBriscola && !worstIsBriscola) return getCardPoints(best) > getCardPoints(worst);
+                        return false;
+                    }
+
+                    if (isBetter(bestCardToDraw, worstCardInHand)) {
+                        // Swap
+                        if (worstCardInHand) {
+                            newAiHand = newAiHand.filter(c => c.id !== worstCardInHand.id);
+                        }
+                        newAiHand.push(bestCardToDraw);
+
+                        // Update deck
+                        if (newBriscolaCard && bestCardToDraw.id === newBriscolaCard.id) {
+                            newBriscolaCard = worstCardInHand; // can be null
+                        } else {
+                            newDeck = newDeck.filter(c => c.id !== bestCardToDraw.id);
+                            if (worstCardInHand) {
+                                newDeck.push(worstCardInHand);
+                            }
+                            newDeck = shuffleDeck(newDeck);
+                        }
                     } else {
-                        newAiHand.push(cardDrawn);
+                        // no swap, normal draw
+                        let cardDrawn: Card | null = null;
+                        if (newDeck.length > 0) {
+                            cardDrawn = newDeck.shift()!;
+                        } else if (newBriscolaCard) {
+                            cardDrawn = newBriscolaCard;
+                            newBriscolaCard = null;
+                        }
+                        if (cardDrawn) {
+                            newAiHand.push(cardDrawn);
+                        }
+                    }
+                } else {
+                    let cardDrawn: Card | null = null;
+                    if (newDeck.length > 0) {
+                        cardDrawn = newDeck.shift()!;
+                    } else if (newBriscolaCard) {
+                        cardDrawn = newBriscolaCard;
+                        newBriscolaCard = null;
+                    }
+                
+                    if (cardDrawn) {
+                        if (player === 'human') {
+                            newHumanHand.push(cardDrawn);
+                        } else {
+                            newAiHand.push(cardDrawn);
+                        }
                     }
                 }
             }

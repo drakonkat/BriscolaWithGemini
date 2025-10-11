@@ -128,7 +128,7 @@ export const GameBoard = observer(() => {
         }
     };
 
-    const isNightmareInClassic = gameplayMode === 'classic' && difficulty === 'nightmare';
+    const isPreviewHiddenInClassic = gameplayMode === 'classic' && (difficulty === 'nightmare' || difficulty === 'apocalypse');
 
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
@@ -507,7 +507,7 @@ export const GameBoard = observer(() => {
                     <div className="player-score turn-message">{message}</div>
                 </div>
 
-                {lastTrick && !isNightmareInClassic && (
+                {lastTrick && !isPreviewHiddenInClassic && (
                     <Tooltip content={historyButtonTitle}>
                         <button className="last-trick-recap" onClick={() => uiStore.openModal('history')}>
                             <span className="last-trick-text">{TH.lastTrick}:</span>

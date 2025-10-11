@@ -19,12 +19,8 @@ const DifficultyDetails = ({ difficulty, language, gameplayMode }: { difficulty:
     if (gameplayMode === 'roguelike') {
         const rewards = ROGUELIKE_REWARDS[difficulty];
         
-        const difficultyDesc = {
-            easy: T.difficultyEasyDesc,
-            medium: T.difficultyMediumDesc,
-            hard: T.difficultyHardDesc,
-            nightmare: T.difficultyNightmareDesc,
-        }[difficulty];
+        const difficultyDescKey = `difficulty${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}Desc` as keyof typeof T;
+        const difficultyDesc = T[difficultyDescKey] as string;
 
         return (
             <div className="difficulty-details-panel fade-in-up" key={`${difficulty}-roguelike`}>
@@ -50,32 +46,40 @@ const DifficultyDetails = ({ difficulty, language, gameplayMode }: { difficulty:
             desc: T.difficultyEasyDesc,
             multiplier: '50%',
             multiplierVal: 0.5,
-            isNightmare: false,
+            isSpecial: false,
         },
         medium: {
             desc: T.difficultyMediumDesc,
             multiplier: '100%',
             multiplierVal: 1.0,
-            isNightmare: false,
+            isSpecial: false,
         },
         hard: {
             desc: T.difficultyHardDesc,
             multiplier: '150%',
             multiplierVal: 1.5,
-            isNightmare: false,
+            isSpecial: false,
         },
         nightmare: {
             desc: T.difficultyNightmareDesc,
             multiplier: T.rewardSpecial,
-            multiplierVal: 1.5, // for loss
-            isNightmare: true,
+            multiplierVal: 1.5, // for loss calculation
+            isSpecial: true,
+            winAmount: 750,
+        },
+        apocalypse: {
+            desc: T.difficultyApocalypseDesc,
+            multiplier: T.rewardSpecial,
+            multiplierVal: 1.5, // for loss calculation
+            isSpecial: true,
+            winAmount: 1000,
         }
     }[difficulty];
 
     const rewards = {
-        loss: details.isNightmare ? Math.round(20 * 1.5) : Math.round(20 * details.multiplierVal),
-        win_min: details.isNightmare ? 500 : Math.round(45 * details.multiplierVal),
-        win_max: details.isNightmare ? 500 : Math.round(100 * details.multiplierVal),
+        loss: details.isSpecial ? Math.round(20 * 1.5) : Math.round(20 * details.multiplierVal),
+        win_min: details.isSpecial ? details.winAmount : Math.round(45 * details.multiplierVal),
+        win_max: details.isSpecial ? details.winAmount : Math.round(100 * details.multiplierVal),
     };
 
     return (
@@ -89,7 +93,7 @@ const DifficultyDetails = ({ difficulty, language, gameplayMode }: { difficulty:
                 <div className="reward-item">
                     <span>{T.rewardWin}</span>
                     <strong>
-                        {details.isNightmare
+                        {details.isSpecial
                             ? `+${rewards.win_min} WC`
                             : `+${rewards.win_min} - ${rewards.win_max} WC`
                         }
@@ -120,7 +124,7 @@ export const Menu = observer(() => {
     const difficultyContainerRef = useRef<HTMLDivElement>(null);
     const difficultyCardRefs = useRef<(HTMLButtonElement | null)[]>([]);
     
-    const difficulties: Difficulty[] = ['easy', 'medium', 'hard', 'nightmare'];
+    const difficulties: Difficulty[] = ['easy', 'medium', 'hard', 'nightmare', 'apocalypse'];
 
     const changeDifficulty = (direction: number) => {
         const currentIndex = difficulties.indexOf(difficulty);
@@ -303,6 +307,14 @@ export const Menu = observer(() => {
                             >
                                 <span className="difficulty-icon nightmare-icon">🖤🖤🖤</span>
                                 <h3>{T.difficultyNightmare}</h3>
+                            </button>
+                            <button
+                                ref={el => { difficultyCardRefs.current[4] = el; }}
+                                className={`difficulty-card ${difficulty === 'apocalypse' ? 'selected' : ''}`}
+                                onClick={() => gameSettingsStore.setDifficulty('apocalypse')}
+                            >
+                                <span className="difficulty-icon">💀💀💀</span>
+                                <h3>{T.difficultyApocalypse}</h3>
                             </button>
                         </div>
                         <button className="carousel-nav-button next" onClick={() => changeDifficulty(1)} aria-label="Next difficulty">
