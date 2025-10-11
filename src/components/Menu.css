@@ -29,7 +29,7 @@
   flex-direction: column;
 }
 .menu-background {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -985,8 +985,7 @@ input:checked + .slider:before {
 }
 
 .menu-section-header::before {
-    content: '';
-    width: 36px; /* Placeholder to balance the collapse button and center the title */
+    display: none;
 }
 
 /* Rule for the NON-collapsible "Difficulty" header */
@@ -1005,6 +1004,18 @@ input:checked + .slider:before {
 .menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header) > .collapse-button {
     display: none;
 }
+
+.menu-section-header h2,
+.menu-section-header h3 {
+    flex-grow: 1;
+    text-align: center;
+    padding-left: 36px; /* Balance the button on the right */
+}
+
+.menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header) h2 {
+    padding-left: 0;
+}
+
 
 .details-header {
     display: flex;
@@ -1031,6 +1042,7 @@ input:checked + .slider:before {
     padding: 0.25rem;
     flex-shrink: 0;
     pointer-events: none;
+    width: 36px;
 }
 .collapse-button svg {
     width: 28px;
