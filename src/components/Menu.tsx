@@ -207,28 +207,28 @@ export const Menu = observer(() => {
                             className={`difficulty-card ${difficulty === 'easy' ? 'selected' : ''}`}
                             onClick={() => gameSettingsStore.setDifficulty('easy')}
                         >
-                            <span className="difficulty-icon">🌱</span>
+                            <span className="difficulty-icon">❤️</span>
                             <h3>{T.difficultyEasy}</h3>
                         </button>
                         <button
                             className={`difficulty-card ${difficulty === 'medium' ? 'selected' : ''}`}
                             onClick={() => gameSettingsStore.setDifficulty('medium')}
                         >
-                            <span className="difficulty-icon">😉</span>
+                            <span className="difficulty-icon">❤️❤️</span>
                             <h3>{T.difficultyMedium}</h3>
                         </button>
                         <button
                             className={`difficulty-card ${difficulty === 'hard' ? 'selected' : ''}`}
                             onClick={() => gameSettingsStore.setDifficulty('hard')}
                         >
-                            <span className="difficulty-icon">🔥</span>
+                            <span className="difficulty-icon">❤️❤️❤️</span>
                             <h3>{T.difficultyHard}</h3>
                         </button>
                         <button
                             className={`difficulty-card ${difficulty === 'nightmare' ? 'selected' : ''}`}
                             onClick={() => gameSettingsStore.setDifficulty('nightmare')}
                         >
-                            <span className="difficulty-icon">💀</span>
+                            <span className="difficulty-icon nightmare-icon">🖤🖤🖤</span>
                             <h3>{T.difficultyNightmare}</h3>
                         </button>
                     </div>
