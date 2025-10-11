@@ -328,7 +328,7 @@ input:checked + .slider:before {
 .menu-section h2,
 .waifu-selection h2 {
   font-size: 1.8rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
   color: var(--primary-accent);
 }
 
@@ -606,12 +606,19 @@ input:checked + .slider:before {
     margin-bottom: 0.5rem;
 }
 
+.difficulty-carousel-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
 .difficulty-selection {
     display: flex;
     gap: 1rem;
     justify-content: center;
     flex-wrap: wrap;
     padding-top: 10px;
+    flex-grow: 1;
 }
 
 .difficulty-card {
@@ -866,6 +873,10 @@ input:checked + .slider:before {
   .carousel-nav-button.next {
       right: -5px;
   }
+  
+  .difficulty-carousel-wrapper {
+      padding: 0 30px;
+  }
 
   .waifu-selector-container {
     justify-content: flex-start;
@@ -918,6 +929,24 @@ input:checked + .slider:before {
     font-size: 2rem;
   }
 
+  .difficulty-selection {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 1rem;
+    margin: 0 -1rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .difficulty-selection::-webkit-scrollbar {
+      display: none;
+  }
+  .difficulty-card {
+      flex: 0 0 140px;
+      scroll-snap-align: center;
+  }
+
   .difficulty-details-panel {
       padding: 1rem;
   }
@@ -944,21 +973,17 @@ input:checked + .slider:before {
 .details-header {
     display: none; /* Hidden on desktop */
 }
-.details-header h3 {
-    font-size: 1.5rem;
-    color: var(--primary-accent);
-    margin-bottom: 0;
-}
 .menu-section-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center; /* Center titles on desktop */
     align-items: center;
     width: 100%;
+    margin-bottom: 1.5rem;
 }
 .menu-section-header h2 {
     color: var(--primary-accent);
     font-size: 1.8rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
 }
 .collapse-button {
     display: none;
@@ -973,16 +998,29 @@ input:checked + .slider:before {
 @media (max-width: 768px) {
     .menu-section-header {
         cursor: pointer;
+        justify-content: space-between; /* Align to space-between on mobile for collapse button */
         border-bottom: 1px solid var(--border-color);
         padding-bottom: 0.75rem;
         margin-bottom: 0;
     }
+    
+    .menu-section-header::before {
+        content: '';
+        width: 36px; /* Placeholder to balance the collapse button and center the title */
+    }
+
     .menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header) {
         border-bottom: none;
         padding-bottom: 0;
         margin-bottom: 0;
         cursor: default;
+        justify-content: center; /* Center since there's no button */
     }
+
+    .menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header)::before {
+        display: none; /* No spacer for this one */
+    }
+
     .menu-section[data-tutorial-id="difficulty"] > .menu-section-header:not(.details-header) > .collapse-button {
         display: none;
     }
@@ -1001,6 +1039,7 @@ input:checked + .slider:before {
         border: none;
         color: var(--font-color-secondary);
         padding: 0.25rem;
+        flex-shrink: 0;
     }
     .collapse-button svg {
         width: 28px;

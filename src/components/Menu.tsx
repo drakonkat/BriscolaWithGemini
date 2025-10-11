@@ -119,6 +119,13 @@ export const Menu = observer(() => {
     const [isDifficultyDetailsOpen, setIsDifficultyDetailsOpen] = useState(false);
     const [isWaifuDetailsOpen, setIsWaifuDetailsOpen] = useState(false);
 
+    const difficultyContainerRef = useRef<HTMLDivElement>(null);
+    const scrollDifficultyContainer = (amount: number) => {
+        if (difficultyContainerRef.current) {
+            difficultyContainerRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+        }
+    };
+
     const moreMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -239,34 +246,42 @@ export const Menu = observer(() => {
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
                         </button>
                     </div>
-                    <div className="difficulty-selection">
-                        <button
-                            className={`difficulty-card ${difficulty === 'easy' ? 'selected' : ''}`}
-                            onClick={() => gameSettingsStore.setDifficulty('easy')}
-                        >
-                            <span className="difficulty-icon">❤️</span>
-                            <h3>{T.difficultyEasy}</h3>
+                    <div className="difficulty-carousel-wrapper">
+                        <button className="carousel-nav-button prev" onClick={() => scrollDifficultyContainer(-200)} aria-label="Previous difficulty">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12l4.58-4.59z"/></svg>
                         </button>
-                        <button
-                            className={`difficulty-card ${difficulty === 'medium' ? 'selected' : ''}`}
-                            onClick={() => gameSettingsStore.setDifficulty('medium')}
-                        >
-                            <span className="difficulty-icon">❤️❤️</span>
-                            <h3>{T.difficultyMedium}</h3>
-                        </button>
-                        <button
-                            className={`difficulty-card ${difficulty === 'hard' ? 'selected' : ''}`}
-                            onClick={() => gameSettingsStore.setDifficulty('hard')}
-                        >
-                            <span className="difficulty-icon">❤️❤️❤️</span>
-                            <h3>{T.difficultyHard}</h3>
-                        </button>
-                        <button
-                            className={`difficulty-card ${difficulty === 'nightmare' ? 'selected' : ''}`}
-                            onClick={() => gameSettingsStore.setDifficulty('nightmare')}
-                        >
-                            <span className="difficulty-icon nightmare-icon">🖤🖤🖤</span>
-                            <h3>{T.difficultyNightmare}</h3>
+                        <div className="difficulty-selection" ref={difficultyContainerRef}>
+                            <button
+                                className={`difficulty-card ${difficulty === 'easy' ? 'selected' : ''}`}
+                                onClick={() => gameSettingsStore.setDifficulty('easy')}
+                            >
+                                <span className="difficulty-icon">❤️</span>
+                                <h3>{T.difficultyEasy}</h3>
+                            </button>
+                            <button
+                                className={`difficulty-card ${difficulty === 'medium' ? 'selected' : ''}`}
+                                onClick={() => gameSettingsStore.setDifficulty('medium')}
+                            >
+                                <span className="difficulty-icon">❤️❤️</span>
+                                <h3>{T.difficultyMedium}</h3>
+                            </button>
+                            <button
+                                className={`difficulty-card ${difficulty === 'hard' ? 'selected' : ''}`}
+                                onClick={() => gameSettingsStore.setDifficulty('hard')}
+                            >
+                                <span className="difficulty-icon">❤️❤️❤️</span>
+                                <h3>{T.difficultyHard}</h3>
+                            </button>
+                            <button
+                                className={`difficulty-card ${difficulty === 'nightmare' ? 'selected' : ''}`}
+                                onClick={() => gameSettingsStore.setDifficulty('nightmare')}
+                            >
+                                <span className="difficulty-icon nightmare-icon">🖤🖤🖤</span>
+                                <h3>{T.difficultyNightmare}</h3>
+                            </button>
+                        </div>
+                        <button className="carousel-nav-button next" onClick={() => scrollDifficultyContainer(200)} aria-label="Next difficulty">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
                         </button>
                     </div>
                     
