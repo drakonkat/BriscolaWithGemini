@@ -5,7 +5,7 @@
 import { makeAutoObservable, autorun } from 'mobx';
 import type { RootStore } from '.';
 import type { Language, GameplayMode, Difficulty, Soundtrack, CardDeckStyle } from '../core/types';
-import { defaultSoundSettings, type SoundSettings } from '../core/soundManager';
+import { defaultSoundSettings, type SoundSettings, DRUM_TYPES } from '../core/soundManager';
 
 const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
     try {
@@ -17,6 +17,35 @@ const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
     }
 };
 
+const loadSoundSettings = (): SoundSettings => {
+    const storedSettings = loadFromLocalStorage('sound_editor_settings', defaultSoundSettings);
+
+    // Deep merge with defaults to ensure data integrity
+    const settings: SoundSettings = {
+        ...defaultSoundSettings,
+        ...storedSettings,
+        drumPattern: {
+            ...defaultSoundSettings.drumPattern,
+            ...(storedSettings.drumPattern || {}),
+        },
+    };
+
+    // Ensure arrays have the correct length
+    const SEQUENCE_LENGTH = 16;
+
+    if (!Array.isArray(settings.chordPattern) || settings.chordPattern.length !== SEQUENCE_LENGTH) {
+        settings.chordPattern = defaultSoundSettings.chordPattern;
+    }
+
+    DRUM_TYPES.forEach(drum => {
+        if (!Array.isArray(settings.drumPattern[drum]) || settings.drumPattern[drum].length !== SEQUENCE_LENGTH) {
+            settings.drumPattern[drum] = defaultSoundSettings.drumPattern[drum];
+        }
+    });
+
+    return settings;
+};
+
 export class GameSettingsStore {
     rootStore: RootStore;
     language: Language = loadFromLocalStorage('language', 'it');
@@ -26,7 +55,7 @@ export class GameSettingsStore {
     waitForWaifuResponse: boolean = loadFromLocalStorage('wait_for_waifu_response', false);
     soundtrack: Soundtrack = loadFromLocalStorage('soundtrack', 'epic');
     isMusicEnabled: boolean = loadFromLocalStorage('is_music_enabled', false);
-    soundEditorSettings: SoundSettings = loadFromLocalStorage('sound_editor_settings', defaultSoundSettings);
+    soundEditorSettings: SoundSettings = loadSoundSettings();
     cardDeckStyle: CardDeckStyle = loadFromLocalStorage('card_deck_style', 'classic');
     isDiceAnimationEnabled: boolean = loadFromLocalStorage('is_dice_animation_enabled', true);
     hasCompletedTutorial: boolean = loadFromLocalStorage('has_completed_tutorial', false);
