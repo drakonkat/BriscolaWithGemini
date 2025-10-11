@@ -593,6 +593,7 @@ input:checked + .slider:before {
     border-color: var(--primary-accent);
 }
 .difficulty-card.selected {
+    transform: translateY(-5px) scale(1.05);
     background-color: rgba(var(--primary-accent-rgb), 0.15);
     border-color: var(--primary-accent);
     box-shadow: 0 0 15px rgba(var(--primary-accent-rgb), 0.5);
@@ -606,6 +607,53 @@ input:checked + .slider:before {
     font-size: 2rem;
     display: block;
     margin-bottom: 0.5rem;
+}
+
+.difficulty-details-panel {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    border: 1px solid var(--border-color);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.difficulty-description {
+    font-size: 1rem;
+    color: var(--font-color-secondary);
+    line-height: 1.5;
+    margin: 0 0 1.5rem 0;
+    min-height: 48px; /* To prevent layout shift */
+}
+
+.difficulty-rewards {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    text-align: center;
+}
+
+.reward-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.reward-item span {
+    font-size: 0.9rem;
+    color: var(--font-color-secondary);
+}
+
+.reward-item strong {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--gold-accent);
+}
+
+.reward-item.multiplier strong {
+    color: var(--primary-accent);
 }
 
 .featured-waifu-container {
@@ -643,6 +691,7 @@ input:checked + .slider:before {
     object-fit: cover;
     object-position: top;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: border-color 0.4s ease;
 }
 .featured-waifu-desc {
     font-size: 1rem;
@@ -661,6 +710,22 @@ input:checked + .slider:before {
     width: 60%;
     height: 60%;
     color: var(--primary-accent);
+}
+
+.featured-waifu-container.difficulty-easy .featured-waifu-avatar {
+    border-color: var(--element-earth-color);
+}
+
+.featured-waifu-container.difficulty-medium .featured-waifu-avatar {
+    border-color: var(--element-water-color);
+}
+
+.featured-waifu-container.difficulty-hard .featured-waifu-avatar {
+    border-color: var(--element-fire-color);
+}
+
+.featured-waifu-container.difficulty-nightmare .featured-waifu-avatar {
+    border-color: var(--rarity-r-color); /* The purple color */
 }
 
 
@@ -829,6 +894,18 @@ input:checked + .slider:before {
   }
   .game-mode-icon {
     font-size: 2rem;
+  }
+
+  .difficulty-details-panel {
+      padding: 1rem;
+  }
+  .difficulty-description {
+      min-height: 60px; /* Adjust for mobile */
+  }
+  .difficulty-rewards {
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
   }
 }
 

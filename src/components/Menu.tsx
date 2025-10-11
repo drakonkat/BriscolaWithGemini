@@ -6,11 +6,74 @@ import { useState, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../stores';
 import { translations } from '../core/translations';
-import type { Waifu } from '../core/types';
+import type { Waifu, Difficulty } from '../core/types';
 import { WaifuSelector } from './WaifuSelector';
 import { CachedImage } from './CachedImage';
 import { getImageUrl } from '../core/utils';
 import { WAIFUS } from '../core/waifus';
+
+const DifficultyDetails = ({ difficulty, language }: { difficulty: Difficulty, language: 'it' | 'en' }) => {
+    const T = translations[language];
+
+    const details = {
+        easy: {
+            desc: T.difficultyEasyDesc,
+            multiplier: '50%',
+            multiplierVal: 0.5,
+            isNightmare: false,
+        },
+        medium: {
+            desc: T.difficultyMediumDesc,
+            multiplier: '100%',
+            multiplierVal: 1.0,
+            isNightmare: false,
+        },
+        hard: {
+            desc: T.difficultyHardDesc,
+            multiplier: '150%',
+            multiplierVal: 1.5,
+            isNightmare: false,
+        },
+        nightmare: {
+            desc: T.difficultyNightmareDesc,
+            multiplier: T.rewardSpecial,
+            multiplierVal: 1.5, // for loss
+            isNightmare: true,
+        }
+    }[difficulty];
+
+    const rewards = {
+        loss: details.isNightmare ? Math.round(20 * 1.5) : Math.round(20 * details.multiplierVal),
+        win_min: details.isNightmare ? 500 : Math.round(45 * details.multiplierVal),
+        win_max: details.isNightmare ? 500 : Math.round(100 * details.multiplierVal),
+    };
+
+    return (
+        <div className="difficulty-details-panel fade-in-up" key={difficulty}>
+            <p className="difficulty-description">{details.desc}</p>
+            <div className="difficulty-rewards">
+                <div className="reward-item multiplier">
+                    <span>{T.rewardCoinMultiplier}</span>
+                    <strong>{details.multiplier}</strong>
+                </div>
+                <div className="reward-item">
+                    <span>{T.rewardWin}</span>
+                    <strong>
+                        {details.isNightmare
+                            ? `+${rewards.win_min} WC`
+                            : `+${rewards.win_min} - ${rewards.win_max} WC`
+                        }
+                    </strong>
+                </div>
+                <div className="reward-item">
+                    <span>{T.rewardLoss}</span>
+                    <strong>+{rewards.loss} WC</strong>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 export const Menu = observer(() => {
     const { gameSettingsStore, gameStateStore, uiStore, gachaStore } = useStores();
@@ -103,7 +166,7 @@ export const Menu = observer(() => {
                             </button>
                             <button className="rules-button" onClick={() => { uiStore.openModal('settings'); setIsMoreMenuOpen(false); }}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-                                    <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59-1.69-.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                                    <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12-.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59-1.69-.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22-.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
                                 </svg>
                                 <span>{T.settingsTitle}</span>
                             </button>
@@ -151,7 +214,7 @@ export const Menu = observer(() => {
                             className={`difficulty-card ${difficulty === 'medium' ? 'selected' : ''}`}
                             onClick={() => gameSettingsStore.setDifficulty('medium')}
                         >
-                            <span className="difficulty-icon">😐</span>
+                            <span className="difficulty-icon">😉</span>
                             <h3>{T.difficultyMedium}</h3>
                         </button>
                         <button
@@ -169,6 +232,7 @@ export const Menu = observer(() => {
                             <h3>{T.difficultyNightmare}</h3>
                         </button>
                     </div>
+                    <DifficultyDetails difficulty={difficulty} language={language} />
                 </div>
                 
                  <div data-tutorial-id="waifu-selector">
@@ -181,7 +245,7 @@ export const Menu = observer(() => {
                     />
                 </div>
 
-                <div className="featured-waifu-container">
+                <div className={`featured-waifu-container difficulty-${difficulty}`}>
                     {selectedWaifu ? (
                         <div className="featured-waifu-display fade-in-up">
                             <CachedImage imageUrl={getImageUrl(selectedWaifu.avatar)} alt={selectedWaifu.name} className="featured-waifu-avatar" />
@@ -191,7 +255,7 @@ export const Menu = observer(() => {
                         <div className="featured-waifu-display random fade-in-up">
                             <div className="featured-waifu-avatar random-avatar">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 6.25a6.25 6.25 0 0 0-4.6 10.98c.2-.28.34-.6.4-.95.14-.77.2-1.57.14-2.43-.05-.8-.18-1.63-.4-2.45-.1-.38-.2-.77-.28-1.16-.07-.32-.1-.63-.12-.95 0-.28.02-.55.06-.82.09-.54.27-.99.5-1.39.43-.76 1.05-1.28 1.8-1.55.37-.13.76-.2 1.15-.2.43 0 .85.08 1.25.25.72.3 1.28.82 1.63 1.5.3.58.46 1.24.46 1.95 0 .3-.03.6-.08.88-.05.28-.13.56-.23.85-.09.28-.2.56-.3.85-.14.41-.28.83-.4 1.25-.13.43-.23.86-.3 1.3-.07.41-.1.83-.1 1.25 0 .23.03.45.08.66.03.14.06.28.1.41.3.92.74 1.63 1.25 2.25A6.25 6.25 0 0 0 12 6.25zM12 4c1.89 0 3.63.66 5 1.75.52.41.97.9 1.34 1.45.24.36.45.75.6 1.15.2.5.34 1.02.4 1.55.08.55.1 1.1.1 1.65s-.02 1.1-.08 1.65c-.06.53-.2 1.05-.38 1.55-.18.49-.4.95-.68 1.4-.35.56-.78 1.05-1.28 1.45-1.38 1.1-3.13 1.75-5.03 1.75s-3.65-.65-5-1.75c-.5-.4-1-1-1.35-1.5-.27-.45-.5-.9-.68-1.4-.18-.5-.32-1.02-.38-1.55-.06-1.1-.06-2.2 0-3.3.06-.53-.2-1.05.4-1.55.15-.4.35-.8.6-1.15.37-.55.82-1.04 1.34-1.45C8.37 4.66 10.11 4 12 4z"/>
+                                    <path d="M12 6.25a6.25 6.25 0 0 0-4.6 10.98c.2-.28.34-.6.4-.95.14-.77.2-1.57.14-2.43-.05-.8-.18-1.63-.4-2.45-.1-.38-.2-.77-.28-1.16-.07-.32-.1-.63-.12-.95 0-.28.02-.55.06-.82.09-.54.27-.99.5-1.39.43-.76 1.05-1.28 1.8-1.55.37-.13.76-.2 1.15-.2.43 0 .85.08 1.25.25.72.3 1.28.82 1.63 1.5.3.58.46 1.24.46 1.95 0 .3-.03.6-.08.88-.05.28-.13.56-.23.85-.09.28-.2.56-.3.85-.14.41-.28.83-.4 1.25-.13.43-.23.86-.3 1.3-.07.41-.1.83-.1 1.25 0 .23.03.45.08.66.03.14.06.28.1.41.3.92.74 1.63 1.25 2.25A6.25 6.25 0 0 0 12 6.25zM12 4c1.89 0 3.63.66 5 1.75.52.41.97.9 1.34 1.45.24.36.45.75.6 1.15.2.5.34 1.02.4 1.55.08.55.1 1.1.1 1.65s-.02 1.1-.08 1.65c-.06.53-.2 1.05-.38 1.55-.18.49-.4.95-.68 1.4-.35.56-.78 1.05-1.28 1.45-1.38 1.1-3.13 1.75-5.03 1.75s-3.65-.65-5-1.75c-.5-.4-1-1-1.35-1.5-.27-.45-.5-.9-.68-1.4-.18-.5-.32-1.02-.38-1.55-.06-1.1-.06-2.2 0-3.3.06-.53.2-1.05.4-1.55.15-.4.35-.8.6-1.15.37-.55.82-1.04 1.34-1.45C8.37 4.66 10.11 4 12 4z"/>
                                 </svg>
                             </div>
                             <p className="featured-waifu-desc">{T.randomOpponentDesc}</p>
