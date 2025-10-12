@@ -29,7 +29,7 @@ export type Soundtrack = 'epic' | 'chill';
 export type Element = 'fire' | 'water' | 'air' | 'earth';
 export type AbilityType = 'incinerate' | 'tide' | 'cyclone' | 'fortify';
 export type SnackbarType = 'success' | 'warning';
-export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock' | 'legend' | 'settings';
+export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock' | 'legend' | 'settings' | 'craftingMinigame';
 export type CardDeckStyle = 'classic' | 'poker';
 export type SoundName =
   | 'game-start'
@@ -49,7 +49,8 @@ export type SoundName =
   | 'gacha-unlock-ssr'
   | 'gacha-refund'
   | 'gacha-multi-unlock'
-  | 'dice-roll';
+  | 'dice-roll'
+  | 'shard-shatter';
 export type DrumType = 'kick' | 'snare' | 'closedHat' | 'openHat';
 
 export type Chord = '---' | 'Am' | 'G' | 'C' | 'F' | 'Dm' | 'E';

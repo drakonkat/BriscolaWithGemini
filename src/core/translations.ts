@@ -266,7 +266,17 @@ export const translations = {
         craftingRuleSSR: "5 Frammenti SSR = 1 sfondo SSR casuale.",
     },
 
+    craftingMinigame: {
+      title: "Altare della Creazione",
+      instructions: "Ferma l'indicatore nella zona verde per avere successo!",
+      success: "Creazione Riuscita!",
+      failure: "Creazione Fallita!",
+      shardsLost: (count: number) => `Hai perso ${count} frammenti!`,
+      stop: "Ferma",
+    },
+
     soundEditorTitle: "Editor Musicale",
+    toggleMusic: "Musica On/Off",
     tempo: "Tempo (BPM)",
     oscillatorType: "Forma d'Onda",
     oscSine: "Sinusoidale",
@@ -703,7 +713,17 @@ export const translations = {
         craftingRuleSSR: "5 SSR Shards = 1 random SSR background.",
     },
 
+    craftingMinigame: {
+      title: "Altar of Creation",
+      instructions: "Stop the marker in the green zone to succeed!",
+      success: "Crafting Successful!",
+      failure: "Crafting Failed!",
+      shardsLost: (count: number) => `You lost ${count} shards!`,
+      stop: "Stop",
+    },
+
     soundEditorTitle: "Music Editor",
+    toggleMusic: "Toggle Music",
     tempo: "Tempo (BPM)",
     oscillatorType: "Waveform",
     oscSine: "Sine",

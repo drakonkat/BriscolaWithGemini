@@ -80,6 +80,8 @@ export class GachaStore {
     fullscreenImage: string = '';
     isRolling = false;
     gachaAnimationState: { active: boolean; rarity: 'R' | 'SR' | 'SSR' | null } = { active: false, rarity: null };
+    isCraftingMinigameOpen = false;
+    craftingAttempt: { rarity: 'R' | 'SR' | 'SSR' } | null = null;
 
     lastGachaResult: BackgroundItem | null = null;
     multiGachaResults: BackgroundItem[] = [];
@@ -296,15 +298,45 @@ export class GachaStore {
             return;
         }
 
-        // Success
-        this.addShards(rarity, -cost);
+        this.craftingAttempt = { rarity };
+        this.rootStore.uiStore.openModal('craftingMinigame');
+    }
 
-        const toUnlock = lockedOfRarity[Math.floor(Math.random() * lockedOfRarity.length)];
-        this.unlockedBackgrounds.push(toUnlock.url);
+    cancelCraftingAttempt = () => {
+        this.rootStore.uiStore.closeModal('craftingMinigame');
+        this.craftingAttempt = null;
+    }
 
-        playSound(`gacha-unlock-${rarity.toLowerCase() as 'r'|'sr'|'ssr'}`);
-        this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaCraftSuccess(rarity), 'success');
+    resolveCraftingAttempt = (success: boolean) => {
+        if (!this.craftingAttempt) return;
+        const { rarity } = this.craftingAttempt;
+        const cost = { R: 10, SR: 10, SSR: 5 }[rarity];
 
-        this.rootStore.posthog?.capture('background_crafted', { rarity });
+        if (success) {
+            this.addShards(rarity, -cost);
+
+            const lockedOfRarity = this.BACKGROUNDS.filter(bg => bg.rarity === rarity && !this.unlockedBackgrounds.includes(bg.url));
+            const toUnlock = lockedOfRarity[Math.floor(Math.random() * lockedOfRarity.length)];
+            this.unlockedBackgrounds.push(toUnlock.url);
+
+            playSound(`gacha-unlock-${rarity.toLowerCase() as 'r'|'sr'|'ssr'}`);
+            this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaCraftSuccess(rarity), 'success');
+            this.rootStore.posthog?.capture('background_crafted', { rarity, result: 'success' });
+        } else {
+            const shardsLost = Math.floor(Math.random() * 5) + 1;
+            const currentShardCount = {R: this.r_shards, SR: this.sr_shards, SSR: this.ssr_shards}[rarity];
+            const actualShardsLost = Math.min(shardsLost, currentShardCount);
+            
+            if (actualShardsLost > 0) {
+                this.addShards(rarity, -actualShardsLost);
+                playSound('shard-shatter');
+                this.rootStore.uiStore.showSnackbar(this.T.craftingMinigame.shardsLost(actualShardsLost), 'warning');
+            } else {
+                playSound('trick-lose');
+                this.rootStore.uiStore.showSnackbar(this.T.craftingMinigame.failure, 'warning');
+            }
+            
+            this.rootStore.posthog?.capture('background_crafted', { rarity, result: 'failure', shards_lost: actualShardsLost });
+        }
     }
 }

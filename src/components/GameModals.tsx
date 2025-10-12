@@ -21,6 +21,7 @@ import { SoundEditorModal } from './SoundEditorModal';
 // FIX: Imported missing Gacha result modals.
 import { GachaSingleUnlockModal } from './GachaSingleUnlockModal';
 import { GachaMultiUnlockModal } from './GachaMultiUnlockModal';
+import { CraftingMinigameModal } from './CraftingMinigameModal';
 
 import { translations } from '../core/translations';
 import { BriscolaSwapModal } from './BriscolaSwapModal';
@@ -110,6 +111,8 @@ export const GameModals = observer(() => {
                 onClose={() => uiStore.closeModal('gachaMultiUnlock')}
                 language={language}
             />
+
+            <CraftingMinigameModal isOpen={uiStore.isCraftingMinigameOpen} />
 
             {currentWaifu && (
                 <WaifuDetailsModal 

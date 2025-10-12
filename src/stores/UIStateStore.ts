@@ -74,6 +74,7 @@ export class UIStateStore {
     isGachaMultiUnlockModalOpen = false;
     isLegendModalOpen = false;
     isSettingsModalOpen = false;
+    isCraftingMinigameOpen = false;
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
 
     // Menu collapsible sections
@@ -133,6 +134,7 @@ export class UIStateStore {
             case 'gachaMultiUnlock': this.isGachaMultiUnlockModalOpen = true; break;
             case 'legend': this.isLegendModalOpen = true; break;
             case 'settings': this.isSettingsModalOpen = true; break;
+            case 'craftingMinigame': this.isCraftingMinigameOpen = true; break;
             case 'chat': 
                 this.isChatModalOpen = true; 
                 this.setUnreadMessageCount(0);
@@ -155,6 +157,7 @@ export class UIStateStore {
             case 'gachaMultiUnlock': this.isGachaMultiUnlockModalOpen = false; break;
             case 'legend': this.isLegendModalOpen = false; break;
             case 'settings': this.isSettingsModalOpen = false; break;
+            case 'craftingMinigame': this.isCraftingMinigameOpen = false; break;
             case 'chat': this.isChatModalOpen = false; break;
         }
     }

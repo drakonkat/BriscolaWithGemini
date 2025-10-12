@@ -137,7 +137,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                         <span>{T_gallery.craftingRuleR}</span>
                                     </div>
                                     <div className="crafting-shard-info">
-                                        <span>10 / {gachaStore.r_shards}</span>
+                                        <span>{gachaStore.r_shards} / 10</span>
                                     </div>
                                     <button onClick={() => gachaStore.craftBackground('R')} disabled={!canCraftR}>
                                         {T_gallery.craftButton(10)}
@@ -149,7 +149,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                         <span>{T_gallery.craftingRuleSR}</span>
                                     </div>
                                     <div className="crafting-shard-info">
-                                        <span>10 / {gachaStore.sr_shards}</span>
+                                        <span>{gachaStore.sr_shards} / 10</span>
                                     </div>
                                     <button onClick={() => gachaStore.craftBackground('SR')} disabled={!canCraftSR}>
                                         {T_gallery.craftButton(10)}
@@ -161,7 +161,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                         <span>{T_gallery.craftingRuleSSR}</span>
                                     </div>
                                     <div className="crafting-shard-info">
-                                        <span>5 / {gachaStore.ssr_shards}</span>
+                                        <span>{gachaStore.ssr_shards} / 5</span>
                                     </div>
                                     <button onClick={() => gachaStore.craftBackground('SSR')} disabled={!canCraftSSR}>
                                         {T_gallery.craftButton(5)}

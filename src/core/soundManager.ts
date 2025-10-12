@@ -1,4 +1,5 @@
 
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -479,6 +480,26 @@ export const playSound = async (name: SoundName) => {
             notes.forEach((freq, i) => {
                 playNote(context, freq, now + i * 0.08, 0.5, 0.25);
             });
+            break;
+        }
+        case 'shard-shatter': {
+            const noiseDuration = 0.3;
+            const noise = createWhiteNoise(context, noiseDuration);
+            const bandpass = context.createBiquadFilter();
+            bandpass.type = 'bandpass';
+            bandpass.frequency.value = 4000;
+            bandpass.Q.value = 10;
+            const noiseGain = context.createGain();
+            noise.connect(bandpass).connect(noiseGain).connect(context.destination);
+        
+            noiseGain.gain.setValueAtTime(0.4, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, now + noiseDuration);
+        
+            noise.start(now);
+            noise.stop(now + noiseDuration);
+        
+            playNote(context, 1200, now, 0.1, 0.3);
+            playNote(context, 800, now + 0.05, 0.1, 0.2);
             break;
         }
     }
