@@ -16,12 +16,18 @@ interface GachaMultiUnlockModalProps {
 
 export const GachaMultiUnlockModal = observer(({ isOpen, onClose, language }: GachaMultiUnlockModalProps) => {
     const { gachaStore } = useStores();
-    const { multiGachaResults, lastMultiGachaRefund } = gachaStore;
+    const { multiGachaResults, lastMultiGachaShards } = gachaStore;
     const T = translations[language];
 
     if (!isOpen) {
         return null;
     }
+    
+    const shardsGained = [
+        lastMultiGachaShards.R > 0 ? `${lastMultiGachaShards.R} R` : '',
+        lastMultiGachaShards.SR > 0 ? `${lastMultiGachaShards.SR} SR` : '',
+        lastMultiGachaShards.SSR > 0 ? `${lastMultiGachaShards.SSR} SSR` : '',
+    ].filter(Boolean).join(', ');
 
     return (
         <div className="game-over-overlay" onClick={onClose}>
@@ -34,7 +40,7 @@ export const GachaMultiUnlockModal = observer(({ isOpen, onClose, language }: Ga
                 <h2>{T.gallery.gachaMultiResultTitle}</h2>
                 <p className="refund-info">
                     {T.gallery.gachaMultiUnlocked(multiGachaResults.length)}
-                    {lastMultiGachaRefund > 0 && ` ${T.gallery.gachaMultiRefund(lastMultiGachaRefund)}`}
+                    {shardsGained && ` ${T.gallery.gachaMultiShards(shardsGained)}`}
                 </p>
                 
                 <div className="multi-unlock-grid">

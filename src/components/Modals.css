@@ -202,10 +202,98 @@
 .legal-modal p, .legal-modal ul { margin-bottom: 1rem; }
 
 /* --- Gallery & Gacha Modals --- */
-.gallery-modal { width: 900px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-.gallery-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; flex-shrink: 0; }
-.gallery-modal h2 { font-size: 2rem; margin-bottom: 0; color: var(--primary-accent); padding-right: 3.5rem; }
-.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; flex-grow: 1; overflow-y: auto; padding: 0.2rem; }
+.gallery-modal {
+    width: 900px;
+    max-width: 95vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    padding: 2rem;
+}
+
+.gallery-tabs {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+    flex-shrink: 0;
+}
+.tab-button {
+    background: none;
+    border: none;
+    color: var(--font-color-secondary);
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+.tab-button:hover {
+    color: white;
+}
+.tab-button.active {
+    color: var(--primary-accent);
+    border-bottom-color: var(--primary-accent);
+}
+
+.gallery-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Important for flex child with overflow */
+}
+.gallery-tab-content, .crafting-tab-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.gacha-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(0,0,0,0.25);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+.gacha-controls button {
+    font-size: 1.2rem;
+    padding: 0.7rem 1.5rem;
+    border-radius: var(--radius-full);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: bold;
+}
+.gacha-controls button:first-child {
+    background: linear-gradient(45deg, var(--primary-accent), var(--primary-accent-hover));
+    color: white;
+}
+.gacha-controls button:last-child {
+    background: linear-gradient(45deg, var(--gold-accent), #f7971e);
+    color: var(--black-suit);
+}
+.gacha-controls button:disabled {
+    background: #444;
+    color: #888;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
 .gallery-item { border-radius: var(--radius-sm); overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.2); position: relative; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; background-color: rgba(0,0,0,0.3); height: 0; padding-bottom: 56.25%; }
 .gallery-item:hover { transform: scale(1.05); box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
 .gallery-item.rarity-r { box-shadow: 0 0 0 3px var(--rarity-r-color), 0 4px 8px rgba(0,0,0,0.2); }
@@ -232,6 +320,73 @@
 .legend-color-box.r { background-color: var(--rarity-r-color); }
 .legend-color-box.sr { background-color: var(--rarity-sr-color); }
 .legend-color-box.ssr { background-color: var(--rarity-ssr-color); }
+
+/* --- Crafting Section --- */
+.crafting-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+    overflow-y: auto;
+}
+.crafting-card {
+    background: rgba(0,0,0,0.3);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    border: 2px solid;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.crafting-card.rarity-r { border-color: var(--rarity-r-color); }
+.crafting-card.rarity-sr { border-color: var(--rarity-sr-color); }
+.crafting-card.rarity-ssr { border-color: var(--rarity-ssr-color); }
+
+.crafting-card-header { text-align: center; }
+.crafting-card-header h3 {
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: bold;
+}
+.crafting-card.rarity-r .crafting-card-header h3 { color: var(--rarity-r-color); }
+.crafting-card.rarity-sr .crafting-card-header h3 { color: var(--rarity-sr-color); }
+.crafting-card.rarity-ssr .crafting-card-header h3 { color: var(--rarity-ssr-color); }
+.crafting-card-header span { font-size: 0.9rem; color: var(--font-color-secondary); }
+
+.crafting-shard-info {
+    font-size: 1.2rem;
+    font-weight: bold;
+    background: rgba(0,0,0,0.4);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+}
+
+.crafting-card button {
+    font-size: 1.1rem;
+    padding: 0.6rem 1.8rem;
+    border-radius: var(--radius-full);
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+    width: 100%;
+}
+.crafting-card.rarity-r button { background: var(--rarity-r-color); color: #fff; }
+.crafting-card.rarity-sr button { background: var(--rarity-sr-color); color: #fff; }
+.crafting-card.rarity-ssr button { background: var(--rarity-ssr-color); color: #2a2a3e; }
+
+.crafting-card button:hover:not(:disabled) {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+.crafting-card button:disabled {
+    background: #555;
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
 
 /* --- Gacha Animations --- */
 .gacha-unlock-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 100; }
@@ -642,4 +797,5 @@
   .history-modal.classic-mode .history-header, .history-modal.classic-mode .history-entry { grid-template-columns: 0.4fr 1fr 1fr 0.5fr 0.5fr; }
   .history-entry .card { --card-height: 45px; --card-width: 25px; }
   .roguelike-rewards-rules-grid { grid-template-columns: 1fr; }
+  .crafting-grid { grid-template-columns: 1fr; }
 }

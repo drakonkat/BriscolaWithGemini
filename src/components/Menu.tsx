@@ -114,7 +114,7 @@ export const Menu = observer(() => {
     const { language, gameplayMode, difficulty, isNsfwEnabled } = gameSettingsStore;
     const { hasSavedGame } = gameStateStore;
     const { menuBackgroundUrl, isDifficultyDetailsOpen, isWaifuDetailsOpen } = uiStore;
-    const { waifuCoins } = gachaStore;
+    const { waifuCoins, r_shards, sr_shards, ssr_shards } = gachaStore;
 
     const T = translations[language];
     const [selectedWaifu, setSelectedWaifu] = useState<Waifu | null>(null);
@@ -191,11 +191,18 @@ export const Menu = observer(() => {
             {isNsfwEnabled && <CachedImage imageUrl={menuBackgroundUrl} alt="Game background" className="menu-background" />}
             <div className="menu-content" data-tutorial-id="welcome">
                 <div className="menu-title-container">
-                    <div className="waifu-coins-display">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9 16.5v-1c0-.83.67-1.5 1.5-1.5H12v-1h-1.5c-.83 0-1.5-.67-1.5-1.5v-1c0-.83.67-1.5 1.5-1.5H12V7h1.5c.83 0 1.5.67 1.5 1.5v1c0 .83-.67 1.5-1.5 1.5H12v1h1.5c.83 0 1.5.67 1.5 1.5v1c0 .83-.67 1.5-1.5 1.5H12v1H9z"/>
-                        </svg>
-                        <span>{waifuCoins}</span>
+                    <div className="currency-display-wrapper">
+                        <div className="waifu-coins-display">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9 16.5v-1c0-.83.67-1.5 1.5-1.5H12v-1h-1.5c-.83 0-1.5-.67-1.5-1.5v-1c0-.83.67-1.5 1.5-1.5H12V7h1.5c.83 0 1.5.67 1.5 1.5v1c0 .83-.67 1.5-1.5 1.5H12v1h1.5c.83 0 1.5.67 1.5 1.5v1c0 .83-.67 1.5-1.5 1.5H12v1H9z"/>
+                            </svg>
+                            <span>{waifuCoins}</span>
+                        </div>
+                        <div className="shards-display">
+                            <span className="shard-item r">R: {r_shards}</span>
+                            <span className="shard-item sr">SR: {sr_shards}</span>
+                            <span className="shard-item ssr">SSR: {ssr_shards}</span>
+                        </div>
                     </div>
 
                     <h1>{T.title}</h1>

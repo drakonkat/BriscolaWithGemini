@@ -106,8 +106,7 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                     <li className="rules-info-item">{T.gachaFreeFirstRoll}</li>
                     <li className="rules-info-item">{T.gachaCostSingle}</li>
                     <li className="rules-info-item">{T.gachaCostMulti}</li>
-                    <li className="rules-info-item">{T.gachaRule50Percent}</li>
-                    <li className="rules-info-item">{T.gachaRefundDescription}</li>
+                    <li className="rules-info-item">{T.gachaDuplicateShardRule}</li>
                     <li className="rules-info-item">{T.gachaRuleRarityTitle}
                         <ul style={{ listStyle: 'circle', paddingLeft: '20px', marginTop: '0.5rem' }}>
                             <li>{T.gachaRuleRarityR}</li>
@@ -116,6 +115,13 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                         </ul>
                     </li>
                     <li className="rules-info-item">{T.gachaPitySystem}</li>
+                    <li className="rules-info-item">{T.gallery.craftingTitle}
+                        <ul style={{ listStyle: 'circle', paddingLeft: '20px', marginTop: '0.5rem' }}>
+                            <li>{T.gallery.craftingRuleR}</li>
+                            <li>{T.gallery.craftingRuleSR}</li>
+                            <li>{T.gallery.craftingRuleSSR}</li>
+                        </ul>
+                    </li>
                 </ul>
 
                 <h3 className="rules-subtitle">{T.roguelike.roguelikeRulesTitle}</h3>
