@@ -23,13 +23,13 @@ export type ChatMessage = { sender: 'human' | 'ai'; text: string; };
 export type Language = 'it' | 'en';
 export type Waifu = WaifuType;
 export type GameEmotionalState = 'winning' | 'losing' | 'neutral';
-export type GameplayMode = 'classic' | 'roguelike';
+export type GameplayMode = 'classic' | 'roguelike' | 'dungeon';
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'nightmare' | 'apocalypse';
 export type Soundtrack = 'epic' | 'chill';
 export type Element = 'fire' | 'water' | 'air' | 'earth';
 export type AbilityType = 'incinerate' | 'tide' | 'cyclone' | 'fortify';
 export type SnackbarType = 'success' | 'warning';
-export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock' | 'legend' | 'settings' | 'craftingMinigame';
+export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock' | 'legend' | 'settings' | 'craftingMinigame' | 'challengeMatch' | 'challengeKeySelection' | 'noKeys';
 export type CardDeckStyle = 'classic' | 'poker';
 export type SoundName =
   | 'game-start'

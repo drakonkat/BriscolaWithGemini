@@ -1,5 +1,3 @@
-
-
 .menu {
   display: flex;
   flex-direction: column;
@@ -83,6 +81,30 @@
 .shard-item.r { color: var(--rarity-r-color); }
 .shard-item.sr { color: var(--rarity-sr-color); }
 .shard-item.ssr { color: var(--rarity-ssr-color); }
+
+.keys-display {
+    display: flex;
+    gap: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.key-item {
+    font-size: 0.9rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.key-item svg {
+    width: 16px;
+    height: 16px;
+    margin-bottom: 2px;
+}
+.key-item.r { color: var(--rarity-r-color); }
+.key-item.sr { color: var(--rarity-sr-color); }
+.key-item.ssr { color: var(--rarity-ssr-color); }
 
 
 .menu-title-container {
@@ -593,6 +615,10 @@ input:checked + .slider:before {
     margin-bottom: 1.5rem;
 }
 
+.game-mode-carousel-wrapper {
+    position: relative;
+}
+
 .game-mode-selection {
     display: flex;
     gap: 1.5rem;
@@ -604,7 +630,7 @@ input:checked + .slider:before {
     border-radius: var(--radius-md);
     padding: 1.5rem;
     flex: 1;
-    max-width: 280px;
+    max-width: 250px;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: center;
@@ -644,6 +670,19 @@ input:checked + .slider:before {
     padding-top: 10px;
     flex-grow: 1;
 }
+.difficulty-selection.disabled .difficulty-card {
+    cursor: not-allowed;
+    opacity: 0.5;
+    filter: grayscale(50%);
+}
+.difficulty-selection.disabled .difficulty-card:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--border-color);
+}
+.difficulty-selection.disabled .difficulty-card.selected {
+    transform: none;
+}
+
 
 .difficulty-card {
     background-color: rgba(255, 255, 255, 0.05);
@@ -683,6 +722,23 @@ input:checked + .slider:before {
 .difficulty-icon.nightmare-icon {
     /* Make black hearts visible on dark background with a menacing glow */
     text-shadow: 0 0 4px rgba(255, 107, 107, 0.7);
+}
+
+.difficulty-locked-message {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(0,0,0,0.2);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+.difficulty-locked-message h3 {
+    margin-top: 0.5rem;
+    color: var(--font-color);
+}
+.difficulty-locked-message p {
+    font-size: 0.9rem;
+    color: var(--font-color-secondary);
+    margin: 0.5rem 0 0;
 }
 
 .difficulty-details-panel {
@@ -829,6 +885,62 @@ input:checked + .slider:before {
     border-color: var(--red-suit); /* Red */
 }
 
+/* --- Challenge Match Section --- */
+.challenge-matches {
+    background: rgba(0,0,0,0.25);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border: 1px solid var(--border-color);
+}
+.challenge-matches h2 {
+    font-size: 1.5rem;
+    color: var(--gold-accent);
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+.challenge-matches p {
+    color: var(--font-color-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.challenge-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.challenge-button {
+    background: none;
+    border: 2px solid;
+    border-radius: var(--radius-full);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.challenge-button svg { width: 20px; height: 20px; }
+.challenge-button.r { border-color: var(--rarity-r-color); color: var(--rarity-r-color); }
+.challenge-button.sr { border-color: var(--rarity-sr-color); color: var(--rarity-sr-color); }
+.challenge-button.ssr { border-color: var(--rarity-ssr-color); color: var(--rarity-ssr-color); }
+
+.challenge-button.r:hover:not(:disabled) { background-color: var(--rarity-r-color); color: white; box-shadow: 0 0 10px var(--rarity-r-color); }
+.challenge-button.sr:hover:not(:disabled) { background-color: var(--rarity-sr-color); color: white; box-shadow: 0 0 10px var(--rarity-sr-color); }
+.challenge-button.ssr:hover:not(:disabled) { background-color: var(--rarity-ssr-color); color: var(--black-suit); box-shadow: 0 0 10px var(--rarity-ssr-color); }
+.challenge-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(50%);
+}
+
 @media (min-width: 769px) {
     .waifu-carousel-wrapper {
         padding: 0; /* Remove space for buttons */
@@ -877,11 +989,11 @@ input:checked + .slider:before {
     padding: 0.4rem 0.8rem;
     font-size: 1rem;
   }
-  .shards-display {
+  .shards-display, .keys-display {
     padding: 0.3rem 0.6rem;
     gap: 0.75rem;
   }
-  .shard-item { font-size: 0.8rem; }
+  .shard-item, .key-item { font-size: 0.8rem; }
   .menu-actions { grid-column: 3; justify-self: end; position: relative; }
   .start-game-container { margin: 1.5rem 0; }
   .start-game-button { font-size: 1.5rem; padding: 0.8rem 2rem; }
@@ -904,6 +1016,48 @@ input:checked + .slider:before {
   }
   .carousel-nav-button.next {
       right: -5px;
+  }
+  
+  .game-mode-carousel-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    margin: 0 -30px;
+  }
+
+  .game-mode-selection {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 1rem;
+    margin: 0 -1rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-grow: 1;
+  }
+
+  .game-mode-selection::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .game-mode-card {
+    flex: 0 0 160px;
+    scroll-snap-align: center;
+    transform: scale(0.9);
+    opacity: 0.7;
+    transition: transform 0.3s ease, opacity 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .game-mode-card:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary-accent);
+  }
+  
+  .game-mode-card.selected {
+      transform: scale(1);
+      opacity: 1;
   }
   
   .difficulty-carousel-wrapper {
@@ -1002,6 +1156,10 @@ input:checked + .slider:before {
   .waifu-selector-container { gap: 0.75rem; }
   .waifu-card, .random-waifu-card { width: 140px; }
   .waifu-card img { width: 70px; height: 70px; }
+
+  .game-mode-card {
+    flex-basis: 140px;
+  }
 
   .difficulty-card {
     flex-basis: 120px;

@@ -57,9 +57,9 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
     const canAffordX10 = waifuCoins >= GACHA_COST_X10;
     const buttonText = isFirstRoll ? T_gallery.gachaButtonFree : T_gallery.gachaButton(GACHA_COST);
     
-    const canCraftR = gachaStore.r_shards >= 10 && backgrounds.some(b => b.rarity === 'R' && !unlockedBackgrounds.includes(b.url));
-    const canCraftSR = gachaStore.sr_shards >= 10 && backgrounds.some(b => b.rarity === 'SR' && !unlockedBackgrounds.includes(b.url));
-    const canCraftSSR = gachaStore.ssr_shards >= 5 && backgrounds.some(b => b.rarity === 'SSR' && !unlockedBackgrounds.includes(b.url));
+    const canCraftR = gachaStore.r_shards >= 10;
+    const canCraftSR = gachaStore.sr_shards >= 10;
+    const canCraftSSR = gachaStore.ssr_shards >= 5;
 
     const canConvertRtoSR = gachaStore.r_shards >= 25;
     const canConvertRtoSSR = gachaStore.r_shards >= 50;
@@ -140,37 +140,37 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                             <div className="crafting-grid">
                                 <div className="crafting-card rarity-r">
                                     <div className="crafting-card-header">
-                                        <h3>{T_gallery.shardLabelR(1).replace('1 ', '')}</h3>
+                                        <h3>{T_gallery.shardLabelR(1).replace('1 Frammento ', 'Chiave ')}</h3>
                                         <span>{T_gallery.craftingRuleR}</span>
                                     </div>
                                     <div className="crafting-shard-info">
                                         <span>{gachaStore.r_shards} / 10</span>
                                     </div>
-                                    <button onClick={() => gachaStore.craftBackground('R')} disabled={!canCraftR}>
+                                    <button onClick={() => gachaStore.craftKey('R')} disabled={!canCraftR}>
                                         {T_gallery.craftButton(10)}
                                     </button>
                                 </div>
                                 <div className="crafting-card rarity-sr">
                                     <div className="crafting-card-header">
-                                        <h3>{T_gallery.shardLabelSR(1).replace('1 ', '')}</h3>
+                                        <h3>{T_gallery.shardLabelSR(1).replace('1 Frammento ', 'Chiave ')}</h3>
                                         <span>{T_gallery.craftingRuleSR}</span>
                                     </div>
                                     <div className="crafting-shard-info">
                                         <span>{gachaStore.sr_shards} / 10</span>
                                     </div>
-                                    <button onClick={() => gachaStore.craftBackground('SR')} disabled={!canCraftSR}>
+                                    <button onClick={() => gachaStore.craftKey('SR')} disabled={!canCraftSR}>
                                         {T_gallery.craftButton(10)}
                                     </button>
                                 </div>
                                 <div className="crafting-card rarity-ssr">
                                     <div className="crafting-card-header">
-                                        <h3>{T_gallery.shardLabelSSR(1).replace('1 ', '')}</h3>
+                                        <h3>{T_gallery.shardLabelSSR(1).replace('1 Frammento ', 'Chiave ')}</h3>
                                         <span>{T_gallery.craftingRuleSSR}</span>
                                     </div>
                                     <div className="crafting-shard-info">
                                         <span>{gachaStore.ssr_shards} / 5</span>
                                     </div>
-                                    <button onClick={() => gachaStore.craftBackground('SSR')} disabled={!canCraftSSR}>
+                                    <button onClick={() => gachaStore.craftKey('SSR')} disabled={!canCraftSSR}>
                                         {T_gallery.craftButton(5)}
                                     </button>
                                 </div>

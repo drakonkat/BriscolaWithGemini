@@ -14,34 +14,51 @@ interface GameOverModalProps {
     onGoToMenu: () => void;
     language: Language;
     winnings: number;
+    challengeMatchRarity: 'R' | 'SR' | 'SSR' | null;
 }
 
-export const GameOverModal = ({ humanScore, aiScore, aiName, winner, onPlayAgain, onGoToMenu, language, winnings }: GameOverModalProps) => {
+export const GameOverModal = ({ humanScore, aiScore, aiName, winner, onPlayAgain, onGoToMenu, language, winnings, challengeMatchRarity }: GameOverModalProps) => {
     const T = translations[language];
 
+    const isChallengeLoss = challengeMatchRarity && (winner === 'ai' || winner === 'tie');
+    const isChallengeWin = challengeMatchRarity && winner === 'human';
+
+    let title = T.gameOverTitle;
     let finalMessage: string;
-    switch (winner) {
-        case 'human':
-            finalMessage = T.youWin;
-            break;
-        case 'ai':
-            finalMessage = T.aiWins(aiName);
-            break;
-        case 'tie':
-            finalMessage = T.tie;
-            break;
+    let playAgainText = T.playAgain;
+
+    if (isChallengeLoss) {
+        title = T.challengeMatch.challengeLossTitle;
+        finalMessage = T.challengeMatch.challengeLossMessage(aiName);
+        playAgainText = T.challengeMatch.playAgainChallenge;
+    } else if (isChallengeWin) {
+        title = T.challengeMatch.challengeWinTitle;
+        finalMessage = T.challengeMatch.challengeWinMessage;
+    }
+    else {
+         switch (winner) {
+            case 'human':
+                finalMessage = T.youWin;
+                break;
+            case 'ai':
+                finalMessage = T.aiWins(aiName);
+                break;
+            case 'tie':
+                finalMessage = T.tie;
+                break;
+        }
     }
 
     return (
         <div className="game-over-overlay">
             <div className="game-over-modal">
-                <h2>{T.gameOverTitle}</h2>
+                <h2>{title}</h2>
                 <p>{T.finalScore}</p>
                 <p>{T.scoreYou}: {humanScore} - {aiName}: {aiScore}</p>
                 {winnings > 0 && <p className="game-over-winnings">{T.coinsEarned(winnings)}</p>}
                 <h3>{finalMessage}</h3>
                 <div className="modal-actions">
-                    <button onClick={onPlayAgain}>{T.playAgain}</button>
+                    <button onClick={onPlayAgain}>{playAgainText}</button>
                     <button onClick={onGoToMenu} className="button-secondary">{T.backToMenu}</button>
                 </div>
             </div>

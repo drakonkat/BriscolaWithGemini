@@ -110,6 +110,7 @@ export class GameStateStore {
     resolveTrickCallbackRef: (() => void) | null = null;
     
     isTutorialGame = false;
+    challengeMatchRarity: 'R' | 'SR' | 'SSR' | null = null;
     
     lastTrickInsightCooldown = 0;
     briscolaSwapCooldown = 0;
@@ -208,7 +209,7 @@ export class GameStateStore {
         const aiCard = this.trickStarter === 'ai' ? this.cardsOnTable[0] : this.cardsOnTable[1];
         
         const resolve = (clashResult: ElementalClashResult | null) => {
-            let getTrickWinner = this.rootStore.gameSettingsStore.gameplayMode === 'classic' ? getClassicTrickWinner : getRoguelikeTrickWinner;
+            let getTrickWinner = this.rootStore.gameSettingsStore.gameplayMode === 'classic' || this.challengeMatchRarity ? getClassicTrickWinner : getRoguelikeTrickWinner;
             const trickWinner = getTrickWinner(this.cardsOnTable, this.trickStarter, this.briscolaSuit!, this.roguelikeState.activePowers);
             this.resolveTrick(humanCard, aiCard, trickWinner, clashResult);
         };
@@ -467,7 +468,17 @@ export class GameStateStore {
 
             this.rootStore.posthog?.capture('game_over', { human_score: this.humanScore, ai_score: this.aiScore, winner, winnings });
 
-            if (gameplayMode === 'classic') {
+            if (this.challengeMatchRarity) {
+                if (winner === 'human') {
+                    // Spend key and get reward only on win
+                    this.rootStore.gachaStore.spendKey(this.challengeMatchRarity);
+                    this.rootStore.gachaStore.unlockRandomBackground(this.challengeMatchRarity);
+                }
+                // On loss, the key is not spent. The GameOverModal will handle the messaging.
+                this.gameResult = winner;
+                this.phase = 'gameOver';
+
+            } else if (gameplayMode === 'classic') {
                 let difficultyMultiplier = 1.0;
                 if (difficulty === 'easy') difficultyMultiplier = 0.5;
                 else if (difficulty === 'hard' || difficulty === 'nightmare' || difficulty === 'apocalypse') difficultyMultiplier = 1.5;
@@ -532,8 +543,20 @@ export class GameStateStore {
     // Actions
     
     startGame = (selectedWaifu: Waifu | null) => {
-        const { language, gameplayMode, difficulty, isChatEnabled, isNsfwEnabled } = this.rootStore.gameSettingsStore;
+        let { language, gameplayMode, isChatEnabled, isNsfwEnabled } = this.rootStore.gameSettingsStore;
         
+        if (gameplayMode === 'dungeon') {
+            const { r_keys, sr_keys, ssr_keys } = this.rootStore.gachaStore;
+            if (r_keys + sr_keys + ssr_keys > 0) {
+                this.rootStore.uiStore.openModal('challengeKeySelection');
+            } else {
+                this.rootStore.uiStore.openModal('noKeys');
+            }
+            return;
+        }
+        
+        let { difficulty } = this.rootStore.gameSettingsStore;
+
         if (isNsfwEnabled) {
             const bgIndex = Math.floor(Math.random() * 21) + 1;
             const isDesktop = window.innerWidth > 1024;
@@ -564,12 +587,13 @@ export class GameStateStore {
         this.lastTrick = null;
         this.activeElements = [];
         this.isTutorialGame = false;
-        this.roguelikeState = INITIAL_ROGUELIKE_STATE;
+        this.challengeMatchRarity = null;
         
         if (gameplayMode === 'classic') {
             this.currentWaifu = newWaifu;
             this.startClassicGame(newWaifu);
-        } else {
+        } else if (gameplayMode === 'roguelike') {
+            this.roguelikeState = INITIAL_ROGUELIKE_STATE;
             this.startRoguelikeRun(newWaifu);
         }
     };
@@ -588,6 +612,47 @@ export class GameStateStore {
         this.phase = 'playing';
     };
     
+    startChallengeMatch = (rarity: 'R' | 'SR' | 'SSR') => {
+        this.rootStore.uiStore.closeModal('challengeKeySelection');
+        
+        // Reset state
+        this.aiEmotionalState = 'neutral';
+        this.cardsOnTable = [];
+        this.humanScore = 0;
+        this.aiScore = 0;
+        this.isQuotaExceeded = false;
+        this.gameMode = 'online';
+        this.gameResult = null;
+        this.lastGameWinnings = 0;
+        this.lastResolvedTrick = [];
+        this.trickCounter = 0;
+        this.trickHistory = [];
+        this.lastTrick = null;
+        this.activeElements = [];
+        this.isTutorialGame = false;
+        this.challengeMatchRarity = rarity;
+
+        const newWaifu = WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
+        this.currentWaifu = newWaifu;
+        
+        if (this.rootStore.gameSettingsStore.isNsfwEnabled) {
+            const bgIndex = Math.floor(Math.random() * 21) + 1;
+            const isDesktop = window.innerWidth > 1024;
+            const backgroundPrefix = isDesktop ? 'landscape' : 'background';
+            this.backgroundUrl = getImageUrl(`/background/${backgroundPrefix}${bgIndex}.png`);
+        } else {
+            this.backgroundUrl = '';
+        }
+        
+        playSound('game-start');
+        this.rootStore.posthog?.capture('challenge_match_started', {
+            waifu_name: newWaifu.name,
+            key_rarity: rarity,
+        });
+
+        this.startClassicGame(newWaifu);
+    }
+
     startRoguelikeRun = (firstWaifu: Waifu) => {
         const { difficulty } = this.rootStore.gameSettingsStore;
         this.rootStore.posthog?.capture('roguelike_run_started', { waifu_name: firstWaifu.name, difficulty });
@@ -698,9 +763,9 @@ export class GameStateStore {
             const humanScorePile: Card[] = [];
             const aiScorePile: Card[] = [];
             this.trickHistory.forEach(entry => {
-                if (entry.winner === 'human') {
+                if ('winner' in entry && entry.winner === 'human') {
                     humanScorePile.push(entry.humanCard, entry.aiCard);
-                } else {
+                } else if ('winner' in entry && entry.winner === 'ai') {
                     aiScorePile.push(entry.humanCard, entry.aiCard);
                 }
             });
@@ -1043,6 +1108,7 @@ export class GameStateStore {
     confirmLeaveGame = () => { this.rootStore.posthog?.capture('game_left', { human_score: this.humanScore, ai_score: this.aiScore }); this.clearSavedGame(); this.phase = 'menu'; };
     goToMenu = () => {
         this.isTutorialGame = false;
+        this.challengeMatchRarity = null;
         this.phase = 'menu';
     }
     handleQuotaExceeded = () => { this.isQuotaExceeded = true; this.gameMode = 'fallback'; };
@@ -1109,6 +1175,7 @@ export class GameStateStore {
                 // FIX: Cannot assign to 'revealedAiHand' because it is a read-only property.
                 // Switched to saving the underlying state property `isAiHandTemporarilyRevealed` instead.
                 isAiHandTemporarilyRevealed: this.isAiHandTemporarilyRevealed, isKasumiModalOpen: this.isKasumiModalOpen,
+                challengeMatchRarity: this.challengeMatchRarity,
             };
             localStorage.setItem(SAVED_GAME_KEY, JSON.stringify(stateToSave));
             this.hasSavedGame = true;
@@ -1143,6 +1210,7 @@ export class GameStateStore {
                 // Restored the underlying state property `isAiHandTemporarilyRevealed` instead.
                 this.isAiHandTemporarilyRevealed = saved.isAiHandTemporarilyRevealed || false;
                 this.isKasumiModalOpen = saved.isKasumiModalOpen; this.lastResolvedTrick = saved.lastResolvedTrick || []; this.trickCounter = saved.trickCounter || 0;
+                this.challengeMatchRarity = saved.challengeMatchRarity || null;
 
                 if (!gameSettingsStore.isNsfwEnabled) {
                     this.backgroundUrl = '';

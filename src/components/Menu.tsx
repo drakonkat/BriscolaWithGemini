@@ -114,12 +114,22 @@ export const Menu = observer(() => {
     const { language, gameplayMode, difficulty, isNsfwEnabled } = gameSettingsStore;
     const { hasSavedGame } = gameStateStore;
     const { menuBackgroundUrl, isDifficultyDetailsOpen, isWaifuDetailsOpen } = uiStore;
-    const { waifuCoins, r_shards, sr_shards, ssr_shards } = gachaStore;
+    const { waifuCoins, r_shards, sr_shards, ssr_shards, r_keys, sr_keys, ssr_keys } = gachaStore;
 
     const T = translations[language];
     const [selectedWaifu, setSelectedWaifu] = useState<Waifu | null>(null);
     const [isRandomCardSelected, setIsRandomCardSelected] = useState(false);
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+    
+    const gameModes: GameplayMode[] = ['classic', 'roguelike', 'dungeon'];
+    const gameModeContainerRef = useRef<HTMLDivElement>(null);
+    const gameModeCardRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+    const changeGameMode = (direction: number) => {
+        const currentIndex = gameModes.indexOf(gameplayMode);
+        const newIndex = (currentIndex + direction + gameModes.length) % gameModes.length;
+        gameSettingsStore.setGameplayMode(gameModes[newIndex]);
+    };
 
     const difficultyContainerRef = useRef<HTMLDivElement>(null);
     const difficultyCardRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -131,6 +141,24 @@ export const Menu = observer(() => {
         const newIndex = (currentIndex + direction + difficulties.length) % difficulties.length;
         gameSettingsStore.setDifficulty(difficulties[newIndex]);
     };
+    
+    useEffect(() => {
+        const container = gameModeContainerRef.current;
+        if (!container) return;
+
+        const selectedIndex = gameModes.indexOf(gameplayMode);
+
+        if (selectedIndex !== -1 && gameModeCardRefs.current[selectedIndex]) {
+            const selectedCard = gameModeCardRefs.current[selectedIndex];
+            if (selectedCard) {
+                const scrollLeft = selectedCard.offsetLeft + (selectedCard.offsetWidth / 2) - (container.offsetWidth / 2);
+                container.scrollTo({
+                    left: scrollLeft,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    }, [gameplayMode]);
 
     useEffect(() => {
         const container = difficultyContainerRef.current;
@@ -165,7 +193,7 @@ export const Menu = observer(() => {
     }, []);
 
     useEffect(() => {
-        if (gameplayMode === 'roguelike') {
+        if (gameplayMode === 'roguelike' || gameplayMode === 'dungeon') {
             setSelectedWaifu(null);
             setIsRandomCardSelected(true);
         } else {
@@ -202,6 +230,20 @@ export const Menu = observer(() => {
                             <span className="shard-item r">R: {r_shards}</span>
                             <span className="shard-item sr">SR: {sr_shards}</span>
                             <span className="shard-item ssr">SSR: {ssr_shards}</span>
+                        </div>
+                         <div className="keys-display">
+                            <span className="key-item r" title={T.gallery.keyLabelR(r_keys)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                                {r_keys}
+                            </span>
+                            <span className="key-item sr" title={T.gallery.keyLabelSR(sr_keys)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                                {sr_keys}
+                            </span>
+                            <span className="key-item ssr" title={T.gallery.keyLabelSSR(ssr_keys)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                                {ssr_keys}
+                            </span>
                         </div>
                     </div>
 
@@ -257,20 +299,38 @@ export const Menu = observer(() => {
                 <p className="menu-subtitle">{T.subtitle}</p>
 
                 <div className="menu-section" data-tutorial-id="game-mode">
-                    <div className="game-mode-selection">
-                        <button 
-                            className={`game-mode-card ${gameplayMode === 'classic' ? 'selected' : ''}`}
-                            onClick={() => gameSettingsStore.setGameplayMode('classic')}
-                        >
-                            <span className="game-mode-icon">👑</span>
-                            <h3>{T.gameModeClassic}</h3>
+                    <div className="game-mode-carousel-wrapper">
+                        <button className="carousel-nav-button prev" onClick={() => changeGameMode(-1)} aria-label="Previous game mode">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12l4.58-4.59z"/></svg>
                         </button>
-                        <button 
-                            className={`game-mode-card ${gameplayMode === 'roguelike' ? 'selected' : ''}`}
-                            onClick={() => gameSettingsStore.setGameplayMode('roguelike')}
-                        >
-                            <span className="game-mode-icon">🗺️</span>
-                            <h3>{T.gameModeRoguelike}</h3>
+                        <div className="game-mode-selection" ref={gameModeContainerRef}>
+                            <button 
+                                ref={el => { gameModeCardRefs.current[0] = el; }}
+                                className={`game-mode-card ${gameplayMode === 'classic' ? 'selected' : ''}`}
+                                onClick={() => gameSettingsStore.setGameplayMode('classic')}
+                            >
+                                <span className="game-mode-icon">👑</span>
+                                <h3>{T.gameModeClassic}</h3>
+                            </button>
+                            <button 
+                                ref={el => { gameModeCardRefs.current[1] = el; }}
+                                className={`game-mode-card ${gameplayMode === 'roguelike' ? 'selected' : ''}`}
+                                onClick={() => gameSettingsStore.setGameplayMode('roguelike')}
+                            >
+                                <span className="game-mode-icon">🗺️</span>
+                                <h3>{T.gameModeRoguelike}</h3>
+                            </button>
+                            <button 
+                                ref={el => { gameModeCardRefs.current[2] = el; }}
+                                className={`game-mode-card ${gameplayMode === 'dungeon' ? 'selected' : ''}`}
+                                onClick={() => gameSettingsStore.setGameplayMode('dungeon')}
+                            >
+                                <span className="game-mode-icon">⚔️</span>
+                                <h3>{T.gameModeDungeon}</h3>
+                            </button>
+                        </div>
+                        <button className="carousel-nav-button next" onClick={() => changeGameMode(1)} aria-label="Next game mode">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
                         </button>
                     </div>
                 </div>
@@ -278,68 +338,78 @@ export const Menu = observer(() => {
                     <div className="menu-section-header non-collapsible">
                         <h2>{T.difficultyLabel}</h2>
                     </div>
-                    <div className="difficulty-carousel-wrapper">
-                        <button className="carousel-nav-button prev" onClick={() => changeDifficulty(-1)} aria-label="Previous difficulty">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12l4.58-4.59z"/></svg>
-                        </button>
-                        <div className="difficulty-selection" ref={difficultyContainerRef}>
-                            <button
-                                ref={el => { difficultyCardRefs.current[0] = el; }}
-                                className={`difficulty-card ${difficulty === 'easy' ? 'selected' : ''}`}
-                                onClick={() => gameSettingsStore.setDifficulty('easy')}
-                            >
-                                <span className="difficulty-icon">❤️</span>
-                                <h3>{T.difficultyEasy}</h3>
+                    {gameplayMode === 'dungeon' ? (
+                        <div className="difficulty-locked-message">
+                            <span className="difficulty-icon nightmare-icon">🖤🖤🖤</span>
+                            <h3>{T.difficultyNightmare}</h3>
+                            <p>{T.challengeMatch.difficultyLocked}</p>
+                        </div>
+                    ) : (
+                    <>
+                        <div className="difficulty-carousel-wrapper">
+                            <button className="carousel-nav-button prev" onClick={() => changeDifficulty(-1)} aria-label="Previous difficulty">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12l4.58-4.59z"/></svg>
                             </button>
-                            <button
-                                ref={el => { difficultyCardRefs.current[1] = el; }}
-                                className={`difficulty-card ${difficulty === 'medium' ? 'selected' : ''}`}
-                                onClick={() => gameSettingsStore.setDifficulty('medium')}
-                            >
-                                <span className="difficulty-icon">❤️❤️</span>
-                                <h3>{T.difficultyMedium}</h3>
-                            </button>
-                            <button
-                                ref={el => { difficultyCardRefs.current[2] = el; }}
-                                className={`difficulty-card ${difficulty === 'hard' ? 'selected' : ''}`}
-                                onClick={() => gameSettingsStore.setDifficulty('hard')}
-                            >
-                                <span className="difficulty-icon">❤️❤️❤️</span>
-                                <h3>{T.difficultyHard}</h3>
-                            </button>
-                            <button
-                                ref={el => { difficultyCardRefs.current[3] = el; }}
-                                className={`difficulty-card ${difficulty === 'nightmare' ? 'selected' : ''}`}
-                                onClick={() => gameSettingsStore.setDifficulty('nightmare')}
-                            >
-                                <span className="difficulty-icon nightmare-icon">🖤🖤🖤</span>
-                                <h3>{T.difficultyNightmare}</h3>
-                            </button>
-                            <button
-                                ref={el => { difficultyCardRefs.current[4] = el; }}
-                                className={`difficulty-card ${difficulty === 'apocalypse' ? 'selected' : ''}`}
-                                onClick={() => gameSettingsStore.setDifficulty('apocalypse')}
-                            >
-                                <span className="difficulty-icon">💀💀💀</span>
-                                <h3>{T.difficultyApocalypse}</h3>
+                            <div className="difficulty-selection" ref={difficultyContainerRef}>
+                                <button
+                                    ref={el => { difficultyCardRefs.current[0] = el; }}
+                                    className={`difficulty-card ${difficulty === 'easy' ? 'selected' : ''}`}
+                                    onClick={() => gameSettingsStore.setDifficulty('easy')}
+                                >
+                                    <span className="difficulty-icon">❤️</span>
+                                    <h3>{T.difficultyEasy}</h3>
+                                </button>
+                                <button
+                                    ref={el => { difficultyCardRefs.current[1] = el; }}
+                                    className={`difficulty-card ${difficulty === 'medium' ? 'selected' : ''}`}
+                                    onClick={() => gameSettingsStore.setDifficulty('medium')}
+                                >
+                                    <span className="difficulty-icon">❤️❤️</span>
+                                    <h3>{T.difficultyMedium}</h3>
+                                </button>
+                                <button
+                                    ref={el => { difficultyCardRefs.current[2] = el; }}
+                                    className={`difficulty-card ${difficulty === 'hard' ? 'selected' : ''}`}
+                                    onClick={() => gameSettingsStore.setDifficulty('hard')}
+                                >
+                                    <span className="difficulty-icon">❤️❤️❤️</span>
+                                    <h3>{T.difficultyHard}</h3>
+                                </button>
+                                <button
+                                    ref={el => { difficultyCardRefs.current[3] = el; }}
+                                    className={`difficulty-card ${difficulty === 'nightmare' ? 'selected' : ''}`}
+                                    onClick={() => gameSettingsStore.setDifficulty('nightmare')}
+                                >
+                                    <span className="difficulty-icon nightmare-icon">🖤🖤🖤</span>
+                                    <h3>{T.difficultyNightmare}</h3>
+                                </button>
+                                <button
+                                    ref={el => { difficultyCardRefs.current[4] = el; }}
+                                    className={`difficulty-card ${difficulty === 'apocalypse' ? 'selected' : ''}`}
+                                    onClick={() => gameSettingsStore.setDifficulty('apocalypse')}
+                                >
+                                    <span className="difficulty-icon">💀💀💀</span>
+                                    <h3>{T.difficultyApocalypse}</h3>
+                                </button>
+                            </div>
+                            <button className="carousel-nav-button next" onClick={() => changeDifficulty(1)} aria-label="Next difficulty">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
                             </button>
                         </div>
-                        <button className="carousel-nav-button next" onClick={() => changeDifficulty(1)} aria-label="Next difficulty">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        
+                        <button className="menu-section-header details-header" onClick={uiStore.toggleDifficultyDetails} aria-expanded={isDifficultyDetailsOpen}>
+                            <h3>{T.waifuCoinRulesTitle}</h3>
+                            <span className={`collapse-icon ${isDifficultyDetailsOpen ? 'open' : ''}`}>
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                            </span>
                         </button>
-                    </div>
-                    
-                    <button className="menu-section-header details-header" onClick={uiStore.toggleDifficultyDetails} aria-expanded={isDifficultyDetailsOpen}>
-                        <h3>{T.waifuCoinRulesTitle}</h3>
-                        <span className={`collapse-icon ${isDifficultyDetailsOpen ? 'open' : ''}`}>
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
-                        </span>
-                    </button>
-                    <div className={`collapsible-content ${isDifficultyDetailsOpen ? 'open' : ''}`}>
-                        <div>
-                            <DifficultyDetails difficulty={difficulty} language={language} gameplayMode={gameplayMode} />
+                        <div className={`collapsible-content ${isDifficultyDetailsOpen ? 'open' : ''}`}>
+                            <div>
+                                <DifficultyDetails difficulty={difficulty} language={language} gameplayMode={gameplayMode} />
+                            </div>
                         </div>
-                    </div>
+                    </>
+                    )}
                 </div>
                 
                  <div className="menu-section" data-tutorial-id="waifu-selector">
@@ -348,7 +418,7 @@ export const Menu = observer(() => {
                         onWaifuSelected={handleWaifuSelection}
                         selectedWaifu={selectedWaifu}
                         isRandomSelected={isRandomCardSelected}
-                        disabled={gameplayMode === 'roguelike'}
+                        disabled={gameplayMode === 'roguelike' || gameplayMode === 'dungeon'}
                     />
                 </div>
 

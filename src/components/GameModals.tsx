@@ -36,26 +36,50 @@ export const GameModals = observer(() => {
         phase, gameResult, lastGameWinnings, currentWaifu, gameMode, humanScore, aiScore, 
         trickHistory, isKasumiModalOpen, briscolaCard, humanHand, isBriscolaSwapModalOpen,
         closeBriscolaSwapModal, handleBriscolaSwap, newFollower, acknowledgeNewFollower,
+        challengeMatchRarity
     } = gameStateStore;
 
     const T = translations[language];
     const TR = T.roguelike;
 
+    const handlePlayAgain = () => {
+        if (challengeMatchRarity) {
+            gameStateStore.startChallengeMatch(challengeMatchRarity);
+        } else {
+            gameStateStore.startGame(currentWaifu);
+        }
+    };
+    
     return (
         <>
-            {phase === 'gameOver' && gameResult && gameplayMode === 'classic' &&(
+            {phase === 'gameOver' && gameResult && gameplayMode === 'classic' && !challengeMatchRarity && (
                 <GameOverModal
                     humanScore={humanScore}
                     aiScore={aiScore}
                     aiName={currentWaifu?.name ?? ''}
                     winner={gameResult}
-                    onPlayAgain={() => gameStateStore.startGame(currentWaifu)}
+                    onPlayAgain={handlePlayAgain}
                     onGoToMenu={gameStateStore.goToMenu}
                     language={language}
                     winnings={lastGameWinnings}
+                    challengeMatchRarity={null}
                 />
             )}
             
+            {phase === 'gameOver' && gameResult && challengeMatchRarity && (
+                 <GameOverModal
+                    humanScore={humanScore}
+                    aiScore={aiScore}
+                    aiName={currentWaifu?.name ?? ''}
+                    winner={gameResult}
+                    onPlayAgain={handlePlayAgain}
+                    onGoToMenu={gameStateStore.goToMenu}
+                    language={language}
+                    winnings={lastGameWinnings}
+                    challengeMatchRarity={challengeMatchRarity}
+                />
+            )}
+
             {phase === 'gameOver' && gameResult && gameplayMode === 'roguelike' && (
                  <div className="game-over-overlay">
                     <div className="game-over-modal">
@@ -200,6 +224,51 @@ export const GameModals = observer(() => {
                     waifu={newFollower}
                     onContinue={acknowledgeNewFollower}
                 />
+            )}
+
+            {uiStore.isNoKeysModalOpen && (
+                <div className="game-over-overlay" onClick={() => uiStore.closeModal('noKeys')}>
+                    <div className="confirmation-modal" onClick={(e) => e.stopPropagation()}>
+                        <button className="modal-close-button" onClick={() => uiStore.closeModal('noKeys')} aria-label={T.close}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                        </button>
+                        <h2>{T.challengeMatch.noKeysModalTitle}</h2>
+                        <p>{T.challengeMatch.noKeysModalMessage}</p>
+                        <div className="modal-actions">
+                            <button onClick={() => { uiStore.closeModal('noKeys'); uiStore.openModal('gallery'); }}>{T.gallery.promoButton}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {uiStore.isChallengeKeySelectionModalOpen && (
+                <div className="game-over-overlay" onClick={() => uiStore.closeModal('challengeKeySelection')}>
+                    <div className="challenge-key-selection-modal" onClick={(e) => e.stopPropagation()}>
+                        <button className="modal-close-button" onClick={() => uiStore.closeModal('challengeKeySelection')} aria-label={T.close}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                        </button>
+                        <h2>{T.challengeMatch.keySelectionTitle}</h2>
+                        <p>{T.challengeMatch.keySelectionMessage}</p>
+                        <div className="challenge-buttons">
+                            <button className="challenge-button r" onClick={() => gameStateStore.startChallengeMatch('R')} disabled={gachaStore.r_keys === 0}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                                <span>{T.gallery.keyLabelR(gachaStore.r_keys)}</span>
+                            </button>
+                            <button className="challenge-button sr" onClick={() => gameStateStore.startChallengeMatch('SR')} disabled={gachaStore.sr_keys === 0}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                                <span>{T.gallery.keyLabelSR(gachaStore.sr_keys)}</span>
+                            </button>
+                            <button className="challenge-button ssr" onClick={() => gameStateStore.startChallengeMatch('SSR')} disabled={gachaStore.ssr_keys === 0}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                                <span>{T.gallery.keyLabelSSR(gachaStore.ssr_keys)}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </>
     );
