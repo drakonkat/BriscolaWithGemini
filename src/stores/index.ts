@@ -8,6 +8,7 @@ import { UIStateStore } from './UIStateStore';
 import { GachaStore } from './GachaStore';
 import { GameStateStore } from './GameStateStore';
 import { ChatStore } from './ChatStore';
+import { MissionStore } from './MissionStore';
 import type { PostHog } from 'posthog-js';
 
 export class RootStore {
@@ -16,6 +17,7 @@ export class RootStore {
     gachaStore: GachaStore;
     gameStateStore: GameStateStore;
     chatStore: ChatStore;
+    missionStore: MissionStore;
     posthog: PostHog | null = null;
 
     constructor() {
@@ -24,6 +26,7 @@ export class RootStore {
         this.gachaStore = new GachaStore(this);
         this.gameStateStore = new GameStateStore(this);
         this.chatStore = new ChatStore(this);
+        this.missionStore = new MissionStore(this);
     }
 
     init = (posthogInstance: PostHog) => {

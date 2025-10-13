@@ -18,7 +18,7 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
     const { language } = gameSettingsStore;
 
     const [position, setPosition] = useState(0); // 0 to 100
-    const [result, setResult] = useState<'success' | 'failure' | null>(null);
+    const [result, setResult] = useState<'critical' |'success' | 'failure' | null>(null);
     const [minigamePhase, setMinigamePhase] = useState<'idle' | 'countdown' | 'playing' | 'result'>('idle');
     const [countdown, setCountdown] = useState(3);
     const [gameTimer, setGameTimer] = useState(15);
@@ -31,9 +31,9 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
     const T = translations[language];
     
     const config = {
-        R: { speed: 0.5, successZone: { start: 35, end: 65 } }, // 30% width
-        SR: { speed: 0.8, successZone: { start: 40, end: 60 } }, // 20% width
-        SSR: { speed: 1.2, successZone: { start: 45, end: 55 } }, // 10% width
+        R: { speed: 0.5, successZone: { start: 35, end: 65 }, criticalZone: { start: 47.5, end: 52.5 } }, // 30% / 5%
+        SR: { speed: 0.8, successZone: { start: 40, end: 60 }, criticalZone: { start: 48, end: 52 } },    // 20% / 4%
+        SSR: { speed: 1.2, successZone: { start: 45, end: 55 }, criticalZone: { start: 49, end: 51 } },   // 10% / 2%
     };
 
     const currentConfig = craftingAttempt ? config[craftingAttempt.rarity] : config.R;
@@ -50,10 +50,18 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
         cleanupTimers();
         setMinigamePhase('result');
         
+        const isCritical = !isTimeout && position >= currentConfig.criticalZone.start && position <= currentConfig.criticalZone.end;
         const isSuccess = !isTimeout && position >= currentConfig.successZone.start && position <= currentConfig.successZone.end;
-        setResult(isSuccess ? 'success' : 'failure');
         
-        resolveCraftingAttempt(isSuccess);
+        let finalResult: 'critical' | 'success' | 'failure' = 'failure';
+        if (isCritical) {
+            finalResult = 'critical';
+        } else if (isSuccess) {
+            finalResult = 'success';
+        }
+
+        setResult(finalResult);
+        resolveCraftingAttempt(finalResult);
 
         setTimeout(() => {
             cancelCraftingAttempt();
@@ -70,14 +78,17 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
             setCountdown(3);
             setMinigamePhase('countdown');
 
-            playSound('chat-notify');
+            // FIX: Added 'void' to explicitly ignore the returned promise from the async playSound function.
+            void playSound('chat-notify');
             countdownIntervalRef.current = window.setInterval(() => {
                 setCountdown(prev => {
                     const next = prev - 1;
                     if (next > 0) {
-                        playSound('chat-notify');
+                        // FIX: Added 'void' to explicitly ignore the returned promise from the async playSound function.
+                        void playSound('chat-notify');
                     } else if (next === 0) {
-                        playSound('trick-win');
+                        // FIX: Added 'void' to explicitly ignore the returned promise from the async playSound function.
+                        void playSound('trick-win');
                     }
                     return next;
                 });
@@ -118,7 +129,7 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
                 setGameTimer(prev => prev - 1);
             }, 1000);
         }
-    }, [minigamePhase, countdown]);
+    }, [minigamePhase, countdown, currentConfig.speed]);
 
     // Effect for game timeout
     useEffect(() => {
@@ -131,8 +142,9 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
         return null;
     }
 
-    const { start, end } = currentConfig.successZone;
-    const successZoneWidth = end - start;
+    const { successZone, criticalZone } = currentConfig;
+    const successZoneWidth = successZone.end - successZone.start;
+    const criticalZoneWidth = criticalZone.end - criticalZone.start;
 
     return (
         <div className="game-over-overlay">
@@ -153,7 +165,11 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
                             <div className="minigame-track">
                                 <div
                                     className="minigame-zone minigame-success-zone"
-                                    style={{ left: `${start}%`, width: `${successZoneWidth}%` }}
+                                    style={{ left: `${successZone.start}%`, width: `${successZoneWidth}%` }}
+                                />
+                                <div
+                                    className="minigame-zone minigame-critical-zone"
+                                    style={{ left: `${criticalZone.start}%`, width: `${criticalZoneWidth}%` }}
                                 />
                                 <div
                                     className="minigame-zone minigame-marker"
@@ -172,7 +188,7 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
 
                 {minigamePhase === 'result' && result && (
                     <div className={`minigame-result ${result}`}>
-                        {result === 'success' ? T.craftingMinigame.success : T.craftingMinigame.failure}
+                        {result === 'critical' ? T.craftingMinigame.criticalSuccess : (result === 'success' ? T.craftingMinigame.success : T.craftingMinigame.failure)}
                     </div>
                 )}
             </div>

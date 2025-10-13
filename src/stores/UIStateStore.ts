@@ -77,6 +77,9 @@ export class UIStateStore {
     isCraftingMinigameOpen = false;
     isNoKeysModalOpen = false;
     isChallengeKeySelectionModalOpen = false;
+    isDungeonProgressModalOpen = false;
+    isDungeonEndModalOpen = false;
+    isMissionsModalOpen = false;
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
 
     // Menu collapsible sections
@@ -139,6 +142,9 @@ export class UIStateStore {
             case 'craftingMinigame': this.isCraftingMinigameOpen = true; break;
             case 'noKeys': this.isNoKeysModalOpen = true; break;
             case 'challengeKeySelection': this.isChallengeKeySelectionModalOpen = true; break;
+            case 'dungeonProgress': this.isDungeonProgressModalOpen = true; break;
+            case 'dungeonEnd': this.isDungeonEndModalOpen = true; break;
+            case 'missions': this.isMissionsModalOpen = true; break;
             case 'chat': 
                 this.isChatModalOpen = true; 
                 this.setUnreadMessageCount(0);
@@ -164,6 +170,9 @@ export class UIStateStore {
             case 'craftingMinigame': this.isCraftingMinigameOpen = false; break;
             case 'noKeys': this.isNoKeysModalOpen = false; break;
             case 'challengeKeySelection': this.isChallengeKeySelectionModalOpen = false; break;
+            case 'dungeonProgress': this.isDungeonProgressModalOpen = false; break;
+            case 'dungeonEnd': this.isDungeonEndModalOpen = false; break;
+            case 'missions': this.isMissionsModalOpen = false; break;
             case 'chat': this.isChatModalOpen = false; break;
         }
     }

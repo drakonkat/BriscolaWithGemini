@@ -22,6 +22,10 @@ import { SoundEditorModal } from './SoundEditorModal';
 import { GachaSingleUnlockModal } from './GachaSingleUnlockModal';
 import { GachaMultiUnlockModal } from './GachaMultiUnlockModal';
 import { CraftingMinigameModal } from './CraftingMinigameModal';
+import { DungeonProgressModal } from './DungeonProgressModal';
+import { DungeonEndModal } from './DungeonEndModal';
+import { MissionsModal } from './MissionsModal';
+
 
 import { translations } from '../core/translations';
 import { BriscolaSwapModal } from './BriscolaSwapModal';
@@ -36,15 +40,15 @@ export const GameModals = observer(() => {
         phase, gameResult, lastGameWinnings, currentWaifu, gameMode, humanScore, aiScore, 
         trickHistory, isKasumiModalOpen, briscolaCard, humanHand, isBriscolaSwapModalOpen,
         closeBriscolaSwapModal, handleBriscolaSwap, newFollower, acknowledgeNewFollower,
-        challengeMatchRarity
+        challengeMatchRarity, dungeonRunState
     } = gameStateStore;
 
     const T = translations[language];
     const TR = T.roguelike;
 
     const handlePlayAgain = () => {
-        if (challengeMatchRarity) {
-            gameStateStore.startChallengeMatch(challengeMatchRarity);
+        if (dungeonRunState.isActive && dungeonRunState.keyRarity) {
+             gameStateStore.startDungeonRun(dungeonRunState.keyRarity);
         } else {
             gameStateStore.startGame(currentWaifu);
         }
@@ -52,7 +56,7 @@ export const GameModals = observer(() => {
     
     return (
         <>
-            {phase === 'gameOver' && gameResult && gameplayMode === 'classic' && !challengeMatchRarity && (
+            {phase === 'gameOver' && gameResult && gameplayMode === 'classic' && !dungeonRunState.isActive && (
                 <GameOverModal
                     humanScore={humanScore}
                     aiScore={aiScore}
@@ -63,20 +67,6 @@ export const GameModals = observer(() => {
                     language={language}
                     winnings={lastGameWinnings}
                     challengeMatchRarity={null}
-                />
-            )}
-            
-            {phase === 'gameOver' && gameResult && challengeMatchRarity && (
-                 <GameOverModal
-                    humanScore={humanScore}
-                    aiScore={aiScore}
-                    aiName={currentWaifu?.name ?? ''}
-                    winner={gameResult}
-                    onPlayAgain={handlePlayAgain}
-                    onGoToMenu={gameStateStore.goToMenu}
-                    language={language}
-                    winnings={lastGameWinnings}
-                    challengeMatchRarity={challengeMatchRarity}
                 />
             )}
 
@@ -254,15 +244,15 @@ export const GameModals = observer(() => {
                         <h2>{T.challengeMatch.keySelectionTitle}</h2>
                         <p>{T.challengeMatch.keySelectionMessage}</p>
                         <div className="challenge-buttons">
-                            <button className="challenge-button r" onClick={() => gameStateStore.startChallengeMatch('R')} disabled={gachaStore.r_keys === 0}>
+                            <button className="challenge-button r" onClick={() => gameStateStore.startDungeonRun('R')} disabled={gachaStore.r_keys === 0}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
                                 <span>{T.gallery.keyLabelR(gachaStore.r_keys)}</span>
                             </button>
-                            <button className="challenge-button sr" onClick={() => gameStateStore.startChallengeMatch('SR')} disabled={gachaStore.sr_keys === 0}>
+                            <button className="challenge-button sr" onClick={() => gameStateStore.startDungeonRun('SR')} disabled={gachaStore.sr_keys === 0}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
                                 <span>{T.gallery.keyLabelSR(gachaStore.sr_keys)}</span>
                             </button>
-                            <button className="challenge-button ssr" onClick={() => gameStateStore.startChallengeMatch('SSR')} disabled={gachaStore.ssr_keys === 0}>
+                            <button className="challenge-button ssr" onClick={() => gameStateStore.startDungeonRun('SSR')} disabled={gachaStore.ssr_keys === 0}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
                                 <span>{T.gallery.keyLabelSSR(gachaStore.ssr_keys)}</span>
                             </button>
@@ -270,6 +260,10 @@ export const GameModals = observer(() => {
                     </div>
                 </div>
             )}
+            
+            <DungeonProgressModal isOpen={uiStore.isDungeonProgressModalOpen} />
+            <DungeonEndModal isOpen={uiStore.isDungeonEndModalOpen} />
+            <MissionsModal isOpen={uiStore.isMissionsModalOpen} onClose={() => uiStore.closeModal('missions')} />
         </>
     );
 });

@@ -265,8 +265,8 @@ export const translations = {
 // FIX: Added missing translation key for successful gacha crafting.
         gachaCraftSuccess: (rarity: string) => `Creazione riuscita! Hai sbloccato un nuovo sfondo ${rarity}.`,
         craftingRuleR: "10 Frammenti R = 1 Chiave R.",
-        craftingRuleSR: "10 Frammenti SR = 1 Chiave SR.",
-        craftingRuleSSR: "5 Frammenti SSR = 1 Chiave SSR.",
+        craftingRuleSR: "10 Frammenti SR + 25 R + 5 Essenze = 1 Chiave SR.",
+        craftingRuleSSR: "5 Frammenti SSR + 15 SR + 10 Essenze = 1 Chiave SSR.",
         convertTitle: "Converti Frammenti",
         conversionSuccess: (amount: number, rarity: string) => `Hai ricevuto ${amount} Frammento ${rarity}!`,
         convertButton: "Converti",
@@ -280,8 +280,67 @@ export const translations = {
       instructions: "Ferma l'indicatore nella zona verde per avere successo!",
       success: "Creazione Riuscita!",
       failure: "Creazione Fallita!",
+      criticalSuccess: "Successo Critico! Materiali parzialmente rimborsati!",
       shardsLost: (count: number) => `Hai perso ${count} frammenti!`,
       stop: "Ferma",
+    },
+
+    dungeonRun: {
+        runCompleteTitle: "Dungeon Completato!",
+        runCompleteMessage: (total: number) => `Congratulazioni! Hai sconfitto tutte le ${total} avversarie e completato la run!`,
+        runFailedTitle: "Dungeon Fallito",
+        runFailedMessage: (wins: number, total: number) => `Sei stato sconfitto. Hai vinto ${wins} su ${total} partite, ma la tua run termina qui. Conservi le ricompense ottenute.`,
+        matchWinTitle: (name: string) => `Hai sconfitto ${name}!`,
+        matchWinMessage: (current: number, total: number) => `Hai superato l'incontro ${current} di ${total}. Preparati per il prossimo!`,
+        continueRun: "Prossimo Incontro",
+        rewardsTitle: "Ricompense Finali",
+        intermediateRewardTitle: "Ricompense Incontro",
+        rewardBackground: "Sfondo Esclusivo Sbloccato!",
+        modifier: "Modificatore Partita",
+        modifiers: {
+            NONE: "Nessun modificatore",
+            BRISCOLA_CHAOS: "Caos Briscola: La briscola cambia ogni 3 turni.",
+            GHOST_HAND: "Mano Fantasma: Una carta nella mano dell'avversaria è sempre visibile.",
+            ELEMENTAL_FURY: "Furia Elementale: I poteri elementali si attivano sempre.",
+            VALUE_INVERSION: "Valore Invertito: Le carte di basso valore (2, 4, 5) valgono di più dei carichi."
+        }
+    },
+
+    missions: {
+        title: "Missioni",
+        daily: "Giornaliere",
+        weekly: "Settimanali",
+        achievements: "Obiettivi",
+        claim: "Riscuoti",
+        claimed: "Riscattato",
+        noMissions: "Nessuna missione disponibile al momento.",
+        rewards: {
+            waifuCoins: "Waifu Coin",
+            r_shards: "Frammenti R",
+            sr_shards: "Frammenti SR",
+            ssr_shards: "Frammenti SSR",
+            fire_essences: "Essenze di Fuoco",
+            water_essences: "Essenze d'Acqua",
+            air_essences: "Essenze d'Aria",
+            earth_essences: "Essenze di Terra"
+        },
+        descriptions: {
+            daily_win_classic: "Vinci {target} partita in modalità Classica.",
+            daily_play_cards_coppe: "Gioca {target} carte di Coppe.",
+            daily_use_elemental_power: "Attiva {target} poteri elementali in modalità Roguelike.",
+            weekly_win_any: "Vinci {target} partite in qualsiasi modalità.",
+            weekly_win_hard: "Vinci {target} partita a difficoltà Difficile o superiore.",
+            weekly_craft_key: "Crea {target} chiave qualsiasi.",
+            weekly_gacha_10: "Estrai dal Gacha {target} volte.",
+            achievement_win_10: "Vinci {target} partite.",
+            achievement_win_50: "Vinci {target} partite.",
+            achievement_win_100: "Vinci {target} partite.",
+            achievement_win_nightmare: "Vinci {target} partita a difficoltà Incubo.",
+            achievement_win_apocalypse: "Vinci {target} partita a difficoltà Apocalisse.",
+            achievement_defeat_all_waifus: "Sconfiggi tutte le Waifu almeno una volta.",
+            achievement_collect_all_ssr: "Colleziona tutti gli sfondi di rarità SSR.",
+            achievement_recruit_follower: "Recluta il tuo primo alleato in modalità Roguelike."
+        }
     },
 
     challengeMatch: {
@@ -741,8 +800,8 @@ export const translations = {
 // FIX: Added missing translation key for successful gacha crafting.
         gachaCraftSuccess: (rarity: string) => `Crafting successful! You unlocked a new ${rarity} background.`,
         craftingRuleR: "10 R Shards = 1 R Key.",
-        craftingRuleSR: "10 SR Shards = 1 SR Key.",
-        craftingRuleSSR: "5 SSR Shards = 1 SSR Key.",
+        craftingRuleSR: "10 SR Shards + 25 R + 5 Essences = 1 SR Key.",
+        craftingRuleSSR: "5 SSR Shards + 15 SR + 10 Essences = 1 SSR Key.",
         convertTitle: "Convert Shards",
         conversionSuccess: (amount: number, rarity: string) => `You received ${amount} ${rarity} Shard!`,
         convertButton: "Convert",
@@ -756,10 +815,69 @@ export const translations = {
       instructions: "Stop the marker in the green zone to succeed!",
       success: "Crafting Successful!",
       failure: "Crafting Failed!",
+      criticalSuccess: "Critical Success! Some materials were refunded!",
       shardsLost: (count: number) => `You lost ${count} shards!`,
       stop: "Stop",
     },
     
+    dungeonRun: {
+        runCompleteTitle: "Dungeon Complete!",
+        runCompleteMessage: (total: number) => `Congratulations! You defeated all ${total} opponents and completed the run!`,
+        runFailedTitle: "Dungeon Failed",
+        runFailedMessage: (wins: number, total: number) => `You were defeated. You won ${wins} out of ${total} matches, but your run ends here. You keep any rewards you've earned.`,
+        matchWinTitle: (name: string) => `You defeated ${name}!`,
+        matchWinMessage: (current: number, total: number) => `You've cleared encounter ${current} of ${total}. Prepare for the next!`,
+        continueRun: "Next Encounter",
+        rewardsTitle: "Final Rewards",
+        intermediateRewardTitle: "Encounter Rewards",
+        rewardBackground: "Exclusive Background Unlocked!",
+        modifier: "Match Modifier",
+        modifiers: {
+            NONE: "No modifier",
+            BRISCOLA_CHAOS: "Briscola Chaos: The trump suit changes every 3 tricks.",
+            GHOST_HAND: "Ghost Hand: One card in the opponent's hand is always visible.",
+            ELEMENTAL_FURY: "Elemental Fury: Elemental powers always activate.",
+            VALUE_INVERSION: "Value Inversion: Low-value cards (2, 4, 5) are worth more than high-value ones."
+        }
+    },
+
+    missions: {
+        title: "Missions",
+        daily: "Daily",
+        weekly: "Weekly",
+        achievements: "Achievements",
+        claim: "Claim",
+        claimed: "Claimed",
+        noMissions: "No missions available at the moment.",
+        rewards: {
+            waifuCoins: "Waifu Coins",
+            r_shards: "R Shards",
+            sr_shards: "SR Shards",
+            ssr_shards: "SSR Shards",
+            fire_essences: "Fire Essences",
+            water_essences: "Water Essences",
+            air_essences: "Air Essences",
+            earth_essences: "Earth Essences"
+        },
+        descriptions: {
+            daily_win_classic: "Win {target} game in Classic mode.",
+            daily_play_cards_coppe: "Play {target} Cards of Cups.",
+            daily_use_elemental_power: "Activate {target} elemental powers in Roguelike mode.",
+            weekly_win_any: "Win {target} games in any mode.",
+            weekly_win_hard: "Win {target} game on Hard difficulty or higher.",
+            weekly_craft_key: "Craft {target} key of any rarity.",
+            weekly_gacha_10: "Roll the Gacha {target} times.",
+            achievement_win_10: "Win {target} games.",
+            achievement_win_50: "Win {target} games.",
+            achievement_win_100: "Win {target} games.",
+            achievement_win_nightmare: "Win {target} game on Nightmare difficulty.",
+            achievement_win_apocalypse: "Win {target} game on Apocalypse difficulty.",
+            achievement_defeat_all_waifus: "Defeat every Waifu at least once.",
+            achievement_collect_all_ssr: "Collect all SSR rarity backgrounds.",
+            achievement_recruit_follower: "Recruit your first follower in Roguelike mode."
+        }
+    },
+
     challengeMatch: {
       title: "Challenge Matches",
       info: "Use your crafted keys to challenge a waifu at Nightmare difficulty. Win a new background of the key's rarity! Keys are not consumed on loss.",

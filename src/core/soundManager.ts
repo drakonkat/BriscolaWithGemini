@@ -351,6 +351,12 @@ export const playSound = async (name: SoundName) => {
             playNote(context, 1200, now, 0.1, 0.2);
             break;
         }
+        case 'mission-complete': {
+            playNote(context, 783.99, now, 0.1, 0.2); // G5
+            playNote(context, 1046.50, now + 0.15, 0.15, 0.2); // C6
+            playNote(context, 1318.51, now + 0.3, 0.2, 0.2); // E6
+            break;
+        }
         case 'game-start':
         case 'game-win': {
             playNote(context, 523.25, now, 0.1, 0.2); // C5
@@ -500,6 +506,12 @@ export const playSound = async (name: SoundName) => {
         
             playNote(context, 1200, now, 0.1, 0.3);
             playNote(context, 800, now + 0.05, 0.1, 0.2);
+            break;
+        }
+        case 'essence-gain':
+        case 'craft-critical': {
+            playNote(context, 880.00, now, 0.1, 0.3);
+            playNote(context, 1318.51, now + 0.1, 0.2, 0.3);
             break;
         }
     }
