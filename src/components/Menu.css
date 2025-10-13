@@ -122,6 +122,9 @@
 
 .menu-actions {
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .actions-popup {
@@ -167,7 +170,8 @@
     color: var(--font-color-secondary);
 }
 
-.more-menu-button {
+.more-menu-button, .missions-button {
+    position: relative;
     display: flex;
     background: none;
     border: none;
@@ -181,9 +185,26 @@
     border-radius: 50%;
     transition: background-color 0.2s;
 }
-.more-menu-button:hover, .more-menu-button:focus {
+.more-menu-button:hover, .more-menu-button:focus,
+.missions-button:hover, .missions-button:focus {
     background-color: rgba(255,255,255,0.1);
     outline: none;
+}
+
+.missions-button svg {
+    color: var(--gold-accent);
+}
+
+.notification-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--red-suit);
+    border-radius: 50%;
+    border: 2px solid var(--ui-bg);
+    animation: pulse-badge 1.5s infinite;
 }
 
 .rules-button {

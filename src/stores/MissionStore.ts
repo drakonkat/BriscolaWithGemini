@@ -71,6 +71,19 @@ export class MissionStore {
         autorun(() => localStorage.setItem('unique_progress', JSON.stringify(this.uniqueProgress)));
     }
 
+    get hasUnclaimedRewards(): boolean {
+        const checkList = (missions: Mission[], progress: Record<string, MissionState | AchievementState>) => {
+            return missions.some(mission => {
+                const state = progress[mission.id];
+                return state && !state.claimed && state.progress >= mission.target;
+            });
+        };
+
+        return checkList(this.dailyMissions, this.missionProgress) ||
+               checkList(this.weeklyMissions, this.missionProgress) ||
+               checkList(this.achievements, this.achievementProgress);
+    }
+
     checkForResets() {
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();

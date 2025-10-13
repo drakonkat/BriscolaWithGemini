@@ -110,11 +110,12 @@ const DifficultyDetails = ({ difficulty, language, gameplayMode }: { difficulty:
 
 
 export const Menu = observer(() => {
-    const { gameSettingsStore, gameStateStore, uiStore, gachaStore } = useStores();
+    const { gameSettingsStore, gameStateStore, uiStore, gachaStore, missionStore } = useStores();
     const { language, gameplayMode, difficulty, isNsfwEnabled } = gameSettingsStore;
     const { hasSavedGame } = gameStateStore;
     const { menuBackgroundUrl, isDifficultyDetailsOpen, isWaifuDetailsOpen } = uiStore;
     const { waifuCoins, r_shards, sr_shards, ssr_shards, r_keys, sr_keys, ssr_keys } = gachaStore;
+    const { hasUnclaimedRewards } = missionStore;
 
     const T = translations[language];
     const [selectedWaifu, setSelectedWaifu] = useState<Waifu | null>(null);
@@ -250,6 +251,10 @@ export const Menu = observer(() => {
                     <h1>{T.title}</h1>
 
                     <div className="menu-actions" ref={moreMenuRef}>
+                        <button className="missions-button" onClick={() => uiStore.openModal('missions')} aria-label={T.missions.title}>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 17.27l4.15 2.51-1.09-4.72 3.67-3.18-4.83-.42L12 7l-2.09 4.46-4.83.42 3.67 3.18-1.09 4.72L12 17.27z"/></svg>
+                            {hasUnclaimedRewards && <span className="notification-badge" />}
+                        </button>
                         <button className="more-menu-button" onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)} aria-label="More options" aria-haspopup="true" aria-expanded={isMoreMenuOpen}>
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"></path></svg>
                         </button>
