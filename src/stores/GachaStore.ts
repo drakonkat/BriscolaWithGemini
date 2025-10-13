@@ -72,9 +72,9 @@ const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
 export class GachaStore {
     rootStore: RootStore;
     waifuCoins: number = loadFromLocalStorage('waifu_coins', 10000);
-    r_shards: number = loadFromLocalStorage('r_shards', 0);
-    sr_shards: number = loadFromLocalStorage('sr_shards', 0);
-    ssr_shards: number = loadFromLocalStorage('ssr_shards', 0);
+    r_shards: number = loadFromLocalStorage('r_shards', 100);
+    sr_shards: number = loadFromLocalStorage('sr_shards', 100);
+    ssr_shards: number = loadFromLocalStorage('ssr_shards', 100);
     unlockedBackgrounds: string[] = loadFromLocalStorage('unlocked_backgrounds', []);
     hasRolledGacha: boolean = loadFromLocalStorage('has_rolled_gacha', false);
     fullscreenImage: string = '';
@@ -113,6 +113,38 @@ export class GachaStore {
         if (rarity === 'R') this.r_shards += amount;
         if (rarity === 'SR') this.sr_shards += amount;
         if (rarity === 'SSR') this.ssr_shards += amount;
+    }
+
+    convertShards = (from: 'R' | 'SR', to: 'SR' | 'SSR') => {
+        const conversions = {
+            'R_to_SR': { fromCost: 25, toAmount: 1, toRarity: 'SR' as 'SR' | 'SSR' },
+            'R_to_SSR': { fromCost: 50, toAmount: 1, toRarity: 'SSR' as 'SR' | 'SSR' },
+            'SR_to_SSR': { fromCost: 15, toAmount: 1, toRarity: 'SSR' as 'SR' | 'SSR' },
+        };
+        
+        const key = `${from}_to_${to}` as keyof typeof conversions;
+        const config = conversions[key];
+        
+        if (!config) return;
+
+        const currentShards = { R: this.r_shards, SR: this.sr_shards };
+
+        if (currentShards[from] < config.fromCost) {
+            this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaNotEnoughShards, 'warning');
+            return;
+        }
+
+        // Subtract from and add to
+        if (from === 'R') this.r_shards -= config.fromCost;
+        if (from === 'SR') this.sr_shards -= config.fromCost;
+        
+        if (to === 'SR') this.sr_shards += config.toAmount;
+        if (to === 'SSR') this.ssr_shards += config.toAmount;
+
+        playSound('gacha-refund'); // Re-use a fitting sound
+        this.rootStore.uiStore.showSnackbar(this.T.gallery.conversionSuccess(config.toAmount, to), 'success');
+        
+        this.rootStore.posthog?.capture('shards_converted', { from, to, amount: 1 });
     }
 
     handleGachaRoll = async () => {

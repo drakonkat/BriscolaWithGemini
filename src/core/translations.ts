@@ -264,6 +264,9 @@ export const translations = {
         craftingRuleR: "10 Frammenti R = 1 sfondo R casuale.",
         craftingRuleSR: "10 Frammenti SR = 1 sfondo SR casuale.",
         craftingRuleSSR: "5 Frammenti SSR = 1 sfondo SSR casuale.",
+        convertTitle: "Converti Frammenti",
+        conversionSuccess: (amount: number, rarity: string) => `Hai ricevuto ${amount} Frammento ${rarity}!`,
+        convertButton: "Converti",
     },
 
     craftingMinigame: {
@@ -711,6 +714,9 @@ export const translations = {
         craftingRuleR: "10 R Shards = 1 random R background.",
         craftingRuleSR: "10 SR Shards = 1 random SR background.",
         craftingRuleSSR: "5 SSR Shards = 1 random SSR background.",
+        convertTitle: "Convert Shards",
+        conversionSuccess: (amount: number, rarity: string) => `You received ${amount} ${rarity} Shard!`,
+        convertButton: "Convert",
     },
 
     craftingMinigame: {

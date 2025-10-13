@@ -35,7 +35,7 @@ interface GalleryModalProps {
 
 export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onGachaMultiRoll, hasRolledGacha, isRolling, gachaAnimationState, onAnimationEnd, onImageSelect, isNsfwEnabled }: GalleryModalProps) => {
     const { gachaStore } = useStores();
-    const [activeTab, setActiveTab] = useState<'gallery' | 'crafting'>('gallery');
+    const [activeTab, setActiveTab] = useState<'gallery' | 'crafting' | 'convert'>('gallery');
     
     useEffect(() => {
         if (isOpen && !isNsfwEnabled) {
@@ -61,6 +61,10 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
     const canCraftSR = gachaStore.sr_shards >= 10 && backgrounds.some(b => b.rarity === 'SR' && !unlockedBackgrounds.includes(b.url));
     const canCraftSSR = gachaStore.ssr_shards >= 5 && backgrounds.some(b => b.rarity === 'SSR' && !unlockedBackgrounds.includes(b.url));
 
+    const canConvertRtoSR = gachaStore.r_shards >= 25;
+    const canConvertRtoSSR = gachaStore.r_shards >= 50;
+    const canConvertSRtoSSR = gachaStore.sr_shards >= 15;
+
 
     return (
         <div className="game-over-overlay" onClick={onClose}>
@@ -84,6 +88,9 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                     </button>
                     <button className={`tab-button ${activeTab === 'crafting' ? 'active' : ''}`} onClick={() => setActiveTab('crafting')}>
                         {T_gallery.craftingTitle}
+                    </button>
+                    <button className={`tab-button ${activeTab === 'convert' ? 'active' : ''}`} onClick={() => setActiveTab('convert')}>
+                        {T_gallery.convertTitle}
                     </button>
                 </div>
 
@@ -168,6 +175,45 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                    )}
+                    {activeTab === 'convert' && (
+                        <div className="crafting-tab-content">
+                             <div className="crafting-grid">
+                                <div className="crafting-card from-r">
+                                    <div className="crafting-card-header">
+                                        <h3>25 <span className="rarity-r">R</span> → 1 <span className="rarity-sr">SR</span></h3>
+                                    </div>
+                                    <div className="crafting-shard-info">
+                                        <span>{T_gallery.shardLabelR(gachaStore.r_shards)}</span>
+                                    </div>
+                                    <button onClick={() => gachaStore.convertShards('R', 'SR')} disabled={!canConvertRtoSR}>
+                                        {T_gallery.convertButton}
+                                    </button>
+                                </div>
+                                <div className="crafting-card from-r">
+                                    <div className="crafting-card-header">
+                                        <h3>50 <span className="rarity-r">R</span> → 1 <span className="rarity-ssr">SSR</span></h3>
+                                    </div>
+                                    <div className="crafting-shard-info">
+                                        <span>{T_gallery.shardLabelR(gachaStore.r_shards)}</span>
+                                    </div>
+                                    <button onClick={() => gachaStore.convertShards('R', 'SSR')} disabled={!canConvertRtoSSR}>
+                                        {T_gallery.convertButton}
+                                    </button>
+                                </div>
+                                <div className="crafting-card from-sr">
+                                    <div className="crafting-card-header">
+                                        <h3>15 <span className="rarity-sr">SR</span> → 1 <span className="rarity-ssr">SSR</span></h3>
+                                    </div>
+                                    <div className="crafting-shard-info">
+                                        <span>{T_gallery.shardLabelSR(gachaStore.sr_shards)}</span>
+                                    </div>
+                                    <button onClick={() => gachaStore.convertShards('SR', 'SSR')} disabled={!canConvertSRtoSSR}>
+                                        {T_gallery.convertButton}
+                                    </button>
+                                </div>
+                             </div>
                         </div>
                     )}
                 </div>

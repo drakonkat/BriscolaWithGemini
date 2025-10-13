@@ -321,7 +321,7 @@
 .legend-color-box.sr { background-color: var(--rarity-sr-color); }
 .legend-color-box.ssr { background-color: var(--rarity-ssr-color); }
 
-/* --- Crafting Section --- */
+/* --- Crafting & Conversion Section --- */
 .crafting-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -340,9 +340,9 @@
     border: 2px solid;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
-.crafting-card.rarity-r { border-color: var(--rarity-r-color); }
-.crafting-card.rarity-sr { border-color: var(--rarity-sr-color); }
-.crafting-card.rarity-ssr { border-color: var(--rarity-ssr-color); }
+.crafting-card.rarity-r, .crafting-card.from-r { border-color: var(--rarity-r-color); }
+.crafting-card.rarity-sr, .crafting-card.from-sr { border-color: var(--rarity-sr-color); }
+.crafting-card.rarity-ssr, .crafting-card.from-ssr { border-color: var(--rarity-ssr-color); }
 
 .crafting-card-header { text-align: center; }
 .crafting-card-header h3 {
@@ -350,6 +350,10 @@
     margin: 0;
     font-weight: bold;
 }
+.crafting-card-header .rarity-r { color: var(--rarity-r-color); }
+.crafting-card-header .rarity-sr { color: var(--rarity-sr-color); }
+.crafting-card-header .rarity-ssr { color: var(--rarity-ssr-color); }
+
 .crafting-card.rarity-r .crafting-card-header h3 { color: var(--rarity-r-color); }
 .crafting-card.rarity-sr .crafting-card-header h3 { color: var(--rarity-sr-color); }
 .crafting-card.rarity-ssr .crafting-card-header h3 { color: var(--rarity-ssr-color); }
@@ -362,7 +366,6 @@
     padding: 0.5rem 1rem;
     border-radius: var(--radius-sm);
 }
-
 .crafting-card button {
     font-size: 1.1rem;
     padding: 0.6rem 1.8rem;
@@ -373,9 +376,12 @@
     transition: all 0.2s;
     width: 100%;
 }
+/* Craft buttons */
 .crafting-card.rarity-r button { background: var(--rarity-r-color); color: #fff; }
 .crafting-card.rarity-sr button { background: var(--rarity-sr-color); color: #fff; }
 .crafting-card.rarity-ssr button { background: var(--rarity-ssr-color); color: #2a2a3e; }
+/* Convert buttons */
+.crafting-card.from-r button, .crafting-card.from-sr button { background: var(--primary-accent); color: white; }
 
 .crafting-card button:hover:not(:disabled) {
     transform: scale(1.05);
@@ -774,10 +780,10 @@
 
 /* --- Crafting Minigame Modal --- */
 .crafting-minigame-modal {
-  width: 600px;
+  width: 700px;
   max-width: 90vw;
   text-align: center;
-  overflow: hidden;
+  overflow: visible; /* Allow countdown to be part of flow */
 }
 
 .crafting-minigame-modal h2 {
@@ -843,6 +849,27 @@
 
 .minigame-result.failure {
   color: var(--red-suit);
+}
+
+.minigame-timer {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--gold-accent);
+  margin-bottom: 2rem;
+  text-shadow: 0 0 10px rgba(var(--gold-accent-rgb), 0.5);
+}
+
+.minigame-countdown {
+  font-size: clamp(6rem, 25vmin, 10rem);
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  position: relative;
+  animation: pulse-outcome 1s ease-in-out infinite;
+  min-width: 1ch;
+  text-align: center;
+  margin: 2rem 0;
+  line-height: 1;
 }
 
 
