@@ -85,20 +85,22 @@ export const MissionsModal = observer(({ isOpen, onClose }: MissionsModalProps) 
                                     <span className="progress-text">{progress} / {mission.target}</span>
                                 </div>
                             </div>
-                            <div className="mission-rewards-container">
-                                <span className="rewards-label">{TM.rewardsLabel}</span>
-                                <div className="mission-rewards">
-                                    {Object.entries(mission.rewards).map(([type, amount]) => (
-                                        <RewardIcon key={type} type={type as MissionRewardType} amount={amount!} />
-                                    ))}
+                            <div className="mission-right-panel">
+                                <div className="mission-rewards-container">
+                                    <span className="rewards-label">{TM.rewardsLabel}</span>
+                                    <div className="mission-rewards">
+                                        {Object.entries(mission.rewards).map(([type, amount]) => (
+                                            <RewardIcon key={type} type={type as MissionRewardType} amount={amount!} />
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="mission-action">
-                                {isComplete && !state.claimed && (
-                                    <button className="claim-button" onClick={() => missionStore.claimReward(mission.id)}>
-                                        {TM.claim}
-                                    </button>
-                                )}
+                                <div className="mission-action">
+                                    {isComplete && !state.claimed && (
+                                        <button className="claim-button" onClick={() => missionStore.claimReward(mission.id)}>
+                                            {TM.claim}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     );

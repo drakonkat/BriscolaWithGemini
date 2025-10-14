@@ -170,10 +170,6 @@
   background-color: rgba(0,0,0,0.2);
   border-radius: var(--radius-sm);
 }
-.elemental-cycle-display.modal-version .element-icon {
-  width: 28px;
-  height: 28px;
-}
 
 
 /* --- Waifu Details Modal --- */
@@ -913,8 +909,8 @@
 }
 
 .mission-item {
-    display: grid;
-    grid-template-columns: 2fr 1.2fr 1fr;
+    display: flex;
+    justify-content: space-between;
     gap: 1.5rem;
     align-items: center;
     background: rgba(0,0,0,0.25);
@@ -939,6 +935,15 @@
     flex-direction: column;
     gap: 0.75rem;
     text-align: left;
+    flex-grow: 1;
+    min-width: 0; /* Fix for flexbox text overflow */
+}
+
+.mission-right-panel {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-shrink: 0;
 }
 
 .mission-description {
@@ -985,7 +990,11 @@
 }
 
 .rewards-label {
-    display: none;
+    display: block;
+    font-size: 0.9rem;
+    color: var(--font-color-secondary);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
 }
 
 .mission-rewards {
@@ -1054,6 +1063,7 @@
     justify-content: center;
     align-items: center;
     min-height: 48px;
+    width: 130px; /* Align claim buttons */
 }
 
 .claim-button {
@@ -1147,6 +1157,11 @@
     .mission-details {
         grid-area: details;
         align-items: flex-start;
+        flex-grow: unset; /* Reset desktop style */
+    }
+    
+    .mission-right-panel {
+        display: contents; /* Makes this wrapper disappear for grid layout */
     }
 
     .mission-description {
@@ -1165,6 +1180,7 @@
         color: var(--font-color-secondary);
         font-weight: 500;
         margin-bottom: 0.5rem;
+        text-align: left; /* Mobile-specific alignment */
     }
 
     .mission-rewards {
@@ -1174,6 +1190,7 @@
 
     .mission-action {
         grid-area: action;
+        width: auto; /* Reset desktop style */
     }
 }
 
