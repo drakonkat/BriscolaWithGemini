@@ -169,6 +169,26 @@ export class GachaStore {
             this.unlockedBackgrounds.push(bg.url);
         }
     }
+
+    unlockRandomBackground = (rarity: 'R' | 'SR' | 'SSR'): BackgroundItem | null => {
+        const T_gallery = this.T.gallery;
+        const available = this.BACKGROUNDS.filter(bg => bg.rarity === rarity && !this.unlockedBackgrounds.includes(bg.url));
+    
+        if (available.length > 0) {
+            const unlockedBg = available[Math.floor(Math.random() * available.length)];
+            this.unlockedBackgrounds.push(unlockedBg.url);
+            this.rootStore.uiStore.showSnackbar(T_gallery.gachaCraftSuccess(rarity), 'success');
+            this.rootStore.posthog?.capture('challenge_reward_unlocked', { rarity });
+            return unlockedBg;
+        } else {
+            const shardAmount = rarity === 'R' ? 10 : rarity === 'SR' ? 5 : 3;
+            this.addShards(rarity, shardAmount);
+            this.rootStore.uiStore.showSnackbar(T_gallery.gachaNoLockedToCraft(rarity), 'success');
+            this.rootStore.posthog?.capture('challenge_reward_shards', { rarity, reason: 'all_unlocked' });
+            return null;
+        }
+    }
+
     // FIX: Added missing convertShards method.
     convertShards = (from: 'R' | 'SR', to: 'SR' | 'SSR') => {
         const T_gallery = this.T.gallery;

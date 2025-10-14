@@ -309,12 +309,172 @@ export class GameStateStore {
     }
 
     performApocalypseAiTurn = () => {
-        // ... (implementation is correct and doesn't need mission logic)
+        const { aiHand, humanHand, briscolaSuit, cardsOnTable, deck } = this;
+        if (!briscolaSuit) return;
+        let cardToPlay: Card;
+
+        // AI can play any card from its hand or the deck.
+        const availableCards = [...aiHand, ...deck];
+
+        const isBriscola = (card: Card) => card.suit === briscolaSuit;
+
+        if (cardsOnTable.length === 0) {
+            // AI is leading the trick. It knows human's hand.
+            let bestCardToPlay: Card | null = null;
+            let maxPointsSecured = -1;
+
+            // Find a card that human cannot beat, to secure points.
+            for (const candidateCard of availableCards) {
+                // Check if human can beat this candidate card.
+                const humanCanBeat = humanHand.some(humanCard => {
+                    const isHumanCardBriscola = isBriscola(humanCard);
+                    const isCandidateBriscola = isBriscola(candidateCard);
+                    if (isHumanCardBriscola && !isCandidateBriscola) return true; // Human trumps
+                    if (!isHumanCardBriscola && isCandidateBriscola) return false; // Human can't trump
+                    if (isHumanCardBriscola && isCandidateBriscola) return RANK[humanCard.value] > RANK[candidateCard.value]; // Both briscola
+                    if (humanCard.suit === candidateCard.suit) return RANK[humanCard.value] > RANK[candidateCard.value]; // Same suit
+                    return false; // Human must follow suit and can't, or plays another suit without trumping
+                });
+
+                if (!humanCanBeat) {
+                    // This is a "safe" card. Let's see how many points it's worth.
+                    // The human will discard their lowest value card.
+                    const humanDiscardCard = [...humanHand].sort((a, b) => getCardPoints(a) - getCardPoints(b) || RANK[a.value] - RANK[b.value])[0];
+                    const points = getCardPoints(candidateCard) + (humanDiscardCard ? getCardPoints(humanDiscardCard) : 0);
+                    if (points > maxPointsSecured) {
+                        maxPointsSecured = points;
+                        bestCardToPlay = candidateCard;
+                    }
+                }
+            }
+
+            if (bestCardToPlay) {
+                // Found a safe card to play to maximize points.
+                cardToPlay = bestCardToPlay;
+            } else {
+                // No safe card found. This means human can beat any card AI plays.
+                // AI must sacrifice a card. Choose the one with the lowest value.
+                // Prefer non-briscola.
+                const nonBriscolaCards = availableCards.filter(c => !isBriscola(c));
+                const cardsToSacrificeFrom = nonBriscolaCards.length > 0 ? nonBriscolaCards : availableCards;
+                cardToPlay = cardsToSacrificeFrom.sort((a, b) => getCardPoints(a) - getCardPoints(b) || RANK[a.value] - RANK[b.value])[0];
+            }
+        } else {
+            // AI is second to play.
+            const humanCard = cardsOnTable[0];
+            const isHumanCardBriscola = isBriscola(humanCard);
+
+            const winningCards = availableCards.filter(aiCard => {
+                const aiIsBriscola = isBriscola(aiCard);
+                if (aiIsBriscola && !isHumanCardBriscola) return true;
+                if (!aiIsBriscola && isHumanCardBriscola) return false;
+                if (aiIsBriscola && isHumanCardBriscola) return RANK[aiCard.value] > RANK[humanCard.value];
+                if (aiCard.suit === humanCard.suit) return RANK[aiCard.value] > RANK[humanCard.value];
+                return false;
+            });
+
+            if (winningCards.length > 0) {
+                // AI can win. Choose the cheapest winning card.
+                cardToPlay = winningCards.sort((a, b) => RANK[a.value] - RANK[b.value])[0];
+            } else {
+                // AI cannot win. Discard the least valuable card.
+                // Prefer non-briscola.
+                const nonBriscolaCards = availableCards.filter(c => !isBriscola(c));
+                const cardsToDiscardFrom = nonBriscolaCards.length > 0 ? nonBriscolaCards : availableCards;
+                cardToPlay = cardsToDiscardFrom.sort((a, b) => getCardPoints(a) - getCardPoints(b) || RANK[a.value] - RANK[b.value])[0];
+            }
+        }
+
+        // Now, update the state based on where the card came from, ensuring hand size is correct.
+        let finalCardToPlay = cardToPlay;
+        if (finalCardToPlay.element) {
+            finalCardToPlay = { ...finalCardToPlay, elementalEffectActivated: true };
+        }
+
+        playSound('card-place');
+        this.message = this.T.aiPlayedYourTurn(this.currentWaifu!.name);
+        
+        const isFromHand = this.aiHand.some(c => c.id === finalCardToPlay.id);
+        if (isFromHand) {
+            this.aiHand = this.aiHand.filter(c => c.id !== finalCardToPlay.id);
+        } else {
+            // Card is from the deck. Remove it from deck...
+            this.deck = this.deck.filter(c => c.id !== finalCardToPlay.id);
+            // ...then remove the worst card from hand and put it back in the deck.
+            if (this.aiHand.length > 0) {
+                 const worstCardInHand = [...this.aiHand]
+                    .sort((a, b) => (getCardPoints(a) - getCardPoints(b)) || (RANK[a.value] - RANK[b.value]))[0];
+                this.aiHand = this.aiHand.filter(c => c.id !== worstCardInHand.id);
+                this.deck.push(worstCardInHand);
+                this.deck = shuffleDeck(this.deck);
+            }
+        }
+
+        this.cardsOnTable.push(finalCardToPlay);
+        
+        this.aiHand = this.aiHand.map(c => {
+            if (c.isTemporaryBriscola) {
+                const { isTemporaryBriscola, ...rest } = c;
+                return rest;
+            }
+            return c;
+        });
+
+        if (this.trickStarter === 'ai') {
+            this.turn = 'human';
+        }
     };
     
     handleAiTurn = () => {
-        // ... (this handler calls performApocalypseAiTurn or getLocalAIMove)
-        // Card played mission progress is handled in selectCardForPlay
+        if (this.phase !== 'playing' || this.turn !== 'ai' || this.isProcessing || this.cardsOnTable.length >= 2 || this.aiHand.length === 0) {
+            return;
+        }
+    
+        if (this.isTutorialGame) {
+            if (this.rootStore.uiStore.tutorialStep === 'promptPlayCard' && this.cardsOnTable.length === 1) {
+                setTimeout(() => runInAction(() => {
+                    const aiCardToPlay = this.aiHand.find(c => c.id === 'tutorial-a-2-bastoni')!;
+                    playSound('card-place');
+                    this.aiHand = this.aiHand.filter(c => c.id !== aiCardToPlay.id);
+                    this.cardsOnTable.push(aiCardToPlay);
+                    this.rootStore.uiStore.onTutorialGameEvent('aiResponded');
+                }), 1500);
+            }
+            return;
+        }
+    
+        const playCardAction = () => {
+            if (!this.currentWaifu) return;
+    
+            if (this.rootStore.gameSettingsStore.difficulty === 'apocalypse') {
+                this.performApocalypseAiTurn();
+            } else {
+                const difficultyForLocalAI = this.rootStore.gameSettingsStore.difficulty === 'nightmare' 
+                    ? 'hard'
+                    : this.rootStore.gameSettingsStore.difficulty;
+                let chosenCard = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, difficultyForLocalAI);
+    
+                if (chosenCard.element) chosenCard = { ...chosenCard, elementalEffectActivated: true };
+    
+                playSound('card-place');
+                this.message = this.T.aiPlayedYourTurn(this.currentWaifu.name);
+    
+                this.aiHand = this.aiHand.filter(c => c.id !== chosenCard.id);
+                this.cardsOnTable.push(chosenCard);
+    
+                this.aiHand = this.aiHand.map(c => {
+                    if (c.isTemporaryBriscola) {
+                        const { isTemporaryBriscola, ...rest } = c;
+                        return rest;
+                    }
+                    return c;
+                });
+    
+                if (this.trickStarter === 'ai') this.turn = 'human';
+            }
+        };
+    
+        playCardAction();
     };
 
     handleEndOfGame = () => {
@@ -332,20 +492,110 @@ export class GameStateStore {
 
             if (winner === 'human') {
                 this.rootStore.missionStore.incrementProgress('gamesWon');
-                if (gameplayMode === 'classic') this.rootStore.missionStore.incrementProgress('classicGamesWon');
+                if (gameplayMode === 'classic' && !this.dungeonRunState.isActive) this.rootStore.missionStore.incrementProgress('classicGamesWon');
                 if (difficulty === 'hard' || difficulty === 'nightmare' || difficulty === 'apocalypse') this.rootStore.missionStore.incrementProgress('winOnDifficulty_hard');
                 if (difficulty === 'nightmare') this.rootStore.missionStore.incrementProgress('winOnDifficulty_nightmare');
                 if (difficulty === 'apocalypse') this.rootStore.missionStore.incrementProgress('winOnDifficulty_apocalypse');
                 if (this.currentWaifu) this.rootStore.missionStore.trackUnique('waifusDefeated', this.currentWaifu.name);
             }
-            this.rootStore.posthog?.capture('game_over', { human_score: this.humanScore, ai_score: this.aiScore, winner, winnings });
+            this.rootStore.posthog?.capture('game_over', { 
+                human_score: this.humanScore, 
+                ai_score: this.aiScore, 
+                winner, 
+                winnings,
+                gameplay_mode: gameplayMode,
+                is_dungeon_run: this.dungeonRunState.isActive,
+                dungeon_key: this.dungeonRunState.keyRarity,
+            });
 
             if (this.dungeonRunState.isActive) {
-                // ...
+                const { gachaStore, uiStore } = this.rootStore;
+
+                if (winner === 'human') {
+                    this.dungeonRunState.wins++;
+                    
+                    const coins = 50 + (this.dungeonRunState.currentMatch * 25);
+                    const shards = { R: 2, SR: 1, SSR: 0 };
+                    gachaStore.addCoins(coins);
+                    gachaStore.addShards('R', shards.R);
+                    gachaStore.addShards('SR', shards.SR);
+                    gachaStore.lastDungeonMatchRewards = { coins, shards };
+                    gachaStore.lastDungeonRunRewards.coins += coins;
+                    gachaStore.lastDungeonRunRewards.shards.R += shards.R;
+                    gachaStore.lastDungeonRunRewards.shards.SR += shards.SR;
+    
+                    if (this.dungeonRunState.wins === this.dungeonRunState.totalMatches) {
+                        this.rootStore.missionStore.incrementProgress('dungeonRunsWon');
+                        const unlockedBg = gachaStore.unlockRandomBackground(this.dungeonRunState.keyRarity!);
+                        gachaStore.lastDungeonRunRewards.unlockedBackground = unlockedBg;
+                        gachaStore.spendKey(this.dungeonRunState.keyRarity!);
+                        uiStore.openModal('dungeonEnd');
+                    } else {
+                        uiStore.openModal('dungeonProgress');
+                    }
+                } else {
+                    uiStore.openModal('dungeonEnd');
+                }
+                this.phase = 'gameOver';
+                this.gameResult = winner;
             } else if (gameplayMode === 'classic') {
-                // ...
+                let difficultyMultiplier = 1.0;
+                if (difficulty === 'easy') difficultyMultiplier = 0.5;
+                else if (difficulty === 'hard' || difficulty === 'nightmare' || difficulty === 'apocalypse') difficultyMultiplier = 1.5;
+
+                if (winner === 'human') {
+                    if (difficulty === 'apocalypse') {
+                        winnings = 500;
+                    } else if (difficulty === 'nightmare') {
+                        winnings = 250;
+                    } else {
+                        if (this.humanScore >= 101) winnings = Math.round(100 * difficultyMultiplier);
+                        else if (this.humanScore >= 81) winnings = Math.round(70 * difficultyMultiplier);
+                        else winnings = Math.round(45 * difficultyMultiplier);
+                    }
+                } else {
+                    winnings = Math.round(20 * difficultyMultiplier);
+                }
+                this.rootStore.gachaStore.addCoins(winnings);
+                this.lastGameWinnings = winnings;
+                this.gameResult = winner;
+                this.phase = 'gameOver';
             } else { // Roguelike
-                // ...
+                if (winner === 'human') {
+                    const levelJustWon = this.roguelikeState.currentLevel;
+    
+                    if (levelJustWon >= 4) {
+                        // Run is complete
+                        winnings = ROGUELIKE_REWARDS[difficulty].win;
+                        this.rootStore.gachaStore.addCoins(winnings);
+                        this.lastGameWinnings = winnings;
+                        this.gameResult = winner;
+                        this.phase = 'gameOver';
+                        this.roguelikeState = INITIAL_ROGUELIKE_STATE;
+                    } else {
+                        // Level is won, show new follower before power selection
+                        if (this.currentWaifu) {
+                            this.newFollower = this.currentWaifu;
+                        } else {
+                            // Should not happen, but as a fallback, go to power selection
+                            this.roguelikeState = {
+                                ...this.roguelikeState,
+                                currentLevel: this.roguelikeState.currentLevel + 1,
+                                followerAbilitiesUsedThisMatch: [],
+                            };
+                            this.showPowerSelectionScreen(false);
+                        }
+                    }
+                } else { // AI won, run failed
+                    const levelLostAt = this.roguelikeState.currentLevel;
+                    winnings = ROGUELIKE_REWARDS[difficulty].loss[levelLostAt];
+
+                    this.rootStore.gachaStore.addCoins(winnings);
+                    this.lastGameWinnings = winnings;
+                    this.gameResult = winner;
+                    this.phase = 'gameOver';
+                    this.roguelikeState = INITIAL_ROGUELIKE_STATE;
+                }
             }
         }
     }
@@ -353,27 +603,411 @@ export class GameStateStore {
     // Actions
     
     startGame = (selectedWaifu: Waifu | null) => {
-        // ...
+        const { gameplayMode } = this.rootStore.gameSettingsStore;
+        const { uiStore } = this.rootStore;
+
+        if (this.isTutorialGame) {
+            uiStore.switchToInGameTutorial();
+            return;
+        }
+
+        // Dungeon mode is now handled directly from the menu button.
+        if (gameplayMode === 'dungeon') return;
+
+        const waifu = selectedWaifu ?? WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
+
+        if (gameplayMode === 'classic') {
+            this.startClassicGame(waifu);
+        } else if (gameplayMode === 'roguelike') {
+            this.startRoguelikeRun(waifu);
+        } 
+
+        this.rootStore.posthog?.capture('game_started', { 
+            gameplay_mode: gameplayMode, 
+            difficulty: this.rootStore.gameSettingsStore.difficulty,
+            waifu: waifu.name,
+        });
     };
     
     startClassicGame = (newWaifu: Waifu) => {
-        // ...
+        this.clearSavedGame();
+        this.currentWaifu = newWaifu;
+        this.backgroundUrl = getImageUrl(`/background/landscape${Math.floor(Math.random() * 21) + 1}.png`);
+        
+        const newDeck = createDeck();
+        const shuffledDeck = shuffleDeck(newDeck);
+        const playerHand = shuffledDeck.splice(0, 3);
+        const computerHand = shuffledDeck.splice(0, 3);
+        const briscola = shuffledDeck.length > 0 ? shuffledDeck.pop()! : null;
+
+        this.deck = shuffledDeck;
+        this.humanHand = playerHand;
+        this.aiHand = computerHand;
+        this.briscolaCard = briscola;
+        this.briscolaSuit = briscola?.suit ?? (this.deck.length > 0 ? this.deck[this.deck.length - 1].suit : 'Spade');
+        this.humanScore = 0;
+        this.aiScore = 0;
+        this.cardsOnTable = [];
+        this.trickStarter = 'human'; // Human always starts
+        this.turn = 'human';
+        this.message = this.T.yourTurnMessage;
+        this.gameResult = null;
+        this.lastGameWinnings = 0;
+        this.aiEmotionalState = 'neutral';
+        this.trickHistory = [];
+        this.lastTrick = null;
+        this.lastResolvedTrick = [];
+        this.isTutorialGame = false;
+        
+        if (!this.dungeonRunState.isActive) {
+            this.challengeMatchRarity = null;
+        }
+        
+        this.rootStore.chatStore.resetChat(newWaifu);
+        
+        this.phase = 'playing';
     };
     
     startDungeonRun = (rarity: 'R' | 'SR' | 'SSR') => {
-        // ...
+        const { gachaStore, uiStore } = this.rootStore;
+
+        if (
+            (rarity === 'R' && gachaStore.r_keys === 0) ||
+            (rarity === 'SR' && gachaStore.sr_keys === 0) ||
+            (rarity === 'SSR' && gachaStore.ssr_keys === 0)
+        ) {
+            uiStore.closeModal('challengeKeySelection');
+            uiStore.openModal('noKeys');
+            return;
+        }
+
+        uiStore.closeModal('challengeKeySelection');
+
+        const opponents = shuffleDeck([...WAIFUS]).slice(0, 3);
+
+        this.dungeonRunState = {
+            isActive: true,
+            keyRarity: rarity,
+            currentMatch: 1,
+            totalMatches: 3,
+            wins: 0,
+            waifuOpponents: opponents.map(w => w.name),
+            modifiers: [
+                { id: 'NONE', name: '', description: '' }, // placeholder
+                { id: 'NONE', name: '', description: '' }, // placeholder
+                { id: 'NONE', name: '', description: '' }, // placeholder
+            ],
+        };
+
+        gachaStore.lastDungeonRunRewards = {
+            coins: 0,
+            shards: { R: 0, SR: 0, SSR: 0 },
+            unlockedBackground: null,
+        };
+
+        this.startClassicGame(opponents[0]);
     }
 
     startRoguelikeRun = (firstWaifu: Waifu) => {
-        // ...
+        const { difficulty } = this.rootStore.gameSettingsStore;
+        this.rootStore.posthog?.capture('roguelike_run_started', { waifu_name: firstWaifu.name, difficulty });
+        this.roguelikeState = {
+            ...INITIAL_ROGUELIKE_STATE,
+            currentLevel: 1,
+            encounteredWaifus: [firstWaifu.name],
+        };
+        this.showPowerSelectionScreen(true);
     };
 
     startRoguelikeLevel = () => {
-        // ...
+        const level = this.roguelikeState.currentLevel;
+        if (level === 0) return;
+
+        this.cardsOnTable = [];
+        this.trickHistory = [];
+        this.lastTrick = null;
+        this.trickCounter = 0;
+        this.lastResolvedTrick = [];
+        this.elementalClash = null;
+        this.lastTrickHighlights = { human: 'unset', ai: 'unset' };
+        this.guaranteedClashWinner = null;
+        this.roguelikeState.followerAbilitiesUsedThisMatch = [];
+        this.lastTrickInsightCooldown = 0;
+        this.briscolaSwapCooldown = 0;
+        
+        let nextWaifu: Waifu;
+        if (level >= 4) {
+            nextWaifu = BOSS_WAIFU;
+        } else {
+            const availableWaifus = WAIFUS.filter(w => !this.roguelikeState.encounteredWaifus.includes(w.name));
+            const pool = availableWaifus.length > 0 ? availableWaifus : WAIFUS;
+            nextWaifu = pool[Math.floor(Math.random() * pool.length)];
+        }
+        this.currentWaifu = nextWaifu;
+        this.roguelikeState.encounteredWaifus.push(nextWaifu.name);
+    
+        const initialDeck = shuffleDeck(createDeck());
+        const { deck: elementalDeck, activeElements: newActiveElements } = initializeRoguelikeDeck(initialDeck, level);
+        this.activeElements = newActiveElements;
+    
+        let newDeck = elementalDeck;
+        const newBriscola = newDeck[newDeck.length - 1];
+    
+        const aceInHolePower = this.roguelikeState.activePowers.find(p => p.id === 'ace_of_briscola_start');
+        let preDealtCards: Card[] = [];
+
+        if (aceInHolePower) {
+            const briscolaSuit = newBriscola.suit;
+            let potentialCardValues: Value[] = [];
+            let numToPick = 0;
+
+            if (aceInHolePower.level === 1) {
+                potentialCardValues = ['Asso', '3', 'Re'];
+                numToPick = 1;
+            } else if (aceInHolePower.level === 2) {
+                potentialCardValues = ['Asso', '3'];
+                numToPick = 1;
+            } else if (aceInHolePower.level >= 3) {
+                potentialCardValues = ['Asso', '3'];
+                numToPick = 2;
+            }
+            
+            const availableValues = potentialCardValues.filter(value => value !== newBriscola.value);
+            
+            const cardsToFind = shuffleDeck(availableValues).slice(0, numToPick);
+            
+            for (const value of cardsToFind) {
+                const cardIndex = newDeck.findIndex(c => c.value === value && c.suit === briscolaSuit);
+                if (cardIndex !== -1) {
+                    preDealtCards.push(newDeck.splice(cardIndex, 1)[0]);
+                }
+            }
+        }
+
+        const cardsToDeal = 3 - preDealtCards.length;
+        this.humanHand = [...preDealtCards, ...newDeck.slice(0, cardsToDeal)];
+        this.aiHand = newDeck.slice(cardsToDeal, cardsToDeal + 3);
+        this.deck = newDeck.slice(cardsToDeal + 3, -1);
+        this.briscolaCard = newBriscola;
+        this.briscolaSuit = newBriscola.suit;
+        this.humanScore = 0;
+        this.aiScore = 0;
+    
+        const starter: Player = Math.random() < 0.5 ? 'human' : 'ai';
+        this.turn = starter;
+        this.trickStarter = starter;
+        this.message = starter === 'human' ? this.T.yourTurn : this.T.aiStarts(nextWaifu.name);
+        this.phase = 'playing';
     };
 
     resolveTrick = async (humanCard: Card, aiCard: Card, trickWinner: Player, clashResult: ElementalClashResult | null) => {
-        // ...
+        const humanCardFinal = this.cardsOnTable.find(c => c.id === humanCard.id) || humanCard;
+        const aiCardFinal = this.cardsOnTable.find(c => c.id === aiCard.id) || aiCard;
+
+        let points;
+        let result: ReturnType<typeof calculateRoguelikeTrickPoints> | null = null;
+        
+        if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike') {
+            const clashWinner = clashResult?.winner ?? null;
+            
+            const humanScorePile: Card[] = [];
+            const aiScorePile: Card[] = [];
+            this.trickHistory.forEach(entry => {
+                if ('winner' in entry && entry.winner === 'human') {
+                    humanScorePile.push(entry.humanCard, entry.aiCard);
+                } else if ('winner' in entry && entry.winner === 'ai') {
+                    aiScorePile.push(entry.humanCard, entry.aiCard);
+                }
+            });
+
+            result = calculateRoguelikeTrickPoints(humanCardFinal, aiCardFinal, trickWinner, clashWinner, this.briscolaSuit!, this.roguelikeState.activePowers, humanScorePile, aiScorePile, this.T);
+            points = result.totalPoints;
+            const airBonus = result.airBonus;
+
+            const isHumanPowerActive = (humanCardFinal.elementalEffectActivated ?? false) && clashWinner !== 'ai';
+            const isAiPowerActive = (aiCardFinal.elementalEffectActivated ?? false) && clashWinner !== 'human';
+
+            if (airBonus > 0) {
+                this.powerAnimation = { type: 'air', player: trickWinner, points: airBonus };
+                playSound('element-air');
+                setTimeout(() => runInAction(() => this.powerAnimation = null), 1500);
+            }
+
+            if (isHumanPowerActive && humanCardFinal.element === 'water' && trickWinner === 'ai') playSound('element-water');
+            if (isAiPowerActive && aiCardFinal.element === 'water' && trickWinner === 'human') playSound('element-water');
+
+            if (trickWinner === 'human' && isHumanPowerActive && humanCardFinal.element === 'fire') { this.powerAnimation = {type: 'fire', player: 'human', points: 3}; playSound('element-fire'); setTimeout(() => runInAction(() => this.powerAnimation = null), 1500); }
+            if (trickWinner === 'ai' && isAiPowerActive && aiCardFinal.element === 'fire') { this.powerAnimation = {type: 'fire', player: 'ai', points: 3}; playSound('element-fire'); setTimeout(() => runInAction(() => this.powerAnimation = null), 1500); }
+            if (trickWinner === 'ai' && isHumanPowerActive && humanCardFinal.element === 'earth') { this.humanScore += result.humanCardPointsReturned; playSound('element-earth'); }
+            if (trickWinner === 'human' && isAiPowerActive && aiCardFinal.element === 'earth') { this.aiScore += result.aiCardPointsReturned; playSound('element-earth'); }
+        } else {
+            points = getCardPoints(humanCardFinal) + getCardPoints(aiCardFinal);
+        }
+
+        this.trickCounter += 1;
+
+        const newTrickHistoryEntry: TrickHistoryEntry = {
+            trickNumber: this.trickCounter,
+            humanCard: humanCardFinal,
+            aiCard: aiCardFinal,
+            winner: trickWinner,
+            points,
+            clashResult: clashResult ?? undefined,
+            basePoints: result ? result.basePoints : points,
+            bonusPoints: result ? result.bonusPoints : 0,
+            bonusPointsReason: result ? result.bonusReasons.join(', ') : '',
+        };
+        this.trickHistory.push(newTrickHistoryEntry);
+        this.lastTrick = newTrickHistoryEntry;
+
+        if (trickWinner === 'human') { this.humanScore += points; playSound('trick-win'); this.message = this.T.youWonTrick(points); } 
+        else { this.aiScore += points; playSound('trick-lose'); this.message = this.T.aiWonTrick(this.currentWaifu?.name ?? 'AI', points); }
+        
+        if (this.isTutorialGame) {
+            this.rootStore.uiStore.onTutorialGameEvent('trickResolved');
+        }
+
+        this.turn = trickWinner;
+        this.trickStarter = trickWinner;
+        this.elementalClash = null;
+        this.lastTrickHighlights = { human: 'unset', ai: 'unset' };
+
+        const { isChatEnabled, waitForWaifuResponse, language } = this.rootStore.gameSettingsStore;
+        if (isChatEnabled && !this.isQuotaExceeded && this.gameMode === 'online' && this.currentWaifu) {
+            if (trickWinner === 'ai' && waitForWaifuResponse) {
+                this.isAiGeneratingMessage = true;
+                try {
+                    const { message } = await getAIWaifuTrickMessage(this.currentWaifu, this.aiEmotionalState, humanCardFinal, aiCardFinal, points, language);
+                    this.rootStore.chatStore.addMessageToChat(message, 'ai');
+                    this.rootStore.uiStore.showWaifuBubble(message);
+                } catch (e) { if (e instanceof QuotaExceededError) this.handleQuotaExceeded(); } 
+                finally { runInAction(() => this.isAiGeneratingMessage = false); }
+            } else if (this.trickCounter > 1 && Math.random() < 0.25) {
+                getAIGenericTeasingMessage(this.currentWaifu, this.aiEmotionalState, this.aiScore, this.humanScore, language)
+                    .then(({message}) => {
+                        this.rootStore.chatStore.addMessageToChat(message, 'ai');
+                        this.rootStore.uiStore.showWaifuBubble(message);
+                    })
+                    .catch(e => { if (e instanceof QuotaExceededError) this.handleQuotaExceeded(); });
+            }
+        }
+        
+        const isFinalTrick = this.deck.length === 0 && !this.briscolaCard;
+        const delay = isFinalTrick ? 3000 : 1500;
+
+        setTimeout(() => runInAction(() => {
+            const cleanupHand = (hand: Card[]): Card[] => {
+                return hand.map(c => {
+                    if (c.isTemporaryBriscola) {
+                        const { isTemporaryBriscola, ...rest } = c;
+                        return rest;
+                    }
+                    return c;
+                });
+            };
+
+            let newDeck = [...this.deck];
+            let newHumanHand = cleanupHand(this.humanHand);
+            let newAiHand = cleanupHand(this.aiHand);
+            let newBriscolaCard = this.briscolaCard;
+            const drawOrder: Player[] = trickWinner === 'human' ? ['human', 'ai'] : ['ai', 'human'];
+
+            for (const player of drawOrder) {
+                if (player === 'ai' && this.rootStore.gameSettingsStore.difficulty === 'nightmare' && (newDeck.length > 0 || newBriscolaCard)) {
+                    // AI CHEAT DRAW LOGIC
+                    const availableToDraw = [...newDeck];
+                    if (newBriscolaCard) {
+                        availableToDraw.push(newBriscolaCard);
+                    }
+                    if(availableToDraw.length === 0) continue;
+
+                    const bestCardToDraw = [...availableToDraw].sort((a, b) => {
+                        const aIsBriscola = a.suit === this.briscolaSuit;
+                        const bIsBriscola = b.suit === this.briscolaSuit;
+                        if (aIsBriscola !== bIsBriscola) return aIsBriscola ? -1 : 1;
+                        return RANK[b.value] - RANK[a.value];
+                    })[0];
+                    
+                    const worstCardInHand = newAiHand.length > 0 ? [...newAiHand].sort((a, b) => {
+                        const aIsBriscola = a.suit === this.briscolaSuit;
+                        const bIsBriscola = b.suit === this.briscolaSuit;
+                        if (aIsBriscola !== bIsBriscola) return aIsBriscola ? 1 : -1;
+                        return RANK[a.value] - RANK[b.value];
+                    })[0] : null;
+
+                    const isBetter = (best: Card, worst: Card | null) => {
+                        if (!worst) return true;
+                        const bestIsBriscola = best.suit === this.briscolaSuit;
+                        const worstIsBriscola = worst.suit === this.briscolaSuit;
+                        if (bestIsBriscola && !worstIsBriscola) return true;
+                        if (bestIsBriscola === worstIsBriscola) return RANK[best.value] > RANK[worst.value];
+                        if (!bestIsBriscola && !worstIsBriscola) return getCardPoints(best) > getCardPoints(worst);
+                        return false;
+                    }
+
+                    if (isBetter(bestCardToDraw, worstCardInHand)) {
+                        // Swap
+                        if (worstCardInHand) {
+                            newAiHand = newAiHand.filter(c => c.id !== worstCardInHand.id);
+                        }
+                        newAiHand.push(bestCardToDraw);
+
+                        // Update deck
+                        if (newBriscolaCard && bestCardToDraw.id === newBriscolaCard.id) {
+                            newBriscolaCard = worstCardInHand; // can be null
+                        } else {
+                            newDeck = newDeck.filter(c => c.id !== bestCardToDraw.id);
+                            if (worstCardInHand) {
+                                newDeck.push(worstCardInHand);
+                            }
+                            newDeck = shuffleDeck(newDeck);
+                        }
+                    } else {
+                        // no swap, normal draw
+                        let cardDrawn: Card | null = null;
+                        if (newDeck.length > 0) {
+                            cardDrawn = newDeck.shift()!;
+                        } else if (newBriscolaCard) {
+                            cardDrawn = newBriscolaCard;
+                            newBriscolaCard = null;
+                        }
+                        if (cardDrawn) {
+                            newAiHand.push(cardDrawn);
+                        }
+                    }
+                } else {
+                    let cardDrawn: Card | null = null;
+                    if (newDeck.length > 0) {
+                        cardDrawn = newDeck.shift()!;
+                    } else if (newBriscolaCard) {
+                        cardDrawn = newBriscolaCard;
+                        newBriscolaCard = null;
+                    }
+                
+                    if (cardDrawn) {
+                        if (player === 'human') {
+                            newHumanHand.push(cardDrawn);
+                        } else {
+                            newAiHand.push(cardDrawn);
+                        }
+                    }
+                }
+            }
+            
+            this.humanHand = newHumanHand;
+            this.aiHand = newAiHand;
+            this.deck = newDeck;
+            this.briscolaCard = newBriscolaCard;
+            this.cardsOnTable = [];
+            this.isResolvingTrick = false;
+
+            if(trickWinner === 'human') this.message = this.T.yourTurnMessage;
+            if (this.isTutorialGame) {
+                this.rootStore.uiStore.onTutorialGameEvent('cardsDrawn');
+            }
+
+            this.handleEndOfGame();
+        }), delay);
     };
     
     selectCardForPlay = (card: Card) => {
@@ -385,7 +1019,12 @@ export class GameStateStore {
         if (card.suit === 'Coppe') this.rootStore.missionStore.incrementProgress('cardsPlayed_coppe');
 
         if (this.isTutorialGame) {
-            // ...
+            if (this.rootStore.uiStore.tutorialStep === 'promptPlayCard' && card.id === 'tutorial-h-ace-bastoni') {
+                playSound('card-place');
+                this.humanHand = this.humanHand.filter(c => c.id !== card.id);
+                this.cardsOnTable.push(card);
+                this.turn = 'ai';
+            }
             return;
         }
 
@@ -410,46 +1049,189 @@ export class GameStateStore {
     };
 
     handleDragStart = (card: Card, event: React.MouseEvent | React.TouchEvent) => {
-        // ...
+        if (this.turn !== 'human' || this.isProcessing) return;
+    
+        if (event.cancelable) {
+            event.preventDefault();
+        }
+        
+        const isTouch = 'touches' in event;
+        const point = isTouch ? (event as React.TouchEvent).touches[0] : (event as React.MouseEvent);
+    
+        this.draggingCardInfo = { card, isTouch };
+        this.clonePosition = { x: point.clientX, y: point.clientY };
     }
     
     handleDragMove = (event: MouseEvent | TouchEvent, zoneElements: { normal: HTMLDivElement | null, power: HTMLDivElement | null, cancel: HTMLDivElement | null }) => {
-        // ...
+        if (!this.draggingCardInfo) return;
+    
+        if (event.cancelable) {
+            event.preventDefault();
+        }
+        
+        const point = this.draggingCardInfo.isTouch ? (event as TouchEvent).touches[0] : (event as MouseEvent);
+        if (!point) return;
+    
+        runInAction(() => {
+            this.clonePosition = { x: point.clientX, y: point.clientY };
+    
+            const getRect = (el: HTMLDivElement | null) => el ? el.getBoundingClientRect() : null;
+    
+            const zoneRects = {
+                normal: getRect(zoneElements.normal),
+                power: getRect(zoneElements.power),
+                cancel: getRect(zoneElements.cancel),
+            };
+    
+            let overZone: 'normal' | 'power' | 'cancel' | null = null;
+            const { clientX, clientY } = point;
+    
+            if (zoneRects.cancel && clientX > zoneRects.cancel.left && clientX < zoneRects.cancel.right && clientY > zoneRects.cancel.top && clientY < zoneRects.cancel.bottom) {
+                overZone = 'cancel';
+            } else if (zoneRects.power && clientX > zoneRects.power.left && clientX < zoneRects.power.right && clientY > zoneRects.power.top && clientY < zoneRects.power.bottom) {
+                overZone = 'power';
+            } else if (zoneRects.normal && clientX > zoneRects.normal.left && clientX < zoneRects.normal.right && clientY > zoneRects.normal.top && clientY < zoneRects.normal.bottom) {
+                overZone = 'normal';
+            }
+            
+            this.currentDropZone = overZone;
+        });
     }
     
     handleDragEnd = () => {
-        // ...
+        if (!this.draggingCardInfo) return;
+    
+        runInAction(() => {
+            switch (this.currentDropZone) {
+                case 'normal':
+                    this.playCardFromDrop(false);
+                    break;
+                case 'power':
+                    this.playCardFromDrop(true);
+                    break;
+                case 'cancel':
+                default:
+                    break;
+            }
+            this.draggingCardInfo = null;
+            this.clonePosition = null;
+            this.currentDropZone = null;
+        });
     }
 
     activateFollowerAbility = (waifuName: string) => {
-        // ...
+        let abilityArmed: 'sakura_blessing' | 'rei_analysis' | 'kasumi_gambit' | null = null;
+        let abilityName = '';
+        switch(waifuName) {
+            case 'Sakura': abilityArmed = 'sakura_blessing'; abilityName = this.T.sakura_blessing; break;
+            case 'Rei': if (this.aiScore >= 5) { abilityArmed = 'rei_analysis'; abilityName = this.T.rei_analysis; } break;
+            case 'Kasumi': abilityArmed = 'kasumi_gambit'; abilityName = this.T.kasumi_gambit; break;
+        }
+        if (!abilityArmed) return;
+        this.message = this.T.followerAbilityArmed(waifuName, abilityName);
+        if (abilityArmed === 'rei_analysis') {
+            this.humanScore += 5;
+            this.aiScore -= 5;
+            this.roguelikeState.followerAbilitiesUsedThisMatch.push(waifuName);
+            this.message = this.T.yourTurnMessage;
+        } else if (abilityArmed === 'kasumi_gambit') {
+            this.isKasumiModalOpen = true;
+        } else if (abilityArmed === 'sakura_blessing') {
+            this.guaranteedClashWinner = 'human';
+            this.roguelikeState.followerAbilitiesUsedThisMatch.push(waifuName);
+            this.message = this.T.yourTurnMessage;
+        }
     };
     closeKasumiModal = () => { this.isKasumiModalOpen = false; this.message = this.T.yourTurnMessage; };
     handleKasumiCardSwap = (cardFromHand: Card) => {
-        // ...
+        if (this.briscolaCard) {
+            const oldBriscola = this.briscolaCard;
+            this.briscolaCard = cardFromHand;
+            this.briscolaSuit = cardFromHand.suit;
+            this.humanHand = [...this.humanHand.filter(c => c.id !== cardFromHand.id), oldBriscola];
+            this.roguelikeState.followerAbilitiesUsedThisMatch.push('Kasumi');
+        }
+        this.closeKasumiModal();
     };
-    confirmLeaveGame = () => { this.rootStore.posthog?.capture('game_left', { human_score: this.humanScore, ai_score: this.aiScore }); this.clearSavedGame(); this.phase = 'menu'; };
+    confirmLeaveGame = () => { 
+        this.rootStore.posthog?.capture('game_left', { human_score: this.humanScore, ai_score: this.aiScore }); 
+        this.clearSavedGame(); 
+        this.dungeonRunState = INITIAL_DUNGEON_RUN_STATE;
+        this.phase = 'menu'; 
+    };
     goToMenu = () => {
         this.isTutorialGame = false;
         this.challengeMatchRarity = null;
+        this.dungeonRunState = INITIAL_DUNGEON_RUN_STATE;
         this.phase = 'menu';
     }
     handleQuotaExceeded = () => { this.isQuotaExceeded = true; this.gameMode = 'fallback'; };
-    continueFromQuotaModal = () => this.isQuotaExceeded = false;
+    continueFromQuotaModal = () => { this.isQuotaExceeded = false; };
     forceCloseClashModal = () => {
-        // ...
+        if (this.clashTimeoutRef && this.resolveTrickCallbackRef) {
+            clearTimeout(this.clashTimeoutRef);
+            this.resolveTrickCallbackRef();
+            this.clashTimeoutRef = null;
+            this.resolveTrickCallbackRef = null;
+        }
     };
     
     startTutorialGame = () => {
-        // ...
+        const tutorialWaifu = WAIFUS.find(w => w.name === 'Sakura') || WAIFUS[0];
+        
+        this.backgroundUrl = getImageUrl('/background/landscape3.png');
+        this.currentWaifu = tutorialWaifu;
+        this.isTutorialGame = true;
+        this.phase = 'playing';
+        this.aiEmotionalState = 'neutral';
+        this.cardsOnTable = [];
+        this.humanScore = 0;
+        this.aiScore = 0;
+        this.gameResult = null;
+        this.lastGameWinnings = 0;
+        this.trickCounter = 0;
+        this.humanHand = [...TUTORIAL_HUMAN_HAND];
+        this.aiHand = [...TUTORIAL_AI_HAND];
+        this.briscolaCard = { ...TUTORIAL_BRISCOLA };
+        this.briscolaSuit = TUTORIAL_BRISCOLA.suit;
+        this.deck = [...TUTORIAL_DECK];
+        this.turn = 'human';
+        this.trickStarter = 'human';
+        this.message = this.T.yourTurn;
+        this.rootStore.uiStore.switchToInGameTutorial();
     };
 
     resolveTrickForTutorial = () => {
-        // ...
+        if (!this.isTutorialGame || this.phase !== 'playing' || this.cardsOnTable.length < 2) return;
+
+        const trickId = this.cardsOnTable.map(c => c.id).sort().join('-');
+        if (this.lastResolvedTrick.includes(trickId)) return;
+        this.lastResolvedTrick.push(trickId);
+    
+        this.isResolvingTrick = true;
+        const humanCard = this.trickStarter === 'human' ? this.cardsOnTable[0] : this.cardsOnTable[1];
+        const aiCard = this.trickStarter === 'ai' ? this.cardsOnTable[0] : this.cardsOnTable[1];
+        
+        const trickWinner = getClassicTrickWinner(this.cardsOnTable, this.trickStarter, this.briscolaSuit!);
+        this.resolveTrick(humanCard, aiCard, trickWinner, null);
     };
 
     saveGame = () => {
-        // ...
+        if (this.phase === 'playing') {
+            const stateToSave = {
+                currentWaifuName: this.currentWaifu?.name ?? null,
+                deck: toJS(this.deck), humanHand: toJS(this.humanHand), aiHand: toJS(this.aiHand), briscolaCard: toJS(this.briscolaCard), briscolaSuit: this.briscolaSuit, cardsOnTable: toJS(this.cardsOnTable), turn: this.turn,
+                humanScore: this.humanScore, aiScore: this.aiScore, trickStarter: this.trickStarter, message: this.message, backgroundUrl: this.backgroundUrl, aiEmotionalState: this.aiEmotionalState,
+                gameMode: this.gameMode, trickHistory: toJS(this.trickHistory), lastTrick: toJS(this.lastTrick), roguelikeState: toJS(this.roguelikeState), activeElements: toJS(this.activeElements),
+                lastResolvedTrick: toJS(this.lastResolvedTrick), trickCounter: this.trickCounter,
+                dungeonRunState: toJS(this.dungeonRunState),
+                elementalClash: toJS(this.elementalClash), lastTrickHighlights: toJS(this.lastTrickHighlights),
+                isAiHandTemporarilyRevealed: this.isAiHandTemporarilyRevealed, isKasumiModalOpen: this.isKasumiModalOpen,
+                challengeMatchRarity: this.challengeMatchRarity,
+            };
+            localStorage.setItem(SAVED_GAME_KEY, JSON.stringify(stateToSave));
+            this.hasSavedGame = true;
+        }
     };
 
     clearSavedGame = () => {
@@ -458,17 +1240,87 @@ export class GameStateStore {
     };
     
     resumeGame = () => {
-        // ...
+        const savedGameJson = localStorage.getItem(SAVED_GAME_KEY);
+        if (!savedGameJson) return;
+
+        try {
+            const saved = JSON.parse(savedGameJson);
+            const { gameSettingsStore } = this.rootStore;
+
+            const waifu = WAIFUS.find(w => w.name === saved.currentWaifuName) || (BOSS_WAIFU.name === saved.currentWaifuName ? BOSS_WAIFU : null);
+            
+            runInAction(() => {
+                this.currentWaifu = waifu;
+                this.deck = saved.deck; this.humanHand = saved.humanHand; this.aiHand = saved.aiHand; this.briscolaCard = saved.briscolaCard;
+                this.briscolaSuit = saved.briscolaSuit; this.cardsOnTable = saved.cardsOnTable; this.turn = saved.turn; this.humanScore = saved.humanScore;
+                this.aiScore = saved.aiScore; this.trickStarter = saved.trickStarter; this.message = saved.message; this.backgroundUrl = saved.backgroundUrl;
+                this.aiEmotionalState = saved.aiEmotionalState; this.gameMode = saved.gameMode; this.trickHistory = saved.trickHistory || []; this.lastTrick = saved.lastTrick || null;
+                this.roguelikeState = saved.roguelikeState; this.activeElements = saved.activeElements || []; 
+                this.dungeonRunState = saved.dungeonRunState || INITIAL_DUNGEON_RUN_STATE;
+                this.elementalClash = saved.elementalClash;
+                this.lastTrickHighlights = saved.lastTrickHighlights || { human: 'unset', ai: 'unset' };
+                this.isAiHandTemporarilyRevealed = saved.isAiHandTemporarilyRevealed || false;
+                this.isKasumiModalOpen = saved.isKasumiModalOpen; this.lastResolvedTrick = saved.lastResolvedTrick || []; this.trickCounter = saved.trickCounter || 0;
+                this.challengeMatchRarity = saved.challengeMatchRarity || null;
+
+                if (!gameSettingsStore.isNsfwEnabled) {
+                    this.backgroundUrl = '';
+                }
+                
+                this.phase = 'playing';
+            });
+            this.rootStore.posthog?.capture('game_resumed');
+
+        } catch (e) {
+            console.error("Failed to load saved game", e);
+            this.clearSavedGame();
+        }
     };
     
     setPhase = (phase: GamePhase) => { this.phase = phase; };
 
     showPowerSelectionScreen = (isInitial: boolean = false) => {
-        // ...
+        const { activePowers, initialPower } = this.roguelikeState;
+        const allPowerIds = Object.keys(POWER_UP_DEFINITIONS) as RoguelikePowerUpId[];
+        const currentPowerIds = activePowers.map(p => p.id);
+        const availableNewPowerIds = allPowerIds.filter(id => !currentPowerIds.includes(id));
+    
+        let newPowers: RoguelikePowerUpId[] = [];
+        let upgrade: RoguelikePowerUp | null = null;
+
+        if (isInitial) {
+            newPowers = shuffleDeck(availableNewPowerIds).slice(0, 3);
+        } else {
+            newPowers = shuffleDeck(availableNewPowerIds).slice(0, 2);
+            
+            if (initialPower) {
+                const initialPowerState = activePowers.find(p => p.id === initialPower);
+                if (initialPowerState && initialPowerState.level < POWER_UP_DEFINITIONS[initialPowerState.id].maxLevel) {
+                    upgrade = initialPowerState;
+                }
+            }
+        }
+    
+        this.powerSelectionOptions = { newPowers, upgrade };
+        this.phase = 'power-selection';
     }
 
     selectPowerUp = (powerId: RoguelikePowerUpId, isUpgrade: boolean) => {
-        // ...
+        const { roguelikeState } = this;
+        if (isUpgrade) {
+            const powerIndex = roguelikeState.activePowers.findIndex(p => p.id === powerId);
+            if (powerIndex > -1) {
+                roguelikeState.activePowers[powerIndex].level++;
+            }
+        } else {
+            if (!roguelikeState.initialPower) {
+                roguelikeState.initialPower = powerId;
+            }
+            roguelikeState.activePowers.push({ id: powerId, level: 1 });
+        }
+        
+        this.powerSelectionOptions = null;
+        this.startRoguelikeLevel();
     }
     
     acknowledgeNewFollower = () => {
@@ -499,16 +1351,34 @@ export class GameStateStore {
     }
 
     activateLastTrickInsight = () => {
-        // ...
+        const power = this.roguelikeState.activePowers.find(p => p.id === 'last_trick_insight');
+        if (this.turn === 'human' && power && power.level === 2 && this.lastTrickInsightCooldown === 0) {
+            this.isAiHandTemporarilyRevealed = true;
+            this.lastTrickInsightCooldown = 3;
+        }
     }
 
     openBriscolaSwapModal = () => {
-        // ...
+        const power = this.roguelikeState.activePowers.find(p => p.id === 'value_swap');
+        if (power && this.briscolaSwapCooldown === 0) {
+            this.isBriscolaSwapModalOpen = true;
+        }
     }
 
     closeBriscolaSwapModal = () => { this.isBriscolaSwapModalOpen = false; }
     
     handleBriscolaSwap = (cardFromHand: Card) => {
-        // ...
+        if (this.briscolaCard) {
+            const oldBriscola = this.briscolaCard;
+            this.briscolaCard = cardFromHand;
+            this.briscolaSuit = cardFromHand.suit;
+            this.humanHand = [...this.humanHand.filter(c => c.id !== cardFromHand.id), oldBriscola];
+
+            const power = this.roguelikeState.activePowers.find(p => p.id === 'value_swap');
+            if (power) {
+                this.briscolaSwapCooldown = 4 - power.level;
+            }
+        }
+        this.closeBriscolaSwapModal();
     }
 }

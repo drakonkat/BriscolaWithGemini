@@ -328,7 +328,14 @@ export const Menu = observer(() => {
                             <button 
                                 ref={el => { gameModeCardRefs.current[2] = el; }}
                                 className={`game-mode-card ${gameplayMode === 'dungeon' ? 'selected' : ''}`}
-                                onClick={() => gameSettingsStore.setGameplayMode('dungeon')}
+                                onClick={() => {
+                                    gameSettingsStore.setGameplayMode('dungeon');
+                                    if (gachaStore.r_keys > 0 || gachaStore.sr_keys > 0 || gachaStore.ssr_keys > 0) {
+                                        uiStore.openModal('challengeKeySelection');
+                                    } else {
+                                        uiStore.openModal('noKeys');
+                                    }
+                                }}
                             >
                                 <span className="game-mode-icon">⚔️</span>
                                 <h3>{T.gameModeDungeon}</h3>
@@ -471,7 +478,7 @@ export const Menu = observer(() => {
                     <button 
                         className="start-game-button" 
                         onClick={() => gameStateStore.startGame(selectedWaifu)} 
-                        disabled={false}
+                        disabled={gameplayMode === 'dungeon'}
                     >
                         {T.startGame}
                     </button>
