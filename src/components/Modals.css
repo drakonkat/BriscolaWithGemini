@@ -925,7 +925,7 @@
     filter: grayscale(50%);
 }
 
-.mission-item:not(.claimed) .claim-button {
+.mission-item:not(.claimed) .claim-button:not(:disabled) {
   border: 1px solid var(--gold-accent);
   box-shadow: 0 0 10px rgba(var(--gold-accent-rgb), 0.5);
 }
@@ -990,7 +990,7 @@
 }
 
 .rewards-label {
-    display: block;
+    display: none; /* Hidden on desktop, visible on mobile */
     font-size: 0.9rem;
     color: var(--font-color-secondary);
     font-weight: 500;
@@ -1084,6 +1084,19 @@
     box-shadow: 0 6px 15px rgba(0,0,0,0.3), 0 0 10px rgba(var(--gold-accent-rgb), 0.5);
 }
 
+.claim-button:disabled {
+    background: linear-gradient(45deg, #7d7d7d, #5a5a5a);
+    color: #aaa;
+    cursor: not-allowed;
+    box-shadow: none;
+    border: 1px solid #444;
+}
+
+.claim-button:disabled:hover, .claim-button:disabled:focus {
+    transform: none;
+    box-shadow: none;
+}
+
 .mission-item.claimed .mission-action::after {
     content: '✓';
     font-size: 2rem;
@@ -1108,6 +1121,9 @@
         align-items: flex-start;
         padding-top: 10vh;
         padding-bottom: 5vh;
+    }
+    .mission-right-panel .rewards-label {
+        display: block;
     }
 }
 

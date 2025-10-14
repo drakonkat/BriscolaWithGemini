@@ -95,8 +95,12 @@ export const MissionsModal = observer(({ isOpen, onClose }: MissionsModalProps) 
                                     </div>
                                 </div>
                                 <div className="mission-action">
-                                    {isComplete && !state.claimed && (
-                                        <button className="claim-button" onClick={() => missionStore.claimReward(mission.id)}>
+                                    {!state?.claimed && (
+                                        <button
+                                            className="claim-button"
+                                            onClick={() => missionStore.claimReward(mission.id)}
+                                            disabled={!isComplete}
+                                        >
                                             {TM.claim}
                                         </button>
                                     )}
