@@ -990,8 +990,8 @@
     min-width: 130px;
 }
 
-.rewards-label {
-    display: none; /* Hidden on desktop, visible on mobile */
+.mission-right-panel .rewards-label {
+    display: none; /* Hidden by default, shown via media query */
     font-size: 0.9rem;
     color: var(--font-color-secondary);
     font-weight: 500;
@@ -1189,6 +1189,7 @@
     .mission-rewards-container {
         grid-area: rewards;
         align-items: flex-start;
+        min-width: auto;
     }
     
     .rewards-label {
