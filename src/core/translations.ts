@@ -314,6 +314,7 @@ export const translations = {
         claim: "Riscuoti",
         claimed: "Riscattato",
         noMissions: "Nessuna missione disponibile al momento.",
+        rewardsLabel: "Ricompense:",
         rewards: {
             waifuCoins: "Waifu Coin",
             r_shards: "Frammenti R",
@@ -849,6 +850,7 @@ export const translations = {
         claim: "Claim",
         claimed: "Claimed",
         noMissions: "No missions available at the moment.",
+        rewardsLabel: "Rewards:",
         rewards: {
             waifuCoins: "Waifu Coins",
             r_shards: "R Shards",
