@@ -316,15 +316,15 @@ export const Menu = observer(() => {
                     </div>
                     <div className="wallet-item">
                          <span className="key-item r" title={T.gallery.keyLabelR(r_keys)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M14.5,4A5.5,5.5,0,1,0,20,9.5,5.5,5.5,0,0,0,14.5,4ZM11,9.5a3.5,3.5,0,1,1,3.5,3.5A3.5,3.5,0,0,1,11,9.5ZM10,12,2,20v2H4l8-8V12Zm2-4H2v2H12V8Z"/></svg>
                             {r_keys}
                         </span>
                         <span className="key-item sr" title={T.gallery.keyLabelSR(sr_keys)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M14.5,4A5.5,5.5,0,1,0,20,9.5,5.5,5.5,0,0,0,14.5,4ZM11,9.5a3.5,3.5,0,1,1,3.5,3.5A3.5,3.5,0,0,1,11,9.5ZM10,12,2,20v2H4l8-8V12Zm2-4H2v2H12V8Z"/></svg>
                             {sr_keys}
                         </span>
                         <span className="key-item ssr" title={T.gallery.keyLabelSSR(ssr_keys)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M14.5,4A5.5,5.5,0,1,0,20,9.5,5.5,5.5,0,0,0,14.5,4ZM11,9.5a3.5,3.5,0,1,1,3.5,3.5A3.5,3.5,0,0,1,11,9.5ZM10,12,2,20v2H4l8-8V12Zm2-4H2v2H12V8Z"/></svg>
                             {ssr_keys}
                         </span>
                     </div>
