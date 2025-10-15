@@ -168,12 +168,21 @@ export class DungeonModeStore extends ClassicModeStore {
                 const { deck: deckWithElements, activeElements } = initializeRoguelikeDeck(allCards, 3);
                 this.activeElements = activeElements;
     
-                // Re-assign cards with elements back to their places
-                this.humanHand = this.humanHand.map(c => deckWithElements.find(wc => wc.id === c.id)!);
-                this.aiHand = this.aiHand.map(c => deckWithElements.find(wc => wc.id === c.id)!);
-                this.deck = this.deck.map(c => deckWithElements.find(wc => wc.id === c.id)!);
+                const safeCardMap = (card: Card) => {
+                    const cardWithElement = deckWithElements.find(wc => wc.id === card.id);
+                    if (!cardWithElement) {
+                        console.error('DungeonModeStore: Could not find card with element for ID:', card.id);
+                        return card; // return original card if not found
+                    }
+                    return cardWithElement;
+                };
+
+                // Re-assign cards with elements back to their places safely
+                this.humanHand = this.humanHand.map(safeCardMap);
+                this.aiHand = this.aiHand.map(safeCardMap);
+                this.deck = this.deck.map(safeCardMap);
                 if (this.briscolaCard) {
-                    this.briscolaCard = deckWithElements.find(wc => wc.id === this.briscolaCard.id)!;
+                    this.briscolaCard = safeCardMap(this.briscolaCard);
                 }
             }
 

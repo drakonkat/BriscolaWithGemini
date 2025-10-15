@@ -7,7 +7,7 @@ import React from 'react';
 import { runInAction, reaction } from 'mobx';
 import { GameStateStore } from './GameStateStore';
 import type { RootStore } from '.';
-import type { Waifu, Card, RoguelikeState, RoguelikePowerUpId, Element, TrickHistoryEntry, AbilityUseHistoryEntry, ElementalClashResult } from '../core/types';
+import type { Waifu, Card, RoguelikeState, RoguelikePowerUpId, Element, TrickHistoryEntry, AbilityUseHistoryEntry, ElementalClashResult, Value } from '../core/types';
 import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
 import { getImageUrl, shuffleDeck, getCardPoints } from '../core/utils';
 import { createDeck } from '../core/classicGameLogic';
@@ -189,6 +189,69 @@ export class RoguelikeModeStore extends GameStateStore {
             this.briscolaCard = shuffledDeck.length > 0 ? shuffledDeck.pop()! : null;
             this.briscolaSuit = this.briscolaCard?.suit ?? (shuffledDeck.length > 0 ? shuffledDeck[shuffledDeck.length - 1].suit : 'Spade');
             this.deck = shuffledDeck;
+
+            const acePower = this.roguelikeState.activePowers.find(p => p.id === 'ace_of_briscola_start');
+            if (acePower && this.briscolaSuit) {
+                const briscola = this.briscolaSuit;
+                const cardsToGive: Value[] = [];
+            
+                if (acePower.level === 1) { // Asso, 3, or Re
+                    // FIX: Cast the selected string to `Value` to satisfy TypeScript's type checker.
+                    cardsToGive.push(['Asso', '3', 'Re'][Math.floor(Math.random() * 3)] as Value);
+                } else if (acePower.level === 2) { // Asso or 3
+                    // FIX: Cast the selected string to `Value` to satisfy TypeScript's type checker.
+                    cardsToGive.push(['Asso', '3'][Math.floor(Math.random() * 2)] as Value);
+                } else { // level 3: Asso and 3
+                    cardsToGive.push('Asso', '3');
+                }
+            
+                for (const valueToGive of cardsToGive) {
+                    if (this.humanHand.some(c => c.suit === briscola && c.value === valueToGive)) {
+                        continue;
+                    }
+            
+                    let specialCard: Card | undefined;
+                    let cardLocation: 'deck' | 'aiHand' | 'briscolaCard' | null = null;
+                    let cardIndex = -1;
+            
+                    cardIndex = this.deck.findIndex(c => c.suit === briscola && c.value === valueToGive);
+                    if (cardIndex !== -1) {
+                        specialCard = this.deck[cardIndex];
+                        cardLocation = 'deck';
+                    } else {
+                        cardIndex = this.aiHand.findIndex(c => c.suit === briscola && c.value === valueToGive);
+                        if (cardIndex !== -1) {
+                            specialCard = this.aiHand[cardIndex];
+                            cardLocation = 'aiHand';
+                        } else {
+                            if (this.briscolaCard && this.briscolaCard.suit === briscola && this.briscolaCard.value === valueToGive) {
+                                specialCard = this.briscolaCard;
+                                cardLocation = 'briscolaCard';
+                            }
+                        }
+                    }
+                    
+                    if (specialCard && cardLocation) {
+                        const cardToSwap = this.humanHand.find(c => c.suit !== briscola && getCardPoints(c) === 0) || this.humanHand[0];
+                        
+                        if (cardToSwap) {
+                            const playerSwapIndex = this.humanHand.findIndex(c => c.id === cardToSwap.id);
+                            
+                            if (playerSwapIndex !== -1) {
+                                this.humanHand[playerSwapIndex] = specialCard;
+            
+                                if (cardLocation === 'deck') {
+                                    this.deck[cardIndex] = cardToSwap;
+                                } else if (cardLocation === 'aiHand') {
+                                    this.aiHand[cardIndex] = cardToSwap;
+                                } else if (cardLocation === 'briscolaCard') {
+                                    this.briscolaCard = cardToSwap;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             this.trickStarter = (this.trickCounter % 2 === 0) ? 'human' : 'ai';
             this.turn = this.trickStarter;
@@ -552,77 +615,9 @@ export class RoguelikeModeStore extends GameStateStore {
         }
     }
 
-    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => {
-        if (this.turn !== 'human' || this.isProcessing || !card.element || card.isTemporaryBriscola) return;
-
-        e.preventDefault();
-        const targetElement = e.currentTarget as HTMLElement;
-        const touch = 'touches' in e ? e.touches[0] : e;
-        
-        runInAction(() => {
-            this.draggingCardInfo = { card, element: targetElement };
-            this.clonePosition = { x: touch.clientX, y: touch.clientY };
-            this.cardForElementalChoice = card; // Set card for choice context
-        });
-    };
-
-    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => {
-        if (!this.draggingCardInfo) return;
-        
-        e.preventDefault(); // Prevent scrolling on touch devices
-        
-        const touch = 'touches' in e ? e.touches[0] : e;
-        const x = touch.clientX;
-        const y = touch.clientY;
-
-        runInAction(() => {
-            this.clonePosition = { x, y };
-
-            let overZone: 'normal' | 'power' | 'cancel' | null = null;
-            if (zones.power) {
-                const rect = zones.power.getBoundingClientRect();
-                if (x > rect.left && x < rect.right && y > rect.top && y < rect.bottom) {
-                    overZone = 'power';
-                }
-            }
-            if (!overZone && zones.normal) {
-                const rect = zones.normal.getBoundingClientRect();
-                if (x > rect.left && x < rect.right && y > rect.top && y < rect.bottom) {
-                    overZone = 'normal';
-                }
-            }
-            if (!overZone && zones.cancel) {
-                const rect = zones.cancel.getBoundingClientRect();
-                if (x > rect.left && x < rect.right && y > rect.top && y < rect.bottom) {
-                    overZone = 'cancel';
-                }
-            }
-
-            this.currentDropZone = overZone;
-        });
-    };
-
-    handleDragEnd = () => {
-        if (!this.draggingCardInfo) return;
-
-        const dropZone = this.currentDropZone;
-
-        runInAction(() => {
-            if (dropZone === 'power') {
-                this.confirmElementalChoice(true);
-            } else if (dropZone === 'normal') {
-                this.confirmElementalChoice(false);
-            } else {
-                // Canceled
-                this.cardForElementalChoice = null;
-            }
-            
-            // Reset drag state
-            this.draggingCardInfo = null;
-            this.clonePosition = null;
-            this.currentDropZone = null;
-        });
-    };
+    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => { /* Base implementation */ }
+    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => { /* Base implementation */ }
+    handleDragEnd = () => { /* Base implementation */ }
 
     forceCloseClashModal = () => {
         if (this.trickResolutionTimer && this.trickResolutionCallback) {
