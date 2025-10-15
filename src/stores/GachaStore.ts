@@ -79,9 +79,9 @@ export class GachaStore {
     water_essences: number = loadFromLocalStorage('water_essences', 0);
     air_essences: number = loadFromLocalStorage('air_essences', 0);
     earth_essences: number = loadFromLocalStorage('earth_essences', 0);
-    r_keys: number = loadFromLocalStorage('r_keys', 0);
-    sr_keys: number = loadFromLocalStorage('sr_keys', 0);
-    ssr_keys: number = loadFromLocalStorage('ssr_keys', 0);
+    r_keys: number = loadFromLocalStorage('r_keys', 1);
+    sr_keys: number = loadFromLocalStorage('sr_keys', 1);
+    ssr_keys: number = loadFromLocalStorage('ssr_keys', 1);
     unlockedBackgrounds: string[] = loadFromLocalStorage('unlocked_backgrounds', []);
     hasRolledGacha: boolean = loadFromLocalStorage('has_rolled_gacha', false);
     fullscreenImage: string = '';

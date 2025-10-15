@@ -78,16 +78,16 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
             setCountdown(3);
             setMinigamePhase('countdown');
 
-            // FIX: Added 'void' to explicitly ignore the returned promise from the async playSound function and passed the required argument.
+            // FIX: Added 'chat-notify' argument to playSound call.
             void playSound('chat-notify');
             countdownIntervalRef.current = window.setInterval(() => {
                 setCountdown(prev => {
                     const next = prev - 1;
                     if (next > 0) {
-                        // FIX: Added 'void' to explicitly ignore the returned promise from the async playSound function and passed the required argument.
+                        // FIX: Added 'chat-notify' argument to playSound call.
                         void playSound('chat-notify');
                     } else if (next === 0) {
-                        // FIX: Added 'void' to explicitly ignore the returned promise from the async playSound function and passed the required argument.
+                        // FIX: Added 'trick-win' argument to playSound call.
                         void playSound('trick-win');
                     }
                     return next;

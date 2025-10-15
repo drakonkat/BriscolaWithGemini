@@ -29,6 +29,8 @@ type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
 
 const SAVED_GAME_KEY = 'waifu_briscola_saved_game';
 
+const MODIFIER_POOL: DungeonModifierId[] = ['BRISCOLA_CHAOS', 'GHOST_HAND', 'ELEMENTAL_FURY', 'VALUE_INVERSION'];
+
 // FIX: Corrected the initialization of RoguelikeState to include all required properties and fix the `activePowerUp` property name error.
 const INITIAL_ROGUELIKE_STATE: RoguelikeState = {
     currentLevel: 0,
@@ -635,7 +637,19 @@ export class GameStateStore {
         this.backgroundUrl = getImageUrl(`/background/landscape${Math.floor(Math.random() * 21) + 1}.png`);
         
         const newDeck = createDeck();
-        const shuffledDeck = shuffleDeck(newDeck);
+        let shuffledDeck = shuffleDeck(newDeck);
+        
+        if (this.dungeonRunState.isActive) {
+            const modifier = this.dungeonRunState.modifiers[this.dungeonRunState.currentMatch - 1];
+            if (modifier?.id === 'ELEMENTAL_FURY') {
+                const { deck: elementalDeck, activeElements } = initializeRoguelikeDeck(shuffledDeck, 4);
+                shuffledDeck = elementalDeck;
+                this.activeElements = activeElements;
+            } else {
+                this.activeElements = [];
+            }
+        }
+
         const playerHand = shuffledDeck.splice(0, 3);
         const computerHand = shuffledDeck.splice(0, 3);
         const briscola = shuffledDeck.length > 0 ? shuffledDeck.pop()! : null;
@@ -657,6 +671,7 @@ export class GameStateStore {
         this.trickHistory = [];
         this.lastTrick = null;
         this.lastResolvedTrick = [];
+        this.trickCounter = 0;
         this.isTutorialGame = false;
         
         if (!this.dungeonRunState.isActive) {
@@ -684,6 +699,13 @@ export class GameStateStore {
         uiStore.closeModal('challengeKeySelection');
 
         const opponents = shuffleDeck([...WAIFUS]).slice(0, 3);
+        const T_dungeon = this.T.dungeonRun.modifiers;
+        const selectedModifiers = shuffleDeck(MODIFIER_POOL).slice(0, 3).map((id): DungeonModifier => ({
+            id,
+            name: T_dungeon[id as Exclude<DungeonModifierId, 'NONE'>].split(':')[0],
+            description: T_dungeon[id as Exclude<DungeonModifierId, 'NONE'>],
+        }));
+
 
         this.dungeonRunState = {
             isActive: true,
@@ -692,11 +714,7 @@ export class GameStateStore {
             totalMatches: 3,
             wins: 0,
             waifuOpponents: opponents.map(w => w.name),
-            modifiers: [
-                { id: 'NONE', name: '', description: '' }, // placeholder
-                { id: 'NONE', name: '', description: '' }, // placeholder
-                { id: 'NONE', name: '', description: '' }, // placeholder
-            ],
+            modifiers: selectedModifiers,
         };
 
         gachaStore.lastDungeonRunRewards = {
@@ -806,8 +824,21 @@ export class GameStateStore {
 
         let points;
         let result: ReturnType<typeof calculateRoguelikeTrickPoints> | null = null;
+        const modifier = this.dungeonRunState.isActive ? this.dungeonRunState.modifiers[this.dungeonRunState.currentMatch - 1] : null;
+        const isElementalFury = modifier?.id === 'ELEMENTAL_FURY';
         
-        if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike') {
+        if (modifier?.id === 'VALUE_INVERSION') {
+            const getInvertedPoints = (card: Card): number => {
+                if (card.isBurned) return 0;
+                const invertedPointsMap: Record<Value, number> = {
+                    'Asso': 0, '3': 0, 'Re': 0, 'Cavallo': 0, 'Fante': 0,
+                    '7': 2, '6': 3, '5': 4, '4': 10, '2': 11,
+                };
+                return invertedPointsMap[card.value];
+            };
+            points = getInvertedPoints(humanCardFinal) + getInvertedPoints(aiCardFinal);
+
+        } else if (this.rootStore.gameSettingsStore.gameplayMode === 'roguelike' || isElementalFury) {
             const clashWinner = clashResult?.winner ?? null;
             
             const humanScorePile: Card[] = [];
@@ -819,13 +850,15 @@ export class GameStateStore {
                     aiScorePile.push(entry.humanCard, entry.aiCard);
                 }
             });
+            
+            const activePowers = isElementalFury ? [] : this.roguelikeState.activePowers;
 
-            result = calculateRoguelikeTrickPoints(humanCardFinal, aiCardFinal, trickWinner, clashWinner, this.briscolaSuit!, this.roguelikeState.activePowers, humanScorePile, aiScorePile, this.T);
+            result = calculateRoguelikeTrickPoints(humanCardFinal, aiCardFinal, trickWinner, clashWinner, this.briscolaSuit!, activePowers, humanScorePile, aiScorePile, this.T, isElementalFury);
             points = result.totalPoints;
             const airBonus = result.airBonus;
 
-            const isHumanPowerActive = (humanCardFinal.elementalEffectActivated ?? false) && clashWinner !== 'ai';
-            const isAiPowerActive = (aiCardFinal.elementalEffectActivated ?? false) && clashWinner !== 'human';
+            const isHumanPowerActive = isElementalFury || ((humanCardFinal.elementalEffectActivated ?? false) && clashWinner !== 'ai');
+            const isAiPowerActive = isElementalFury || ((aiCardFinal.elementalEffectActivated ?? false) && clashWinner !== 'human');
 
             if (airBonus > 0) {
                 this.powerAnimation = { type: 'air', player: trickWinner, points: airBonus };
@@ -994,6 +1027,21 @@ export class GameStateStore {
                 }
             }
             
+            if (modifier?.id === 'BRISCOLA_CHAOS' && this.trickCounter > 0 && this.trickCounter % 3 === 0) {
+                let poolForNewBriscola = [...newDeck];
+                if (newBriscolaCard) {
+                    poolForNewBriscola.push(newBriscolaCard);
+                }
+                if (poolForNewBriscola.length > 0) {
+                    poolForNewBriscola = shuffleDeck(poolForNewBriscola);
+                    const nextBriscola = poolForNewBriscola.pop()!;
+                    newBriscolaCard = nextBriscola;
+                    newDeck = poolForNewBriscola;
+                    this.briscolaSuit = nextBriscola.suit;
+                    this.message = this.T.dungeonRun.modifiers.BRISCOLA_CHAOS.split(':')[0] + "!";
+                }
+            }
+
             this.humanHand = newHumanHand;
             this.aiHand = newAiHand;
             this.deck = newDeck;

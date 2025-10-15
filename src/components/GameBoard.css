@@ -288,6 +288,21 @@
   display: none;
 }
 
+.dungeon-modifier-display {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(var(--primary-accent-rgb), 0.2);
+    border: 1px solid var(--primary-accent);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius-full);
+    font-weight: bold;
+    color: var(--primary-accent);
+    box-shadow: 0 0 10px rgba(var(--primary-accent-rgb), 0.3);
+    cursor: help;
+    white-space: nowrap;
+}
+
 .last-trick-recap {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--border-color);
@@ -610,7 +625,7 @@
     display: none;
   }
   .top-bar {
-    justify-content: flex-start;
+    justify-content: space-between;
     gap: 1rem;
   }
   .bottom-bar {
