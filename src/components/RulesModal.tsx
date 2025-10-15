@@ -126,6 +126,14 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
 
                 <h3 className="rules-subtitle">{T.roguelike.roguelikeRulesTitle}</h3>
                 <p>{T.roguelike.roguelikeRulesDescription}</p>
+                <p>{T.roguelike.essenceMultiplierRule}</p>
+                <ul className="rules-info-list">
+                    <li className="rules-info-item">{`${T.difficultyEasy}: x1`}</li>
+                    <li className="rules-info-item">{`${T.difficultyMedium}: x1.25`}</li>
+                    <li className="rules-info-item">{`${T.difficultyHard}: x1.5`}</li>
+                    <li className="rules-info-item">{`${T.difficultyNightmare}: x2`}</li>
+                    <li className="rules-info-item">{`${T.difficultyApocalypse}: x2.5`}</li>
+                </ul>
 
                 <h4 className="rules-subtitle" style={{ fontSize: '1.3rem', marginTop: '1.5rem' }}>{T.roguelike.rewardsTitle}</h4>
                 <div className="roguelike-rewards-rules-grid">

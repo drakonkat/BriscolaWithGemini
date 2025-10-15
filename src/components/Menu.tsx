@@ -23,6 +23,14 @@ const DifficultyDetails = ({ difficulty, language, gameplayMode }: { difficulty:
         const difficultyDescKey = `difficulty${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}Desc` as keyof typeof T;
         const difficultyDesc = T[difficultyDescKey] as string;
 
+        const essenceMultipliers: Record<Difficulty, string> = {
+            easy: 'x1',
+            medium: 'x1.25',
+            hard: 'x1.5',
+            nightmare: 'x2',
+            apocalypse: 'x2.5',
+        };
+
         return (
             <div className="difficulty-details-panel fade-in-up" key={`${difficulty}-roguelike`}>
                 <p className="difficulty-description">{difficultyDesc}</p>
@@ -37,6 +45,10 @@ const DifficultyDetails = ({ difficulty, language, gameplayMode }: { difficulty:
                             <strong>+{lossAmount} WC</strong>
                         </div>
                     ))}
+                    <div className="reward-item multiplier">
+                        <span>{T.rewardEssenceMultiplier}</span>
+                        <strong>{essenceMultipliers[difficulty]}</strong>
+                    </div>
                 </div>
             </div>
         );

@@ -27,6 +27,7 @@ export const translations = {
     difficultyNightmareDesc: "L'IA è un maestro di briscola e bara, scambiando le carte che pesca con le migliori del mazzo.",
     difficultyApocalypseDesc: "Spietata e ingiusta. L'IA conosce le tue carte e può pescare dal mazzo. Riuscirai a vincere lo stesso?",
     rewardCoinMultiplier: "Moltiplicatore Monete",
+    rewardEssenceMultiplier: "Moltiplicatore Essenze",
     rewardWin: "Vittoria",
     rewardLoss: "Sconfitta",
     rewardSpecial: "Speciale",
@@ -278,7 +279,7 @@ export const translations = {
         keyNameSSR: "Chiave Super Super Rara",
         essencesLabel: "Essenze",
         convertEssencesTitle: "Converti Essenze",
-        conversionRuleElemental: "1x🔥, 1x💧, 1x🌬️, 1x🌍 → 1x✨",
+        conversionRuleElemental: "",
         essencesLabelTranscendental: (amount: number) => `${amount} Trascendentali`,
     },
 
@@ -494,6 +495,7 @@ export const translations = {
         rewardLossLevel: (level: number) => `Sconfitta (Liv. ${level})`,
         roguelikeRulesTitle: "Regole Modalità Roguelike",
         roguelikeRulesDescription: "Affronta 4 avversarie di fila. Ogni vittoria ti permette di scegliere un nuovo potere o potenziare quello iniziale. Perdi una volta e l'avventura finisce. Le ricompense vengono assegnate in base al livello raggiunto.",
+        essenceMultiplierRule: "Le Essenze Elementali ottenute in partita sono moltiplicate in base alla difficoltà:",
         roguelikePowersTitle: "Elenco Poteri Roguelike",
         powers: {
             upgrade: "POTENZIA",
@@ -572,6 +574,7 @@ export const translations = {
     difficultyNightmareDesc: "The AI is a briscola master and cheats, swapping the cards it draws with the best ones from the deck.",
     difficultyApocalypseDesc: "Ruthless and unfair. The AI knows your cards and can draw from the deck. Can you still win?",
     rewardCoinMultiplier: "Coin Multiplier",
+    rewardEssenceMultiplier: "Essence Multiplier",
     rewardWin: "Win",
     rewardLoss: "Loss",
     rewardSpecial: "Special",
@@ -823,7 +826,7 @@ export const translations = {
         keyNameSSR: "Super Super Rare Key",
         essencesLabel: "Essences",
         convertEssencesTitle: "Convert Essences",
-        conversionRuleElemental: "1x🔥, 1x💧, 1x🌬️, 1x🌍 → 1x✨",
+        conversionRuleElemental: "",
         essencesLabelTranscendental: (amount: number) => `${amount} Transcendental`,
     },
 
@@ -1039,6 +1042,7 @@ export const translations = {
         rewardLossLevel: (level: number) => `Loss (Lv. ${level})`,
         roguelikeRulesTitle: "Roguelike Mode Rules",
         roguelikeRulesDescription: "Face 4 opponents in a row. Each victory allows you to choose a new power or upgrade your initial one. Lose once, and the run is over. Rewards are given based on the level reached.",
+        essenceMultiplierRule: "Elemental Essences obtained in a match are multiplied based on difficulty:",
         roguelikePowersTitle: "All Roguelike Powers",
         powers: {
             upgrade: "UPGRADE",

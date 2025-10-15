@@ -285,7 +285,14 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                 </div>
                                 <div className="crafting-card from-elemental">
                                     <div className="crafting-card-header">
-                                        <h3>{T_gallery.conversionRuleElemental}</h3>
+                                        <h3 className="elemental-conversion-rule">
+                                            1x<ElementIcon element="fire" />,&nbsp;
+                                            1x<ElementIcon element="water" />,&nbsp;
+                                            1x<ElementIcon element="air" />,&nbsp;
+                                            1x<ElementIcon element="earth" />
+                                            &nbsp;→&nbsp;
+                                            1x<EssenceIcon />
+                                        </h3>
                                         <span>{T_gallery.convertEssencesTitle}</span>
                                     </div>
                                     <div className="crafting-recipe">
