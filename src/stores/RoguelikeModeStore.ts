@@ -619,9 +619,71 @@ export class RoguelikeModeStore extends GameStateStore {
         }
     }
 
-    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => { /* Base implementation */ }
-    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => { /* Base implementation */ }
-    handleDragEnd = () => { /* Base implementation */ }
+    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => {
+        if (this.turn !== 'human' || this.isProcessing) return;
+    
+        e.preventDefault(); // Prevent default drag behavior and scrolling on touch
+    
+        const target = e.currentTarget as HTMLElement;
+    
+        const pos = 'touches' in e ? e.touches[0] : e;
+    
+        runInAction(() => {
+            this.draggingCardInfo = { card, element: target };
+            this.clonePosition = { x: pos.clientX, y: pos.clientY };
+        });
+    }
+    
+    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => {
+        if (!this.draggingCardInfo) return;
+    
+        e.preventDefault();
+    
+        const pos = 'touches' in e ? e.touches[0] : e;
+        
+        runInAction(() => {
+            this.clonePosition = { x: pos.clientX, y: pos.clientY };
+            
+            let activeZone: 'normal' | 'power' | 'cancel' | null = null;
+            if (zones.power) {
+                const rect = zones.power.getBoundingClientRect();
+                if (pos.clientX >= rect.left && pos.clientX <= rect.right && pos.clientY >= rect.top && pos.clientY <= rect.bottom) {
+                    activeZone = 'power';
+                }
+            }
+            if (!activeZone && zones.normal) {
+                const rect = zones.normal.getBoundingClientRect();
+                if (pos.clientX >= rect.left && pos.clientX <= rect.right && pos.clientY >= rect.top && pos.clientY <= rect.bottom) {
+                    activeZone = 'normal';
+                }
+            }
+            if (!activeZone && zones.cancel) {
+                const rect = zones.cancel.getBoundingClientRect();
+                if (pos.clientX >= rect.left && pos.clientX <= rect.right && pos.clientY >= rect.top && pos.clientY <= rect.bottom) {
+                    activeZone = 'cancel';
+                }
+            }
+            this.currentDropZone = activeZone;
+        });
+    }
+    
+    handleDragEnd = () => {
+        if (!this.draggingCardInfo) return;
+    
+        const { card } = this.draggingCardInfo;
+    
+        if (this.currentDropZone === 'power') {
+            this.confirmElementalChoice(true, card);
+        } else if (this.currentDropZone === 'normal') {
+            this.confirmElementalChoice(false, card);
+        }
+    
+        runInAction(() => {
+            this.draggingCardInfo = null;
+            this.clonePosition = null;
+            this.currentDropZone = null;
+        });
+    }
 
     forceCloseClashModal = () => {
         if (this.trickResolutionTimer && this.trickResolutionCallback) {
