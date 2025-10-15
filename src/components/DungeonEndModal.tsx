@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../stores';
+import { useStores, DungeonModeStore } from '../stores';
 import { translations } from '../core/translations';
 import { CachedImage } from './CachedImage';
 
@@ -13,7 +13,8 @@ interface DungeonEndModalProps {
 
 export const DungeonEndModal = observer(({ isOpen }: DungeonEndModalProps) => {
     const { gameStateStore, gameSettingsStore, gachaStore } = useStores();
-    const { dungeonRunState } = gameStateStore;
+    const dungeonStore = gameStateStore as DungeonModeStore;
+    const { dungeonRunState } = dungeonStore;
     const T = translations[gameSettingsStore.language];
 
     if (!isOpen || !dungeonRunState.keyRarity) {

@@ -6,7 +6,8 @@ import { translations } from '../core/translations';
 import type { Language, TrickHistoryEntry, CardDeckStyle, GameplayMode, HistoryEntry } from '../core/types';
 import { CardView } from './CardView';
 import { ElementIcon } from './ElementIcon';
-import { useStores } from '../stores';
+import { useStores, RoguelikeModeStore } from '../stores';
+import { observer } from 'mobx-react-lite';
 
 interface HistoryModalProps {
     isOpen: boolean;
@@ -18,12 +19,12 @@ interface HistoryModalProps {
     gameplayMode: GameplayMode;
 }
 
-export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardDeckStyle, gameplayMode }: HistoryModalProps) => {
+export const HistoryModal = observer(({ isOpen, onClose, history, language, aiName, cardDeckStyle, gameplayMode }: HistoryModalProps) => {
     if (!isOpen) {
         return null;
     }
 
-    const { gameStateStore, gameSettingsStore } = useStores();
+    const { gameSettingsStore, gameStateStore } = useStores();
     const { difficulty } = gameSettingsStore;
     const T = translations[language];
     const TH = T.history;
@@ -32,7 +33,8 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardD
     let historyToShow: HistoryEntry[] = [];
 
     if (gameplayMode === 'roguelike') {
-        const canSeeFullHistory = gameStateStore.roguelikeState.activePowers.some(p => p.id === 'third_eye');
+        const roguelikeStore = gameStateStore as RoguelikeModeStore;
+        const canSeeFullHistory = roguelikeStore.roguelikeState.activePowers.some(p => p.id === 'third_eye');
         historyToShow = canSeeFullHistory ? history : history.slice(-1);
     } else if (isClassicMode) {
         if (difficulty === 'easy') {
@@ -40,7 +42,6 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardD
         } else if (difficulty === 'medium' || difficulty === 'hard') {
             historyToShow = history.slice(-1);
         }
-        // For nightmare, historyToShow remains an empty array.
     }
 
     return (
@@ -117,4 +118,4 @@ export const HistoryModal = ({ isOpen, onClose, history, language, aiName, cardD
             </div>
         </div>
     );
-};
+});

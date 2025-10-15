@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../stores';
+import { useStores, DungeonModeStore } from '../stores';
 import { translations } from '../core/translations';
 
 interface DungeonProgressModalProps {
@@ -12,7 +12,9 @@ interface DungeonProgressModalProps {
 
 export const DungeonProgressModal = observer(({ isOpen }: DungeonProgressModalProps) => {
     const { gameStateStore, gameSettingsStore, gachaStore } = useStores();
-    const { dungeonRunState, currentWaifu } = gameStateStore;
+    const dungeonStore = gameStateStore as DungeonModeStore;
+    const { dungeonRunState } = dungeonStore;
+    const { currentWaifu } = gameStateStore;
     const T = translations[gameSettingsStore.language];
 
     if (!isOpen || !dungeonRunState.isActive) {
@@ -20,13 +22,11 @@ export const DungeonProgressModal = observer(({ isOpen }: DungeonProgressModalPr
     }
 
     const rewards = gachaStore.lastDungeonMatchRewards;
-    const nextMatch = dungeonRunState.currentMatch + 1;
 
     return (
         <div className="game-over-overlay">
-            {/* FIX: Replaced direct method call with a call to the correctly implemented startNextDungeonMatch method. */}
             <div className="game-over-modal dungeon-result-modal" onClick={(e) => e.stopPropagation()}>
-                <button className="modal-close-button" onClick={gameStateStore.startNextDungeonMatch} aria-label={T.close}>
+                <button className="modal-close-button" onClick={dungeonStore.startNextDungeonMatch} aria-label={T.close}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                     </svg>
@@ -44,8 +44,7 @@ export const DungeonProgressModal = observer(({ isOpen }: DungeonProgressModalPr
                 </div>
                 
                 <div className="modal-actions">
-                    {/* FIX: Replaced direct method call with a call to the correctly implemented startNextDungeonMatch method. */}
-                    <button onClick={gameStateStore.startNextDungeonMatch}>{T.dungeonRun.continueRun}</button>
+                    <button onClick={dungeonStore.startNextDungeonMatch}>{T.dungeonRun.continueRun}</button>
                 </div>
             </div>
         </div>

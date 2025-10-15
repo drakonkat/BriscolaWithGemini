@@ -1,5 +1,3 @@
-
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -11,31 +9,26 @@ import { CardView } from './CardView';
 import { getCardId, getImageUrl } from '../core/utils';
 import { translations } from '../core/translations';
 import { defaultSoundSettings } from '../core/soundManager';
-import type { Card, DungeonModifierId } from '../core/types';
+import type { Card } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
-import { POWER_UP_DEFINITIONS } from '../core/roguelikePowers';
 import { DiceRollAnimation } from './DiceRollAnimation';
 import { Tooltip } from './Tooltip';
 import { SUITS_IT } from '../core/constants';
+import { DungeonModeStore, RoguelikeModeStore } from '../stores';
 
 export const GameBoard = observer(() => {
     const { gameStateStore, uiStore, gameSettingsStore } = useStores();
     const { 
         currentWaifu, aiScore, aiHand, humanScore, humanHand, briscolaCard, deck, cardsOnTable, message,
-        isProcessing, turn, trickStarter, backgroundUrl, lastTrick, lastTrickHighlights, activeElements,
-        roguelikeState, powerAnimation, elementalClash, briscolaSuit,
-        revealedAiHand, lastTrickInsightCooldown, activateLastTrickInsight,
-        briscolaSwapCooldown, openBriscolaSwapModal,
+        isProcessing, turn, trickStarter, backgroundUrl, lastTrick, briscolaSuit,
         draggingCardInfo, clonePosition, currentDropZone,
-        handleDragStart, handleDragMove, handleDragEnd, forceCloseClashModal,
-        dungeonRunState
+        handleDragStart, handleDragMove, handleDragEnd,
     } = gameStateStore;
     const { animatingCard, drawingCards, unreadMessageCount, waifuBubbleMessage } = uiStore;
     const { language, isChatEnabled, gameplayMode, isMusicEnabled, cardDeckStyle, isDiceAnimationEnabled, difficulty, isNsfwEnabled } = gameSettingsStore;
     
     const T = translations[language];
-    const T_roguelike = T.roguelike;
     const TH = T.history;
     const [isDiceRolling, setIsDiceRolling] = useState(false);
     const [isPlayerMenuOpen, setIsPlayerMenuOpen] = useState(false);
@@ -45,13 +38,19 @@ export const GameBoard = observer(() => {
     const powerZoneRef = useRef<HTMLDivElement>(null);
     const cancelZoneRef = useRef<HTMLDivElement>(null);
 
+    // Mode-specific access
+    const isRoguelike = gameplayMode === 'roguelike' && gameStateStore instanceof RoguelikeModeStore;
+    const isDungeon = gameplayMode === 'dungeon' && gameStateStore instanceof DungeonModeStore;
+    const roguelikeStore = isRoguelike ? (gameStateStore as RoguelikeModeStore) : null;
+    const dungeonStore = isDungeon ? (gameStateStore as DungeonModeStore) : null;
+
     useEffect(() => {
-        if (elementalClash?.type === 'dice' && isDiceAnimationEnabled) {
+        if (roguelikeStore?.elementalClash?.type === 'dice' && isDiceAnimationEnabled) {
             setIsDiceRolling(true);
         } else {
             setIsDiceRolling(false);
         }
-    }, [elementalClash, isDiceAnimationEnabled]);
+    }, [roguelikeStore?.elementalClash, isDiceAnimationEnabled]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -73,11 +72,11 @@ export const GameBoard = observer(() => {
         };
 
         const moveHandler = (e: MouseEvent | TouchEvent) => {
-            gameStateStore.handleDragMove(e, zoneElements);
+            handleDragMove(e, zoneElements);
         };
 
         const endHandler = () => {
-            gameStateStore.handleDragEnd();
+            handleDragEnd();
         };
 
         if (draggingCardInfo) {
@@ -97,7 +96,7 @@ export const GameBoard = observer(() => {
             window.removeEventListener('touchcancel', endHandler);
             document.removeEventListener('mouseleave', endHandler);
         };
-    }, [draggingCardInfo, gameStateStore]);
+    }, [draggingCardInfo, handleDragMove, handleDragEnd]);
 
 
     const winningScore = 60;
@@ -110,15 +109,17 @@ export const GameBoard = observer(() => {
 
     const waifuIconAriaLabel = isChatEnabled ? T.chatWith(currentWaifu?.name ?? '') : T.waifuDetails(currentWaifu?.name ?? '');
     
-    const historyButtonTitle = gameplayMode === 'classic' || (gameplayMode === 'roguelike' && roguelikeState.activePowers.some(p => p.id === 'third_eye'))
+    const canSeeFullHistory = isRoguelike && roguelikeStore.roguelikeState.activePowers.some(p => p.id === 'third_eye');
+    const historyButtonTitle = gameplayMode === 'classic' || canSeeFullHistory
       ? TH.title
-      : T_roguelike.powers.third_eye.historyLockedDesc;
+      : T.roguelike.powers.third_eye.historyLockedDesc;
 
+    const elementalClash = isRoguelike ? roguelikeStore.elementalClash : null;
     const humanCardForClash = elementalClash ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     const aiCardForClash = elementalClash ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     
-    const insightPower = roguelikeState.activePowers.find(p => p.id === 'last_trick_insight');
-    const swapPower = roguelikeState.activePowers.find(p => p.id === 'value_swap');
+    const insightPower = isRoguelike ? roguelikeStore.roguelikeState.activePowers.find(p => p.id === 'last_trick_insight') : null;
+    const swapPower = isRoguelike ? roguelikeStore.roguelikeState.activePowers.find(p => p.id === 'value_swap') : null;
 
     const handleMusicButtonClick = () => {
         const isMusicConfigured = JSON.stringify(gameSettingsStore.soundEditorSettings) !== JSON.stringify(defaultSoundSettings);
@@ -130,7 +131,7 @@ export const GameBoard = observer(() => {
     };
 
     const isPreviewHiddenInClassic = gameplayMode === 'classic' && (difficulty === 'nightmare' || difficulty === 'apocalypse');
-    const currentModifier = dungeonRunState.isActive ? dungeonRunState.modifiers[dungeonRunState.currentMatch - 1] : null;
+    const currentModifier = isDungeon ? dungeonStore.dungeonRunState.modifiers[dungeonStore.dungeonRunState.currentMatch - 1] : null;
 
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
@@ -145,8 +146,8 @@ export const GameBoard = observer(() => {
                 </div>
             )}
 
-            {elementalClash && (
-                <div className="elemental-clash-overlay" onClick={forceCloseClashModal}>
+            {elementalClash && roguelikeStore && (
+                <div className="elemental-clash-overlay" onClick={roguelikeStore.forceCloseClashModal}>
                     <div className={`elemental-clash-modal ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={(e) => e.stopPropagation()}>
                         <h2>{elementalClash.type === 'weakness' ? T.elementalClash.weaknessTitle : T.elementalClash.title}</h2>
                         
@@ -237,9 +238,9 @@ export const GameBoard = observer(() => {
                 </>
             )}
 
-            {powerAnimation && (
-                <div className={`power-animation ${powerAnimation.player} element-${powerAnimation.type}`}>
-                    {`+${powerAnimation.points}`}
+            {isRoguelike && roguelikeStore.powerAnimation && (
+                <div className={`power-animation ${roguelikeStore.powerAnimation.player} element-${roguelikeStore.powerAnimation.type}`}>
+                    {`+${roguelikeStore.powerAnimation.points}`}
                 </div>
             )}
             
@@ -264,7 +265,7 @@ export const GameBoard = observer(() => {
                     </button>
                     {isPlayerMenuOpen && (
                         <div className="player-actions-popup">
-                            {gameplayMode === 'roguelike' && (
+                            {isRoguelike && (
                                 <button className="popup-action-button" onClick={() => { uiStore.openModal('legend'); setIsPlayerMenuOpen(false); }}>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
@@ -353,7 +354,7 @@ export const GameBoard = observer(() => {
                 </button>
             </div>
             
-            {gameplayMode === 'roguelike' && (activeElements.length > 0 || roguelikeState.activePowers.length > 0) && (
+            {isRoguelike && (roguelikeStore.activeElements.length > 0 || roguelikeStore.roguelikeState.activePowers.length > 0) && (
                 <div className="bottom-left-actions">
                     <button className="legend-button" onClick={() => uiStore.openModal('legend')} aria-label={T.elementalPowersTitle}>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -364,37 +365,35 @@ export const GameBoard = observer(() => {
             )}
 
             <div className="human-abilities-container">
-                {insightPower && insightPower.level === 2 && (
-                    // FIX: The Tooltip component was updated to correctly handle children, fixing this error.
-                    <Tooltip content={`${T.roguelike.powers.last_trick_insight.name} (${T.abilities.onCooldown(lastTrickInsightCooldown)})`}>
-                        <div className={`ability-indicator player-human ${lastTrickInsightCooldown === 0 ? 'ready' : 'disabled'}`}>
-                            <button className="ability-icon" onClick={activateLastTrickInsight} disabled={lastTrickInsightCooldown > 0}>
+                {isRoguelike && insightPower && insightPower.level === 2 && (
+                    <Tooltip content={`${T.roguelike.powers.last_trick_insight.name} (${T.abilities.onCooldown(roguelikeStore.lastTrickInsightCooldown)})`}>
+                        <div className={`ability-indicator player-human ${roguelikeStore.lastTrickInsightCooldown === 0 ? 'ready' : 'disabled'}`}>
+                            <button className="ability-icon" onClick={roguelikeStore.activateLastTrickInsight} disabled={roguelikeStore.lastTrickInsightCooldown > 0}>
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
                                 </svg>
                             </button>
-                            {lastTrickInsightCooldown > 0 && <span className="cooldown-badge">{lastTrickInsightCooldown}</span>}
+                            {roguelikeStore.lastTrickInsightCooldown > 0 && <span className="cooldown-badge">{roguelikeStore.lastTrickInsightCooldown}</span>}
                         </div>
                     </Tooltip>
                 )}
-                {swapPower && (
-                    // FIX: The Tooltip component was updated to correctly handle children, fixing this error.
-                    <Tooltip content={`${T.roguelike.powers.value_swap.name} (${briscolaSwapCooldown > 0 ? T.abilities.onCooldown(briscolaSwapCooldown) : T.abilityReady})`}>
-                        <div className={`ability-indicator player-human ${briscolaSwapCooldown === 0 ? 'ready' : 'disabled'}`}>
-                            <button className="ability-icon" onClick={openBriscolaSwapModal} disabled={briscolaSwapCooldown > 0}>
+                {isRoguelike && swapPower && (
+                    <Tooltip content={`${T.roguelike.powers.value_swap.name} (${roguelikeStore.briscolaSwapCooldown > 0 ? T.abilities.onCooldown(roguelikeStore.briscolaSwapCooldown) : T.abilityReady})`}>
+                        <div className={`ability-indicator player-human ${roguelikeStore.briscolaSwapCooldown === 0 ? 'ready' : 'disabled'}`}>
+                            <button className="ability-icon" onClick={roguelikeStore.openBriscolaSwapModal} disabled={roguelikeStore.briscolaSwapCooldown > 0}>
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
                                 </svg>
                             </button>
-                            {briscolaSwapCooldown > 0 && <span className="cooldown-badge">{briscolaSwapCooldown}</span>}
+                            {roguelikeStore.briscolaSwapCooldown > 0 && <span className="cooldown-badge">{roguelikeStore.briscolaSwapCooldown}</span>}
                         </div>
                     </Tooltip>
                 )}
             </div>
             
             <div className="followers-container">
-                {roguelikeState.followers.map(follower => {
-                    const isUsed = roguelikeState.followerAbilitiesUsedThisMatch.includes(follower.name);
+                {isRoguelike && roguelikeStore.roguelikeState.followers.map(follower => {
+                    const isUsed = roguelikeStore.roguelikeState.followerAbilitiesUsedThisMatch.includes(follower.name);
                     const T_follower = T as any;
                     const abilityId = follower.followerAbilityId;
                     const abilityName = abilityId ? (T_follower[abilityId] ?? abilityId) : '';
@@ -402,7 +401,6 @@ export const GameBoard = observer(() => {
                     const abilityDesc = abilityDescKey ? (T_follower[abilityDescKey] ?? '') : '';
 
                     return (
-                        // FIX: Wrapped Tooltip in React.Fragment to solve key prop type error.
                         <React.Fragment key={follower.name}>
                             <Tooltip
                                 content={
@@ -412,7 +410,7 @@ export const GameBoard = observer(() => {
                                     </>
                                 }
                             >
-                                <button className="follower-ability-button" disabled={isUsed} onClick={() => gameStateStore.activateFollowerAbility(follower.name)}>
+                                <button className="follower-ability-button" disabled={isUsed} onClick={() => roguelikeStore.activateFollowerAbility(follower.name)}>
                                     <CachedImage imageUrl={getImageUrl(follower.avatar)} alt={follower.name} className="follower-waifu-avatar" />
                                     {isUsed && (
                                         <div className="used-overlay">
@@ -430,10 +428,9 @@ export const GameBoard = observer(() => {
 
             <div className="player-area ai-area">
                 <div className="hand">
-                    {aiHand.map((card, index) => (
-                        // FIX: Wrapped CardView in React.Fragment to solve key prop type error.
+                    {(roguelikeStore?.revealedAiHand ?? aiHand).map((card, index) => (
                         <React.Fragment key={card.id || index}>
-                            <CardView card={revealedAiHand ? card : { id: 'facedown', suit: 'Spade', value: '2' }} isFaceDown={!revealedAiHand} lang={language} cardDeckStyle={cardDeckStyle}/>
+                            <CardView card={roguelikeStore?.revealedAiHand ? card : { id: 'facedown', suit: 'Spade', value: '2' }} isFaceDown={!roguelikeStore?.revealedAiHand} lang={language} cardDeckStyle={cardDeckStyle}/>
                         </React.Fragment>
                     ))}
                 </div>
@@ -452,7 +449,7 @@ export const GameBoard = observer(() => {
                         )}
                         {briscolaCard && (
                             <div className="briscola-card-rotated" aria-label={`${T.briscolaLabel}: ${getCardId(briscolaCard, language)}`}>
-                                <CardView card={briscolaCard} lang={language} cardDeckStyle={cardDeckStyle} isPlayable={briscolaSwapCooldown === 0 && !!roguelikeState.activePowers.find(p => p.id === 'value_swap')} onClick={openBriscolaSwapModal} />
+                                <CardView card={briscolaCard} lang={language} cardDeckStyle={cardDeckStyle} isPlayable={isRoguelike && roguelikeStore.briscolaSwapCooldown === 0 && !!roguelikeStore.roguelikeState.activePowers.find(p => p.id === 'value_swap')} onClick={isRoguelike ? roguelikeStore.openBriscolaSwapModal : undefined} />
                             </div>
                         )}
                         {deck.length === 0 && !briscolaCard && briscolaSuit && (
@@ -465,7 +462,6 @@ export const GameBoard = observer(() => {
 
                 <div className="played-cards">
                     {cardsOnTable.map((card, index) => (
-                        // FIX: Wrapped CardView in React.Fragment to solve key prop type error.
                         <React.Fragment key={card.id || index}>
                             <CardView card={card} lang={language} cardDeckStyle={cardDeckStyle} />
                         </React.Fragment>
@@ -476,7 +472,6 @@ export const GameBoard = observer(() => {
             <div className="player-area human-area">
                  <div className="hand" data-tutorial-id="player-hand">
                     {humanHand.map((card, index) => (
-                        // FIX: Wrapped CardView in React.Fragment to solve key prop type error.
                         <React.Fragment key={card.id || index}>
                             <CardView 
                                 card={card} 
@@ -485,14 +480,14 @@ export const GameBoard = observer(() => {
                                 cardDeckStyle={cardDeckStyle}
                                 className={draggingCardInfo?.card.id === card.id ? 'is-dragging' : ''}
                                 onClick={() => gameStateStore.selectCardForPlay(card)}
-                                isDraggable={gameplayMode === 'roguelike' && !!card.element && !card.isTemporaryBriscola}
+                                isDraggable={isRoguelike && !!card.element && !card.isTemporaryBriscola}
                                 onMouseDown={(e) => {
-                                    if (gameplayMode === 'roguelike' && !!card.element && !card.isTemporaryBriscola) {
+                                    if (isRoguelike && !!card.element && !card.isTemporaryBriscola) {
                                         handleDragStart(card, e);
                                     }
                                 }}
                                 onTouchStart={(e) => {
-                                    if (gameplayMode === 'roguelike' && !!card.element && !card.isTemporaryBriscola) {
+                                    if (isRoguelike && !!card.element && !card.isTemporaryBriscola) {
                                         handleDragStart(card, e);
                                     }
                                 }}

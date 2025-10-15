@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../stores';
+import { useStores, DungeonModeStore, RoguelikeModeStore } from '../stores';
 
 import { GameOverModal } from './GameOverModal';
 import { QuotaExceededModal } from './QuotaExceededModal';
@@ -18,7 +18,6 @@ import { FullscreenImageModal } from './FullscreenImageModal';
 import { HistoryModal } from './HistoryModal';
 import { KasumiSwapModal } from './KasumiSwapModal';
 import { SoundEditorModal } from './SoundEditorModal';
-// FIX: Imported missing Gacha result modals.
 import { GachaSingleUnlockModal } from './GachaSingleUnlockModal';
 import { GachaMultiUnlockModal } from './GachaMultiUnlockModal';
 import { CraftingMinigameModal } from './CraftingMinigameModal';
@@ -38,17 +37,21 @@ export const GameModals = observer(() => {
     const { language, difficulty, gameplayMode, cardDeckStyle, isNsfwEnabled } = gameSettingsStore;
     const { 
         phase, gameResult, lastGameWinnings, currentWaifu, gameMode, humanScore, aiScore, 
-        trickHistory, isKasumiModalOpen, briscolaCard, humanHand, isBriscolaSwapModalOpen,
-        closeBriscolaSwapModal, handleBriscolaSwap, newFollower, acknowledgeNewFollower,
-        challengeMatchRarity, dungeonRunState
+        trickHistory, briscolaCard, humanHand, 
     } = gameStateStore;
 
     const T = translations[language];
     const TR = T.roguelike;
-
+    
+    // Mode-specific access
+    const isRoguelike = gameplayMode === 'roguelike' && gameStateStore instanceof RoguelikeModeStore;
+    const isDungeon = gameplayMode === 'dungeon' && gameStateStore instanceof DungeonModeStore;
+    const roguelikeStore = isRoguelike ? (gameStateStore as RoguelikeModeStore) : null;
+    const dungeonStore = isDungeon ? (gameStateStore as DungeonModeStore) : null;
+    
     const handlePlayAgain = () => {
-        if (dungeonRunState.isActive && dungeonRunState.keyRarity) {
-             gameStateStore.startDungeonRun(dungeonRunState.keyRarity);
+        if (isDungeon && dungeonStore.dungeonRunState.keyRarity) {
+            dungeonStore.startDungeonRun(dungeonStore.dungeonRunState.keyRarity);
         } else {
             gameStateStore.startGame(currentWaifu);
         }
@@ -56,7 +59,7 @@ export const GameModals = observer(() => {
     
     return (
         <>
-            {phase === 'gameOver' && gameResult && gameplayMode === 'classic' && !dungeonRunState.isActive && (
+            {phase === 'gameOver' && gameResult && gameplayMode === 'classic' && !dungeonStore?.dungeonRunState.isActive && (
                 <GameOverModal
                     humanScore={humanScore}
                     aiScore={aiScore}
@@ -70,7 +73,7 @@ export const GameModals = observer(() => {
                 />
             )}
 
-            {phase === 'gameOver' && gameResult && gameplayMode === 'roguelike' && (
+            {phase === 'gameOver' && gameResult && isRoguelike && (
                  <div className="game-over-overlay">
                     <div className="game-over-modal">
                         <h2>{gameResult === 'human' ? TR.runCompleted : TR.runFailed}</h2>
@@ -169,25 +172,42 @@ export const GameModals = observer(() => {
                 gameplayMode={gameplayMode}
             />
             
-            <KasumiSwapModal
-                isOpen={isKasumiModalOpen}
-                onClose={gameStateStore.closeKasumiModal}
-                onCardSelect={gameStateStore.handleKasumiCardSwap}
-                briscolaCard={briscolaCard}
-                hand={humanHand}
-                language={language}
-                cardDeckStyle={cardDeckStyle}
-            />
+            {isRoguelike && roguelikeStore && (
+                <>
+                    <KasumiSwapModal
+                        isOpen={roguelikeStore.isKasumiModalOpen}
+                        onClose={roguelikeStore.closeKasumiModal}
+                        onCardSelect={roguelikeStore.handleKasumiCardSwap}
+                        briscolaCard={briscolaCard}
+                        hand={humanHand}
+                        language={language}
+                        cardDeckStyle={cardDeckStyle}
+                    />
 
-            <BriscolaSwapModal
-                isOpen={isBriscolaSwapModalOpen}
-                onClose={closeBriscolaSwapModal}
-                onCardSelect={handleBriscolaSwap}
-                briscolaCard={briscolaCard}
-                hand={humanHand}
-                language={language}
-                cardDeckStyle={cardDeckStyle}
-            />
+                    <BriscolaSwapModal
+                        isOpen={roguelikeStore.isBriscolaSwapModalOpen}
+                        onClose={roguelikeStore.closeBriscolaSwapModal}
+                        onCardSelect={roguelikeStore.handleBriscolaSwap}
+                        briscolaCard={briscolaCard}
+                        hand={humanHand}
+                        language={language}
+                        cardDeckStyle={cardDeckStyle}
+                    />
+
+                    <LegendModal
+                        isOpen={uiStore.isLegendModalOpen}
+                        onClose={() => uiStore.closeModal('legend')}
+                        language={language}
+                    />
+
+                    {roguelikeStore.newFollower && (
+                        <NewFollowerModal
+                            waifu={roguelikeStore.newFollower}
+                            onContinue={roguelikeStore.acknowledgeNewFollower}
+                        />
+                    )}
+                </>
+            )}
 
             <SoundEditorModal
                 isOpen={uiStore.isSoundEditorModalOpen}
@@ -203,66 +223,58 @@ export const GameModals = observer(() => {
                 language={language}
             />
 
-            <LegendModal
-                isOpen={uiStore.isLegendModalOpen}
-                onClose={() => uiStore.closeModal('legend')}
-                language={language}
-            />
-
-            {newFollower && (
-                <NewFollowerModal
-                    waifu={newFollower}
-                    onContinue={acknowledgeNewFollower}
-                />
-            )}
-
-            {uiStore.isNoKeysModalOpen && (
-                <div className="game-over-overlay" onClick={() => uiStore.closeModal('noKeys')}>
-                    <div className="confirmation-modal" onClick={(e) => e.stopPropagation()}>
-                        <button className="modal-close-button" onClick={() => uiStore.closeModal('noKeys')} aria-label={T.close}>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                            </svg>
-                        </button>
-                        <h2>{T.challengeMatch.noKeysModalTitle}</h2>
-                        <p>{T.challengeMatch.noKeysModalMessage}</p>
-                        <div className="modal-actions">
-                            <button onClick={() => { uiStore.closeModal('noKeys'); uiStore.openModal('gallery'); }}>{T.gallery.promoButton}</button>
+            {isDungeon && dungeonStore && (
+                <>
+                    {uiStore.isNoKeysModalOpen && (
+                        <div className="game-over-overlay" onClick={() => uiStore.closeModal('noKeys')}>
+                            <div className="confirmation-modal" onClick={(e) => e.stopPropagation()}>
+                                <button className="modal-close-button" onClick={() => uiStore.closeModal('noKeys')} aria-label={T.close}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                    </svg>
+                                </button>
+                                <h2>{T.challengeMatch.noKeysModalTitle}</h2>
+                                <p>{T.challengeMatch.noKeysModalMessage}</p>
+                                <div className="modal-actions">
+                                    <button onClick={() => { uiStore.closeModal('noKeys'); uiStore.openModal('gallery'); }}>{T.gallery.promoButton}</button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    )}
+
+                    {uiStore.isChallengeKeySelectionModalOpen && (
+                        <div className="game-over-overlay" onClick={() => uiStore.closeModal('challengeKeySelection')}>
+                            <div className="challenge-key-selection-modal" onClick={(e) => e.stopPropagation()}>
+                                <button className="modal-close-button" onClick={() => uiStore.closeModal('challengeKeySelection')} aria-label={T.close}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                    </svg>
+                                </button>
+                                <h2>{T.challengeMatch.keySelectionTitle}</h2>
+                                <p>{T.challengeMatch.keySelectionMessage}</p>
+                                <div className="challenge-buttons">
+                                    <button className="challenge-button r" onClick={() => dungeonStore.startGame('R')} disabled={gachaStore.r_keys === 0}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                                        <span>{T.gallery.keyLabelR(gachaStore.r_keys)}</span>
+                                    </button>
+                                    <button className="challenge-button sr" onClick={() => dungeonStore.startGame('SR')} disabled={gachaStore.sr_keys === 0}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                                        <span>{T.gallery.keyLabelSR(gachaStore.sr_keys)}</span>
+                                    </button>
+                                    <button className="challenge-button ssr" onClick={() => dungeonStore.startGame('SSR')} disabled={gachaStore.ssr_keys === 0}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                                        <span>{T.gallery.keyLabelSSR(gachaStore.ssr_keys)}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                    <DungeonProgressModal isOpen={uiStore.isDungeonProgressModalOpen} />
+                    <DungeonEndModal isOpen={uiStore.isDungeonEndModalOpen} />
+                </>
             )}
 
-            {uiStore.isChallengeKeySelectionModalOpen && (
-                <div className="game-over-overlay" onClick={() => uiStore.closeModal('challengeKeySelection')}>
-                    <div className="challenge-key-selection-modal" onClick={(e) => e.stopPropagation()}>
-                        <button className="modal-close-button" onClick={() => uiStore.closeModal('challengeKeySelection')} aria-label={T.close}>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                            </svg>
-                        </button>
-                        <h2>{T.challengeMatch.keySelectionTitle}</h2>
-                        <p>{T.challengeMatch.keySelectionMessage}</p>
-                        <div className="challenge-buttons">
-                            <button className="challenge-button r" onClick={() => gameStateStore.startDungeonRun('R')} disabled={gachaStore.r_keys === 0}>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
-                                <span>{T.gallery.keyLabelR(gachaStore.r_keys)}</span>
-                            </button>
-                            <button className="challenge-button sr" onClick={() => gameStateStore.startDungeonRun('SR')} disabled={gachaStore.sr_keys === 0}>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
-                                <span>{T.gallery.keyLabelSR(gachaStore.sr_keys)}</span>
-                            </button>
-                            <button className="challenge-button ssr" onClick={() => gameStateStore.startDungeonRun('SSR')} disabled={gachaStore.ssr_keys === 0}>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
-                                <span>{T.gallery.keyLabelSSR(gachaStore.ssr_keys)}</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-            
-            <DungeonProgressModal isOpen={uiStore.isDungeonProgressModalOpen} />
-            <DungeonEndModal isOpen={uiStore.isDungeonEndModalOpen} />
             <MissionsModal isOpen={uiStore.isMissionsModalOpen} onClose={() => uiStore.closeModal('missions')} />
         </>
     );

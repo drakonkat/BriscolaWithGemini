@@ -78,16 +78,16 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
             setCountdown(3);
             setMinigamePhase('countdown');
 
-            // FIX: Added 'chat-notify' argument to playSound call.
+            // FIX: Pass the 'chat-notify' argument to the playSound function.
             void playSound('chat-notify');
             countdownIntervalRef.current = window.setInterval(() => {
                 setCountdown(prev => {
                     const next = prev - 1;
                     if (next > 0) {
-                        // FIX: Added 'chat-notify' argument to playSound call.
+                        // FIX: Pass the 'chat-notify' argument to the playSound function.
                         void playSound('chat-notify');
                     } else if (next === 0) {
-                        // FIX: Added 'trick-win' argument to playSound call.
+                        // FIX: Pass the 'trick-win' argument to the playSound function.
                         void playSound('trick-win');
                     }
                     return next;
@@ -136,6 +136,7 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
         if (minigamePhase === 'playing' && gameTimer <= 0) {
             handleStop(true);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [minigamePhase, gameTimer]);
     
     if (!isOpen || !craftingAttempt) {

@@ -45,7 +45,6 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
     }, []);
 
 //TODO tooltip doesn't work ignoring for now
-return children
     // FIX: Moved event listeners from React.cloneElement to the wrapper div.
     // This resolves the TypeScript error and is a more robust way to handle events,
     // avoiding issues with children that might not accept DOM event props.
@@ -61,11 +60,11 @@ return children
             onBlur={hideTooltip}
         >
             {children}
-            {/*isVisible && content && (
+            {isVisible && content && (
                 <div className="tooltip-content" role="tooltip">
                     {content}
                 </div>
-            )*/}
+            )}
         </div>
     );
 };

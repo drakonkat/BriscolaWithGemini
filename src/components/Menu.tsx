@@ -12,6 +12,7 @@ import { CachedImage } from './CachedImage';
 import { getImageUrl } from '../core/utils';
 import { WAIFUS } from '../core/waifus';
 import { ROGUELIKE_REWARDS } from '../core/constants';
+import { DungeonModeStore, RoguelikeModeStore } from '../stores';
 
 const DifficultyDetails = ({ difficulty, language, gameplayMode }: { difficulty: Difficulty, language: 'it' | 'en', gameplayMode: GameplayMode }) => {
     const T = translations[language];
@@ -110,7 +111,8 @@ const DifficultyDetails = ({ difficulty, language, gameplayMode }: { difficulty:
 
 
 export const Menu = observer(() => {
-    const { gameSettingsStore, gameStateStore, uiStore, gachaStore, missionStore } = useStores();
+    const rootStore = useStores();
+    const { gameSettingsStore, gameStateStore, uiStore, gachaStore, missionStore } = rootStore;
     const { language, gameplayMode, difficulty, isNsfwEnabled } = gameSettingsStore;
     const { hasSavedGame } = gameStateStore;
     const { menuBackgroundUrl, isDifficultyDetailsOpen, isWaifuDetailsOpen } = uiStore;
@@ -129,7 +131,9 @@ export const Menu = observer(() => {
     const changeGameMode = (direction: number) => {
         const currentIndex = gameModes.indexOf(gameplayMode);
         const newIndex = (currentIndex + direction + gameModes.length) % gameModes.length;
-        gameSettingsStore.setGameplayMode(gameModes[newIndex]);
+        const newMode = gameModes[newIndex];
+        gameSettingsStore.setGameplayMode(newMode);
+        rootStore.prepareGame(newMode);
     };
 
     const difficultyContainerRef = useRef<HTMLDivElement>(null);
@@ -213,7 +217,30 @@ export const Menu = observer(() => {
         }
     };
     
+    const handleStartGame = () => {
+        if (gameplayMode === 'roguelike') {
+            (gameStateStore as RoguelikeModeStore).startRoguelikeRun(selectedWaifu);
+        } else {
+            gameStateStore.startGame(selectedWaifu);
+        }
+    }
     
+    const handleDungeonClick = () => {
+        const newMode = 'dungeon';
+        gameSettingsStore.setGameplayMode(newMode);
+        rootStore.prepareGame(newMode);
+
+        if (gachaStore.r_keys > 0 || gachaStore.sr_keys > 0 || gachaStore.ssr_keys > 0) {
+            uiStore.openModal('challengeKeySelection');
+        } else {
+            uiStore.openModal('noKeys');
+        }
+    }
+
+    const setGameMode = (mode: GameplayMode) => {
+        gameSettingsStore.setGameplayMode(mode);
+        rootStore.prepareGame(mode);
+    }
 
     return (
         <div className="menu">
@@ -312,7 +339,7 @@ export const Menu = observer(() => {
                             <button 
                                 ref={el => { gameModeCardRefs.current[0] = el; }}
                                 className={`game-mode-card ${gameplayMode === 'classic' ? 'selected' : ''}`}
-                                onClick={() => gameSettingsStore.setGameplayMode('classic')}
+                                onClick={() => setGameMode('classic')}
                             >
                                 <span className="game-mode-icon">👑</span>
                                 <h3>{T.gameModeClassic}</h3>
@@ -320,7 +347,7 @@ export const Menu = observer(() => {
                             <button 
                                 ref={el => { gameModeCardRefs.current[1] = el; }}
                                 className={`game-mode-card ${gameplayMode === 'roguelike' ? 'selected' : ''}`}
-                                onClick={() => gameSettingsStore.setGameplayMode('roguelike')}
+                                onClick={() => setGameMode('roguelike')}
                             >
                                 <span className="game-mode-icon">🗺️</span>
                                 <h3>{T.gameModeRoguelike}</h3>
@@ -328,14 +355,7 @@ export const Menu = observer(() => {
                             <button 
                                 ref={el => { gameModeCardRefs.current[2] = el; }}
                                 className={`game-mode-card ${gameplayMode === 'dungeon' ? 'selected' : ''}`}
-                                onClick={() => {
-                                    gameSettingsStore.setGameplayMode('dungeon');
-                                    if (gachaStore.r_keys > 0 || gachaStore.sr_keys > 0 || gachaStore.ssr_keys > 0) {
-                                        uiStore.openModal('challengeKeySelection');
-                                    } else {
-                                        uiStore.openModal('noKeys');
-                                    }
-                                }}
+                                onClick={handleDungeonClick}
                             >
                                 <span className="game-mode-icon">⚔️</span>
                                 <h3>{T.gameModeDungeon}</h3>
@@ -477,7 +497,7 @@ export const Menu = observer(() => {
                     )}
                     <button 
                         className="start-game-button" 
-                        onClick={() => gameStateStore.startGame(selectedWaifu)} 
+                        onClick={handleStartGame} 
                         disabled={gameplayMode === 'dungeon'}
                     >
                         {T.startGame}
