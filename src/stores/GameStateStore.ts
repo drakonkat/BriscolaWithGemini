@@ -145,6 +145,7 @@ export abstract class GameStateStore {
              this.rootStore.uiStore.nextTutorialStep();
         }
 
+        this.isProcessing = true;
         this.playCard(card, 'human');
     }
 
@@ -199,25 +200,22 @@ export abstract class GameStateStore {
     drawCards(trickWinner: Player) {
         const drawAndContinue = () => {
             runInAction(() => {
-                if (this.deck.length > 0) {
-                    const card1 = this.deck.pop()!;
-                    const card2 = this.deck.length > 0 ? this.deck.pop()! : null;
-
-                    if (trickWinner === 'human') {
-                        this.humanHand.push(card1);
-                        if (card2) this.aiHand.push(card2);
-                    } else {
-                        this.aiHand.push(card1);
-                        if (card2) this.humanHand.push(card2);
+                const drawOneCard = (player: Player) => {
+                    if (this.deck.length > 0) {
+                        const card = this.deck.pop()!;
+                        if (player === 'human') this.humanHand.push(card);
+                        else this.aiHand.push(card);
+                    } else if (this.briscolaCard) {
+                        const card = this.briscolaCard;
+                        this.briscolaCard = null;
+                        if (player === 'human') this.humanHand.push(card);
+                        else this.aiHand.push(card);
                     }
-                }
-
-                if (this.deck.length === 0 && this.briscolaCard) {
-                    const finalCard = this.briscolaCard;
-                    if (trickWinner === 'human') this.aiHand.push(finalCard);
-                    else this.humanHand.push(finalCard);
-                    this.briscolaCard = null;
-                }
+                };
+                
+                // Winner draws first, then loser
+                drawOneCard(trickWinner);
+                drawOneCard(trickWinner === 'human' ? 'ai' : 'human');
 
                 this.rootStore.uiStore.setDrawingCards(null);
 
@@ -227,6 +225,7 @@ export abstract class GameStateStore {
                 if (trickWinner === 'ai' && this.currentWaifu) this.message = this.T.aiStarts(this.currentWaifu.name);
                 else this.message = this.T.yourTurn;
                 this.isResolvingTrick = false;
+                this.isProcessing = false;
                 this.handleEndOfGame();
             });
         };

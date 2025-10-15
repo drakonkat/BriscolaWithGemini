@@ -210,11 +210,12 @@ export class RoguelikeModeStore extends GameStateStore {
             return;
         }
         
+        this.isProcessing = true;
         this.playCard({ ...card, elementalEffectActivated: false }, 'human');
     }
 
     confirmElementalChoice = (activate: boolean) => {
-        if (!this.cardForElementalChoice) return;
+        if (!this.cardForElementalChoice || this.isProcessing) return;
         
         const cardToPlay = this.cardForElementalChoice;
         
@@ -228,6 +229,7 @@ export class RoguelikeModeStore extends GameStateStore {
             playSound(`element-${finalCard.element!}`);
         }
         
+        this.isProcessing = true;
         this.playCard(finalCard, 'human');
     }
 

@@ -301,7 +301,7 @@ export const translations = {
         modifiers: {
             NONE: "Nessun modificatore",
             BRISCOLA_CHAOS: "Caos Briscola: La briscola cambia ogni 3 turni.",
-            CURSED_HAND: "Mano Maledetta: Una carta casuale nella tua mano iniziale è maledetta. Non puoi giocarla finché non è l'ultima del suo seme.",
+            CURSED_HAND: "Mano Maledetta: Una carta casuale nella tua mano è maledetta. Non puoi giocarla finché non è l'ultima del suo seme. Una volta giocata, la maledizione passa a un'altra carta.",
             ELEMENTAL_FURY: "Furia Elementale: I poteri elementali si attivano sempre.",
             VALUE_INVERSION: "Valore Invertito: Le carte di basso valore (2, 4, 5) valgono di più dei carichi."
         }
@@ -838,7 +838,7 @@ export const translations = {
         modifiers: {
             NONE: "No modifier",
             BRISCOLA_CHAOS: "Briscola Chaos: The trump suit changes every 3 tricks.",
-            CURSED_HAND: "Cursed Hand: A random card in your starting hand is cursed. You cannot play it until it is the last card of its suit in your hand.",
+            CURSED_HAND: "Cursed Hand: A random card in your hand is cursed. You cannot play it until it is the last of its suit. Once played, the curse moves to another card.",
             ELEMENTAL_FURY: "Elemental Fury: Elemental powers always activate.",
             VALUE_INVERSION: "Value Inversion: Low-value cards (2, 4, 5) are worth more than high-value ones."
         }

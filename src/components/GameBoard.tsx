@@ -47,12 +47,13 @@ export const GameBoard = observer(() => {
 
 
     useEffect(() => {
-        if (roguelikeStore?.elementalClash?.type === 'dice' && isDiceAnimationEnabled) {
+        const clash = isRoguelike ? roguelikeStore?.elementalClash : (isDungeon ? dungeonStore?.elementalClash : null);
+        if (clash?.type === 'dice' && isDiceAnimationEnabled) {
             setIsDiceRolling(true);
         } else {
             setIsDiceRolling(false);
         }
-    }, [roguelikeStore?.elementalClash, isDiceAnimationEnabled]);
+    }, [roguelikeStore?.elementalClash, dungeonStore?.elementalClash, isDiceAnimationEnabled, isRoguelike, isDungeon]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -116,7 +117,7 @@ export const GameBoard = observer(() => {
       ? TH.title
       : T.roguelike.powers.third_eye.historyLockedDesc;
 
-    const elementalClash = isRoguelike ? roguelikeStore.elementalClash : null;
+    const elementalClash = isRoguelike ? roguelikeStore.elementalClash : (isDungeon ? dungeonStore.elementalClash : null);
     const humanCardForClash = elementalClash ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     const aiCardForClash = elementalClash ? (trickStarter === 'ai' ? cardsOnTable[0] : cardsOnTable[1]) : null;
     
@@ -133,6 +134,14 @@ export const GameBoard = observer(() => {
     };
 
     const isPreviewHiddenInClassic = gameplayMode === 'classic' && (difficulty === 'nightmare' || difficulty === 'apocalypse');
+
+    const handleClashOverlayClick = () => {
+        if (isRoguelike && roguelikeStore) {
+            roguelikeStore.forceCloseClashModal();
+        } else if (isDungeon && dungeonStore) {
+            dungeonStore.forceCloseClashModal();
+        }
+    };
 
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
@@ -157,8 +166,8 @@ export const GameBoard = observer(() => {
                 />
             )}
 
-            {elementalClash && roguelikeStore && (
-                <div className="elemental-clash-overlay" onClick={roguelikeStore.forceCloseClashModal}>
+            {elementalClash && (
+                <div className="elemental-clash-overlay" onClick={handleClashOverlayClick}>
                     <div className={`elemental-clash-modal ${elementalClash.type === 'weakness' ? 'weakness' : ''}`} onClick={(e) => e.stopPropagation()}>
                         <h2>{elementalClash.type === 'weakness' ? T.elementalClash.weaknessTitle : T.elementalClash.title}</h2>
                         
