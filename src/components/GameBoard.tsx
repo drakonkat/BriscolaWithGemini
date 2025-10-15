@@ -44,7 +44,6 @@ export const GameBoard = observer(() => {
     const roguelikeStore = isRoguelike ? (gameStateStore as RoguelikeModeStore) : null;
     const dungeonStore = isDungeon ? (gameStateStore as DungeonModeStore) : null;
     const currentModifier = isDungeon ? dungeonStore.dungeonRunState.modifiers[dungeonStore.dungeonRunState.currentMatch - 1] : null;
-    const isGhostHandActive = isDungeon && currentModifier?.id === 'GHOST_HAND';
 
 
     useEffect(() => {
@@ -422,13 +421,12 @@ export const GameBoard = observer(() => {
                 <div className="hand">
                     {aiHand.map((card, index) => {
                         const isRevealedByRoguelike = !!roguelikeStore?.revealedAiHand;
-                        const shouldRevealCard = isRevealedByRoguelike || (isGhostHandActive && index === 0);
 
                         return (
                             <React.Fragment key={card.id || index}>
                                 <CardView
-                                    card={shouldRevealCard ? card : { id: 'facedown', suit: 'Spade', value: '2' }}
-                                    isFaceDown={!shouldRevealCard}
+                                    card={isRevealedByRoguelike ? card : { id: 'facedown', suit: 'Spade', value: '2' }}
+                                    isFaceDown={!isRevealedByRoguelike}
                                     lang={language}
                                     cardDeckStyle={cardDeckStyle}
                                 />

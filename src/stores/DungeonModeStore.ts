@@ -155,7 +155,25 @@ export class DungeonModeStore extends ClassicModeStore {
                 this.briscolaSuit = this.briscolaCard?.suit ?? (shuffledDeck.length > 0 ? shuffledDeck[shuffledDeck.length - 1].suit : 'Spade');
                 this.deck = shuffledDeck;
             }
+
+            if (modifier && modifier.id === 'CURSED_HAND') {
+                if (this.humanHand.length > 0) {
+                    const cursedIndex = Math.floor(Math.random() * this.humanHand.length);
+                    this.humanHand[cursedIndex].isCursed = true;
+                }
+            }
         });
+    }
+
+    selectCardForPlay(card: Card, activatePower?: boolean) {
+        if (card.isCursed) {
+            const cardsOfSameSuit = this.humanHand.filter(c => c.suit === card.suit);
+            if (cardsOfSameSuit.length > 1) {
+                this.rootStore.uiStore.showSnackbar(this.T.cursedCardError, 'warning');
+                return;
+            }
+        }
+        super.selectCardForPlay(card, activatePower);
     }
 
     resolveTrick() {

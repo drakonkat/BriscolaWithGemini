@@ -110,6 +110,7 @@ export const translations = {
     aiWins: (name: string) => `${name} ha vinto!`,
     tie: "Pareggio!",
     coinsEarned: (amount: number) => `Hai guadagnato ${amount} Waifu Coin!`,
+    cursedCardError: "Non puoi giocare la carta maledetta finché non è l'ultima del suo seme.",
     
     // Waifu Prompts
     waifuTrickWinPrompt: (name: string, personality: string, humanCard: string, aiCard: string, points: number) => 
@@ -300,7 +301,7 @@ export const translations = {
         modifiers: {
             NONE: "Nessun modificatore",
             BRISCOLA_CHAOS: "Caos Briscola: La briscola cambia ogni 3 turni.",
-            GHOST_HAND: "Mano Fantasma: Una carta nella mano dell'avversaria è sempre visibile.",
+            CURSED_HAND: "Mano Maledetta: Una carta casuale nella tua mano iniziale è maledetta. Non puoi giocarla finché non è l'ultima del suo seme.",
             ELEMENTAL_FURY: "Furia Elementale: I poteri elementali si attivano sempre.",
             VALUE_INVERSION: "Valore Invertito: Le carte di basso valore (2, 4, 5) valgono di più dei carichi."
         }
@@ -646,6 +647,7 @@ export const translations = {
     aiWins: (name: string) => `${name} wins!`,
     tie: "It's a Tie!",
     coinsEarned: (amount: number) => `You earned ${amount} Waifu Coin!`,
+    cursedCardError: "You can't play the cursed card until it's the last of its suit.",
     
     // Waifu Prompts
     waifuTrickWinPrompt: (name: string, personality: string, humanCard: string, aiCard: string, points: number) => 
@@ -836,7 +838,7 @@ export const translations = {
         modifiers: {
             NONE: "No modifier",
             BRISCOLA_CHAOS: "Briscola Chaos: The trump suit changes every 3 tricks.",
-            GHOST_HAND: "Ghost Hand: One card in the opponent's hand is always visible.",
+            CURSED_HAND: "Cursed Hand: A random card in your starting hand is cursed. You cannot play it until it is the last card of its suit in your hand.",
             ELEMENTAL_FURY: "Elemental Fury: Elemental powers always activate.",
             VALUE_INVERSION: "Value Inversion: Low-value cards (2, 4, 5) are worth more than high-value ones."
         }

@@ -15,6 +15,7 @@ export type Card = {
   element?: Element;
   elementalEffectActivated?: boolean;
   isTemporaryBriscola?: boolean;
+  isCursed?: boolean;
 };
 export type Player = 'human' | 'ai';
 // FIX: Added 'roguelike-map' to GamePhase to support the roguelike game flow.
@@ -90,7 +91,7 @@ export type RoguelikeState = {
     activePowers: RoguelikePowerUp[];
 };
 
-export type DungeonModifierId = 'NONE' | 'BRISCOLA_CHAOS' | 'GHOST_HAND' | 'ELEMENTAL_FURY' | 'VALUE_INVERSION';
+export type DungeonModifierId = 'NONE' | 'BRISCOLA_CHAOS' | 'CURSED_HAND' | 'ELEMENTAL_FURY' | 'VALUE_INVERSION';
 export type DungeonModifier = {
     id: DungeonModifierId;
     name: string;

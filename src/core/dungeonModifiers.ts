@@ -9,7 +9,7 @@ import type { DungeonModifier } from './types';
 export const DUNGEON_MODIFIERS: Pick<DungeonModifier, 'id'>[] = [
     { id: 'NONE' },
     { id: 'BRISCOLA_CHAOS' },
-    { id: 'GHOST_HAND' },
+    { id: 'CURSED_HAND' },
     { id: 'ELEMENTAL_FURY' },
     { id: 'VALUE_INVERSION' },
 ];

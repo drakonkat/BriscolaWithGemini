@@ -2,6 +2,8 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
+// FIX: Import React to use React.MouseEvent and React.TouchEvent types.
+import React from 'react';
 import { runInAction, reaction } from 'mobx';
 import { GameStateStore } from './GameStateStore';
 import type { RootStore } from '.';

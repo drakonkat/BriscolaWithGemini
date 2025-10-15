@@ -47,6 +47,7 @@ export const CardView: React.FC<CardViewProps> = ({ card, isFaceDown, onClick, i
     elementalEffectStatus && elementalEffectStatus !== 'unset' ? `effect-${elementalEffectStatus}` : '',
     card.isFortified ? 'fortified' : '',
     card.isBurned ? 'burned' : '',
+    card.isCursed ? 'cursed' : '',
     className || ''
   ].filter(Boolean).join(' ');
 
