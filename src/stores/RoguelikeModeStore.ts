@@ -45,6 +45,9 @@ export class RoguelikeModeStore extends GameStateStore {
     revealedAiHand: Card[] | null = null;
     newFollower: Waifu | null = null;
 
+    trickResolutionTimer: number | null = null;
+    trickResolutionCallback: (() => void) | null = null;
+
     constructor(rootStore: RootStore) {
         super(rootStore);
 
@@ -337,7 +340,9 @@ export class RoguelikeModeStore extends GameStateStore {
         
         const trickResolutionDelay = this.elementalClash ? (this.elementalClash.type === 'dice' && this.rootStore.gameSettingsStore.isDiceAnimationEnabled ? 5000 : 2000) : 1500;
         
-        setTimeout(() => runInAction(() => {
+        this.trickResolutionCallback = () => runInAction(() => {
+            if (this.trickResolutionCallback === null) return;
+
             if (trickWinner === 'human') {
                 this.humanScore += totalPoints + humanCardPointsReturned;
                 this.aiScore += aiCardPointsReturned;
@@ -356,10 +361,16 @@ export class RoguelikeModeStore extends GameStateStore {
             this.elementalClash = null;
             this.trickCounter++;
             this.revealedAiHand = null;
+            
+            if(this.trickResolutionTimer) clearTimeout(this.trickResolutionTimer);
+            this.trickResolutionTimer = null;
+            this.trickResolutionCallback = null;
 
             this.drawCards(trickWinner);
             
-        }), trickResolutionDelay);
+        });
+
+        this.trickResolutionTimer = window.setTimeout(this.trickResolutionCallback, trickResolutionDelay);
     }
 
     handleEndOfGame() {
@@ -536,6 +547,12 @@ export class RoguelikeModeStore extends GameStateStore {
     }
 
     forceCloseClashModal = () => {
-        this.elementalClash = null;
+        if (this.trickResolutionTimer && this.trickResolutionCallback) {
+            clearTimeout(this.trickResolutionTimer);
+            this.trickResolutionTimer = null; 
+            this.trickResolutionCallback();
+        } else {
+            this.elementalClash = null;
+        }
     }
 }
