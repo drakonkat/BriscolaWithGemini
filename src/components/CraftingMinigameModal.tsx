@@ -39,9 +39,12 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
     const currentConfig = craftingAttempt ? config[craftingAttempt.rarity] : config.R;
 
     const cleanupTimers = () => {
-        if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
-        if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-        if (gameTimerIntervalRef.current) clearInterval(gameTimerIntervalRef.current);
+        // FIX: The timer ID must be passed to cancelAnimationFrame.
+        if (animationFrameId.current) window.cancelAnimationFrame(animationFrameId.current);
+        // FIX: The interval ID must be passed to clearInterval.
+        if (countdownIntervalRef.current) window.clearInterval(countdownIntervalRef.current);
+        // FIX: The interval ID must be passed to clearInterval.
+        if (gameTimerIntervalRef.current) window.clearInterval(gameTimerIntervalRef.current);
     };
 
     const handleStop = (isTimeout = false) => {
@@ -78,16 +81,13 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
             setCountdown(3);
             setMinigamePhase('countdown');
 
-            // FIX: The playSound function requires a SoundName argument. Provided 'chat-notify' for countdown tick.
             void playSound('chat-notify');
             countdownIntervalRef.current = window.setInterval(() => {
                 setCountdown(prev => {
                     const next = prev - 1;
                     if (next > 0) {
-                        // FIX: The playSound function requires a SoundName argument. Provided 'chat-notify' for countdown tick.
                         void playSound('chat-notify');
                     } else if (next === 0) {
-                        // FIX: The playSound function requires a SoundName argument. Provided 'trick-win' for countdown completion.
                         void playSound('trick-win');
                     }
                     return next;
@@ -105,7 +105,7 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
     // Effect to transition from countdown to playing
     useEffect(() => {
         if (minigamePhase === 'countdown' && countdown <= 0) {
-            if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+            if (countdownIntervalRef.current) window.clearInterval(countdownIntervalRef.current);
             
             setMinigamePhase('playing');
             
@@ -121,9 +121,9 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
                     }
                     return newPos;
                 });
-                animationFrameId.current = requestAnimationFrame(animate);
+                animationFrameId.current = window.requestAnimationFrame(animate);
             };
-            animationFrameId.current = requestAnimationFrame(animate);
+            animationFrameId.current = window.requestAnimationFrame(animate);
 
             gameTimerIntervalRef.current = window.setInterval(() => {
                 setGameTimer(prev => prev - 1);

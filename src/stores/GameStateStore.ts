@@ -108,7 +108,6 @@ export abstract class GameStateStore {
     // Abstract methods to be implemented by subclasses
     abstract startGame(param: Waifu | null | 'R' | 'SR' | 'SSR'): void;
     abstract resolveTrick(): void;
-    abstract drawCards(): void;
     abstract handleEndOfGame(): void;
     abstract getCardPoints(card: Card): number;
 
@@ -195,6 +194,51 @@ export abstract class GameStateStore {
         }), 800);
     }
     
+    drawCards(trickWinner: Player) {
+        const drawAndContinue = () => {
+            runInAction(() => {
+                if (this.deck.length > 0) {
+                    const card1 = this.deck.pop()!;
+                    const card2 = this.deck.length > 0 ? this.deck.pop()! : null;
+
+                    if (trickWinner === 'human') {
+                        this.humanHand.push(card1);
+                        if (card2) this.aiHand.push(card2);
+                    } else {
+                        this.aiHand.push(card1);
+                        if (card2) this.humanHand.push(card2);
+                    }
+                }
+
+                if (this.deck.length === 0 && this.briscolaCard) {
+                    const finalCard = this.briscolaCard;
+                    if (trickWinner === 'human') this.aiHand.push(finalCard);
+                    else this.humanHand.push(finalCard);
+                    this.briscolaCard = null;
+                }
+
+                this.rootStore.uiStore.setDrawingCards(null);
+
+                // This is now the single point of truth for continuing the game after a trick.
+                this.trickStarter = trickWinner;
+                this.turn = trickWinner;
+                if (trickWinner === 'ai' && this.currentWaifu) this.message = this.T.aiStarts(this.currentWaifu.name);
+                else this.message = this.T.yourTurn;
+                this.isResolvingTrick = false;
+                this.handleEndOfGame();
+            });
+        };
+
+        if (this.deck.length > 0 || this.briscolaCard) {
+            const { uiStore } = this.rootStore;
+            uiStore.setDrawingCards([{ destination: trickWinner }, { destination: trickWinner === 'human' ? 'ai' : 'human' }]);
+            setTimeout(drawAndContinue, 500); // Wait for animation to finish before updating state and turn
+        } else {
+            // No cards to draw, just continue the game flow immediately.
+            drawAndContinue();
+        }
+    }
+
     updateEmotionalState = () => {
         const scoreDiff = this.aiScore - this.humanScore;
         if (scoreDiff > 15) this.aiEmotionalState = 'winning';

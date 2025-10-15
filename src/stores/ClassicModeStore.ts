@@ -112,48 +112,10 @@ export class ClassicModeStore extends GameStateStore {
 
             this.cardsOnTable = [];
             
-            setTimeout(() => runInAction(() => {
-                this.drawCards();
-                this.trickStarter = trickWinner;
-                this.turn = trickWinner;
-                if (trickWinner === 'ai' && this.currentWaifu) this.message = this.T.aiStarts(this.currentWaifu.name);
-                else this.message = this.T.yourTurn;
-                this.isResolvingTrick = false;
-                this.handleEndOfGame();
-            }), 1000);
+            // The logic to continue the game is now handled inside drawCards to ensure proper sequencing.
+            this.drawCards(trickWinner);
+
         }), 1500);
-    }
-    
-    drawCards() {
-        if (this.deck.length > 0) {
-            const { uiStore } = this.rootStore;
-            uiStore.setDrawingCards([{ destination: this.trickStarter }, { destination: this.trickStarter === 'human' ? 'ai' : 'human' }]);
-
-            setTimeout(() => runInAction(() => {
-                if (this.deck.length === 0) { // Should not happen with the guard above but as a safeguard
-                     uiStore.setDrawingCards(null);
-                     return;
-                }
-                const card1 = this.deck.pop()!;
-                const card2 = this.deck.length > 0 ? this.deck.pop()! : null;
-
-                if (this.trickStarter === 'human') {
-                    this.humanHand.push(card1);
-                    if(card2) this.aiHand.push(card2);
-                } else {
-                    this.aiHand.push(card1);
-                    if(card2) this.humanHand.push(card2);
-                }
-
-                if (this.deck.length === 0 && this.briscolaCard) {
-                    const finalCard = this.briscolaCard;
-                    if (this.trickStarter === 'human') this.aiHand.push(finalCard);
-                    else this.humanHand.push(finalCard);
-                    this.briscolaCard = null;
-                }
-                uiStore.setDrawingCards(null);
-            }), 500);
-        }
     }
     
     handleEndOfGame() {
