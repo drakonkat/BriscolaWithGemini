@@ -196,26 +196,26 @@ export class RoguelikeModeStore extends GameStateStore {
         });
     }
     
-    // FIX: Changed selectCardForPlay to be an arrow function property to match the base class definition.
-    selectCardForPlay = (card: Card, activatePower = false) => {
+    selectCardForPlay = (card: Card, activatePower?: boolean) => {
         if (this.turn !== 'human' || this.isProcessing) return;
-
-        if (card.element && !activatePower) {
+    
+        if (card.element && activatePower === undefined && !card.isTemporaryBriscola) {
             this.cardForElementalChoice = card;
             this.isElementalChoiceOpen = true;
             return;
         }
-        
+    
         this.isElementalChoiceOpen = false;
         this.cardForElementalChoice = null;
-        
+    
         if (activatePower && card.element) {
-            card.elementalEffectActivated = true;
+            const cardToPlay = { ...card, elementalEffectActivated: true };
             this.rootStore.missionStore.incrementProgress('elementalPowersUsed');
             playSound(`element-${card.element}`);
+            this.playCard(cardToPlay, 'human');
+        } else {
+            this.playCard({ ...card, elementalEffectActivated: false }, 'human');
         }
-        
-        this.playCard(card, 'human');
     }
 
     confirmElementalChoice = (activate: boolean) => {
@@ -235,19 +235,37 @@ export class RoguelikeModeStore extends GameStateStore {
         this.isProcessing = true;
         let aiCard = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, this.rootStore.gameSettingsStore.difficulty);
         
-        if (aiCard.element && this.cardsOnTable.length === 1) {
-            const humanCard = this.cardsOnTable[0];
-            if (aiCard.element === 'water' && this.getCardPoints(humanCard) > 4) {
-                 aiCard.elementalEffectActivated = true;
-            }
-            if (aiCard.element === 'fire') {
-                aiCard.elementalEffectActivated = true;
-            }
-        }
+        if (aiCard.element) {
+            const humanCardOnTable = this.cardsOnTable.length === 1 ? this.cardsOnTable[0] : null;
+            let shouldActivate = false;
 
-        if (aiCard.elementalEffectActivated) {
-            this.rootStore.missionStore.incrementProgress('elementalPowersUsed');
-            playSound(`element-${aiCard.element!}`);
+            if (humanCardOnTable?.elementalEffectActivated) {
+                shouldActivate = true;
+            } else {
+                const isWinningTrick = !humanCardOnTable || getRoguelikeTrickWinner([humanCardOnTable, aiCard], 'human', this.briscolaSuit!) === 'ai';
+
+                switch (aiCard.element) {
+                    case 'fire':
+                        if (isWinningTrick || this.getCardPoints(aiCard) === 0) shouldActivate = Math.random() < 0.8; 
+                        break;
+                    case 'water':
+                        if (!isWinningTrick && humanCardOnTable && this.getCardPoints(humanCardOnTable) >= 10) shouldActivate = Math.random() < 0.9;
+                        break;
+                    case 'air':
+                        if (isWinningTrick && this.aiScorePile.some(c => c.element === 'air')) shouldActivate = Math.random() < 0.7;
+                        break;
+                    case 'earth':
+                        if (!isWinningTrick && this.getCardPoints(aiCard) > 0) shouldActivate = Math.random() < 0.75;
+                        break;
+                }
+            }
+
+            if (shouldActivate) {
+                const newAiCard = { ...aiCard, elementalEffectActivated: true };
+                this.rootStore.missionStore.incrementProgress('elementalPowersUsed');
+                playSound(`element-${newAiCard.element!}`);
+                aiCard = newAiCard;
+            }
         }
 
         this.playAiCard(aiCard);
@@ -272,6 +290,7 @@ export class RoguelikeModeStore extends GameStateStore {
                 clashWinner = weaknessWinner;
                 this.elementalClash = { type: 'weakness', winner: weaknessWinner, winningElement: weaknessWinner === 'human' ? humanCard.element : aiCard.element, losingElement: weaknessWinner === 'human' ? aiCard.element : humanCard.element };
             } else {
+                playSound('dice-roll');
                 const humanRoll = Math.floor(Math.random() * 100) + 1;
                 const aiRoll = Math.floor(Math.random() * 100) + 1;
                 if (humanRoll > aiRoll) clashWinner = 'human';
@@ -486,20 +505,18 @@ export class RoguelikeModeStore extends GameStateStore {
         }
     }
 
-    handleDragStart(card: Card, e: React.MouseEvent | React.TouchEvent) {
-        if (this.turn !== 'human' || this.isProcessing) return;
+    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => {
+        if (this.turn !== 'human' || this.isProcessing || !card.element || card.isTemporaryBriscola) return;
         
         const target = e.currentTarget as HTMLElement;
-        
         const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
         const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
         
         this.draggingCardInfo = { card, element: target };
         this.clonePosition = { x: clientX, y: clientY };
-        target.style.opacity = '0.3';
     }
 
-    handleDragMove(e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) {
+    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => {
         if (!this.draggingCardInfo) return;
         
         e.preventDefault();
@@ -521,15 +538,16 @@ export class RoguelikeModeStore extends GameStateStore {
         this.currentDropZone = newDropZone;
     }
 
-    handleDragEnd() {
+    handleDragEnd = () => {
         if (!this.draggingCardInfo) return;
 
         this.draggingCardInfo.element.style.opacity = '1';
+        const card = this.draggingCardInfo.card;
 
         if (this.currentDropZone === 'normal') {
-            this.selectCardForPlay(this.draggingCardInfo.card, false);
+            this.selectCardForPlay(card, false); 
         } else if (this.currentDropZone === 'power') {
-            this.selectCardForPlay(this.draggingCardInfo.card, true);
+            this.selectCardForPlay(card, true);
         }
 
         this.draggingCardInfo = null;

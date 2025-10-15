@@ -78,16 +78,16 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
             setCountdown(3);
             setMinigamePhase('countdown');
 
-            // FIX: The playSound function requires a SoundName argument.
+            // FIX: The playSound function requires a SoundName argument. Provided 'chat-notify' for countdown tick.
             void playSound('chat-notify');
             countdownIntervalRef.current = window.setInterval(() => {
                 setCountdown(prev => {
                     const next = prev - 1;
                     if (next > 0) {
-                        // FIX: The playSound function requires a SoundName argument.
+                        // FIX: The playSound function requires a SoundName argument. Provided 'chat-notify' for countdown tick.
                         void playSound('chat-notify');
                     } else if (next === 0) {
-                        // FIX: The playSound function requires a SoundName argument.
+                        // FIX: The playSound function requires a SoundName argument. Provided 'trick-win' for countdown completion.
                         void playSound('trick-win');
                     }
                     return next;

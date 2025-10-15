@@ -13,9 +13,9 @@ import type { Card } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
 import { DiceRollAnimation } from './DiceRollAnimation';
-import { Tooltip } from './Tooltip';
 import { SUITS_IT } from '../core/constants';
 import { DungeonModeStore, RoguelikeModeStore } from '../stores';
+import { ElementalChoiceModal } from './ElementalChoiceModal';
 
 export const GameBoard = observer(() => {
     const { gameStateStore, uiStore, gameSettingsStore } = useStores();
@@ -144,6 +144,16 @@ export const GameBoard = observer(() => {
                         style={backgroundStyle}
                     />
                 </div>
+            )}
+
+            {isRoguelike && roguelikeStore?.isElementalChoiceOpen && roguelikeStore.cardForElementalChoice && (
+                <ElementalChoiceModal
+                    card={roguelikeStore.cardForElementalChoice}
+                    onConfirm={roguelikeStore.confirmElementalChoice}
+                    onCancel={roguelikeStore.cancelElementalChoice}
+                    lang={language}
+                    cardDeckStyle={cardDeckStyle}
+                />
             )}
 
             {elementalClash && roguelikeStore && (
@@ -366,28 +376,24 @@ export const GameBoard = observer(() => {
 
             <div className="human-abilities-container">
                 {isRoguelike && insightPower && insightPower.level === 2 && (
-                    <Tooltip content={`${T.roguelike.powers.last_trick_insight.name} (${T.abilities.onCooldown(roguelikeStore.lastTrickInsightCooldown)})`}>
-                        <div className={`ability-indicator player-human ${roguelikeStore.lastTrickInsightCooldown === 0 ? 'ready' : 'disabled'}`}>
-                            <button className="ability-icon" onClick={roguelikeStore.activateLastTrickInsight} disabled={roguelikeStore.lastTrickInsightCooldown > 0}>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                                </svg>
-                            </button>
-                            {roguelikeStore.lastTrickInsightCooldown > 0 && <span className="cooldown-badge">{roguelikeStore.lastTrickInsightCooldown}</span>}
-                        </div>
-                    </Tooltip>
+                    <div className={`ability-indicator player-human ${roguelikeStore.lastTrickInsightCooldown === 0 ? 'ready' : 'disabled'}`}>
+                        <button className="ability-icon" onClick={roguelikeStore.activateLastTrickInsight} disabled={roguelikeStore.lastTrickInsightCooldown > 0}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                        </button>
+                        {roguelikeStore.lastTrickInsightCooldown > 0 && <span className="cooldown-badge">{roguelikeStore.lastTrickInsightCooldown}</span>}
+                    </div>
                 )}
                 {isRoguelike && swapPower && (
-                    <Tooltip content={`${T.roguelike.powers.value_swap.name} (${roguelikeStore.briscolaSwapCooldown > 0 ? T.abilities.onCooldown(roguelikeStore.briscolaSwapCooldown) : T.abilityReady})`}>
-                        <div className={`ability-indicator player-human ${roguelikeStore.briscolaSwapCooldown === 0 ? 'ready' : 'disabled'}`}>
-                            <button className="ability-icon" onClick={roguelikeStore.openBriscolaSwapModal} disabled={roguelikeStore.briscolaSwapCooldown > 0}>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
-                                </svg>
-                            </button>
-                            {roguelikeStore.briscolaSwapCooldown > 0 && <span className="cooldown-badge">{roguelikeStore.briscolaSwapCooldown}</span>}
-                        </div>
-                    </Tooltip>
+                    <div className={`ability-indicator player-human ${roguelikeStore.briscolaSwapCooldown === 0 ? 'ready' : 'disabled'}`}>
+                        <button className="ability-icon" onClick={roguelikeStore.openBriscolaSwapModal} disabled={roguelikeStore.briscolaSwapCooldown > 0}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
+                            </svg>
+                        </button>
+                        {roguelikeStore.briscolaSwapCooldown > 0 && <span className="cooldown-badge">{roguelikeStore.briscolaSwapCooldown}</span>}
+                    </div>
                 )}
             </div>
             
@@ -401,27 +407,16 @@ export const GameBoard = observer(() => {
                     const abilityDesc = abilityDescKey ? (T_follower[abilityDescKey] ?? '') : '';
 
                     return (
-                        <React.Fragment key={follower.name}>
-                            <Tooltip
-                                content={
-                                    <>
-                                        <strong>{abilityName}</strong>
-                                        <p>{abilityDesc}</p>
-                                    </>
-                                }
-                            >
-                                <button className="follower-ability-button" disabled={isUsed} onClick={() => roguelikeStore.activateFollowerAbility(follower.name)}>
-                                    <CachedImage imageUrl={getImageUrl(follower.avatar)} alt={follower.name} className="follower-waifu-avatar" />
-                                    {isUsed && (
-                                        <div className="used-overlay">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                                            </svg>
-                                        </div>
-                                    )}
-                                </button>
-                            </Tooltip>
-                        </React.Fragment>
+                        <button key={follower.name} className="follower-ability-button" disabled={isUsed} onClick={() => roguelikeStore.activateFollowerAbility(follower.name)}>
+                            <CachedImage imageUrl={getImageUrl(follower.avatar)} alt={follower.name} className="follower-waifu-avatar" />
+                            {isUsed && (
+                                <div className="used-overlay">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                    </svg>
+                                </div>
+                            )}
+                        </button>
                     );
                 })}
             </div>
@@ -509,14 +504,12 @@ export const GameBoard = observer(() => {
                 </div>
 
                 {lastTrick && !isPreviewHiddenInClassic && (
-                    <Tooltip content={historyButtonTitle}>
-                        <button className="last-trick-recap" onClick={() => uiStore.openModal('history')}>
-                            <span className="last-trick-text">{TH.lastTrick}:</span>
-                            <CardView card={lastTrick.humanCard} lang={language} cardDeckStyle={cardDeckStyle} />
-                            <CardView card={lastTrick.aiCard} lang={language} cardDeckStyle={cardDeckStyle} />
-                            <svg className="last-trick-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 9-9c0-4.97-4.03-9-9-9zm-1 5v5l4.25 2.52.75-1.23-3.5-2.07V8H12z"></path></svg>
-                        </button>
-                    </Tooltip>
+                    <button className="last-trick-recap" onClick={() => uiStore.openModal('history')}>
+                        <span className="last-trick-text">{TH.lastTrick}:</span>
+                        <CardView card={lastTrick.humanCard} lang={language} cardDeckStyle={cardDeckStyle} />
+                        <CardView card={lastTrick.aiCard} lang={language} cardDeckStyle={cardDeckStyle} />
+                        <svg className="last-trick-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 9-9c0-4.97-4.03-9-9-9zm-1 5v5l4.25 2.52.75-1.23-3.5-2.07V8H12z"></path></svg>
+                    </button>
                 )}
             </div>
         </main>

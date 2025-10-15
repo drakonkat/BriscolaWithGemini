@@ -5,7 +5,7 @@
 import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import type { Chat } from '@google/genai';
 import type { RootStore } from '.';
-import type { ChatMessage, GameEmotionalState, Waifu } from '../core/types';
+import type { ChatMessage, GameEmotionalState, Waifu, GamePhase } from '../core/types';
 import { ai } from '../core/gemini';
 import { translations } from '../core/translations';
 import { playSound } from '../core/soundManager';
@@ -17,12 +17,20 @@ export class ChatStore {
     isAiChatting = false;
     hasChattedThisTurn = false;
     tokenCount = 0;
+    private reactionDisposers: (() => void)[] = [];
 
     constructor(rootStore: RootStore) {
         makeAutoObservable(this, { rootStore: false });
         this.rootStore = rootStore;
+        this.init();
+    }
+    
+    prevPhase: GamePhase = 'menu';
 
-        reaction(
+    init = () => {
+        this.dispose();
+
+        this.reactionDisposers.push(reaction(
             () => ({
                 phase: this.rootStore.gameStateStore.phase,
                 waifu: this.rootStore.gameStateStore.currentWaifu
@@ -33,9 +41,9 @@ export class ChatStore {
                 }
                 this.prevPhase = phase;
             }
-        );
+        ));
 
-        reaction(
+        this.reactionDisposers.push(reaction(
             () => ({
                 emotionalState: this.rootStore.gameStateStore.aiEmotionalState,
                 chatHistory: this.chatHistory.length,
@@ -46,10 +54,13 @@ export class ChatStore {
                     this.updateChatSession();
                 }
             }
-        );
+        ));
     }
-    
-    prevPhase = 'menu';
+
+    dispose = () => {
+        this.reactionDisposers.forEach(disposer => disposer());
+        this.reactionDisposers = [];
+    }
 
     get T() {
         return translations[this.rootStore.gameSettingsStore.language];

@@ -8,7 +8,6 @@ import type { Card, Language, CardDeckStyle } from '../core/types';
 import { translations } from '../core/translations';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
-import { Tooltip } from './Tooltip';
 
 type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
 
@@ -64,12 +63,9 @@ export const CardView: React.FC<CardViewProps> = ({ card, isFaceDown, onClick, i
     >
       <CachedImage imageUrl={imagePath} alt={cardId} />
       {card.element && !isFaceDown && (
-          // FIX: The Tooltip component was updated to correctly handle children, fixing this error.
-          <Tooltip content={T[card.element]}>
-              <div className="card-element-icon">
-                  <ElementIcon element={card.element} />
-              </div>
-          </Tooltip>
+          <div className="card-element-icon">
+              <ElementIcon element={card.element} />
+          </div>
       )}
       {card.isBurned && (
         <div className="incinerate-particles">

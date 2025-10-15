@@ -137,7 +137,7 @@ export abstract class GameStateStore {
         this.rootStore.uiStore.setIsQuotaExceededModalOpen(true);
     }
 
-    selectCardForPlay = (card: Card, activatePower?: boolean) => {
+    selectCardForPlay(card: Card, activatePower?: boolean) {
         if (this.turn !== 'human' || this.isProcessing || this.rootStore.uiStore.isTutorialActive && this.rootStore.uiStore.tutorialStep === 'promptPlayCard' && card.value !== 'Asso') return;
         
         if (this.isTutorialGame) {
@@ -263,9 +263,9 @@ export abstract class GameStateStore {
         }
     }
 
-    handleDragStart(card: Card, e: React.MouseEvent | React.TouchEvent) { /* Base implementation */ }
-    handleDragMove(e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) { /* Base implementation */ }
-    handleDragEnd() { /* Base implementation */ }
+    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => { /* Base implementation */ }
+    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => { /* Base implementation */ }
+    handleDragEnd = () => { /* Base implementation */ }
 
     saveGame() { /* Base implementation */ }
     loadGame() { /* Base implementation */ }

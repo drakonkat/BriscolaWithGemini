@@ -20,9 +20,9 @@ export class RootStore {
     gameSettingsStore: GameSettingsStore;
     uiStore: UIStateStore;
     gachaStore: GachaStore;
+    gameStateStore: GameStateStore; // This must be initialized before stores that depend on it (like ChatStore).
     chatStore: ChatStore;
     missionStore: MissionStore;
-    gameStateStore: GameStateStore; // This will hold an instance of ClassicModeStore, RoguelikeModeStore, etc.
 
     posthog: PostHog | null = null;
 
@@ -30,11 +30,13 @@ export class RootStore {
         this.gameSettingsStore = new GameSettingsStore(this);
         this.uiStore = new UIStateStore(this);
         this.gachaStore = new GachaStore(this);
-        this.chatStore = new ChatStore(this);
         this.missionStore = new MissionStore(this);
 
-        // Initialize gameStateStore based on the loaded setting
+        // Initialize gameStateStore based on the loaded setting, BEFORE other stores that depend on it.
         this.gameStateStore = this.createGameStateStoreForMode(this.gameSettingsStore.gameplayMode);
+        
+        // Now initialize stores that depend on gameStateStore.
+        this.chatStore = new ChatStore(this);
         
         makeAutoObservable(this, { posthog: false });
 
@@ -44,8 +46,15 @@ export class RootStore {
             (newMode) => {
                 // Only allow switching modes from the menu to prevent losing an active game.
                 if (this.gameStateStore.phase === 'menu') {
+                    // Dispose listeners on old stores
                     this.gameStateStore.dispose();
+                    this.chatStore.dispose();
+
+                    // Create and assign new store
                     this.gameStateStore = this.createGameStateStoreForMode(newMode);
+
+                    // Re-initialize listeners that depend on the new store
+                    this.chatStore.init();
                 }
             }
         );
