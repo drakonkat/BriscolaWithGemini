@@ -68,9 +68,8 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
     const canCraftSR = gachaStore.sr_shards >= 10 && gachaStore.r_shards >= 25 && gachaStore.totalEssences >= 5;
     const canCraftSSR = gachaStore.ssr_shards >= 5 && gachaStore.sr_shards >= 15 && gachaStore.totalEssences >= 10;
 
-    const canConvertRtoSR = gachaStore.r_shards >= 25;
-    const canConvertRtoSSR = gachaStore.r_shards >= 50;
-    const canConvertSRtoSSR = gachaStore.sr_shards >= 15;
+    const canConvertRtoSR = gachaStore.r_shards >= 10;
+    const canConvertSRtoSSR = gachaStore.sr_shards >= 10;
 
 
     return (
@@ -262,7 +261,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                              <div className="crafting-grid">
                                 <div className="crafting-card from-r">
                                     <div className="crafting-card-header">
-                                        <h3>25 <span className="rarity-r">R</span> → 1 <span className="rarity-sr">SR</span></h3>
+                                        <h3>10 <span className="rarity-r">R</span> → 1 <span className="rarity-sr">SR</span></h3>
                                     </div>
                                     <div className="crafting-shard-info">
                                         <span>{T_gallery.shardLabelR(gachaStore.r_shards)}</span>
@@ -271,20 +270,9 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                         {T_gallery.convertButton}
                                     </button>
                                 </div>
-                                <div className="crafting-card from-r">
-                                    <div className="crafting-card-header">
-                                        <h3>50 <span className="rarity-r">R</span> → 1 <span className="rarity-ssr">SSR</span></h3>
-                                    </div>
-                                    <div className="crafting-shard-info">
-                                        <span>{T_gallery.shardLabelR(gachaStore.r_shards)}</span>
-                                    </div>
-                                    <button onClick={() => gachaStore.convertShards('R', 'SSR')} disabled={!canConvertRtoSSR}>
-                                        {T_gallery.convertButton}
-                                    </button>
-                                </div>
                                 <div className="crafting-card from-sr">
                                     <div className="crafting-card-header">
-                                        <h3>15 <span className="rarity-sr">SR</span> → 1 <span className="rarity-ssr">SSR</span></h3>
+                                        <h3>10 <span className="rarity-sr">SR</span> → 1 <span className="rarity-ssr">SSR</span></h3>
                                     </div>
                                     <div className="crafting-shard-info">
                                         <span>{T_gallery.shardLabelSR(gachaStore.sr_shards)}</span>

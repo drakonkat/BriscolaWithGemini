@@ -213,7 +213,7 @@ export class GachaStore {
         const gain = 1;
 
         if (from === 'R' && to === 'SR') {
-            cost = 25;
+            cost = 10;
             if (this.r_shards < cost) {
                 this.rootStore.uiStore.showSnackbar(T_gallery.gachaNotEnoughShards, 'warning');
                 return;
@@ -221,17 +221,8 @@ export class GachaStore {
             this.r_shards -= cost;
             this.sr_shards += gain;
             this.rootStore.uiStore.showSnackbar(T_gallery.conversionSuccess(gain, 'SR'), 'success');
-        } else if (from === 'R' && to === 'SSR') {
-            cost = 50;
-            if (this.r_shards < cost) {
-                this.rootStore.uiStore.showSnackbar(T_gallery.gachaNotEnoughShards, 'warning');
-                return;
-            }
-            this.r_shards -= cost;
-            this.ssr_shards += gain;
-            this.rootStore.uiStore.showSnackbar(T_gallery.conversionSuccess(gain, 'SSR'), 'success');
         } else if (from === 'SR' && to === 'SSR') {
-            cost = 15;
+            cost = 10;
             if (this.sr_shards < cost) {
                 this.rootStore.uiStore.showSnackbar(T_gallery.gachaNotEnoughShards, 'warning');
                 return;

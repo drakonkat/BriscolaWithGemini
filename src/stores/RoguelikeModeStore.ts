@@ -50,6 +50,8 @@ export class RoguelikeModeStore extends GameStateStore {
     trickResolutionTimer: number | null = null;
     trickResolutionCallback: (() => void) | null = null;
 
+    activatedElementsThisMatch: Element[] = [];
+
     constructor(rootStore: RootStore) {
         super(rootStore);
 
@@ -167,6 +169,7 @@ export class RoguelikeModeStore extends GameStateStore {
             this.humanScorePile = [];
             this.aiScorePile = [];
             this.roguelikeState.followerAbilitiesUsedThisMatch = [];
+            this.activatedElementsThisMatch = [];
             
             this.currentWaifu = opponent;
             this.backgroundUrl = getImageUrl(`/background/landscape${Math.floor(Math.random() * 21) + 1}.png`);
@@ -309,6 +312,13 @@ export class RoguelikeModeStore extends GameStateStore {
         
         const isHumanPowerActive = humanCard.elementalEffectActivated ?? false;
         const isAiPowerActive = aiCard.elementalEffectActivated ?? false;
+        
+        if (isHumanPowerActive && humanCard.element) {
+            this.activatedElementsThisMatch.push(humanCard.element);
+        }
+        if (isAiPowerActive && aiCard.element) {
+            this.activatedElementsThisMatch.push(aiCard.element);
+        }
 
         if (isHumanPowerActive && isAiPowerActive && humanCard.element && aiCard.element) {
             const weaknessWinner = determineWeaknessWinner(humanCard.element, aiCard.element);
@@ -391,8 +401,39 @@ export class RoguelikeModeStore extends GameStateStore {
             const { difficulty } = this.rootStore.gameSettingsStore;
 
             if (winner === 'human') {
+                const difficultyMultiplier = { easy: 0.5, medium: 1, hard: 1.5, nightmare: 2, apocalypse: 2.5 };
+                const coinReward = Math.round(100 * difficultyMultiplier[difficulty] * this.roguelikeState.currentLevel);
+                if (coinReward > 0) {
+                    this.rootStore.gachaStore.addCoins(coinReward);
+                    this.rootStore.uiStore.showSnackbar(this.T.coinsEarned(coinReward), 'success');
+                }
+
                 this.roguelikeState.encounteredWaifus.push(this.currentWaifu!.name);
                 const followerToRecruit = WAIFUS.find(w => w.name === this.currentWaifu!.name && w.followerAbilityId && !this.roguelikeState.followers.some(f => f.name === w.name));
+                
+                const essenceCounts = { fire: 0, water: 0, air: 0, earth: 0 };
+                this.activatedElementsThisMatch.forEach(element => {
+                    essenceCounts[element]++;
+                });
+
+                const essencesGainedStrings: string[] = [];
+                Object.entries(essenceCounts).forEach(([element, count]) => {
+                    if (count > 0) {
+                        this.rootStore.gachaStore.addEssences(element as Element, count);
+                        const rewardType = `${element}_essences` as keyof typeof this.T.missions.rewards;
+                        essencesGainedStrings.push(`${count} ${this.T.missions.rewards[rewardType]}`);
+                    }
+                });
+                
+                if (essencesGainedStrings.length > 0) {
+                    const message = `${this.T.roguelike.essencesObtained}: ${essencesGainedStrings.join(', ')}`;
+                    setTimeout(() => {
+                        runInAction(() => {
+                            this.rootStore.uiStore.showSnackbar(message, 'success');
+                        });
+                    }, coinReward > 0 ? 1500 : 0);
+                }
+
                 if (followerToRecruit) {
                     this.newFollower = followerToRecruit;
                     this.roguelikeState.followers.push(followerToRecruit);
@@ -501,54 +542,54 @@ export class RoguelikeModeStore extends GameStateStore {
     }
 
     handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => {
-        if (this.turn !== 'human' || this.isProcessing || !card.element || card.isTemporaryBriscola) return;
-        
-        const target = e.currentTarget as HTMLElement;
-        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        if (this.turn !== 'human' || this.isProcessing) return;
         
         this.cardForElementalChoice = card;
-        this.draggingCardInfo = { card, element: target };
-        this.clonePosition = { x: clientX, y: clientY };
-    }
 
+        const targetElement = e.currentTarget as HTMLElement;
+        
+        this.draggingCardInfo = { card, element: targetElement };
+
+        const pos = 'touches' in e ? e.touches[0] : e;
+        this.clonePosition = { x: pos.clientX, y: pos.clientY };
+    };
     handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => {
         if (!this.draggingCardInfo) return;
         
         e.preventDefault();
-        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-        this.clonePosition = { x: clientX, y: clientY };
-        
-        let newDropZone: 'normal' | 'power' | 'cancel' | null = null;
-        for (const [zoneName, zoneElement] of Object.entries(zones)) {
+        const pos = 'touches' in e ? e.touches[0] : e;
+        this.clonePosition = { x: pos.clientX, y: pos.clientY };
+
+        let activeZone: 'normal' | 'power' | 'cancel' | null = null;
+        for (const zoneName in zones) {
+            const zoneElement = zones[zoneName];
             if (zoneElement) {
                 const rect = zoneElement.getBoundingClientRect();
-                if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
-                    newDropZone = zoneName as 'normal' | 'power' | 'cancel';
+                if (pos.clientX > rect.left && pos.clientX < rect.right && pos.clientY > rect.top && pos.clientY < rect.bottom) {
+                    activeZone = zoneName as 'normal' | 'power' | 'cancel';
                     break;
                 }
             }
         }
-        this.currentDropZone = newDropZone;
-    }
-
+        this.currentDropZone = activeZone;
+    };
     handleDragEnd = () => {
         if (!this.draggingCardInfo) return;
-
+        
         if (this.currentDropZone === 'normal') {
-            this.confirmElementalChoice(false); 
+            this.confirmElementalChoice(false);
         } else if (this.currentDropZone === 'power') {
             this.confirmElementalChoice(true);
         } else {
-            this.cancelElementalChoice();
+            // Canceled or dropped outside, reset
+            this.cardForElementalChoice = null;
         }
 
         this.draggingCardInfo = null;
         this.clonePosition = null;
         this.currentDropZone = null;
-    }
+    };
 
     forceCloseClashModal = () => {
         if (this.trickResolutionTimer && this.trickResolutionCallback) {

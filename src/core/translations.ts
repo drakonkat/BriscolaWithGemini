@@ -472,6 +472,7 @@ export const translations = {
     },
     
     roguelike: {
+        essencesObtained: "Hai ottenuto",
         allPowersTitle: "Poteri Attivi",
         elementalCycleTitle: "Ciclo delle Debolezze",
         newFollowerTitle: "Nuova Alleata!",
@@ -1013,6 +1014,7 @@ export const translations = {
     },
     
     roguelike: {
+        essencesObtained: "You obtained",
         allPowersTitle: "Active Powers",
         elementalCycleTitle: "Weakness Cycle",
         newFollowerTitle: "New Follower!",
