@@ -33,6 +33,13 @@ interface GalleryModalProps {
     isNsfwEnabled: boolean;
 }
 
+const EssenceIcon = () => (
+    <svg className="essence-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 8.5L12 22L22 8.5L12 2Z" />
+    </svg>
+);
+
+
 export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onGachaMultiRoll, hasRolledGacha, isRolling, gachaAnimationState, onAnimationEnd, onImageSelect, isNsfwEnabled }: GalleryModalProps) => {
     const { gachaStore } = useStores();
     const [activeTab, setActiveTab] = useState<'gallery' | 'crafting' | 'convert'>('gallery');
@@ -58,8 +65,8 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
     const buttonText = isFirstRoll ? T_gallery.gachaButtonFree : T_gallery.gachaButton(GACHA_COST);
     
     const canCraftR = gachaStore.r_shards >= 10;
-    const canCraftSR = gachaStore.sr_shards >= 10;
-    const canCraftSSR = gachaStore.ssr_shards >= 5;
+    const canCraftSR = gachaStore.sr_shards >= 10 && gachaStore.r_shards >= 25 && gachaStore.totalEssences >= 5;
+    const canCraftSSR = gachaStore.ssr_shards >= 5 && gachaStore.sr_shards >= 15 && gachaStore.totalEssences >= 10;
 
     const canConvertRtoSR = gachaStore.r_shards >= 25;
     const canConvertRtoSSR = gachaStore.r_shards >= 50;
@@ -143,38 +150,108 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                             <div className="crafting-grid">
                                 <div className="crafting-card rarity-r">
                                     <div className="crafting-card-header">
-                                        <h3>{T_gallery.shardLabelR(1).replace('1 Frammento ', 'Chiave ')}</h3>
-                                        <span>{T_gallery.craftingRuleR}</span>
+                                        <h3>{T_gallery.keyNameR}</h3>
                                     </div>
-                                    <div className="crafting-shard-info">
-                                        <span>{gachaStore.r_shards} / 10</span>
+                                    <div className="crafting-recipe">
+                                        <div className="recipe-materials">
+                                            <div className="recipe-material" title={`${gachaStore.r_shards} / 10 ${T_gallery.shardLabelR(10).replace(/\d+\s/, '')}`}>
+                                                <span className="shard-item r"><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                                                <div className="material-amount-wrapper">
+                                                    <span className={`material-amount ${gachaStore.r_shards < 10 ? 'insufficient' : ''}`}>{gachaStore.r_shards}</span>
+                                                    <span className="material-required">/ 10</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="recipe-arrow">→</div>
+                                        <div className="recipe-result">
+                                            <span className="key-item r" title={T_gallery.keyNameR}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg>
+                                            </span>
+                                            <span>1</span>
+                                        </div>
                                     </div>
                                     <button onClick={() => gachaStore.craftKey('R')} disabled={!canCraftR}>
-                                        {T_gallery.craftButton(10)}
+                                        {T_gallery.craftButton(1)}
                                     </button>
                                 </div>
                                 <div className="crafting-card rarity-sr">
                                     <div className="crafting-card-header">
-                                        <h3>{T_gallery.shardLabelSR(1).replace('1 Frammento ', 'Chiave ')}</h3>
-                                        <span>{T_gallery.craftingRuleSR}</span>
+                                        <h3>{T_gallery.keyNameSR}</h3>
                                     </div>
-                                    <div className="crafting-shard-info">
-                                        <span>{gachaStore.sr_shards} / 10</span>
+                                    <div className="crafting-recipe">
+                                        <div className="recipe-materials">
+                                            <div className="recipe-material" title={`${gachaStore.sr_shards} / 10 ${T_gallery.shardLabelSR(10).replace(/\d+\s/, '')}`}>
+                                                <span className="shard-item sr"><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                                                <div className="material-amount-wrapper">
+                                                    <span className={`material-amount ${gachaStore.sr_shards < 10 ? 'insufficient' : ''}`}>{gachaStore.sr_shards}</span>
+                                                    <span className="material-required">/ 10</span>
+                                                </div>
+                                            </div>
+                                            <div className="recipe-separator">+</div>
+                                            <div className="recipe-material" title={`${gachaStore.r_shards} / 25 ${T_gallery.shardLabelR(25).replace(/\d+\s/, '')}`}>
+                                                <span className="shard-item r"><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                                                <div className="material-amount-wrapper">
+                                                    <span className={`material-amount ${gachaStore.r_shards < 25 ? 'insufficient' : ''}`}>{gachaStore.r_shards}</span>
+                                                    <span className="material-required">/ 25</span>
+                                                </div>
+                                            </div>
+                                            <div className="recipe-separator">+</div>
+                                            <div className="recipe-material" title={`${gachaStore.totalEssences} / 5 ${T_gallery.essencesLabel}`}>
+                                                <EssenceIcon />
+                                                <div className="material-amount-wrapper">
+                                                    <span className={`material-amount ${gachaStore.totalEssences < 5 ? 'insufficient' : ''}`}>{gachaStore.totalEssences}</span>
+                                                    <span className="material-required">/ 5</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="recipe-arrow">→</div>
+                                        <div className="recipe-result">
+                                            <span className="key-item sr" title={T_gallery.keyNameSR}><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg></span>
+                                            <span>1</span>
+                                        </div>
                                     </div>
                                     <button onClick={() => gachaStore.craftKey('SR')} disabled={!canCraftSR}>
-                                        {T_gallery.craftButton(10)}
+                                        {T_gallery.craftButton(1)}
                                     </button>
                                 </div>
                                 <div className="crafting-card rarity-ssr">
                                     <div className="crafting-card-header">
-                                        <h3>{T_gallery.shardLabelSSR(1).replace('1 Frammento ', 'Chiave ')}</h3>
-                                        <span>{T_gallery.craftingRuleSSR}</span>
+                                        <h3>{T_gallery.keyNameSSR}</h3>
                                     </div>
-                                    <div className="crafting-shard-info">
-                                        <span>{gachaStore.ssr_shards} / 5</span>
+                                    <div className="crafting-recipe">
+                                        <div className="recipe-materials">
+                                            <div className="recipe-material" title={`${gachaStore.ssr_shards} / 5 ${T_gallery.shardLabelSSR(5).replace(/\d+\s/, '')}`}>
+                                                <span className="shard-item ssr"><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                                                <div className="material-amount-wrapper">
+                                                    <span className={`material-amount ${gachaStore.ssr_shards < 5 ? 'insufficient' : ''}`}>{gachaStore.ssr_shards}</span>
+                                                    <span className="material-required">/ 5</span>
+                                                </div>
+                                            </div>
+                                            <div className="recipe-separator">+</div>
+                                            <div className="recipe-material" title={`${gachaStore.sr_shards} / 15 ${T_gallery.shardLabelSR(15).replace(/\d+\s/, '')}`}>
+                                                <span className="shard-item sr"><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                                                <div className="material-amount-wrapper">
+                                                    <span className={`material-amount ${gachaStore.sr_shards < 15 ? 'insufficient' : ''}`}>{gachaStore.sr_shards}</span>
+                                                    <span className="material-required">/ 15</span>
+                                                </div>
+                                            </div>
+                                            <div className="recipe-separator">+</div>
+                                            <div className="recipe-material" title={`${gachaStore.totalEssences} / 10 ${T_gallery.essencesLabel}`}>
+                                                <EssenceIcon />
+                                                <div className="material-amount-wrapper">
+                                                    <span className={`material-amount ${gachaStore.totalEssences < 10 ? 'insufficient' : ''}`}>{gachaStore.totalEssences}</span>
+                                                    <span className="material-required">/ 10</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="recipe-arrow">→</div>
+                                        <div className="recipe-result">
+                                            <span className="key-item ssr" title={T_gallery.keyNameSSR}><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 2.1a1 1 0 0 0-1 0L3 6.8a1 1 0 0 0-.5.9V12h2V8.3l7-3.8 7 3.8V12h2V7.7a1 1 0 0 0-.5-.9zM12 10a3 3 0 1 1 0 6 3 3 0 0 1 0-6m0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/></svg></span>
+                                            <span>1</span>
+                                        </div>
                                     </div>
                                     <button onClick={() => gachaStore.craftKey('SSR')} disabled={!canCraftSSR}>
-                                        {T_gallery.craftButton(5)}
+                                        {T_gallery.craftButton(1)}
                                     </button>
                                 </div>
                             </div>
