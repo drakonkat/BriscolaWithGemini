@@ -552,9 +552,77 @@ export class RoguelikeModeStore extends GameStateStore {
         }
     }
 
-    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => { /* Base implementation */ }
-    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => { /* Base implementation */ }
-    handleDragEnd = () => { /* Base implementation */ }
+    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => {
+        if (this.turn !== 'human' || this.isProcessing || !card.element || card.isTemporaryBriscola) return;
+
+        e.preventDefault();
+        const targetElement = e.currentTarget as HTMLElement;
+        const touch = 'touches' in e ? e.touches[0] : e;
+        
+        runInAction(() => {
+            this.draggingCardInfo = { card, element: targetElement };
+            this.clonePosition = { x: touch.clientX, y: touch.clientY };
+            this.cardForElementalChoice = card; // Set card for choice context
+        });
+    };
+
+    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => {
+        if (!this.draggingCardInfo) return;
+        
+        e.preventDefault(); // Prevent scrolling on touch devices
+        
+        const touch = 'touches' in e ? e.touches[0] : e;
+        const x = touch.clientX;
+        const y = touch.clientY;
+
+        runInAction(() => {
+            this.clonePosition = { x, y };
+
+            let overZone: 'normal' | 'power' | 'cancel' | null = null;
+            if (zones.power) {
+                const rect = zones.power.getBoundingClientRect();
+                if (x > rect.left && x < rect.right && y > rect.top && y < rect.bottom) {
+                    overZone = 'power';
+                }
+            }
+            if (!overZone && zones.normal) {
+                const rect = zones.normal.getBoundingClientRect();
+                if (x > rect.left && x < rect.right && y > rect.top && y < rect.bottom) {
+                    overZone = 'normal';
+                }
+            }
+            if (!overZone && zones.cancel) {
+                const rect = zones.cancel.getBoundingClientRect();
+                if (x > rect.left && x < rect.right && y > rect.top && y < rect.bottom) {
+                    overZone = 'cancel';
+                }
+            }
+
+            this.currentDropZone = overZone;
+        });
+    };
+
+    handleDragEnd = () => {
+        if (!this.draggingCardInfo) return;
+
+        const dropZone = this.currentDropZone;
+
+        runInAction(() => {
+            if (dropZone === 'power') {
+                this.confirmElementalChoice(true);
+            } else if (dropZone === 'normal') {
+                this.confirmElementalChoice(false);
+            } else {
+                // Canceled
+                this.cardForElementalChoice = null;
+            }
+            
+            // Reset drag state
+            this.draggingCardInfo = null;
+            this.clonePosition = null;
+            this.currentDropZone = null;
+        });
+    };
 
     forceCloseClashModal = () => {
         if (this.trickResolutionTimer && this.trickResolutionCallback) {
