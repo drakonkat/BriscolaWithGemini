@@ -170,7 +170,7 @@
     color: var(--font-color-secondary);
 }
 
-.more-menu-button, .missions-button {
+.more-menu-button {
     position: relative;
     display: flex;
     background: none;
@@ -185,26 +185,9 @@
     border-radius: 50%;
     transition: background-color 0.2s;
 }
-.more-menu-button:hover, .more-menu-button:focus,
-.missions-button:hover, .missions-button:focus {
+.more-menu-button:hover, .more-menu-button:focus {
     background-color: rgba(255,255,255,0.1);
     outline: none;
-}
-
-.missions-button svg {
-    color: var(--gold-accent);
-}
-
-.notification-badge {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 10px;
-    height: 10px;
-    background-color: var(--red-suit);
-    border-radius: 50%;
-    border: 2px solid var(--ui-bg);
-    animation: pulse-badge 1.5s infinite;
 }
 
 .rules-button {
@@ -556,12 +539,16 @@ input:checked + .slider:before {
     transform: none;
 }
 
-
-.gallery-promo-container {
+.promo-buttons-container {
   margin: 2.5rem 0;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
+.missions-promo-button,
 .gallery-promo-button {
   background: linear-gradient(45deg, var(--gold-accent), #f7971e);
   border: none;
@@ -572,20 +559,36 @@ input:checked + .slider:before {
   padding: 1rem 2.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 5px rgba(var(--gold-accent-rgb), 0.7);
   text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.3);
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
   text-decoration: none;
   position: relative;
   overflow: hidden;
 }
 
+.missions-promo-button {
+    background: linear-gradient(45deg, var(--primary-accent), var(--primary-accent-hover));
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 5px rgba(var(--primary-accent-rgb), 0.7);
+}
+
+.missions-promo-button:hover, .missions-promo-button:focus,
 .gallery-promo-button:hover, .gallery-promo-button:focus {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 10px rgba(var(--gold-accent-rgb), 1);
   outline: none;
 }
 
+.gallery-promo-button:hover, .gallery-promo-button:focus {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 10px rgba(var(--gold-accent-rgb), 1);
+}
+
+.missions-promo-button:hover, .missions-promo-button:focus {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 10px rgba(var(--primary-accent-rgb), 1);
+}
+
+.missions-promo-button::before,
 .gallery-promo-button::before {
   content: '';
   position: absolute;
@@ -597,12 +600,25 @@ input:checked + .slider:before {
   transition: all 0.6s ease;
 }
 
+.missions-promo-button:hover::before,
 .gallery-promo-button:hover::before {
   left: 100%;
 }
 
+.missions-promo-button .notification-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 12px;
+    height: 12px;
+    background-color: var(--red-suit);
+    border-radius: 50%;
+    border: 2px solid var(--primary-accent-hover);
+    animation: pulse-badge 1.5s infinite;
+}
+
 .menu-footer {
-  margin-top: 2.5rem;
+  margin-top: 1.5rem;
   font-size: 0.9rem;
   opacity: 0.8;
   text-align: center;
@@ -1018,7 +1034,8 @@ input:checked + .slider:before {
   .menu-actions { grid-column: 3; justify-self: end; position: relative; }
   .start-game-container { margin: 1.5rem 0; }
   .start-game-button { font-size: 1.5rem; padding: 0.8rem 2rem; }
-  .gallery-promo-container { margin: 1rem 0; }
+  .promo-buttons-container { margin: 1rem 0; }
+  .missions-promo-button,
   .gallery-promo-button { font-size: 1.2rem; padding: 0.8rem 2rem; }
   .waifu-selection { margin-top: 1rem; }
   .menu-section h2,
