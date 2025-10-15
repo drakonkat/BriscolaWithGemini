@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { makeAutoObservable, runInAction } from 'mobx';
+import { runInAction } from 'mobx';
 import { ClassicModeStore } from './ClassicModeStore';
 import type { RootStore } from '.';
 import type { DungeonRunState, Waifu, DungeonModifier } from '../core/types';
@@ -164,8 +164,8 @@ export class DungeonModeStore extends ClassicModeStore {
         const { keyRarity, wins, totalMatches } = this.dungeonRunState;
         if (!keyRarity) return;
         
-        // FIX: The accumulator 'acc' in reduce was inferred as 'unknown'. Explicitly typing it as a number resolves the issue.
-        const coinsFromWins = Array.from({length: wins}).reduce((acc: number, _, i) => acc + (50 + ((i+1) * 25)), 0);
+        // FIX: Replaced Array.from with new Array().fill(0) to ensure the reduce method's result is correctly typed as a number.
+        const coinsFromWins = new Array(wins).fill(0).reduce((acc: number, _, i) => acc + (50 + ((i+1) * 25)), 0);
         const coinsFromLosses = 10 * (totalMatches - wins);
         const allMatchCoins = coinsFromWins + coinsFromLosses;
         const allMatchShards = { R: 0, SR: 0, SSR: 0};

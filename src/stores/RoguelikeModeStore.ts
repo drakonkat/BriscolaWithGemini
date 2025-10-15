@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { makeAutoObservable, runInAction, reaction } from 'mobx';
+import { runInAction, reaction } from 'mobx';
 import { GameStateStore } from './GameStateStore';
 import type { RootStore } from '.';
 import type { Waifu, Card, RoguelikeState, RoguelikePowerUpId, Element, TrickHistoryEntry, AbilityUseHistoryEntry, ElementalClashResult } from '../core/types';
@@ -196,7 +196,7 @@ export class RoguelikeModeStore extends GameStateStore {
         });
     }
     
-    // FIX: Changed to an arrow function to match the base class definition.
+    // FIX: Changed selectCardForPlay to be an arrow function property to match the base class definition.
     selectCardForPlay = (card: Card, activatePower = false) => {
         if (this.turn !== 'human' || this.isProcessing) return;
 
