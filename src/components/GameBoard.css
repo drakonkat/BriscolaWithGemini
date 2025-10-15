@@ -1,3 +1,8 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+*/
+
 
 
 .game-board {
@@ -243,6 +248,9 @@
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.2s ease;
+    position: relative;
+    left: -10px;
+    top: -15px;
 }
 .dungeon-modifier-display:hover {
     background-color: rgba(var(--primary-accent-rgb), 0.4);

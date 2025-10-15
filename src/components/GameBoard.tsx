@@ -43,6 +43,9 @@ export const GameBoard = observer(() => {
     const isDungeon = gameplayMode === 'dungeon' && gameStateStore instanceof DungeonModeStore;
     const roguelikeStore = isRoguelike ? (gameStateStore as RoguelikeModeStore) : null;
     const dungeonStore = isDungeon ? (gameStateStore as DungeonModeStore) : null;
+    const currentModifier = isDungeon ? dungeonStore.dungeonRunState.modifiers[dungeonStore.dungeonRunState.currentMatch - 1] : null;
+    const isGhostHandActive = isDungeon && currentModifier?.id === 'GHOST_HAND';
+
 
     useEffect(() => {
         if (roguelikeStore?.elementalClash?.type === 'dice' && isDiceAnimationEnabled) {
@@ -131,7 +134,6 @@ export const GameBoard = observer(() => {
     };
 
     const isPreviewHiddenInClassic = gameplayMode === 'classic' && (difficulty === 'nightmare' || difficulty === 'apocalypse');
-    const currentModifier = isDungeon ? dungeonStore.dungeonRunState.modifiers[dungeonStore.dungeonRunState.currentMatch - 1] : null;
 
     return (
         <main className="game-board" data-tutorial-id="end-tutorial">
@@ -418,11 +420,21 @@ export const GameBoard = observer(() => {
 
             <div className="player-area ai-area">
                 <div className="hand">
-                    {(roguelikeStore?.revealedAiHand ?? aiHand).map((card, index) => (
-                        <React.Fragment key={card.id || index}>
-                            <CardView card={roguelikeStore?.revealedAiHand ? card : { id: 'facedown', suit: 'Spade', value: '2' }} isFaceDown={!roguelikeStore?.revealedAiHand} lang={language} cardDeckStyle={cardDeckStyle}/>
-                        </React.Fragment>
-                    ))}
+                    {aiHand.map((card, index) => {
+                        const isRevealedByRoguelike = !!roguelikeStore?.revealedAiHand;
+                        const shouldRevealCard = isRevealedByRoguelike || (isGhostHandActive && index === 0);
+
+                        return (
+                            <React.Fragment key={card.id || index}>
+                                <CardView
+                                    card={shouldRevealCard ? card : { id: 'facedown', suit: 'Spade', value: '2' }}
+                                    isFaceDown={!shouldRevealCard}
+                                    lang={language}
+                                    cardDeckStyle={cardDeckStyle}
+                                />
+                            </React.Fragment>
+                        );
+                    })}
                 </div>
             </div>
 

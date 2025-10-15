@@ -200,6 +200,17 @@ export class DungeonModeStore extends ClassicModeStore {
 
             this.cardsOnTable = [];
             this.trickCounter++;
+
+            const currentModifier = this.dungeonRunState.modifiers[this.dungeonRunState.currentMatch - 1];
+            if (currentModifier?.id === 'BRISCOLA_CHAOS' && this.trickCounter > 0 && this.trickCounter % 3 === 0 && this.deck.length > 0) {
+                if (this.briscolaCard) {
+                    this.deck.push(this.briscolaCard);
+                }
+                this.deck = shuffleDeck(this.deck);
+                this.briscolaCard = this.deck.pop() ?? null;
+                this.briscolaSuit = this.briscolaCard?.suit ?? this.briscolaSuit;
+            }
+
             this.drawCards(trickWinner);
 
         }), 1500);
