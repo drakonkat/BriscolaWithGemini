@@ -173,7 +173,7 @@ export abstract class GameStateStore {
     }
 
     handleAiTurn() {
-        if (this.phase !== 'playing' || this.turn !== 'ai' || this.isProcessing || this.cardsOnTable.length === 2) return;
+        if (this.phase !== 'playing' || this.turn !== 'ai' || this.cardsOnTable.length === 2) return;
         this.isProcessing = true;
         
         const aiCard = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, this.rootStore.gameSettingsStore.difficulty);

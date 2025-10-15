@@ -239,7 +239,7 @@ export class RoguelikeModeStore extends GameStateStore {
     }
 
     handleAiTurn() {
-        if (this.phase !== 'playing' || this.turn !== 'ai' || this.isProcessing || this.cardsOnTable.length === 2) return;
+        if (this.phase !== 'playing' || this.turn !== 'ai' || this.cardsOnTable.length === 2) return;
 
         this.isProcessing = true;
         
