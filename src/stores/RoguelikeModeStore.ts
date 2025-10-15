@@ -8,7 +8,7 @@ import { runInAction, reaction } from 'mobx';
 import { GameStateStore } from './GameStateStore';
 import type { RootStore } from '.';
 import type { Waifu, Card, RoguelikeState, RoguelikePowerUpId, Element, TrickHistoryEntry, AbilityUseHistoryEntry, ElementalClashResult } from '../core/types';
-import { WAIFUS } from '../core/waifus';
+import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
 import { getImageUrl, shuffleDeck, getCardPoints } from '../core/utils';
 import { createDeck } from '../core/classicGameLogic';
 import { initializeRoguelikeDeck, getRoguelikeTrickWinner, determineWeaknessWinner, calculateRoguelikeTrickPoints } from '../core/roguelikeGameLogic';
@@ -160,8 +160,13 @@ export class RoguelikeModeStore extends GameStateStore {
             return;
         }
 
-        const opponentPool = WAIFUS.filter(w => !this.roguelikeState.encounteredWaifus.includes(w.name));
-        const opponent = opponentPool.length > 0 ? opponentPool[Math.floor(Math.random() * opponentPool.length)] : WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
+        let opponent: Waifu;
+        if (level === 4) {
+            opponent = BOSS_WAIFU;
+        } else {
+            const opponentPool = WAIFUS.filter(w => !this.roguelikeState.encounteredWaifus.includes(w.name));
+            opponent = opponentPool.length > 0 ? opponentPool[Math.floor(Math.random() * opponentPool.length)] : WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
+        }
         
         this._resetState(); // Reset common game state but keep roguelike progress
         
@@ -396,7 +401,8 @@ export class RoguelikeModeStore extends GameStateStore {
             let winner: 'human' | 'ai' | 'tie' = 'tie';
             if (this.humanScore > this.aiScore) winner = 'human';
             if (this.aiScore > this.humanScore) winner = 'ai';
-
+            if (this.humanScore === this.aiScore && this.humanScore > 60) winner = 'human';
+            
             this.gameResult = winner;
             const { difficulty } = this.rootStore.gameSettingsStore;
 
@@ -407,7 +413,7 @@ export class RoguelikeModeStore extends GameStateStore {
                     this.rootStore.gachaStore.addCoins(coinReward);
                     this.rootStore.uiStore.showSnackbar(this.T.coinsEarned(coinReward), 'success');
                 }
-
+                
                 this.roguelikeState.encounteredWaifus.push(this.currentWaifu!.name);
                 const followerToRecruit = WAIFUS.find(w => w.name === this.currentWaifu!.name && w.followerAbilityId && !this.roguelikeState.followers.some(f => f.name === w.name));
                 
@@ -441,20 +447,25 @@ export class RoguelikeModeStore extends GameStateStore {
                 }
                 
                 if (this.roguelikeState.currentLevel < 4) {
-                    if (!this.newFollower) this.goToNextLevel();
+                    // Win a match but not the whole run.
+                    // The phase will be set by the next actions (showing follower modal or powerup screen).
+                    if (!this.newFollower) {
+                        this.goToNextLevel();
+                    }
                 } else {
+                    // Won the final level (level 4)
                     this.lastGameWinnings = ROGUELIKE_REWARDS[difficulty].win;
                     this.rootStore.gachaStore.addCoins(this.lastGameWinnings);
                     this.rootStore.missionStore.incrementProgress('roguelikeGamesWon');
+                    this.phase = 'gameOver'; // Set to gameOver only when run is complete
+                    this.clearSavedGame(); // Clear save only when run is complete
                 }
-                this.phase = 'gameOver';
-
             } else { // AI wins or tie
                 this.lastGameWinnings = ROGUELIKE_REWARDS[difficulty].loss[this.roguelikeState.currentLevel];
                 this.rootStore.gachaStore.addCoins(this.lastGameWinnings);
                 this.phase = 'gameOver';
+                this.clearSavedGame();
             }
-            if(this.phase === 'gameOver') this.clearSavedGame();
         }
     }
 
@@ -541,55 +552,9 @@ export class RoguelikeModeStore extends GameStateStore {
         }
     }
 
-    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => {
-        if (this.turn !== 'human' || this.isProcessing) return;
-        
-        this.cardForElementalChoice = card;
-
-        const targetElement = e.currentTarget as HTMLElement;
-        
-        this.draggingCardInfo = { card, element: targetElement };
-
-        const pos = 'touches' in e ? e.touches[0] : e;
-        this.clonePosition = { x: pos.clientX, y: pos.clientY };
-    };
-    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => {
-        if (!this.draggingCardInfo) return;
-        
-        e.preventDefault();
-
-        const pos = 'touches' in e ? e.touches[0] : e;
-        this.clonePosition = { x: pos.clientX, y: pos.clientY };
-
-        let activeZone: 'normal' | 'power' | 'cancel' | null = null;
-        for (const zoneName in zones) {
-            const zoneElement = zones[zoneName];
-            if (zoneElement) {
-                const rect = zoneElement.getBoundingClientRect();
-                if (pos.clientX > rect.left && pos.clientX < rect.right && pos.clientY > rect.top && pos.clientY < rect.bottom) {
-                    activeZone = zoneName as 'normal' | 'power' | 'cancel';
-                    break;
-                }
-            }
-        }
-        this.currentDropZone = activeZone;
-    };
-    handleDragEnd = () => {
-        if (!this.draggingCardInfo) return;
-        
-        if (this.currentDropZone === 'normal') {
-            this.confirmElementalChoice(false);
-        } else if (this.currentDropZone === 'power') {
-            this.confirmElementalChoice(true);
-        } else {
-            // Canceled or dropped outside, reset
-            this.cardForElementalChoice = null;
-        }
-
-        this.draggingCardInfo = null;
-        this.clonePosition = null;
-        this.currentDropZone = null;
-    };
+    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => { /* Base implementation */ }
+    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => { /* Base implementation */ }
+    handleDragEnd = () => { /* Base implementation */ }
 
     forceCloseClashModal = () => {
         if (this.trickResolutionTimer && this.trickResolutionCallback) {

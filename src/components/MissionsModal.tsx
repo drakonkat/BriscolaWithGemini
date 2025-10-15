@@ -32,6 +32,8 @@ const RewardIcon: React.FC<RewardIconProps> = ({ type, amount }) => {
         water_essences: <ElementIcon element="water" />,
         air_essences: <ElementIcon element="air" />,
         earth_essences: <ElementIcon element="earth" />,
+        // FIX: Add missing transcendental_essences to iconMap to fix type error.
+        transcendental_essences: <svg className="essence-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5L12 22L22 8.5L12 2Z" /></svg>,
     };
 
     return (

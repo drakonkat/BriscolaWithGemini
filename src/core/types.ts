@@ -144,7 +144,7 @@ export type AbilityUseHistoryEntry = {
 
 export type HistoryEntry = TrickHistoryEntry | AbilityUseHistoryEntry;
 
-export type MissionRewardType = 'waifuCoins' | 'r_shards' | 'sr_shards' | 'ssr_shards' | 'fire_essences' | 'water_essences' | 'air_essences' | 'earth_essences';
+export type MissionRewardType = 'waifuCoins' | 'r_shards' | 'sr_shards' | 'ssr_shards' | 'fire_essences' | 'water_essences' | 'air_essences' | 'earth_essences' | 'transcendental_essences';
 export type MissionType = 'daily' | 'weekly';
 export type MissionCategory = 'gameplay' | 'collection';
 export type MissionProgressKey = 

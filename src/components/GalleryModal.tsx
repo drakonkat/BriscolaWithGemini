@@ -10,6 +10,7 @@ import type { Language } from '../core/types';
 import { CachedImage } from './CachedImage';
 import { GachaUnlockAnimation } from './GachaUnlockAnimation';
 import { GachaRollingAnimation } from './GachaRollingAnimation';
+import { ElementIcon } from './ElementIcon';
 
 type BackgroundItem = {
     url: string;
@@ -33,7 +34,7 @@ interface GalleryModalProps {
     isNsfwEnabled: boolean;
 }
 
-const EssenceIcon = () => (
+const EssenceIcon = ({ type = 'transcendental' }: { type?: 'transcendental' | 'elemental' }) => (
     <svg className="essence-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2L2 8.5L12 22L22 8.5L12 2Z" />
     </svg>
@@ -65,11 +66,12 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
     const buttonText = isFirstRoll ? T_gallery.gachaButtonFree : T_gallery.gachaButton(GACHA_COST);
     
     const canCraftR = gachaStore.r_shards >= 10;
-    const canCraftSR = gachaStore.sr_shards >= 10 && gachaStore.r_shards >= 25 && gachaStore.totalEssences >= 5;
-    const canCraftSSR = gachaStore.ssr_shards >= 5 && gachaStore.sr_shards >= 15 && gachaStore.totalEssences >= 10;
+    const canCraftSR = gachaStore.sr_shards >= 10 && gachaStore.r_shards >= 25 && gachaStore.transcendental_essences >= 5;
+    const canCraftSSR = gachaStore.ssr_shards >= 5 && gachaStore.sr_shards >= 15 && gachaStore.transcendental_essences >= 10;
 
     const canConvertRtoSR = gachaStore.r_shards >= 10;
     const canConvertSRtoSSR = gachaStore.sr_shards >= 10;
+    const canConvertElemental = gachaStore.fire_essences >= 1 && gachaStore.water_essences >= 1 && gachaStore.air_essences >= 1 && gachaStore.earth_essences >= 1;
 
 
     return (
@@ -195,10 +197,10 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                                 </div>
                                             </div>
                                             <div className="recipe-separator">+</div>
-                                            <div className="recipe-material" title={`${gachaStore.totalEssences} / 5 ${T_gallery.essencesLabel}`}>
+                                            <div className="recipe-material" title={`${gachaStore.transcendental_essences} / 5 ${T.missions.rewards.transcendental_essences}`}>
                                                 <EssenceIcon />
                                                 <div className="material-amount-wrapper">
-                                                    <span className={`material-amount ${gachaStore.totalEssences < 5 ? 'insufficient' : ''}`}>{gachaStore.totalEssences}</span>
+                                                    <span className={`material-amount ${gachaStore.transcendental_essences < 5 ? 'insufficient' : ''}`}>{gachaStore.transcendental_essences}</span>
                                                     <span className="material-required">/ 5</span>
                                                 </div>
                                             </div>
@@ -235,10 +237,10 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                                 </div>
                                             </div>
                                             <div className="recipe-separator">+</div>
-                                            <div className="recipe-material" title={`${gachaStore.totalEssences} / 10 ${T_gallery.essencesLabel}`}>
+                                            <div className="recipe-material" title={`${gachaStore.transcendental_essences} / 10 ${T.missions.rewards.transcendental_essences}`}>
                                                 <EssenceIcon />
                                                 <div className="material-amount-wrapper">
-                                                    <span className={`material-amount ${gachaStore.totalEssences < 10 ? 'insufficient' : ''}`}>{gachaStore.totalEssences}</span>
+                                                    <span className={`material-amount ${gachaStore.transcendental_essences < 10 ? 'insufficient' : ''}`}>{gachaStore.transcendental_essences}</span>
                                                     <span className="material-required">/ 10</span>
                                                 </div>
                                             </div>
@@ -278,6 +280,28 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                         <span>{T_gallery.shardLabelSR(gachaStore.sr_shards)}</span>
                                     </div>
                                     <button onClick={() => gachaStore.convertShards('SR', 'SSR')} disabled={!canConvertSRtoSSR}>
+                                        {T_gallery.convertButton}
+                                    </button>
+                                </div>
+                                <div className="crafting-card from-elemental">
+                                    <div className="crafting-card-header">
+                                        <h3>{T_gallery.conversionRuleElemental}</h3>
+                                        <span>{T_gallery.convertEssencesTitle}</span>
+                                    </div>
+                                    <div className="crafting-recipe">
+                                        <div className="recipe-materials">
+                                            <div className="recipe-material" title={T.missions.rewards.fire_essences}><ElementIcon element="fire" /><span className={gachaStore.fire_essences < 1 ? 'insufficient' : ''}>{gachaStore.fire_essences}</span></div>
+                                            <div className="recipe-material" title={T.missions.rewards.water_essences}><ElementIcon element="water" /><span className={gachaStore.water_essences < 1 ? 'insufficient' : ''}>{gachaStore.water_essences}</span></div>
+                                            <div className="recipe-material" title={T.missions.rewards.air_essences}><ElementIcon element="air" /><span className={gachaStore.air_essences < 1 ? 'insufficient' : ''}>{gachaStore.air_essences}</span></div>
+                                            <div className="recipe-material" title={T.missions.rewards.earth_essences}><ElementIcon element="earth" /><span className={gachaStore.earth_essences < 1 ? 'insufficient' : ''}>{gachaStore.earth_essences}</span></div>
+                                        </div>
+                                        <div className="recipe-arrow">→</div>
+                                        <div className="recipe-result">
+                                            <EssenceIcon />
+                                            <span>{gachaStore.transcendental_essences}</span>
+                                        </div>
+                                    </div>
+                                    <button onClick={gachaStore.convertElementalToTranscendental} disabled={!canConvertElemental}>
                                         {T_gallery.convertButton}
                                     </button>
                                 </div>

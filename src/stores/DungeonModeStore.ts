@@ -444,7 +444,8 @@ export class DungeonModeStore extends ClassicModeStore {
             this.rootStore.gachaStore.addShards('R', totalShards.R);
             this.rootStore.gachaStore.addShards('SR', totalShards.SR);
             this.rootStore.gachaStore.addShards('SSR', totalShards.SSR);
-            if (totalEssences > 0) this.rootStore.gachaStore.addEssences('fire', totalEssences); // Example, could be random
+            // FIX: Grant transcendental essences instead of fire essences.
+            if (totalEssences > 0) this.rootStore.gachaStore.addTranscendentalEssences(totalEssences);
 
             this.rootStore.missionStore.incrementProgress('dungeonRunsWon');
         }

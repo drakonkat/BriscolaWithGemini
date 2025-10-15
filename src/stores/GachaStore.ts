@@ -85,6 +85,8 @@ export class GachaStore {
     water_essences: number = loadFromLocalStorage('water_essences', 0);
     air_essences: number = loadFromLocalStorage('air_essences', 0);
     earth_essences: number = loadFromLocalStorage('earth_essences', 0);
+    // FIX: Add missing transcendental_essences property.
+    transcendental_essences: number = loadFromLocalStorage('transcendental_essences', 0);
     r_keys: number = loadFromLocalStorage('r_keys', 1);
     sr_keys: number = loadFromLocalStorage('sr_keys', 1);
     ssr_keys: number = loadFromLocalStorage('ssr_keys', 1);
@@ -118,6 +120,8 @@ export class GachaStore {
         autorun(() => localStorage.setItem('water_essences', JSON.stringify(this.water_essences)));
         autorun(() => localStorage.setItem('air_essences', JSON.stringify(this.air_essences)));
         autorun(() => localStorage.setItem('earth_essences', JSON.stringify(this.earth_essences)));
+        // FIX: Add autorun for transcendental_essences.
+        autorun(() => localStorage.setItem('transcendental_essences', JSON.stringify(this.transcendental_essences)));
         autorun(() => localStorage.setItem('r_keys', JSON.stringify(this.r_keys)));
         autorun(() => localStorage.setItem('sr_keys', JSON.stringify(this.sr_keys)));
         autorun(() => localStorage.setItem('ssr_keys', JSON.stringify(this.ssr_keys)));
@@ -154,6 +158,11 @@ export class GachaStore {
         if (type === 'water') this.water_essences += amount;
         if (type === 'air') this.air_essences += amount;
         if (type === 'earth') this.earth_essences += amount;
+    }
+
+    // FIX: Add method to add transcendental essences to fix MissionStore error.
+    addTranscendentalEssences = (amount: number) => {
+        this.transcendental_essences += amount;
     }
 
     get totalEssences() {
@@ -232,6 +241,23 @@ export class GachaStore {
             this.rootStore.uiStore.showSnackbar(T_gallery.conversionSuccess(gain, 'SSR'), 'success');
         }
         playSound('essence-gain');
+    }
+
+    // FIX: Add missing method to prevent runtime error in GalleryModal.
+    convertElementalToTranscendental = () => {
+        const T_gallery = this.T.gallery;
+        if (this.fire_essences >= 1 && this.water_essences >= 1 && this.air_essences >= 1 && this.earth_essences >= 1) {
+            this.fire_essences--;
+            this.water_essences--;
+            this.air_essences--;
+            this.earth_essences--;
+            this.transcendental_essences++;
+            playSound('essence-gain');
+            // This reuses the shard conversion message. It's not perfect but avoids adding new translations.
+            this.rootStore.uiStore.showSnackbar(T_gallery.conversionSuccess(1, this.T.missions.rewards.transcendental_essences), 'success');
+        } else {
+            this.rootStore.uiStore.showSnackbar(T_gallery.gachaNotEnoughShards, 'warning');
+        }
     }
 
     handleGachaRoll = async () => {

@@ -256,10 +256,9 @@ export const translations = {
         gachaMultiUnlocked: (count: number) => `Hai sbloccato ${count} nuovi sfondi.`,
         gachaMultiShards: (shards: string) => `Hai ricevuto ${shards} Frammenti.`,
         craftingTitle: "Crea Chiavi",
-        // FIX: Add missing translation keys for crafting rules.
         craftingRuleR: "Chiave R: 10 Frammenti R",
-        craftingRuleSR: "Chiave SR: 10 Frammenti SR + 25 Frammenti R + 5 Essenze",
-        craftingRuleSSR: "Chiave SSR: 5 Frammenti SSR + 15 Frammenti SR + 10 Essenze",
+        craftingRuleSR: "Chiave SR: 10 Frammenti SR + 25 Frammenti R + 5 Essenze Trascendentali",
+        craftingRuleSSR: "Chiave SSR: 5 Frammenti SSR + 15 Frammenti SR + 10 Essenze Trascendentali",
         shardLabelR: (shards: number) => `${shards} Frammenti R`,
         shardLabelSR: (shards: number) => `${shards} Frammenti SR`,
         shardLabelSSR: (shards: number) => `${shards} Frammenti SSR`,
@@ -278,6 +277,9 @@ export const translations = {
         keyNameSR: "Chiave Super Rara",
         keyNameSSR: "Chiave Super Super Rara",
         essencesLabel: "Essenze",
+        convertEssencesTitle: "Converti Essenze",
+        conversionRuleElemental: "1x🔥, 1x💧, 1x🌬️, 1x🌍 → 1x✨",
+        essencesLabelTranscendental: (amount: number) => `${amount} Trascendentali`,
     },
 
     craftingMinigame: {
@@ -328,7 +330,8 @@ export const translations = {
             fire_essences: "Essenze di Fuoco",
             water_essences: "Essenze d'Acqua",
             air_essences: "Essenze d'Aria",
-            earth_essences: "Essenze di Terra"
+            earth_essences: "Essenze di Terra",
+            transcendental_essences: "Essenze Trascendentali"
         },
         descriptions: {
             daily_win_classic: "Vinci {target} partita in modalità Classica.",
@@ -798,10 +801,9 @@ export const translations = {
         gachaMultiUnlocked: (count: number) => `You unlocked ${count} new backgrounds.`,
         gachaMultiShards: (shards: string) => `You received ${shards} Shards.`,
         craftingTitle: "Craft Keys",
-        // FIX: Add missing translation keys for crafting rules.
         craftingRuleR: "R Key: 10 R Shards",
-        craftingRuleSR: "SR Key: 10 SR Shards + 25 R Shards + 5 Essences",
-        craftingRuleSSR: "SSR Key: 5 SSR Shards + 15 SR Shards + 10 Essences",
+        craftingRuleSR: "SR Key: 10 SR Shards + 25 R Shards + 5 Transcendental Essences",
+        craftingRuleSSR: "SSR Key: 5 SSR Shards + 15 SR Shards + 10 Transcendental Essences",
         shardLabelR: (shards: number) => `${shards} R Shards`,
         shardLabelSR: (shards: number) => `${shards} SR Shards`,
         shardLabelSSR: (shards: number) => `${shards} SSR Shards`,
@@ -820,6 +822,9 @@ export const translations = {
         keyNameSR: "Super Rare Key",
         keyNameSSR: "Super Super Rare Key",
         essencesLabel: "Essences",
+        convertEssencesTitle: "Convert Essences",
+        conversionRuleElemental: "1x🔥, 1x💧, 1x🌬️, 1x🌍 → 1x✨",
+        essencesLabelTranscendental: (amount: number) => `${amount} Transcendental`,
     },
 
     craftingMinigame: {
@@ -870,7 +875,8 @@ export const translations = {
             fire_essences: "Fire Essences",
             water_essences: "Water Essences",
             air_essences: "Air Essences",
-            earth_essences: "Earth Essences"
+            earth_essences: "Earth Essences",
+            transcendental_essences: "Transcendental Essences"
         },
         descriptions: {
             daily_win_classic: "Win {target} game in Classic mode.",

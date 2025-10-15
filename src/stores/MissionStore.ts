@@ -181,6 +181,7 @@ export class MissionStore {
                 if (rewardType === 'waifuCoins') this.rootStore.gachaStore.addCoins(amount!);
                 else if (rewardType.endsWith('_shards')) this.rootStore.gachaStore.addShards(rewardType.split('_')[0].toUpperCase() as 'R' | 'SR' | 'SSR', amount!);
                 else if (rewardType.endsWith('_essences')) this.rootStore.gachaStore.addEssences(rewardType.split('_')[0] as 'fire' | 'water' | 'air' | 'earth', amount!);
+                else if (rewardType === 'transcendental_essences') this.rootStore.gachaStore.addTranscendentalEssences(amount!);
             });
 
             state.claimed = true;
