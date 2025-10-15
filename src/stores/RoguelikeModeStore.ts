@@ -285,13 +285,15 @@ export class RoguelikeModeStore extends GameStateStore {
         this.playCard({ ...card, elementalEffectActivated: false }, 'human');
     }
 
-    confirmElementalChoice = (activate: boolean) => {
-        if (!this.cardForElementalChoice || this.isProcessing) return;
+    confirmElementalChoice = (activate: boolean, card?: Card) => {
+        const cardToPlay = card || this.cardForElementalChoice;
+        if (!cardToPlay || this.isProcessing) return;
         
-        const cardToPlay = this.cardForElementalChoice;
-        
-        this.isElementalChoiceOpen = false;
-        this.cardForElementalChoice = null;
+        // If we came from the modal, close it and clear state
+        if (!card) {
+            this.isElementalChoiceOpen = false;
+            this.cardForElementalChoice = null;
+        }
     
         const finalCard = { ...cardToPlay, elementalEffectActivated: activate };
 
@@ -615,9 +617,77 @@ export class RoguelikeModeStore extends GameStateStore {
         }
     }
 
-    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => { /* Base implementation */ }
-    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => { /* Base implementation */ }
-    handleDragEnd = () => { /* Base implementation */ }
+    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => {
+        if (this.draggingCardInfo || this.turn !== 'human' || this.isProcessing) return;
+        
+        e.preventDefault();
+
+        const target = (e.target as HTMLElement).closest('.card');
+        if (!target) return;
+
+        const getClientPos = (ev: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent) => {
+            if ('touches' in ev) {
+                return { x: ev.touches[0].clientX, y: ev.touches[0].clientY };
+            }
+            return { x: ev.clientX, y: ev.clientY };
+        };
+
+        runInAction(() => {
+            this.draggingCardInfo = { card, element: target as HTMLElement };
+            this.clonePosition = getClientPos(e);
+        });
+    }
+
+    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => {
+        if (!this.draggingCardInfo) return;
+        
+        e.preventDefault();
+
+        const getClientPos = (ev: MouseEvent | TouchEvent) => {
+            if ('touches' in ev) {
+                return { x: ev.touches[0].clientX, y: ev.touches[0].clientY };
+            }
+            return { x: ev.clientX, y: ev.clientY };
+        };
+        
+        const pos = getClientPos(e);
+
+        runInAction(() => {
+            this.clonePosition = pos;
+
+            let activeZone: 'normal' | 'power' | 'cancel' | null = null;
+            for (const zoneName in zones) {
+                const zoneEl = zones[zoneName];
+                if (zoneEl) {
+                    const rect = zoneEl.getBoundingClientRect();
+                    if (pos.x >= rect.left && pos.x <= rect.right && pos.y >= rect.top && pos.y <= rect.bottom) {
+                        activeZone = zoneName as 'normal' | 'power' | 'cancel';
+                        break;
+                    }
+                }
+            }
+            this.currentDropZone = activeZone;
+        });
+    }
+
+    handleDragEnd = () => {
+        if (!this.draggingCardInfo) return;
+
+        const { card } = this.draggingCardInfo;
+
+        if (this.currentDropZone === 'power') {
+            this.confirmElementalChoice(true, card);
+        } else if (this.currentDropZone === 'normal') {
+            this.confirmElementalChoice(false, card);
+        }
+        // If 'cancel' or null, do nothing, just reset state below.
+
+        runInAction(() => {
+            this.draggingCardInfo = null;
+            this.clonePosition = null;
+            this.currentDropZone = null;
+        });
+    }
 
     forceCloseClashModal = () => {
         if (this.trickResolutionTimer && this.trickResolutionCallback) {
