@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { createContext, useContext } from 'react';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import { GameSettingsStore } from './GameSettingsStore';
 import { UIStateStore } from './UIStateStore';
 import { GachaStore } from './GachaStore';
@@ -30,24 +30,37 @@ export class RootStore {
         this.gameSettingsStore = new GameSettingsStore(this);
         this.uiStore = new UIStateStore(this);
         this.gachaStore = new GachaStore(this);
-        // Instantiate a default store. The UI will call prepareGame to switch it if needed.
-        this.gameStateStore = new ClassicModeStore(this);
         this.chatStore = new ChatStore(this);
         this.missionStore = new MissionStore(this);
+
+        // Initialize gameStateStore based on the loaded setting
+        this.gameStateStore = this.createGameStateStoreForMode(this.gameSettingsStore.gameplayMode);
         
         makeAutoObservable(this, { posthog: false });
+
+        // When the gameplay mode changes in settings, create a new game state store for that mode.
+        reaction(
+            () => this.gameSettingsStore.gameplayMode,
+            (newMode) => {
+                // Only allow switching modes from the menu to prevent losing an active game.
+                if (this.gameStateStore.phase === 'menu') {
+                    this.gameStateStore.dispose();
+                    this.gameStateStore = this.createGameStateStoreForMode(newMode);
+                }
+            }
+        );
     }
 
-    prepareGame = (mode: GameplayMode) => {
-        if (this.gameStateStore.phase !== 'menu') return;
-
-        if (mode === 'classic' && !(this.gameStateStore instanceof ClassicModeStore)) {
-            this.gameStateStore = new ClassicModeStore(this);
-        } else if (mode === 'roguelike' && !(this.gameStateStore instanceof RoguelikeModeStore)) {
-            this.gameStateStore = new RoguelikeModeStore(this);
-        } else if (mode === 'dungeon' && !(this.gameStateStore instanceof DungeonModeStore)) {
-            this.gameStateStore = new DungeonModeStore(this);
+    // Helper function to create the correct store instance based on the mode.
+    createGameStateStoreForMode(mode: GameplayMode): GameStateStore {
+        if (mode === 'roguelike') {
+            return new RoguelikeModeStore(this);
         }
+        if (mode === 'dungeon') {
+            return new DungeonModeStore(this);
+        }
+        // Default to classic mode.
+        return new ClassicModeStore(this);
     }
 
     init = (posthogInstance: PostHog) => {

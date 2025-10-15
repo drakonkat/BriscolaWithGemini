@@ -25,7 +25,6 @@ export class DungeonModeStore extends ClassicModeStore {
 
     constructor(rootStore: RootStore) {
         super(rootStore);
-        makeAutoObservable(this, { rootStore: false });
     }
 
     saveDungeonState() {
@@ -165,7 +164,7 @@ export class DungeonModeStore extends ClassicModeStore {
         const { keyRarity, wins, totalMatches } = this.dungeonRunState;
         if (!keyRarity) return;
         
-        // FIX: Explicitly type the accumulator `acc` as a number to prevent TypeScript from inferring it as `unknown`.
+        // FIX: The accumulator 'acc' in reduce was inferred as 'unknown'. Explicitly typing it as a number resolves the issue.
         const coinsFromWins = Array.from({length: wins}).reduce((acc: number, _, i) => acc + (50 + ((i+1) * 25)), 0);
         const coinsFromLosses = 10 * (totalMatches - wins);
         const allMatchCoins = coinsFromWins + coinsFromLosses;

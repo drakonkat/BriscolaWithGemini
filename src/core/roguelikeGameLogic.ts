@@ -125,7 +125,6 @@ export const calculateRoguelikeTrickPoints = (
     const basePoints = humanCardPoints + aiCardPoints;
     let bonusPoints = 0;
     const bonusReasons: string[] = [];
-    // FIX: Added airBonus to be returned separately for animation purposes.
     let airBonus = 0;
 
     const isHumanPowerActive = isElementalFury || ((humanCard.elementalEffectActivated ?? false) && clashWinner !== 'ai');
@@ -213,7 +212,6 @@ export const calculateRoguelikeTrickPoints = (
         bonusReasons,
         humanCardPointsReturned,
         aiCardPointsReturned,
-        // FIX: Return airBonus.
         airBonus,
     };
 };

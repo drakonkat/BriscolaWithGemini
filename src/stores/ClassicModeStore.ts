@@ -4,7 +4,7 @@
 */
 import { runInAction, reaction } from 'mobx';
 import { getCardPoints, shuffleDeck } from '../core/utils';
-import type { Waifu, Card, Player, Suit, TrickHistoryEntry } from '../core/types';
+import type { Waifu, Card, TrickHistoryEntry } from '../core/types';
 import { getTrickWinner as getClassicTrickWinner } from '../core/classicGameLogic';
 import { GameStateStore } from './GameStateStore';
 import { createDeck } from '../core/classicGameLogic';
@@ -18,15 +18,15 @@ export class ClassicModeStore extends GameStateStore {
     constructor(rootStore: RootStore) {
         super(rootStore);
 
-        reaction(
+        this.addReactionDisposer(reaction(
             () => this.cardsOnTable.length,
             (length) => {
                 if (this.phase === 'playing' && length === 2 && !this.isResolvingTrick) {
                     this.resolveTrick();
                 }
             }
-        );
-        reaction(() => ({phase: this.phase, turn: this.turn, cardsOnTable: this.cardsOnTable.length}), this.handleAiTurn.bind(this));
+        ));
+        this.addReactionDisposer(reaction(() => ({phase: this.phase, turn: this.turn, cardsOnTable: this.cardsOnTable.length}), this.handleAiTurn.bind(this)));
     }
 
     startGame(param: Waifu | null | 'R' | 'SR' | 'SSR') {
@@ -43,6 +43,7 @@ export class ClassicModeStore extends GameStateStore {
     }
     
     _initializeNewGame(waifu: Waifu) {
+        this._resetState();
         this.currentWaifu = waifu;
         this.backgroundUrl = getImageUrl(`/background/landscape${Math.floor(Math.random() * 21) + 1}.png`);
         
@@ -58,20 +59,9 @@ export class ClassicModeStore extends GameStateStore {
         this.aiHand = computerHand;
         this.briscolaCard = briscola;
         this.briscolaSuit = briscola?.suit ?? (this.deck.length > 0 ? this.deck[this.deck.length - 1].suit : 'Spade');
-        this.humanScore = 0;
-        this.aiScore = 0;
-        this.cardsOnTable = [];
         this.trickStarter = 'human';
         this.turn = 'human';
         this.message = this.T.yourTurnMessage;
-        this.gameResult = null;
-        this.lastGameWinnings = 0;
-        this.aiEmotionalState = 'neutral';
-        this.trickHistory = [];
-        this.lastTrick = null;
-        this.lastResolvedTrick = [];
-        this.trickCounter = 0;
-        this.isTutorialGame = false;
         
         this.rootStore.chatStore.resetChat(waifu);
         

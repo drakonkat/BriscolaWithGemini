@@ -133,7 +133,6 @@ export const Menu = observer(() => {
         const newIndex = (currentIndex + direction + gameModes.length) % gameModes.length;
         const newMode = gameModes[newIndex];
         gameSettingsStore.setGameplayMode(newMode);
-        rootStore.prepareGame(newMode);
     };
 
     const difficultyContainerRef = useRef<HTMLDivElement>(null);
@@ -228,7 +227,6 @@ export const Menu = observer(() => {
     const handleDungeonClick = () => {
         const newMode = 'dungeon';
         gameSettingsStore.setGameplayMode(newMode);
-        rootStore.prepareGame(newMode);
 
         if (gachaStore.r_keys > 0 || gachaStore.sr_keys > 0 || gachaStore.ssr_keys > 0) {
             uiStore.openModal('challengeKeySelection');
@@ -239,7 +237,6 @@ export const Menu = observer(() => {
 
     const setGameMode = (mode: GameplayMode) => {
         gameSettingsStore.setGameplayMode(mode);
-        rootStore.prepareGame(mode);
     }
 
     return (

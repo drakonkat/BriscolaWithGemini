@@ -4,7 +4,7 @@
 */
 import { makeAutoObservable, runInAction } from 'mobx';
 import type { RootStore } from '.';
-import type { Card, Player, Suit, GamePhase, GameEmotionalState, Waifu, TrickHistoryEntry, HistoryEntry, CardDeckStyle } from '../core/types';
+import type { Card, Player, Suit, GamePhase, GameEmotionalState, Waifu, TrickHistoryEntry, HistoryEntry } from '../core/types';
 import { translations } from '../core/translations';
 import { getLocalAIMove, getFallbackWaifuMessage } from '../core/localAI';
 import { getAIWaifuTrickMessage, getAIGenericTeasingMessage, QuotaExceededError } from '../core/gemini';
@@ -13,6 +13,7 @@ import { WAIFUS } from '../core/waifus';
 
 export abstract class GameStateStore {
     rootStore: RootStore;
+    private reactionDisposers: (() => void)[] = [];
 
     // Game State
     phase: GamePhase = 'menu';
@@ -38,7 +39,7 @@ export abstract class GameStateStore {
     backgroundUrl = '';
     
     // Technical State
-    isProcessing = false; // A general flag for when the game is thinking (AI move, resolving trick, etc.)
+    isProcessing = false;
     isResolvingTrick = false;
     lastResolvedTrick: string[] = [];
     gameResult: 'human' | 'ai' | 'tie' | null = null;
@@ -59,6 +60,47 @@ export abstract class GameStateStore {
         this.rootStore = rootStore;
     }
 
+    protected addReactionDisposer(disposer: () => void) {
+        this.reactionDisposers.push(disposer);
+    }
+
+    public dispose() {
+        this.reactionDisposers.forEach(disposer => disposer());
+        this.reactionDisposers = [];
+    }
+
+    _resetState() {
+        this.phase = 'menu';
+        this.turn = 'human';
+        this.trickStarter = 'human';
+        this.humanHand = [];
+        this.aiHand = [];
+        this.deck = [];
+        this.cardsOnTable = [];
+        this.briscolaCard = null;
+        this.briscolaSuit = null;
+        this.humanScore = 0;
+        this.aiScore = 0;
+        this.trickHistory = [];
+        this.lastTrick = null;
+        this.trickCounter = 0;
+        this.isTutorialGame = false;
+        this.currentWaifu = null;
+        this.message = '';
+        this.aiEmotionalState = 'neutral';
+        this.backgroundUrl = '';
+        this.isProcessing = false;
+        this.isResolvingTrick = false;
+        this.lastResolvedTrick = [];
+        this.gameResult = null;
+        this.lastGameWinnings = 0;
+        this.isAiGeneratingMessage = false;
+        this.draggingCardInfo = null;
+        this.clonePosition = null;
+        this.currentDropZone = null;
+        this.usedFallbackMessages = [];
+    }
+
     get T() {
         return translations[this.rootStore.gameSettingsStore.language];
     }
@@ -70,7 +112,6 @@ export abstract class GameStateStore {
     abstract handleEndOfGame(): void;
     abstract getCardPoints(card: Card): number;
 
-    // --- Common Game Actions ---
     goToMenu = () => {
         this.phase = 'menu';
         this.clearSavedGame();
@@ -96,7 +137,6 @@ export abstract class GameStateStore {
         this.rootStore.uiStore.setIsQuotaExceededModalOpen(true);
     }
 
-    // --- Player Actions ---
     selectCardForPlay = (card: Card, activatePower?: boolean) => {
         if (this.turn !== 'human' || this.isProcessing || this.rootStore.uiStore.isTutorialActive && this.rootStore.uiStore.tutorialStep === 'promptPlayCard' && card.value !== 'Asso') return;
         
@@ -130,32 +170,31 @@ export abstract class GameStateStore {
         }, 300);
     }
 
-    // --- AI Logic ---
-    handleAiTurn = async () => {
+    handleAiTurn() {
         if (this.phase !== 'playing' || this.turn !== 'ai' || this.isProcessing || this.cardsOnTable.length === 2) return;
-
         this.isProcessing = true;
         
-        // Wait for player animation to finish
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const aiCard = getLocalAIMove(
-            this.aiHand,
-            this.briscolaSuit!,
-            this.cardsOnTable,
-            this.rootStore.gameSettingsStore.difficulty
-        );
+        const aiCard = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, this.rootStore.gameSettingsStore.difficulty);
         
-        this.playCard(aiCard, 'ai');
-        
-        if (this.isTutorialGame) {
-            this.rootStore.uiStore.onTutorialGameEvent('aiResponded');
-        }
-
-        this.isProcessing = false;
+        this.playAiCard(aiCard);
     }
 
-    // --- Waifu Interaction Logic ---
+    playAiCard(card: Card) {
+        setTimeout(() => runInAction(() => {
+            if (this.turn !== 'ai') {
+                this.isProcessing = false;
+                return;
+            }
+            this.playCard(card, 'ai');
+        
+            if (this.isTutorialGame) {
+                this.rootStore.uiStore.onTutorialGameEvent('aiResponded');
+            }
+
+            this.isProcessing = false;
+        }), 800);
+    }
+    
     updateEmotionalState = () => {
         const scoreDiff = this.aiScore - this.humanScore;
         if (scoreDiff > 15) this.aiEmotionalState = 'winning';
@@ -224,19 +263,16 @@ export abstract class GameStateStore {
         }
     }
 
-    // --- Drag and Drop Methods (to be overridden in Roguelike) ---
-    handleDragStart(card: Card, e: React.MouseEvent | React.TouchEvent) { /* no-op */ }
-    handleDragMove(e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) { /* no-op */ }
-    handleDragEnd() { /* no-op */ }
+    handleDragStart(card: Card, e: React.MouseEvent | React.TouchEvent) { /* Base implementation */ }
+    handleDragMove(e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) { /* Base implementation */ }
+    handleDragEnd() { /* Base implementation */ }
 
-    // --- Save/Load Game State ---
-    saveGame() { /* no-op in base, override if needed */ }
-    loadGame() { /* no-op in base, override if needed */ }
-    clearSavedGame() { /* no-op in base, override if needed */ }
-    resumeGame() { /* no-op in base, override if needed */ }
+    saveGame() { /* Base implementation */ }
+    loadGame() { /* Base implementation */ }
+    clearSavedGame() { /* Base implementation */ }
+    resumeGame() { /* Base implementation */ }
     get hasSavedGame(): boolean { return false; }
     
-    // --- Tutorial-specific Methods ---
     startTutorialGame() {
         this.isTutorialGame = true;
         this.startGame(WAIFUS.find(w => w.name === 'Sakura')!);
