@@ -74,11 +74,7 @@
 }
 
 .waifu-status-container {
-    position: absolute;
-    top: 0;
-    right: 15px;
     z-index: 30;
-    padding-top: 0;
 }
 
 .card {
@@ -212,6 +208,10 @@
 /* DECK STYLES */
 .deck-area-wrapper {
   position: absolute; top: 50%; left: 15px; transform: translateY(-50%); z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
 }
 .deck-container {
   z-index: 20; display: flex; align-items: center; height: var(--card-height);
@@ -230,6 +230,23 @@
 }
 .deck-container .card.playable:hover, .deck-container .card.playable:focus {
   transform: none; box-shadow: 0 2px 4px rgba(0,0,0,0.3); outline: none; cursor: default;
+}
+
+.dungeon-modifier-display {
+    background: rgba(var(--primary-accent-rgb), 0.2);
+    border: 1px solid var(--primary-accent);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius-full);
+    font-weight: bold;
+    color: var(--primary-accent);
+    box-shadow: 0 0 10px rgba(var(--primary-accent-rgb), 0.3);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+.dungeon-modifier-display:hover {
+    background-color: rgba(var(--primary-accent-rgb), 0.4);
+    transform: scale(1.05);
 }
 
 /* Briscola Reminder */
@@ -276,7 +293,7 @@
 }
 .top-bar { top: 0; height: var(--top-bar-height); padding-top: 0; border-bottom: 1px solid rgba(var(--primary-accent-rgb), 0.2); justify-content: space-between; }
 .bottom-bar { bottom: 0; height: var(--bottom-bar-height); padding-bottom: 0; border-top: 1px solid rgba(var(--primary-accent-rgb), 0.2); justify-content: flex-start; gap: 1rem; }
-.player-info-group { display: flex; align-items: center; gap: 1rem; }
+.ai-info-group { display: flex; align-items: center; gap: 0.75rem; }
 .player-score { background: rgba(0, 0, 0, 0.4); padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 1rem; font-weight: bold; box-shadow: none; position: relative; display: flex; align-items: center; gap: 0.75rem; border: none; color: var(--font-color); }
 
 .player-score.human-score {
@@ -286,21 +303,6 @@
 
 .human-score-container {
   display: none;
-}
-
-.dungeon-modifier-display {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(var(--primary-accent-rgb), 0.2);
-    border: 1px solid var(--primary-accent);
-    padding: 0.4rem 1rem;
-    border-radius: var(--radius-full);
-    font-weight: bold;
-    color: var(--primary-accent);
-    box-shadow: 0 0 10px rgba(var(--primary-accent-rgb), 0.3);
-    cursor: help;
-    white-space: nowrap;
 }
 
 .last-trick-recap {
@@ -627,6 +629,12 @@
   .top-bar {
     justify-content: space-between;
     gap: 1rem;
+  }
+  .ai-info-group {
+      order: 1;
+  }
+  .waifu-status-container {
+      order: 2;
   }
   .bottom-bar {
     justify-content: space-between;

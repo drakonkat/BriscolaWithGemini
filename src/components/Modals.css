@@ -43,6 +43,40 @@
 .game-over-modal .modal-actions button, .gacha-unlock-modal .modal-actions button, .gacha-multi-unlock-modal .modal-actions button { margin-top: 0; }
 .game-over-modal h2 { padding-right: 0; }
 
+.dungeon-opponent-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+.dungeon-opponent-display img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-accent);
+    object-fit: cover;
+    object-position: top;
+}
+.dungeon-opponent-display h3 {
+    font-size: 1.5rem;
+    color: var(--font-color);
+    margin: 0;
+}
+.modifier-details {
+    margin-top: 1rem;
+}
+.modifier-details h4 {
+    font-size: 1.2rem;
+    color: var(--gold-accent);
+    margin: 0 0 0.5rem 0;
+}
+.modifier-details p {
+    font-size: 1rem;
+    color: var(--font-color-secondary);
+    margin: 0;
+}
+
 /* --- Rules Modal --- */
 .rules-modal { text-align: left; max-height: 85vh; overflow-y: auto; }
 .rules-modal p { font-size: 1.1rem; line-height: 1.5; margin-bottom: 1.5rem; }

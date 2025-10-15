@@ -5,11 +5,13 @@
 import { runInAction } from 'mobx';
 import { ClassicModeStore } from './ClassicModeStore';
 import type { RootStore } from '.';
-import type { DungeonRunState, Waifu, DungeonModifier } from '../core/types';
+import type { DungeonRunState, Waifu, DungeonModifier, Card, TrickHistoryEntry, Element, ElementalClashResult } from '../core/types';
 import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
-import { shuffleDeck } from '../core/utils';
+import { getImageUrl, shuffleDeck } from '../core/utils';
 import { DUNGEON_MODIFIERS } from '../core/dungeonModifiers';
 import { playSound } from '../core/soundManager';
+import { initializeRoguelikeDeck, calculateRoguelikeTrickPoints, getRoguelikeTrickWinner } from '../core/roguelikeGameLogic';
+import { getCardPoints } from '../core/utils';
 
 const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
     try {
@@ -22,6 +24,13 @@ const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
 
 export class DungeonModeStore extends ClassicModeStore {
     dungeonRunState: DungeonRunState = this.loadDungeonState();
+    nextDungeonMatchInfo: { opponent: Waifu, modifier: DungeonModifier } | null = null;
+    
+    // Roguelike properties needed for modifiers
+    humanScorePile: Card[] = [];
+    aiScorePile: Card[] = [];
+    activeElements: Element[] = [];
+    elementalClash: ElementalClashResult | null = null;
 
     constructor(rootStore: RootStore) {
         super(rootStore);
@@ -91,22 +100,123 @@ export class DungeonModeStore extends ClassicModeStore {
             modifiers,
         };
         this.saveDungeonState();
-        this.startNextDungeonMatch();
+        this.prepareNextDungeonMatch();
     }
 
-    startNextDungeonMatch = () => {
+    prepareNextDungeonMatch = () => {
         this.rootStore.uiStore.closeModal('dungeonProgress');
         if (!this.dungeonRunState.isActive) return;
 
+        const nextMatchIndex = this.dungeonRunState.currentMatch;
+        if (nextMatchIndex >= this.dungeonRunState.totalMatches) {
+            this.endDungeonRun(true);
+            return;
+        }
+
         runInAction(() => {
-            this.dungeonRunState.currentMatch++;
-            this.saveDungeonState();
-            const waifuName = this.dungeonRunState.waifuOpponents[this.dungeonRunState.currentMatch - 1];
+            const waifuName = this.dungeonRunState.waifuOpponents[nextMatchIndex];
             const opponent = WAIFUS.find(w => w.name === waifuName) ?? BOSS_WAIFU;
-            this._initializeNewGame(opponent);
-            playSound('game-start');
+            const modifier = this.dungeonRunState.modifiers[nextMatchIndex];
+            
+            this.nextDungeonMatchInfo = { opponent, modifier };
+            this.rootStore.uiStore.openModal('dungeonMatchStart');
         });
     }
+
+    startPreparedDungeonMatch = () => {
+        if (!this.nextDungeonMatchInfo) return;
+
+        runInAction(() => {
+            this.rootStore.uiStore.closeModal('dungeonMatchStart');
+            this.dungeonRunState.currentMatch++;
+            this.saveDungeonState();
+            this._initializeNewGame(this.nextDungeonMatchInfo!.opponent);
+            playSound('game-start');
+            this.nextDungeonMatchInfo = null;
+        });
+    }
+
+    _initializeNewGame(waifu: Waifu) {
+        super._initializeNewGame(waifu);
+        runInAction(() => {
+            this.humanScorePile = [];
+            this.aiScorePile = [];
+            
+            const modifier = this.dungeonRunState.modifiers[this.dungeonRunState.currentMatch - 1];
+            if (modifier && modifier.id === 'ELEMENTAL_FURY') {
+                const { deck, activeElements } = initializeRoguelikeDeck(this.deck, 3);
+                this.deck = deck;
+                this.activeElements = activeElements;
+
+                const shuffledDeck = shuffleDeck(this.deck);
+                this.humanHand = shuffledDeck.splice(0, 3);
+                this.aiHand = shuffledDeck.splice(0, 3);
+                this.briscolaCard = shuffledDeck.length > 0 ? shuffledDeck.pop()! : null;
+                this.briscolaSuit = this.briscolaCard?.suit ?? (shuffledDeck.length > 0 ? shuffledDeck[shuffledDeck.length - 1].suit : 'Spade');
+                this.deck = shuffledDeck;
+            }
+        });
+    }
+
+    resolveTrick() {
+        if (this.cardsOnTable.length < 2 || this.isResolvingTrick) return;
+        this.isResolvingTrick = true;
+        
+        const modifier = this.dungeonRunState.modifiers[this.dungeonRunState.currentMatch - 1];
+
+        const humanCard = this.trickStarter === 'human' ? this.cardsOnTable[0] : this.cardsOnTable[1];
+        const aiCard = this.trickStarter === 'ai' ? this.cardsOnTable[0] : this.cardsOnTable[1];
+
+        const trickWinner = getRoguelikeTrickWinner(this.cardsOnTable, this.trickStarter, this.briscolaSuit!, []);
+        let points = 0;
+        let newHistoryEntry: TrickHistoryEntry;
+
+        if (modifier?.id === 'ELEMENTAL_FURY') {
+            const { totalPoints, basePoints, bonusPoints, bonusReasons } = calculateRoguelikeTrickPoints(
+                humanCard, aiCard, trickWinner, null, this.briscolaSuit!, [], this.humanScorePile, this.aiScorePile, this.T, true
+            );
+            points = totalPoints;
+            newHistoryEntry = { trickNumber: this.trickCounter + 1, humanCard, aiCard, winner: trickWinner, points, basePoints, bonusPoints, bonusPointsReason: bonusReasons.join(', ') };
+        } else {
+            points = this.getCardPoints(humanCard) + this.getCardPoints(aiCard);
+            newHistoryEntry = { trickNumber: this.trickCounter + 1, humanCard, aiCard, winner: trickWinner, points, basePoints: points, bonusPoints: 0, bonusPointsReason: '' };
+        }
+
+        this.trickHistory.push(newHistoryEntry);
+        this.lastTrick = newHistoryEntry;
+        
+        setTimeout(() => runInAction(() => {
+            if (trickWinner === 'human') {
+                this.humanScore += points;
+                this.humanScorePile.push(humanCard, aiCard);
+                this.message = this.T.youWonTrick(points);
+                playSound('trick-win');
+            } else {
+                this.aiScore += points;
+                this.aiScorePile.push(humanCard, aiCard);
+                this.message = this.T.aiWonTrick(this.currentWaifu!.name, points);
+                playSound('trick-lose');
+            }
+
+            this.cardsOnTable = [];
+            this.trickCounter++;
+            this.drawCards(trickWinner);
+
+        }), 1500);
+    }
+
+    getCardPoints(card: Card): number {
+        const modifier = this.dungeonRunState.modifiers[this.dungeonRunState.currentMatch - 1];
+        if (modifier?.id === 'VALUE_INVERSION') {
+            const invertedPoints: { [key: string]: number } = {
+                'Asso': 0, '3': 0, 'Re': 0, 'Cavallo': 0, 'Fante': 0,
+                '7': 2, '6': 3, '5': 4, '4': 10, '2': 11,
+            };
+            return invertedPoints[card.value];
+        }
+        return getCardPoints(card);
+    }
+
 
     handleEndOfGame() {
         if (this.humanHand.length === 0 && this.aiHand.length === 0 && !this.isResolvingTrick) {
@@ -154,9 +264,9 @@ export class DungeonModeStore extends ClassicModeStore {
                 } else {
                     this.endDungeonRun(true);
                 }
-            } else {
-                this.endDungeonRun(false);
             }
+            // In case of loss, we just set the phase to gameOver.
+            // GameModals will pick this up and show the match loss screen.
         }
     }
 

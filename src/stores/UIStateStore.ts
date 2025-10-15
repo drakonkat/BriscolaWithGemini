@@ -80,6 +80,8 @@ export class UIStateStore {
     isDungeonProgressModalOpen = false;
     isDungeonEndModalOpen = false;
     isMissionsModalOpen = false;
+    isDungeonMatchStartModalOpen = false;
+    isDungeonModifierInfoModalOpen = false;
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
 
     // Menu collapsible sections
@@ -145,6 +147,8 @@ export class UIStateStore {
             case 'dungeonProgress': this.isDungeonProgressModalOpen = true; break;
             case 'dungeonEnd': this.isDungeonEndModalOpen = true; break;
             case 'missions': this.isMissionsModalOpen = true; break;
+            case 'dungeonMatchStart': this.isDungeonMatchStartModalOpen = true; break;
+            case 'dungeonModifierInfo': this.isDungeonModifierInfoModalOpen = true; break;
             case 'chat': 
                 this.isChatModalOpen = true; 
                 this.setUnreadMessageCount(0);
@@ -173,6 +177,8 @@ export class UIStateStore {
             case 'dungeonProgress': this.isDungeonProgressModalOpen = false; break;
             case 'dungeonEnd': this.isDungeonEndModalOpen = false; break;
             case 'missions': this.isMissionsModalOpen = false; break;
+            case 'dungeonMatchStart': this.isDungeonMatchStartModalOpen = false; break;
+            case 'dungeonModifierInfo': this.isDungeonModifierInfoModalOpen = false; break;
             case 'chat': this.isChatModalOpen = false; break;
         }
     }

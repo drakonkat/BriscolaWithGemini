@@ -24,6 +24,8 @@ import { CraftingMinigameModal } from './CraftingMinigameModal';
 import { DungeonProgressModal } from './DungeonProgressModal';
 import { DungeonEndModal } from './DungeonEndModal';
 import { MissionsModal } from './MissionsModal';
+import { CachedImage } from './CachedImage';
+import { getImageUrl } from '../core/utils';
 
 
 import { translations } from '../core/translations';
@@ -50,8 +52,9 @@ export const GameModals = observer(() => {
     const dungeonStore = isDungeon ? (gameStateStore as DungeonModeStore) : null;
     
     const handlePlayAgain = () => {
-        if (isDungeon && dungeonStore.dungeonRunState.keyRarity) {
-            dungeonStore.startDungeonRun(dungeonStore.dungeonRunState.keyRarity);
+        if (isDungeon && dungeonStore) {
+            // This is called from GameOverModal on a loss, so proceed to end the run.
+            dungeonStore.endDungeonRun(false);
         } else {
             gameStateStore.startGame(currentWaifu);
         }
@@ -59,7 +62,7 @@ export const GameModals = observer(() => {
     
     return (
         <>
-            {phase === 'gameOver' && gameResult && gameplayMode === 'classic' && !dungeonStore?.dungeonRunState.isActive && (
+            {phase === 'gameOver' && gameResult && ((gameplayMode === 'classic' && !dungeonStore?.dungeonRunState.isActive) || (isDungeon && gameResult !== 'human' && dungeonStore.dungeonRunState.isActive)) && (
                 <GameOverModal
                     humanScore={humanScore}
                     aiScore={aiScore}
@@ -69,7 +72,7 @@ export const GameModals = observer(() => {
                     onGoToMenu={gameStateStore.goToMenu}
                     language={language}
                     winnings={lastGameWinnings}
-                    challengeMatchRarity={null}
+                    challengeMatchRarity={isDungeon ? dungeonStore.dungeonRunState.keyRarity : null}
                 />
             )}
 
@@ -225,6 +228,56 @@ export const GameModals = observer(() => {
 
             {isDungeon && dungeonStore && (
                 <>
+                    {uiStore.isDungeonModifierInfoModalOpen && dungeonStore.dungeonRunState.modifiers[dungeonStore.dungeonRunState.currentMatch - 1] && (
+                        <div className="game-over-overlay" onClick={() => uiStore.closeModal('dungeonModifierInfo')}>
+                            <div className="game-over-modal dungeon-result-modal" onClick={(e) => e.stopPropagation()}>
+                                <button className="modal-close-button" onClick={() => uiStore.closeModal('dungeonModifierInfo')} aria-label={T.close}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                    </svg>
+                                </button>
+                                <div className="dungeon-rewards-summary">
+                                    <h3>{T.dungeonRun.modifier}</h3>
+                                    <div className="modifier-details">
+                                        <h4>{dungeonStore.dungeonRunState.modifiers[dungeonStore.dungeonRunState.currentMatch - 1].name}</h4>
+                                        <p>{dungeonStore.dungeonRunState.modifiers[dungeonStore.dungeonRunState.currentMatch - 1].description}</p>
+                                    </div>
+                                </div>
+                                <div className="modal-actions">
+                                    <button onClick={() => uiStore.closeModal('dungeonModifierInfo')}>{T.close}</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {uiStore.isDungeonMatchStartModalOpen && dungeonStore.nextDungeonMatchInfo && (
+                         <div className="game-over-overlay">
+                            <div className="game-over-modal dungeon-result-modal">
+                                <button className="modal-close-button" onClick={gameStateStore.goToMenu} aria-label={T.close}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                    </svg>
+                                </button>
+                                <h2>{`Incontro ${dungeonStore.dungeonRunState.currentMatch + 1} / ${dungeonStore.dungeonRunState.totalMatches}`}</h2>
+                                
+                                <div className="dungeon-opponent-display">
+                                    <CachedImage imageUrl={getImageUrl(dungeonStore.nextDungeonMatchInfo.opponent.avatar)} alt={dungeonStore.nextDungeonMatchInfo.opponent.name} />
+                                    <h3>{dungeonStore.nextDungeonMatchInfo.opponent.name}</h3>
+                                </div>
+                    
+                                <div className="dungeon-rewards-summary">
+                                    <h3>{T.dungeonRun.modifier}</h3>
+                                    <div className="modifier-details">
+                                        <h4>{dungeonStore.nextDungeonMatchInfo.modifier.name}</h4>
+                                        <p>{dungeonStore.nextDungeonMatchInfo.modifier.description}</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="modal-actions">
+                                    <button onClick={dungeonStore.startPreparedDungeonMatch}>{T.startGame}</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     {uiStore.isNoKeysModalOpen && (
                         <div className="game-over-overlay" onClick={() => uiStore.closeModal('noKeys')}>
                             <div className="confirmation-modal" onClick={(e) => e.stopPropagation()}>
