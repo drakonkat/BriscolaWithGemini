@@ -399,36 +399,66 @@ export class DungeonModeStore extends ClassicModeStore {
     }
 
     endDungeonRun(didWin: boolean) {
-        const { keyRarity, wins, totalMatches } = this.dungeonRunState;
+        const { keyRarity, wins } = this.dungeonRunState;
         if (!keyRarity) return;
         
-        // FIX: Replaced Array.from with new Array().fill(0) to ensure the reduce method's result is correctly typed as a number.
-        const coinsFromWins = new Array(wins).fill(0).reduce((acc: number, _, i) => acc + (50 + ((i+1) * 25)), 0);
-        const coinsFromLosses = 10 * (totalMatches - wins);
-        const allMatchCoins = coinsFromWins + coinsFromLosses;
-        const allMatchShards = { R: 0, SR: 0, SSR: 0};
-        if (keyRarity === 'R') allMatchShards.R = wins;
-        if (keyRarity === 'SR') allMatchShards.SR = wins;
-        if (keyRarity === 'SSR') allMatchShards.SSR = wins;
-        
         let unlockedBg = null;
+        let totalCoins = 0;
+        const totalShards = { R: 0, SR: 0, SSR: 0 };
+        let totalEssences = 0;
 
         if (didWin) {
             this.rootStore.gachaStore.spendKey(keyRarity);
-            unlockedBg = this.rootStore.gachaStore.unlockRandomBackground(keyRarity);
+            const { background, isNew } = this.rootStore.gachaStore.unlockDungeonBackground(keyRarity);
+            if (isNew) {
+                unlockedBg = background;
+            }
+
+            switch(keyRarity) {
+                case 'R':
+                    totalCoins = 250;
+                    totalShards.R = 5;
+                    totalShards.SR = 1;
+                    if (!isNew) totalShards.R += 10;
+                    break;
+                case 'SR':
+                    totalCoins = 600;
+                    totalShards.R = 10;
+                    totalShards.SR = 5;
+                    totalEssences = 5;
+                    this.rootStore.gachaStore.addKey('R');
+                    if (!isNew) totalShards.SR += 5;
+                    break;
+                case 'SSR':
+                    totalCoins = 1200;
+                    totalShards.R = 15;
+                    totalShards.SR = 10;
+                    totalShards.SSR = 1;
+                    totalEssences = 10;
+                    this.rootStore.gachaStore.addKey('SR');
+                    if (!isNew) totalShards.SSR += 1;
+                    break;
+            }
+            
+            this.rootStore.gachaStore.addCoins(totalCoins);
+            this.rootStore.gachaStore.addShards('R', totalShards.R);
+            this.rootStore.gachaStore.addShards('SR', totalShards.SR);
+            this.rootStore.gachaStore.addShards('SSR', totalShards.SSR);
+            if (totalEssences > 0) this.rootStore.gachaStore.addEssences('fire', totalEssences); // Example, could be random
+
             this.rootStore.missionStore.incrementProgress('dungeonRunsWon');
         }
         
         this.rootStore.gachaStore.lastDungeonRunRewards = {
-            coins: allMatchCoins,
-            shards: allMatchShards,
+            coins: totalCoins,
+            shards: totalShards,
             unlockedBackground: unlockedBg,
         };
 
         this.rootStore.posthog?.capture('dungeon_run_completed', {
             rarity: keyRarity,
             wins,
-            total_matches: totalMatches,
+            total_matches: this.dungeonRunState.totalMatches,
             did_win_run: didWin,
         });
 

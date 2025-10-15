@@ -59,6 +59,12 @@ const BACKGROUNDS: BackgroundItem[] = [
     { url: getImageUrl('/background/background21.png'), rarity: 'R' },
 ];
 
+export const DUNGEON_REWARD_BACKGROUNDS: Record<'R' | 'SR' | 'SSR', BackgroundItem> = {
+    R: { url: getImageUrl('/background/dungeon_r.png'), rarity: 'R' },
+    SR: { url: getImageUrl('/background/dungeon_sr.png'), rarity: 'SR' },
+    SSR: { url: getImageUrl('/background/dungeon_ssr.png'), rarity: 'SSR' },
+};
+
 const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
     try {
         const item = localStorage.getItem(key);
@@ -83,6 +89,7 @@ export class GachaStore {
     sr_keys: number = loadFromLocalStorage('sr_keys', 1);
     ssr_keys: number = loadFromLocalStorage('ssr_keys', 1);
     unlockedBackgrounds: string[] = loadFromLocalStorage('unlocked_backgrounds', []);
+    unlockedDungeonBackgrounds: string[] = loadFromLocalStorage('unlocked_dungeon_backgrounds', []);
     hasRolledGacha: boolean = loadFromLocalStorage('has_rolled_gacha', false);
     fullscreenImage: string = '';
     isRolling = false;
@@ -115,6 +122,7 @@ export class GachaStore {
         autorun(() => localStorage.setItem('sr_keys', JSON.stringify(this.sr_keys)));
         autorun(() => localStorage.setItem('ssr_keys', JSON.stringify(this.ssr_keys)));
         autorun(() => localStorage.setItem('unlocked_backgrounds', JSON.stringify(this.unlockedBackgrounds)));
+        autorun(() => localStorage.setItem('unlocked_dungeon_backgrounds', JSON.stringify(this.unlockedDungeonBackgrounds)));
         autorun(() => localStorage.setItem('has_rolled_gacha', JSON.stringify(this.hasRolledGacha)));
         
         reaction(
@@ -168,6 +176,15 @@ export class GachaStore {
         if (!this.unlockedBackgrounds.includes(bg.url)) {
             this.unlockedBackgrounds.push(bg.url);
         }
+    }
+
+    unlockDungeonBackground = (rarity: 'R' | 'SR' | 'SSR'): { background: BackgroundItem, isNew: boolean } => {
+        const background = DUNGEON_REWARD_BACKGROUNDS[rarity];
+        if (this.unlockedDungeonBackgrounds.includes(background.url)) {
+            return { background, isNew: false };
+        }
+        this.unlockedDungeonBackgrounds.push(background.url);
+        return { background, isNew: true };
     }
 
     unlockRandomBackground = (rarity: 'R' | 'SR' | 'SSR'): BackgroundItem | null => {
