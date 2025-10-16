@@ -26,8 +26,11 @@ export const getCardId = (card: Card, lang: Language): string => {
 }
 
 export const getCardImagePath = (card: Card, style: CardDeckStyle): string => {
-  const suit = card.suit.toLowerCase();
-  const number = valueToFileNumber[card.value];
+  if(!card?.suit){
+    return
+  }
+  const suit = card?.suit?.toLowerCase();
+  const number = valueToFileNumber[card?.value];
   return getImageUrl(`/${style}/${suit}${number}.png`);
 };
 
