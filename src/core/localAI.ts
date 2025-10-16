@@ -212,82 +212,55 @@ export const getLocalAIMove = (
         else {
             const isCarico = (c: Card) => c.value === 'Asso' || c.value === '3';
             const humanHasBriscola = humanHand.some(c => c.suit === briscolaSuit);
-
-            if (humanHasBriscola) {
-                // DEFENSIVE PLAY: Human can trump anything. Avoid giving up points.
-                const humanCarichiSuits = new Set(humanHand.filter(isCarico).map(c => c.suit));
-
-                // Priority 1: Play lowest-rank "safe" liscio (a suit where human has no carico).
-                const nonBriscolaLisci = aiHand.filter(c => c.suit !== briscolaSuit && getCardPoints(c) === 0);
-                const safeLisci = nonBriscolaLisci.filter(c => !humanCarichiSuits.has(c.suit)).sort((a, b) => RANK[a.value] - RANK[b.value]);
+            const humanCarichiSuits = new Set(humanHand.filter(isCarico).map(c => c.suit));
+        
+            const aiBriscolaCards = aiHand.filter(c => c.suit === briscolaSuit).sort((a, b) => RANK[a.value] - RANK[b.value]);
+            const aiNonBriscolaCards = aiHand.filter(c => c.suit !== briscolaSuit);
+        
+            const safeNonBriscola = aiNonBriscolaCards.filter(c => !humanCarichiSuits.has(c.suit));
+            const unsafeNonBriscola = aiNonBriscolaCards.filter(c => humanCarichiSuits.has(c.suit));
+        
+            // --- DECISION LOGIC ---
+        
+            // 1. Can I play a safe non-briscola card?
+            if (safeNonBriscola.length > 0) {
+                // If human can't trump, try to score points safely.
+                if (!humanHasBriscola) {
+                    const safePointCards = safeNonBriscola.filter(c => getCardPoints(c) > 0).sort((a, b) => RANK[b.value] - RANK[a.value]);
+                    if (safePointCards.length > 0) {
+                        return { cardToPlay: safePointCards[0] };
+                    }
+                }
+                
+                // Either human can trump (so play defensively) or no safe point cards are available. Play lowest safe liscio.
+                const safeLisci = safeNonBriscola.filter(c => getCardPoints(c) === 0).sort((a, b) => RANK[a.value] - RANK[b.value]);
                 if (safeLisci.length > 0) {
                     return { cardToPlay: safeLisci[0] };
                 }
-
-                // Priority 2: No safe lisci. Play lowest-rank briscola to probe or waste a turn.
-                const briscolaCards = aiHand.filter(c => c.suit === briscolaSuit).sort((a, b) => RANK[a.value] - RANK[b.value]);
-                if (briscolaCards.length > 0) {
-                    return { cardToPlay: briscolaCards[0] };
-                }
                 
-                // Priority 3: No safe lisci and no briscola. Must play a card that might give up points.
-                // Sacrifice an "unsafe" liscio (we have no choice). Play lowest one.
-                if (nonBriscolaLisci.length > 0) {
-                     const sortedUnsafeLisci = nonBriscolaLisci.sort((a, b) => RANK[a.value] - RANK[b.value]);
-                     return { cardToPlay: sortedUnsafeLisci[0] };
-                }
-
-                // Priority 4: No lisci at all. Sacrifice lowest-point non-briscola card.
-                const nonBriscolaPointCards = aiHand
-                    .filter(c => c.suit !== briscolaSuit)
-                    .sort((a, b) => getCardPoints(a) - getCardPoints(b) || RANK[a.value] - RANK[b.value]);
-                if (nonBriscolaPointCards.length > 0) {
-                    return { cardToPlay: nonBriscolaPointCards[0] };
-                }
-                
-                // Fallback: Hand contains only briscola point cards. This is handled by Priority 2.
-                const sortedHand = [...aiHand].sort((a, b) => (getCardPoints(a) - getCardPoints(b)) || (RANK[a.value] - RANK[b.value]));
-                return { cardToPlay: sortedHand[0] };
-
-            } else {
-                // AGGRESSIVE/SAFE PLAY: Human cannot trump.
-                // Play safely against human's carichi.
-    
-                const humanCarichiBySuit: Partial<Record<Suit, Card[]>> = {};
-                for (const card of humanHand) {
-                    if (isCarico(card)) {
-                        if (!humanCarichiBySuit[card.suit]) {
-                            humanCarichiBySuit[card.suit] = [];
-                        }
-                        humanCarichiBySuit[card.suit]!.push(card);
-                    }
-                }
-        
-                const nonBriscolaCards = aiHand.filter(c => c.suit !== briscolaSuit);
-                const briscolaCards = aiHand.filter(c => c.suit === briscolaSuit).sort((a, b) => RANK[a.value] - RANK[b.value]);
-        
-                const safeCards = nonBriscolaCards.filter(c => !humanCarichiBySuit[c.suit]);
-                
-                if (safeCards.length > 0) {
-                    const safeLisci = safeCards.filter(c => getCardPoints(c) === 0).sort((a,b) => RANK[a.value] - RANK[b.value]);
-                    if (safeLisci.length > 0) return { cardToPlay: safeLisci[0] };
-        
-                    const safePointCards = safeCards.filter(c => getCardPoints(c) > 0).sort((a, b) => RANK[b.value] - RANK[a.value]);
-                    if (safePointCards.length > 0) return { cardToPlay: safePointCards[0] };
-                }
-        
-                if (briscolaCards.length > 0) {
-                    return { cardToPlay: briscolaCards[0] };
-                }
-        
-                if (nonBriscolaCards.length > 0) {
-                    const sortedUnsafeCards = [...nonBriscolaCards].sort((a, b) => getCardPoints(a) - getCardPoints(b) || RANK[a.value] - RANK[b.value]);
-                    return { cardToPlay: sortedUnsafeCards[0] };
-                }
-        
-                const sortedHand = [...aiHand].sort((a, b) => (getCardPoints(a) - getCardPoints(b)) || (RANK[a.value] - RANK[b.value]));
-                return { cardToPlay: sortedHand[0] };
+                // This case is rare: AI has safe cards, but they are all point cards, AND human has briscola.
+                // It's safer to lead with briscola than a point card that could be left on the table.
+                // But the next check for briscola handles this. If we get here, it means we must play a safe point card.
+                const sortedSafe = safeNonBriscola.sort((a,b) => getCardPoints(a) - getCardPoints(b) || RANK[a.value] - RANK[b.value]);
+                return { cardToPlay: sortedSafe[0] };
             }
+        
+            // 2. No safe non-briscola cards available. Play lowest briscola as the next safest move.
+            if (aiBriscolaCards.length > 0) {
+                return { cardToPlay: aiBriscolaCards[0] };
+            }
+        
+            // 3. No safe cards and no briscola. Forced to play an unsafe card. Sacrifice the one with least value.
+            // This is the only option left besides point-only briscola cards.
+            if (unsafeNonBriscola.length > 0) {
+                const sortedUnsafe = unsafeNonBriscola.sort((a, b) => getCardPoints(a) - getCardPoints(b) || RANK[a.value] - RANK[b.value]);
+                return { cardToPlay: sortedUnsafe[0] };
+            }
+        
+            // 4. Fallback: AI hand must only contain briscola cards, which should have been handled by step 2.
+            // To be safe, just play the lowest value card in hand.
+            const sortedHand = [...aiHand].sort((a, b) => (getCardPoints(a) - getCardPoints(b)) || (RANK[a.value] - RANK[b.value]));
+            return { cardToPlay: sortedHand[0] };
         }
     }
     
