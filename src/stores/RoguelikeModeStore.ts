@@ -137,6 +137,7 @@ export class RoguelikeModeStore extends GameStateStore {
             followerAbilitiesUsedThisMatch: [],
             initialPower: null,
             activePowers: [],
+            waifuOpponents: [],
         });
     }
 
@@ -164,6 +165,7 @@ export class RoguelikeModeStore extends GameStateStore {
                 followerAbilitiesUsedThisMatch: [],
                 initialPower: null,
                 activePowers: [],
+                waifuOpponents: [],
             };
             this.powerSelectionOptions = null;
             this.activeElements = [];
@@ -184,11 +186,16 @@ export class RoguelikeModeStore extends GameStateStore {
 
     resumeGame() {
         if (!this.hasSavedGame) return;
-        this.startGame(null);
+        this.phase = 'roguelike-map';
     }
     
     startRoguelikeRun = (waifu: Waifu | null) => {
         this.clearSavedGame();
+
+        const opponents = shuffleDeck(WAIFUS).slice(0, 3);
+        this.roguelikeState.waifuOpponents = [...opponents.map(w => w.name), BOSS_WAIFU.name];
+        
+        this.roguelikeState.currentLevel = 1;
         
         const availablePowers = shuffleDeck(ALL_POWER_UP_IDS.filter(id => id !== 'third_eye'));
         this.powerSelectionOptions = {
@@ -211,12 +218,9 @@ export class RoguelikeModeStore extends GameStateStore {
             }
         }
         
-        if (this.roguelikeState.currentLevel === 0) {
-            this.roguelikeState.currentLevel = 1;
-        }
         this.powerSelectionOptions = null;
         this.saveGame();
-        this.startGame(null);
+        this.phase = 'roguelike-map';
     }
 
     startGame(param: Waifu | null | 'R' | 'SR' | 'SSR' = null) {
@@ -227,11 +231,11 @@ export class RoguelikeModeStore extends GameStateStore {
         }
 
         let opponent: Waifu;
-        if (level === 4) {
+        if (level > WAIFUS.length) {
             opponent = BOSS_WAIFU;
         } else {
-            const opponentPool = WAIFUS.filter(w => !this.roguelikeState.encounteredWaifus.includes(w.name));
-            opponent = opponentPool.length > 0 ? opponentPool[Math.floor(Math.random() * opponentPool.length)] : WAIFUS[Math.floor(Math.random() * WAIFUS.length)];
+            const opponentName = this.roguelikeState.waifuOpponents[level - 1];
+            opponent = WAIFUS.find(w => w.name === opponentName) ?? BOSS_WAIFU;
         }
         
         this._resetState(); // Reset common game state but keep roguelike progress
@@ -554,12 +558,12 @@ export class RoguelikeModeStore extends GameStateStore {
                 this.roguelikeState.encounteredWaifus.push(this.currentWaifu!.name);
                 const followerToRecruit = WAIFUS.find(w => w.name === this.currentWaifu!.name && w.followerAbilityId && !this.roguelikeState.followers.some(f => f.name === w.name));
                 
-                const essenceCounts = { fire: 0, water: 0, air: 0, earth: 0 };
-                this.activatedElementsThisMatch.forEach(element => {
-                    essenceCounts[element]++;
-                });
-
                 const essencesGainedStrings: string[] = [];
+                const essenceCounts = this.activatedElementsThisMatch.reduce((acc, el) => {
+                    acc[el] = (acc[el] || 0) + 1;
+                    return acc;
+                }, {} as Record<Element, number>);
+
                 Object.entries(essenceCounts).forEach(([element, count]) => {
                     if (count > 0) {
                         this.rootStore.gachaStore.addEssences(element as Element, count);
@@ -584,10 +588,11 @@ export class RoguelikeModeStore extends GameStateStore {
                 }
                 
                 if (this.roguelikeState.currentLevel < 4) {
-                    // Win a match but not the whole run.
-                    // The phase will be set by the next actions (showing follower modal or powerup screen).
                     if (!this.newFollower) {
                         this.goToNextLevel();
+                    } else {
+                        // Wait for user to acknowledge new follower before proceeding
+                        this.phase = 'playing'; // Stay on the game board behind the modal
                     }
                 } else {
                     // Won the final level (level 4)

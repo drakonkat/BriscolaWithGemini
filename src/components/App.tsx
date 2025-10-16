@@ -15,6 +15,7 @@ import { GameModals } from './GameModals';
 import { Snackbar } from './Snackbar';
 import { PowerSelectionScreen } from './PowerSelectionScreen';
 import { TutorialOverlay } from './TutorialOverlay';
+import { RoguelikeMap } from './RoguelikeMap';
 
 export const App = observer(() => {
   const { gameStateStore, uiStore, gameSettingsStore, chatStore } = useStores();
@@ -63,6 +64,14 @@ export const App = observer(() => {
         </>
       );
   }
+
+  if (gameStateStore.phase === 'roguelike-map') {
+    return (
+      <>
+          <RoguelikeMap />
+      </>
+    );
+}
 
   return (
     <div className={`app-container deck-style-${cardDeckStyle} ${uiStore.isChatModalOpen ? 'chat-open-mobile' : ''} ${!gameSettingsStore.isChatEnabled ? 'chat-disabled' : ''}`}>
