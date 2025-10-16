@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores, RoguelikeModeStore } from '../stores';
 import { translations } from '../core/translations';
@@ -34,6 +34,7 @@ export const RoguelikeMap = observer(() => {
     const { roguelikeState } = roguelikeStore;
     const { language } = gameSettingsStore;
     const { menuBackgroundUrl } = uiStore;
+    const mapContainerRef = useRef<HTMLDivElement>(null);
 
     const T = translations[language];
 
@@ -60,6 +61,27 @@ export const RoguelikeMap = observer(() => {
     // Level 2 -> stage index 3 (opponent 2)
     const currentStageIndex = (currentLevel - 1) * 2 + 1;
 
+    useEffect(() => {
+        const isMobile = window.innerWidth <= 768;
+        if (!isMobile) return;
+
+        const container = mapContainerRef.current;
+        const currentNode = container?.querySelector<HTMLElement>('.map-node.current');
+
+        const timer = setTimeout(() => {
+            if (container && currentNode) {
+                const centerPos = currentNode.offsetTop + (currentNode.offsetHeight / 2) - (container.offsetHeight / 2);
+                container.scrollTo({
+                    top: centerPos,
+                    behavior: 'smooth'
+                });
+            }
+        }, 150);
+
+        return () => clearTimeout(timer);
+    }, [currentStageIndex]);
+
+
     const handleProceed = () => {
         roguelikeStore.startGame(null);
     };
@@ -69,7 +91,7 @@ export const RoguelikeMap = observer(() => {
             <CachedImage imageUrl={menuBackgroundUrl} alt="Roguelike Map Background" className="menu-background" />
             <div className="roguelike-map-content">
                 <h1>{T.roguelike.chooseYourPath}</h1>
-                <div className="map-container">
+                <div className="map-container" ref={mapContainerRef}>
                     {stages.map((stage, index) => {
                         const state = index < currentStageIndex ? 'completed' : index === currentStageIndex ? 'current' : 'future';
                         return (

@@ -115,15 +115,15 @@
 .map-container {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* FIX: Changed from center to see start of map */
+  justify-content: flex-start;
   gap: 0;
-  padding: 2rem 4rem; /* FIX: Added horizontal padding */
+  padding: 2rem 4rem;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  scrollbar-width: none;
 }
 .map-container::-webkit-scrollbar {
-  display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+  display: none;
 }
 .map-node {
   display: flex;
@@ -179,7 +179,7 @@
 .map-connector {
   flex-grow: 1;
   height: 4px;
-  background-color: var(--border-color);
+  background-color: var(--primary-accent);
   min-width: 50px;
   position: relative;
   opacity: 0.4;
@@ -299,8 +299,7 @@
   }
   .map-container {
       flex-direction: column;
-      overflow-y: auto;
-      overflow-x: hidden;
+      overflow: hidden;
       gap: 0;
       padding: 1rem;
       width: 100%;
@@ -314,7 +313,7 @@
   .map-connector {
       width: 4px;
       min-width: unset;
-      height: 60px;
+      height: 120px;
       flex-grow: 0;
   }
   .map-connector::after {
