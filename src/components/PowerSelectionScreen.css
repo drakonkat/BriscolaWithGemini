@@ -1,225 +1,256 @@
 /* --- Roguelike Map & Event Modal --- */
 .power-selection-screen {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--bg-color);
-  color: white;
-  text-align: center;
-  padding: 2rem;
-  position: relative;
-  overflow-y: auto;
-  overflow-x: hidden;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-color);
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
+
 .power-selection-content, .roguelike-map-content {
-  background-color: var(--ui-bg-glass);
-  backdrop-filter: blur(10px);
-  padding: 2rem;
-  border-radius: var(--radius-lg);
-  max-width: 95%;
-  width: 1000px;
-  z-index: 2;
-  border: 1px solid var(--border-color);
+    background-color: var(--ui-bg-glass);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    max-width: 95%;
+    width: 1000px;
+    z-index: 2;
+    border: 1px solid var(--border-color);
 }
+
 .power-selection-screen h1 {
-  font-size: clamp(2.5rem, 8vw, 3.5rem);
-  color: var(--primary-accent);
-  margin-bottom: 1rem;
+    font-size: clamp(2.5rem, 8vw, 3.5rem);
+    color: var(--primary-accent);
+    margin-bottom: 1rem;
 }
+
 .power-selection-screen p {
-  font-size: 1.2rem;
-  margin-bottom: 3rem;
-  color: var(--font-color-secondary);
+    font-size: 1.2rem;
+    margin-bottom: 3rem;
+    color: var(--font-color-secondary);
 }
+
 .power-cards-container {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
 }
+
 .power-card {
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1.5rem;
-  width: 280px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 180px;
-  position: relative;
-  overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    width: 280px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 180px;
+    position: relative;
+    overflow: hidden;
 }
+
 .power-card:hover, .power-card:focus {
-  transform: translateY(-10px) scale(1.05);
-  background-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-  border-color: var(--primary-accent);
-  outline: none;
+    transform: translateY(-10px) scale(1.05);
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    border-color: var(--primary-accent);
+    outline: none;
 }
+
 .power-card h3 {
-  font-size: 1.5rem;
-  color: #a0d8a2;
-  margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: #a0d8a2;
+    margin-bottom: 1rem;
 }
+
 .power-card p {
-  font-size: 1rem;
-  line-height: 1.5;
-  margin-bottom: 0;
-  color: #ddd;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 0;
+    color: #ddd;
 }
+
 .power-card.upgrade {
-  border-color: var(--gold-accent);
+    border-color: var(--gold-accent);
 }
+
 .power-card.upgrade:hover, .power-card.upgrade:focus {
-  box-shadow: 0 0 25px var(--gold-accent), 0 8px 25px rgba(0,0,0,0.4);
+    box-shadow: 0 0 25px var(--gold-accent), 0 8px 25px rgba(0, 0, 0, 0.4);
 }
+
 .upgrade-banner {
-  position: absolute;
-  top: 15px;
-  right: -35px;
-  background: var(--gold-accent);
-  color: #333;
-  padding: 0.3rem 3rem;
-  transform: rotate(45deg);
-  font-weight: bold;
-  font-size: 0.9rem;
+    position: absolute;
+    top: 15px;
+    right: -35px;
+    background: var(--gold-accent);
+    color: #333;
+    padding: 0.3rem 3rem;
+    transform: rotate(45deg);
+    font-weight: bold;
+    font-size: 0.9rem;
 }
 
 .power-selection-actions {
-  margin-top: 3rem;
+    margin-top: 3rem;
 }
+
 .power-selection-actions button {
-  font-size: 1.1rem;
-  padding: 0.7rem 1.5rem;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  transition: all 0.2s;
-  min-width: 120px;
+    font-size: 1.1rem;
+    padding: 0.7rem 1.5rem;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
 }
 
 
 /* --- Roguelike Map --- */
 .roguelike-map-content h1 {
-  font-size: clamp(2rem, 6vw, 2.5rem);
-  color: var(--primary-accent);
-  margin-bottom: 2rem;
+    font-size: clamp(2rem, 6vw, 2.5rem);
+    color: var(--primary-accent);
+    margin-bottom: 2rem;
 }
+
 .map-container {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0;
-  padding: 2rem 4rem;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0;
+    padding: 2rem 4rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
 }
+
 .map-container::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
+
 .map-node {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  text-align: center;
-  flex-shrink: 0;
-  width: 150px;
-  position: relative;
-  opacity: 0.4;
-  transition: opacity 0.4s ease, transform 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: center;
+    flex-shrink: 0;
+    width: 150px;
+    position: relative;
+    opacity: 0.4;
+    transition: opacity 0.4s ease, transform 0.4s ease;
 }
+
 .map-node-icon {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 4px solid var(--border-color);
-  background-color: rgba(0,0,0,0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.4s ease;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid var(--border-color);
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease;
 }
+
 .map-node.boss .map-node-icon {
-  border-radius: var(--radius-md);
+    border-radius: var(--radius-md);
 }
+
 .map-node.powerup .map-node-icon {
-  background: none;
-  border: none;
+    background: none;
+    border: none;
 }
+
 .map-node-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top;
-  border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 50%;
 }
+
 .map-node.boss .map-node-icon img {
-  border-radius: calc(var(--radius-md) - 4px);
+    border-radius: calc(var(--radius-md) - 4px);
 }
+
 .map-node-icon svg {
-  width: 70%;
-  height: 70%;
-  color: var(--gold-accent);
-  filter: drop-shadow(0 0 5px rgba(var(--gold-accent-rgb), 0.7));
+    width: 70%;
+    height: 70%;
+    color: var(--gold-accent);
+    filter: drop-shadow(0 0 5px rgba(var(--gold-accent-rgb), 0.7));
 }
+
 .map-node-label {
-  font-size: 1rem;
-  font-weight: bold;
-  color: var(--font-color);
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--font-color);
 }
+
 .map-connector {
-  flex-grow: 1;
-  height: 4px;
-  background-color: var(--primary-accent);
-  min-width: 50px;
-  position: relative;
-  opacity: 0.4;
-  transition: opacity 0.4s ease;
+    flex-grow: 1;
+    height: 4px;
+    background-color: var(--primary-accent);
+    min-width: 50px;
+    min-height: 4px;
+    position: relative;
+    opacity: 0.4;
+    transition: opacity 0.4s ease;
+    top: -15px;
 }
+
 .map-connector::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 100%;
-  background: var(--primary-accent);
-  box-shadow: 0 0 8px var(--primary-accent);
-  transition: width 0.5s ease 0.2s;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background: var(--primary-accent);
+    box-shadow: 0 0 8px var(--primary-accent);
+    transition: width 0.5s ease 0.2s;
 }
 
 /* Node States */
 .map-node.completed, .map-connector.completed {
-  opacity: 1;
+    opacity: 1;
 }
+
 .map-connector.completed::after {
-  width: 100%;
+    width: 100%;
 }
+
 .map-node.current {
-  opacity: 1;
-  transform: scale(1.1);
+    opacity: 1;
+    transform: scale(1.1);
 }
+
 .map-node.current .map-node-icon {
-  border-color: var(--primary-accent);
-  box-shadow: 0 0 20px rgba(var(--primary-accent-rgb), 0.7);
+    border-color: var(--primary-accent);
+    box-shadow: 0 0 20px rgba(var(--primary-accent-rgb), 0.7);
 }
+
 .map-node.current .map-node-icon svg {
-  color: var(--primary-accent);
-  filter: drop-shadow(0 0 10px rgba(var(--primary-accent-rgb), 1));
+    color: var(--primary-accent);
+    filter: drop-shadow(0 0 10px rgba(var(--primary-accent-rgb), 1));
 }
 
 .map-actions {
-  margin-top: 3rem;
+    margin-top: 3rem;
 }
+
 .map-actions button {
     font-size: 1.5rem;
     padding: 0.8rem 2.5rem;
@@ -229,103 +260,119 @@
     color: white;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
+
 .map-actions button:hover:not(:disabled) {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3), 0 0 20px rgba(var(--primary-accent-rgb), 0.5);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 0 20px rgba(var(--primary-accent-rgb), 0.5);
 }
 
 
 @media (max-width: 768px) {
-  /* Power Selection Screen Mobile Styles */
-  .power-selection-screen {
-    padding: 0;
-    justify-content: flex-start;
-    overflow-y: hidden;
-  }
-  .power-selection-content, .roguelike-map-content {
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    border-radius: 0;
-    border: none;
-    box-shadow: none;
-    margin: 0;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    text-align: center;
-    padding: 2rem 1rem;
-    padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
-  }
-  .power-selection-screen h1 {
-    font-size: clamp(2rem, 7vw, 2.5rem);
-    margin-bottom: 0.75rem;
-  }
-  .power-selection-screen p {
-    font-size: 1.1rem;
-    margin-bottom: 1.5rem;
-  }
-  .power-cards-container {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    width: 100%;
-  }
-  .power-card {
-    width: 100%;
-    max-width: 450px;
-    padding: 1.25rem;
-    min-height: auto;
-  }
-  .power-card h3 {
-    font-size: 1.3rem;
-  }
-  .power-card p {
-    font-size: 0.95rem;
-  }
+    /* Power Selection Screen Mobile Styles */
+    .power-selection-screen {
+        padding: 0;
+        justify-content: flex-start;
+        overflow-y: hidden;
+    }
 
-  .power-selection-actions {
-    margin-top: 2rem;
-  }
+    .power-selection-content, .roguelike-map-content {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        margin: 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        text-align: center;
+        padding: 2rem 1rem;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
 
-  /* --- Roguelike Map Mobile --- */
-  .roguelike-map-content {
-      justify-content: flex-start;
-  }
-  .map-container {
-      flex-direction: column;
-      overflow: hidden;
-      gap: 0;
-      padding: 1rem;
-      width: 100%;
-      align-items: center;
-      justify-content: flex-start;
-  }
-  .map-node {
-      width: 100%;
-      max-width: 300px;
-  }
-  .map-connector {
-      width: 4px;
-      min-width: unset;
-      height: 120px;
-      flex-grow: 0;
-  }
-  .map-connector::after {
-      width: 100%;
-      height: 0;
-      transition: height 0.5s ease 0.2s;
-  }
-  .map-connector.completed::after {
-      height: 100%;
-      width: 100%;
-  }
-  .map-actions {
-      margin-top: 2rem;
-  }
+    .power-selection-screen h1 {
+        font-size: clamp(2rem, 7vw, 2.5rem);
+        margin-bottom: 0.75rem;
+    }
+
+    .power-selection-screen p {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .power-cards-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .power-card {
+        width: 100%;
+        max-width: 450px;
+        padding: 1.25rem;
+        min-height: auto;
+    }
+
+    .power-card h3 {
+        font-size: 1.3rem;
+    }
+
+    .power-card p {
+        font-size: 0.95rem;
+    }
+
+    .power-selection-actions {
+        margin-top: 2rem;
+    }
+
+    /* --- Roguelike Map Mobile --- */
+    .roguelike-map-content {
+        justify-content: flex-start;
+    }
+
+    .map-container {
+        flex-direction: column;
+        overflow: hidden;
+        gap: 20px;
+        padding: 1rem;
+        width: 100%;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .map-node {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .map-connector {
+        width: 4px;
+        min-width: unset;
+        background-color: var(--primary-accent);
+        min-height: 50px;
+        height: 120px;
+        flex-grow: 0;
+    }
+
+    .map-connector::after {
+        width: 100%;
+        height: 0;
+        transition: height 0.5s ease 0.2s;
+    }
+
+    .map-connector.completed::after {
+        height: 100%;
+        width: 100%;
+    }
+
+    .map-actions {
+        margin-top: 2rem;
+    }
 }
