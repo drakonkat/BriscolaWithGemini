@@ -262,8 +262,12 @@ export class ClassicModeStore extends GameStateStore {
                     this.currentWaifu = savedState.currentWaifu;
                     this.trickCounter = savedState.trickCounter;
                     this.backgroundUrl = getImageUrl(`/background/landscape${Math.floor(Math.random() * 21) + 1}.png`);
-                    this.message = this.turn === 'human' ? this.T.yourTurnMessage : this.T.aiStarts(this.currentWaifu!.name);
-                    this.rootStore.chatStore.resetChat(this.currentWaifu!);
+                    if (this.currentWaifu) {
+                        this.message = this.turn === 'human' ? this.T.yourTurnMessage : this.T.aiStarts(this.currentWaifu.name);
+                        this.rootStore.chatStore.resetChat(this.currentWaifu);
+                    } else {
+                        this.message = this.T.yourTurnMessage;
+                    }
                 });
                 return true;
             }
