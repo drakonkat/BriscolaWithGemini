@@ -1267,7 +1267,7 @@
 }
 
 @media (max-width: 768px) {
-    .missions-modal {
+    .missions-modal, .gallery-modal {
         width: 95vw;
         max-width: 95vw;
         padding: 1.5rem 1rem;
@@ -1307,4 +1307,236 @@
     .claim-button {
         width: 100%;
     }
+
+    .gallery-tabs .tab-button span {
+        display: none;
+    }
+    .gallery-tabs .tab-button {
+        padding: 0.75rem;
+        flex-grow: 1;
+    }
 }
+```
+
+Looks perfect.Certamente! Ho notato che in modalità mobile i titoli delle schede nelle modali della Galleria e delle Missioni occupano troppo spazio.
+
+Ho aggiornato lo stile per nascondere il testo e mostrare solo le icone quando lo schermo è più piccolo. Questo crea un'interfaccia più pulita e adatta ai dispositivi mobili, assicurando che tutti gli elementi rimangano ben visibili e accessibili.
+
+Ecco le modifiche apportate:
+
+```xml
+<changes>
+<change>
+<file>src/components/Modals.css</file>
+<description>Ho aggiornato il CSS per le modali della Galleria e delle Missioni. In risoluzione mobile, ora vengono visualizzate solo le icone nelle schede, nascondendo i titoli per ottimizzare lo spazio e migliorare l'usabilità su schermi di piccole dimensioni.</description>
+<content><![CDATA[/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+*/
+
+
+
+/* --- Generic Modal Styles --- */
+.game-over-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 9999; cursor: pointer; overflow-y: auto; padding: 1rem;
+}
+
+.game-over-modal, .rules-modal, .waifu-details-modal, .confirmation-modal, .gallery-modal, .event-modal, .history-modal, .kasumi-swap-modal, .sound-editor-modal, .gacha-multi-unlock-modal, .crafting-minigame-modal, .challenge-key-selection-modal {
+  background-color: var(--ui-bg); backdrop-filter: blur(8px); padding: 2rem 3rem; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(var(--primary-accent-rgb), 0.1); max-width: 90%; width: 500px; cursor: default; position: relative;
+}
+.game-over-modal h2, .rules-modal h2, .event-modal h2, .history-modal h2, .kasumi-swap-modal h2, .sound-editor-modal h2, .crafting-minigame-modal h2, .challenge-key-selection-modal h2 {
+  font-size: 2rem; margin-bottom: 1rem; color: var(--primary-accent); padding-right: 3.5rem; text-shadow: 0 0 10px rgba(var(--primary-accent-rgb), 0.3);
+}
+.game-over-modal p, .rules-modal p, .event-modal p, .crafting-minigame-modal p, .challenge-key-selection-modal p {
+  font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--font-color-secondary);
+}
+
+.modal-close-button {
+  position: absolute; top: 1rem; right: 1rem; background: none; border: 1px solid var(--border-color); color: var(--font-color-secondary); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; z-index: 10; padding: 0;
+}
+.modal-close-button:hover, .modal-close-button:focus { color: white; border-color: white; transform: scale(1.1); outline: none; background-color: rgba(255, 255, 255, 0.1); }
+.modal-close-button svg { width: 20px; height: 20px; }
+
+/* --- Game Over Modal --- */
+.game-over-winnings {
+  font-size: 1.4rem; font-weight: bold; color: var(--gold-accent); margin: 1rem 0 0.5rem; text-shadow: 0 0 8px rgba(var(--gold-accent-rgb), 0.5);
+}
+.game-over-modal h3 {
+  font-size: 1.5rem; margin: 0.5rem 0 1.5rem; color: var(--font-color);
+}
+.game-over-modal .modal-actions button, .rules-modal .modal-actions button, .history-modal .modal-actions button, .kasumi-swap-modal .modal-actions button,
+.gacha-unlock-modal .modal-actions button, .gacha-multi-unlock-modal .modal-actions button {
+  font-size: 1.2rem; padding: 0.7rem 2rem; border-radius: var(--radius-full); border: none; background: linear-gradient(45deg, var(--primary-accent), var(--primary-accent-hover)); color: white; cursor: pointer; transition: all 0.2s; margin-top: 1.5rem;
+}
+.game-over-modal .modal-actions button:hover, .game-over-modal .modal-actions button:focus,
+.rules-modal .modal-actions button:hover, .rules-modal .modal-actions button:focus,
+.history-modal .modal-actions button:hover, .history-modal .modal-actions button:focus,
+.kasumi-swap-modal .modal-actions button:hover, .kasumi-swap-modal .modal-actions button:focus,
+.gacha-unlock-modal .modal-actions button:hover, .gacha-unlock-modal .modal-actions button:focus,
+.gacha-multi-unlock-modal .modal-actions button:hover, .gacha-multi-unlock-modal .modal-actions button:focus {
+  transform: translateY(-2px); box-shadow: 0 4px 15px rgba(var(--primary-accent-rgb), 0.4);
+}
+.game-over-modal .quota-info { margin-top: 1rem; font-size: 0.9rem; color: var(--font-color-secondary); font-style: italic; }
+.game-over-modal .modal-actions { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-top: 1.5rem; }
+.game-over-modal .modal-actions button, .gacha-unlock-modal .modal-actions button, .gacha-multi-unlock-modal .modal-actions button { margin-top: 0; }
+.game-over-modal h2 { padding-right: 0; }
+
+.dungeon-opponent-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+.dungeon-opponent-display img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-accent);
+    object-fit: cover;
+    object-position: top;
+}
+.dungeon-opponent-display h3 {
+    font-size: 1.5rem;
+    color: var(--font-color);
+    margin: 0;
+}
+.modifier-details {
+    margin-top: 1rem;
+}
+.modifier-details h4 {
+    font-size: 1.2rem;
+    color: var(--gold-accent);
+    margin: 0 0 0.5rem 0;
+}
+.modifier-details p {
+    font-size: 1rem;
+    color: var(--font-color-secondary);
+    margin: 0;
+}
+
+/* --- Rules Modal --- */
+.rules-modal { text-align: left; max-height: 85vh; overflow-y: auto; }
+.rules-modal p { font-size: 1.1rem; line-height: 1.5; margin-bottom: 1.5rem; }
+.rules-modal h3.rules-subtitle { font-size: 1.5rem; color: #a0d8a2; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); }
+.rules-points-list { list-style: none; padding: 0; margin: 1rem 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.5rem; }
+.rules-point-item { display: flex; justify-content: space-between; font-size: 1.1rem; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color); }
+.rules-point-item span:first-child { font-weight: bold; }
+.rules-info-list { list-style: none; padding: 0; margin: 1rem 0; display: flex; flex-direction: column; gap: 0.8rem; }
+.rules-info-item { font-size: 1.1rem; background-color: rgba(0, 0, 0, 0.2); padding: 0.8rem 1rem; border-radius: var(--radius-sm); border-left: 4px solid var(--primary-accent); }
+.rules-info-item.active-difficulty { border-left-color: var(--gold-accent); background-color: rgba(var(--gold-accent-rgb), 0.1); font-weight: bold; }
+.rules-modal .modal-actions { text-align: center; }
+
+.roguelike-powers-rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+.power-rule-entry {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    border-left: 4px solid #a0d8a2;
+}
+.power-rule-entry strong {
+    font-size: 1.2rem;
+    color: #a0d8a2;
+}
+.power-rule-entry ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.power-rule-entry li {
+    font-size: 0.95rem;
+    color: var(--font-color-secondary);
+    line-height: 1.4;
+}
+.power-rule-entry li span {
+    font-weight: bold;
+    color: #ccc;
+    margin-right: 0.5rem;
+}
+
+.roguelike-rewards-rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+}
+.reward-difficulty-column strong {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    text-align: center;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid;
+}
+.reward-difficulty-column ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.reward-difficulty-column li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+}
+.reward-difficulty-column li span:last-child {
+    font-weight: bold;
+    color: var(--gold-accent);
+}
+.reward-difficulty-column.difficulty-easy strong { border-color: var(--element-earth-color); color: var(--element-earth-color); }
+.reward-difficulty-column.difficulty-medium strong { border-color: var(--element-water-color); color: var(--element-water-color); }
+.reward-difficulty-column.difficulty-hard strong { border-color: var(--element-fire-color); color: var(--element-fire-color); }
+.reward-difficulty-column.difficulty-nightmare strong { border-color: var(--rarity-r-color); color: var(--rarity-r-color); }
+
+/* --- Legend Modal --- */
+.elemental-powers-legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.elemental-powers-legend-list .elemental-power-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.1rem;
+  background-color: rgba(0,0,0,0.2);
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+}
+.elemental-powers-legend-list .elemental-power-row .element-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+.elemental-powers-legend-list .elemental-power-description {
+  text-align: left;
+  line-height: 1.4;
+}
+.elemental-powers-legend-list .elemental-power-description strong {
+  margin-right: 0.5rem;
+}
+
+.elemental-cycle-display.modal-version {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: var(--font-color-secondary);
+  padding: 0.75rem;
+  background-color: rgba(0
