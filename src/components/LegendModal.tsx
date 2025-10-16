@@ -8,6 +8,8 @@ import { translations } from '../core/translations';
 import { ElementIcon } from './ElementIcon';
 import { POWER_UP_DEFINITIONS } from '../core/roguelikePowers';
 import type { Language } from '../core/types';
+import { CachedImage } from './CachedImage';
+import { getImageUrl } from '../core/utils';
 
 interface LegendModalProps {
     isOpen: boolean;
@@ -56,6 +58,32 @@ export const LegendModal = observer(({ isOpen, onClose, language }: LegendModalP
                         <h4 className="rules-subtitle" style={{ fontSize: '1.3rem', marginTop: '1.5rem' }}>{T.roguelike.elementalCycleTitle}</h4>
                         <div className="elemental-cycle-display modal-version">
                             <ElementIcon element="water" /> &gt; <ElementIcon element="fire" /> &gt; <ElementIcon element="air" /> &gt; <ElementIcon element="earth" /> &gt; <ElementIcon element="water" />
+                        </div>
+                    </>
+                )}
+
+                {roguelikeState.followers.length > 0 && (
+                    <>
+                        <h3 className="rules-subtitle">{(T.roguelike as any).followerAbilitiesTitle}</h3>
+                        <div className="elemental-powers-legend-list">
+                            {roguelikeState.followers.map(follower => {
+                                const abilityId = follower.followerAbilityId;
+                                if (!abilityId) return null;
+
+                                const abilityName = (T as any)[abilityId] as string;
+                                const abilityDescKey = `${abilityId}_desc` as keyof typeof T;
+                                const abilityDesc = T[abilityDescKey] as string;
+
+                                return (
+                                    <div key={follower.name} className="elemental-power-row follower-ability-row">
+                                       <CachedImage imageUrl={getImageUrl(follower.avatar)} alt={follower.name} className="follower-avatar-small" />
+                                       <div className="elemental-power-description">
+                                           <strong>{abilityName} ({follower.name}):</strong>
+                                           <span>{abilityDesc}</span>
+                                       </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </>
                 )}
