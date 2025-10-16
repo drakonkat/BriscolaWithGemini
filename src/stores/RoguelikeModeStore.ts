@@ -180,7 +180,7 @@ export class RoguelikeModeStore extends GameStateStore {
         });
     }
 
-    resumeGame = () => {
+    resumeGame() {
         if (!this.hasSavedGame) return;
         this.startGame(null);
     }
