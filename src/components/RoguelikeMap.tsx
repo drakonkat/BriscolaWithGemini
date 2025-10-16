@@ -34,7 +34,8 @@ export const RoguelikeMap = observer(() => {
     const { roguelikeState } = roguelikeStore;
     const { language } = gameSettingsStore;
     const { menuBackgroundUrl } = uiStore;
-    const mapContainerRef = useRef<HTMLDivElement>(null);
+    const desktopScrollContainerRef = useRef<HTMLDivElement>(null);
+    const mobileScrollContainerRef = useRef<HTMLDivElement>(null);
 
     const T = translations[language];
 
@@ -62,19 +63,29 @@ export const RoguelikeMap = observer(() => {
     const currentStageIndex = (currentLevel - 1) * 2 + 1;
 
     useEffect(() => {
-        const isMobile = window.innerWidth <= 768;
-        if (!isMobile) return;
-
-        const container = mapContainerRef.current;
-        const currentNode = container?.querySelector<HTMLElement>('.map-node.current');
-
         const timer = setTimeout(() => {
+            const isMobile = window.innerWidth <= 768;
+            const container = isMobile ? mobileScrollContainerRef.current : desktopScrollContainerRef.current;
+            const currentNode = container?.querySelector<HTMLElement>('.map-node.current');
+
             if (container && currentNode) {
-                const centerPos = currentNode.offsetTop + (currentNode.offsetHeight / 2) - (container.offsetHeight / 2);
-                container.scrollTo({
-                    top: centerPos,
-                    behavior: 'smooth'
-                });
+                if (isMobile) {
+                    const containerRect = container.getBoundingClientRect();
+                    const nodeRect = currentNode.getBoundingClientRect();
+                    const nodeTopRelativeToContainer = nodeRect.top - containerRect.top;
+                    const scrollOffset = nodeTopRelativeToContainer - (containerRect.height / 2) + (nodeRect.height / 2);
+
+                    container.scrollTo({
+                        top: container.scrollTop + scrollOffset,
+                        behavior: 'smooth'
+                    });
+                } else {
+                    const centerPos = currentNode.offsetLeft + (currentNode.offsetWidth / 2) - (container.offsetWidth / 2);
+                    container.scrollTo({
+                        left: centerPos,
+                        behavior: 'smooth'
+                    });
+                }
             }
         }, 150);
 
@@ -89,9 +100,9 @@ export const RoguelikeMap = observer(() => {
     return (
         <div className="power-selection-screen">
             <CachedImage imageUrl={menuBackgroundUrl} alt="Roguelike Map Background" className="menu-background" />
-            <div className="roguelike-map-content">
+            <div className="roguelike-map-content" ref={mobileScrollContainerRef}>
                 <h1>{T.roguelike.chooseYourPath}</h1>
-                <div className="map-container" ref={mapContainerRef}>
+                <div className="map-container" ref={desktopScrollContainerRef}>
                     {stages.map((stage, index) => {
                         const state = index < currentStageIndex ? 'completed' : index === currentStageIndex ? 'current' : 'future';
                         return (
