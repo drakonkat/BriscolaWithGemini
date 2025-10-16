@@ -494,14 +494,14 @@ export const GameBoard = observer(() => {
                                 cardDeckStyle={cardDeckStyle}
                                 className={draggingCardInfo?.card.id === card.id ? 'is-dragging' : ''}
                                 onClick={() => gameStateStore.selectCardForPlay(card)}
-                                isDraggable={isRoguelike && !!card.element && !card.isTemporaryBriscola}
+                                isDraggable={isRoguelike && !!card.element}
                                 onMouseDown={(e) => {
-                                    if (isRoguelike && !!card.element && !card.isTemporaryBriscola) {
+                                    if (isRoguelike && !!card.element) {
                                         handleDragStart(card, e);
                                     }
                                 }}
                                 onTouchStart={(e) => {
-                                    if (isRoguelike && !!card.element && !card.isTemporaryBriscola) {
+                                    if (isRoguelike && !!card.element) {
                                         handleDragStart(card, e);
                                     }
                                 }}

@@ -46,6 +46,7 @@ export class RoguelikeModeStore extends GameStateStore {
     lastTrickInsightCooldown = 0;
     revealedAiHand: Card[] | null = null;
     newFollower: Waifu | null = null;
+    sakuraBlessingActive = false;
 
     trickResolutionTimer: number | null = null;
     trickResolutionCallback: (() => void) | null = null;
@@ -73,6 +74,7 @@ export class RoguelikeModeStore extends GameStateStore {
             trickResolutionTimer: observable,
             trickResolutionCallback: observable,
             activatedElementsThisMatch: observable,
+            sakuraBlessingActive: observable,
             hasSavedGame: override,
             saveGame: override,
             loadGame: override,
@@ -339,7 +341,7 @@ export class RoguelikeModeStore extends GameStateStore {
     selectCardForPlay = (card: Card) => {
         if (this.turn !== 'human' || this.isProcessing) return;
     
-        if (card.element && !card.isTemporaryBriscola) {
+        if (card.element) {
             this.cardForElementalChoice = card;
             this.isElementalChoiceOpen = true;
             return;
@@ -455,18 +457,24 @@ export class RoguelikeModeStore extends GameStateStore {
         }
 
         if (isHumanPowerActive && isAiPowerActive && humanCard.element && aiCard.element) {
-            const weaknessWinner = determineWeaknessWinner(humanCard.element, aiCard.element);
-            if (weaknessWinner) {
-                clashWinner = weaknessWinner;
-                this.elementalClash = { type: 'weakness', winner: weaknessWinner, winningElement: weaknessWinner === 'human' ? humanCard.element : aiCard.element, losingElement: weaknessWinner === 'human' ? aiCard.element : humanCard.element };
+            if (this.sakuraBlessingActive) {
+                clashWinner = 'human';
+                this.elementalClash = { type: 'weakness', winner: 'human', winningElement: humanCard.element, losingElement: aiCard.element };
+                this.sakuraBlessingActive = false; // one-time use
             } else {
-                playSound('dice-roll');
-                const humanRoll = Math.floor(Math.random() * 100) + 1;
-                const aiRoll = Math.floor(Math.random() * 100) + 1;
-                if (humanRoll > aiRoll) clashWinner = 'human';
-                else if (aiRoll > humanRoll) clashWinner = 'ai';
-                else clashWinner = 'tie';
-                this.elementalClash = { type: 'dice', humanRoll, aiRoll, winner: clashWinner };
+                const weaknessWinner = determineWeaknessWinner(humanCard.element, aiCard.element);
+                if (weaknessWinner) {
+                    clashWinner = weaknessWinner;
+                    this.elementalClash = { type: 'weakness', winner: weaknessWinner, winningElement: weaknessWinner === 'human' ? humanCard.element : aiCard.element, losingElement: weaknessWinner === 'human' ? aiCard.element : humanCard.element };
+                } else {
+                    playSound('dice-roll');
+                    const humanRoll = Math.floor(Math.random() * 100) + 1;
+                    const aiRoll = Math.floor(Math.random() * 100) + 1;
+                    if (humanRoll > aiRoll) clashWinner = 'human';
+                    else if (aiRoll > humanRoll) clashWinner = 'ai';
+                    else clashWinner = 'tie';
+                    this.elementalClash = { type: 'dice', humanRoll, aiRoll, winner: clashWinner };
+                }
             }
         }
         
@@ -638,21 +646,67 @@ export class RoguelikeModeStore extends GameStateStore {
         if (!follower || !follower.followerAbilityId || this.roguelikeState.followerAbilitiesUsedThisMatch.includes(waifuName)) return;
 
         const abilityId = follower.followerAbilityId;
+        const abilityName = (this.T as any)[abilityId] as string;
         
-        const abilityEntry: AbilityUseHistoryEntry = { isAbilityUse: true, trickNumber: this.trickCounter + 1, waifuName, abilityName: (this.T as any)[abilityId] as string };
-        this.trickHistory.push(abilityEntry);
+        let abilityUsed = false;
+        let canUse = true;
 
-        this.roguelikeState.followerAbilitiesUsedThisMatch.push(waifuName);
-        this.saveGame();
+        switch (abilityId) {
+            case 'sakura_blessing':
+                this.sakuraBlessingActive = true;
+                this.rootStore.uiStore.showSnackbar(this.T.followerAbilityArmed(waifuName, abilityName), 'success');
+                abilityUsed = true;
+                break;
+            case 'rei_analysis':
+                if (this.aiScore - this.humanScore >= 5) {
+                    this.humanScore += 5;
+                    this.aiScore -= 5;
+                    this.rootStore.uiStore.showSnackbar(`+5 Punti!`, 'success');
+                    abilityUsed = true;
+                } else {
+                    canUse = false;
+                    this.rootStore.uiStore.showSnackbar(`Non puoi usarla ora.`, 'warning');
+                }
+                break;
+            case 'kasumi_gambit':
+                if (this.turn === 'human' && this.briscolaCard) {
+                    this.openKasumiModal();
+                    abilityUsed = true; // Consumed on use, even if modal is closed
+                } else {
+                     canUse = false;
+                     this.rootStore.uiStore.showSnackbar(`Non puoi usarla ora.`, 'warning');
+                }
+                break;
+        }
+        
+        if (abilityUsed) {
+            const abilityEntry: AbilityUseHistoryEntry = { isAbilityUse: true, trickNumber: this.trickCounter + 1, waifuName, abilityName };
+            this.trickHistory.push(abilityEntry);
+            this.roguelikeState.followerAbilitiesUsedThisMatch.push(waifuName);
+            this.saveGame();
+        }
     }
     
     openKasumiModal = () => { if(this.turn === 'human') this.isKasumiModalOpen = true; }
     closeKasumiModal = () => this.isKasumiModalOpen = false;
+
     handleKasumiCardSwap = (card: Card) => {
         if (!this.briscolaCard) return;
-        this.humanHand = this.humanHand.filter(c => c.id !== card.id);
-        this.humanHand.push({ ...this.briscolaCard, isTemporaryBriscola: false });
-        this.briscolaCard = { ...card, isTemporaryBriscola: true };
+
+        // The original briscola card goes to the player's hand
+        const originalBriscolaCard = this.briscolaCard;
+        
+        // The chosen card from hand goes to the table
+        const newBriscolaCard = card;
+
+        // Perform the swap in the hand
+        this.humanHand = this.humanHand.filter(c => c.id !== newBriscolaCard.id);
+        this.humanHand.push(originalBriscolaCard);
+
+        // Update the briscola on the table AND the briscola suit for the game
+        this.briscolaCard = newBriscolaCard;
+        this.briscolaSuit = newBriscolaCard.suit;
+
         this.closeKasumiModal();
     }
     
@@ -663,12 +717,20 @@ export class RoguelikeModeStore extends GameStateStore {
         }
     }
     closeBriscolaSwapModal = () => this.isBriscolaSwapModalOpen = false;
+
     handleBriscolaSwap = (card: Card) => {
         const swapPower = this.roguelikeState.activePowers.find(p => p.id === 'value_swap');
         if (!this.briscolaCard || !swapPower) return;
-        this.humanHand = this.humanHand.filter(c => c.id !== card.id);
-        this.humanHand.push({ ...this.briscolaCard, isTemporaryBriscola: false });
-        this.briscolaCard = { ...card, isTemporaryBriscola: true };
+        
+        const originalBriscolaCard = this.briscolaCard;
+        const newBriscolaCard = card;
+
+        this.humanHand = this.humanHand.filter(c => c.id !== newBriscolaCard.id);
+        this.humanHand.push(originalBriscolaCard);
+
+        this.briscolaCard = newBriscolaCard;
+        this.briscolaSuit = newBriscolaCard.suit;
+        
         this.briscolaSwapCooldown = 4 - swapPower.level;
         this.closeBriscolaSwapModal();
     }
@@ -682,7 +744,7 @@ export class RoguelikeModeStore extends GameStateStore {
     }
 
     handleDragStart(card: Card, e: React.MouseEvent | React.TouchEvent) {
-        if (this.turn !== 'human' || this.isProcessing || !card.element || card.isTemporaryBriscola) return;
+        if (this.turn !== 'human' || this.isProcessing || !card.element) return;
 
         e.preventDefault();
         const targetElement = e.currentTarget as HTMLElement;

@@ -14,7 +14,6 @@ export type Card = {
   isFortified?: boolean;
   element?: Element;
   elementalEffectActivated?: boolean;
-  isTemporaryBriscola?: boolean;
   isCursed?: boolean;
 };
 export type Player = 'human' | 'ai';
