@@ -66,7 +66,8 @@ export const RoguelikeMap = observer(() => {
         const timer = setTimeout(() => {
             const isMobile = window.innerWidth <= 768;
             const container = isMobile ? mobileScrollContainerRef.current : desktopScrollContainerRef.current;
-            const currentNode = container?.querySelector<HTMLElement>('.map-node.current');
+            // FIX: The querySelector generic may not be supported in all TypeScript configurations. Replaced with an explicit type cast.
+            const currentNode = container?.querySelector('.map-node.current') as HTMLElement;
 
             if (container && currentNode) {
                 if (isMobile) {

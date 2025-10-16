@@ -384,60 +384,73 @@ export class RoguelikeModeStore extends GameStateStore {
 
     handleAiTurn() {
         if (this.phase !== 'playing' || this.turn !== 'ai' || this.cardsOnTable.length === 2) return;
-
         this.isProcessing = true;
-        
+    
+        const { difficulty } = this.rootStore.gameSettingsStore;
+        const humanHandForAI = difficulty === 'apocalypse' ? this.humanHand : null;
+        const deckForAI = difficulty === 'apocalypse' ? this.deck : null;
+    
         let aiCardToPlay: Card;
         let activatePower = false;
         const humanCardOnTable = this.cardsOnTable.length === 1 ? this.cardsOnTable[0] : null;
-
-        if (humanCardOnTable?.elementalEffectActivated) {
-            const elementalCards = this.aiHand.filter(c => c.element);
-            if (elementalCards.length > 0) {
-                aiCardToPlay = getLocalAIMove(elementalCards, this.briscolaSuit!, this.cardsOnTable, this.rootStore.gameSettingsStore.difficulty);
-                activatePower = true;
+    
+        const aiMoveResult = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, difficulty, humanHandForAI, deckForAI);
+        let hadSwap = false;
+    
+        if (aiMoveResult.newHand && aiMoveResult.newDeck) {
+            this.aiHand = aiMoveResult.newHand;
+            this.deck = aiMoveResult.newDeck;
+            hadSwap = true;
+        }
+        aiCardToPlay = aiMoveResult.cardToPlay;
+    
+        // Only try to override with a power move if a deck swap didn't happen
+        if (!hadSwap) {
+            if (humanCardOnTable?.elementalEffectActivated) {
+                const elementalCards = this.aiHand.filter(c => c.element);
+                if (elementalCards.length > 0) {
+                    const bestPowerCard = getLocalAIMove(elementalCards, this.briscolaSuit!, this.cardsOnTable, difficulty, humanHandForAI, deckForAI).cardToPlay;
+                    aiCardToPlay = bestPowerCard;
+                    activatePower = true;
+                }
             } else {
-                aiCardToPlay = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, this.rootStore.gameSettingsStore.difficulty);
-            }
-        } else {
-            aiCardToPlay = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, this.rootStore.gameSettingsStore.difficulty);
-
-            for (const card of this.aiHand) {
-                 if (card.element) {
-                    const isWinningTrick = !humanCardOnTable || getRoguelikeTrickWinner([humanCardOnTable, card], this.trickStarter, this.briscolaSuit!) === 'ai';
-                    let isGoodPowerMove = false;
-
-                    switch (card.element) {
-                        case 'fire':
-                            if (isWinningTrick) isGoodPowerMove = true;
+                for (const card of this.aiHand) {
+                    if (card.element) {
+                        const isWinningTrick = !humanCardOnTable || getRoguelikeTrickWinner([humanCardOnTable, card], this.trickStarter, this.briscolaSuit!) === 'ai';
+                        let isGoodPowerMove = false;
+    
+                        switch (card.element) {
+                            case 'fire':
+                                if (isWinningTrick) isGoodPowerMove = true;
+                                break;
+                            case 'water':
+                                if (!isWinningTrick && humanCardOnTable && getCardPoints(humanCardOnTable) >= 10) isGoodPowerMove = true;
+                                break;
+                            case 'air':
+                                if (isWinningTrick && this.aiScorePile.some(c => c.element === 'air')) isGoodPowerMove = true;
+                                break;
+                            case 'earth':
+                                if (!isWinningTrick && getCardPoints(card) >= 10) isGoodPowerMove = true;
+                                break;
+                        }
+                        
+                        if (isGoodPowerMove) {
+                            aiCardToPlay = card;
+                            activatePower = true;
                             break;
-                        case 'water':
-                            if (!isWinningTrick && humanCardOnTable && getCardPoints(humanCardOnTable) >= 10) isGoodPowerMove = true;
-                            break;
-                        case 'air':
-                            if (isWinningTrick && this.aiScorePile.some(c => c.element === 'air')) isGoodPowerMove = true;
-                            break;
-                        case 'earth':
-                            if (!isWinningTrick && getCardPoints(card) >= 10) isGoodPowerMove = true;
-                            break;
-                    }
-                    
-                    if (isGoodPowerMove) {
-                        aiCardToPlay = card;
-                        activatePower = true;
-                        break;
+                        }
                     }
                 }
             }
         }
-
+    
         const finalCard = { ...aiCardToPlay, elementalEffectActivated: activatePower };
-
+    
         if (finalCard.elementalEffectActivated) {
             this.rootStore.missionStore.incrementProgress('elementalPowersUsed');
             playSound(`element-${finalCard.element!}`);
         }
-
+    
         this.playAiCard(finalCard);
     }
     

@@ -12,6 +12,8 @@ import { getImageUrl } from '../core/utils';
 import { playSound } from '../core/soundManager';
 import { WAIFUS } from '../core/waifus';
 import type { RootStore } from '.';
+// FIX: Added missing import for getLocalAIMove.
+import { getLocalAIMove } from '../core/localAI';
 
 // FIX: Added an interface to define the shape of the saved game state.
 interface ClassicSaveState {
@@ -147,6 +149,24 @@ export class ClassicModeStore extends GameStateStore {
             this.drawCards(trickWinner);
 
         }), 1500);
+    }
+    
+    handleAiTurn() {
+        if (this.phase !== 'playing' || this.turn !== 'ai' || this.cardsOnTable.length === 2) return;
+        this.isProcessing = true;
+        
+        const { difficulty } = this.rootStore.gameSettingsStore;
+        const humanHandForAI = difficulty === 'apocalypse' ? this.humanHand : null;
+        const deckForAI = difficulty === 'apocalypse' ? this.deck : null;
+        
+        const aiMoveResult = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, difficulty, humanHandForAI, deckForAI);
+        
+        if (aiMoveResult.newHand && aiMoveResult.newDeck) {
+            this.aiHand = aiMoveResult.newHand;
+            this.deck = aiMoveResult.newDeck;
+        }
+        
+        this.playAiCard(aiMoveResult.cardToPlay);
     }
     
     handleEndOfGame() {
