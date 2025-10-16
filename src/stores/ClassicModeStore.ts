@@ -2,9 +2,9 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { runInAction, reaction } from 'mobx';
+import { runInAction, reaction, makeObservable, action, computed } from 'mobx';
 import { getCardPoints, shuffleDeck } from '../core/utils';
-import type { Waifu, Card, TrickHistoryEntry } from '../core/types';
+import type { Waifu, Card, TrickHistoryEntry, Suit, Player, HistoryEntry } from '../core/types';
 import { getTrickWinner as getClassicTrickWinner } from '../core/classicGameLogic';
 import { GameStateStore } from './GameStateStore';
 import { createDeck } from '../core/classicGameLogic';
@@ -13,10 +13,41 @@ import { playSound } from '../core/soundManager';
 import { WAIFUS } from '../core/waifus';
 import type { RootStore } from '.';
 
+// FIX: Added an interface to define the shape of the saved game state.
+interface ClassicSaveState {
+    phase: 'playing';
+    turn: Player;
+    trickStarter: Player;
+    humanHand: Card[];
+    aiHand: Card[];
+    deck: Card[];
+    cardsOnTable: Card[];
+    briscolaCard: Card | null;
+    briscolaSuit: Suit | null;
+    humanScore: number;
+    aiScore: number;
+    trickHistory: HistoryEntry[];
+    currentWaifu: Waifu | null;
+    trickCounter: number;
+}
+
 export class ClassicModeStore extends GameStateStore {
 
     constructor(rootStore: RootStore) {
         super(rootStore);
+        makeObservable(this, {
+            startGame: action,
+            _initializeNewGame: action,
+            resolveTrick: action,
+            handleEndOfGame: action,
+            getCardPoints: action,
+            // FIX: Added new methods to makeObservable to make them part of the MobX state.
+            saveGame: action,
+            loadGame: action,
+            clearSavedGame: action,
+            resumeGame: action,
+            hasSavedGame: computed,
+        });
 
         this.addReactionDisposer(reaction(
             () => this.cardsOnTable.length,
@@ -173,5 +204,87 @@ export class ClassicModeStore extends GameStateStore {
 
     getCardPoints(card: Card): number {
         return getCardPoints(card);
+    }
+
+    // FIX: Implemented abstract methods from GameStateStore to resolve inheritance error.
+    get hasSavedGame(): boolean {
+        try {
+            return localStorage.getItem('classic_save') !== null;
+        } catch (error) {
+            console.warn('Could not access localStorage for saved game check.', error);
+            return false;
+        }
+    }
+
+    saveGame() {
+        if (this.phase !== 'playing') return;
+        const stateToSave: ClassicSaveState = {
+            phase: 'playing',
+            turn: this.turn,
+            trickStarter: this.trickStarter,
+            humanHand: this.humanHand,
+            aiHand: this.aiHand,
+            deck: this.deck,
+            cardsOnTable: this.cardsOnTable,
+            briscolaCard: this.briscolaCard,
+            briscolaSuit: this.briscolaSuit,
+            humanScore: this.humanScore,
+            aiScore: this.aiScore,
+            trickHistory: this.trickHistory,
+            currentWaifu: this.currentWaifu,
+            trickCounter: this.trickCounter,
+        };
+        try {
+            localStorage.setItem('classic_save', JSON.stringify(stateToSave));
+        } catch (error) {
+            console.error("Failed to save classic game:", error);
+        }
+    }
+
+    loadGame(): boolean {
+        try {
+            const savedGame = localStorage.getItem('classic_save');
+            if (savedGame) {
+                const savedState: ClassicSaveState = JSON.parse(savedGame);
+                runInAction(() => {
+                    this.phase = savedState.phase;
+                    this.turn = savedState.turn;
+                    this.trickStarter = savedState.trickStarter;
+                    this.humanHand = savedState.humanHand;
+                    this.aiHand = savedState.aiHand;
+                    this.deck = savedState.deck;
+                    this.cardsOnTable = savedState.cardsOnTable;
+                    this.briscolaCard = savedState.briscolaCard;
+                    this.briscolaSuit = savedState.briscolaSuit;
+                    this.humanScore = savedState.humanScore;
+                    this.aiScore = savedState.aiScore;
+                    this.trickHistory = savedState.trickHistory;
+                    this.currentWaifu = savedState.currentWaifu;
+                    this.trickCounter = savedState.trickCounter;
+                    this.backgroundUrl = getImageUrl(`/background/landscape${Math.floor(Math.random() * 21) + 1}.png`);
+                    this.message = this.turn === 'human' ? this.T.yourTurnMessage : this.T.aiStarts(this.currentWaifu!.name);
+                    this.rootStore.chatStore.resetChat(this.currentWaifu!);
+                });
+                return true;
+            }
+        } catch (error) {
+            console.error("Failed to load classic game:", error);
+            this.clearSavedGame();
+        }
+        return false;
+    }
+
+    clearSavedGame() {
+        try {
+            localStorage.removeItem('classic_save');
+        } catch (error) {
+            console.error("Failed to clear saved classic game:", error);
+        }
+    }
+
+    resumeGame() {
+        if (this.loadGame()) {
+            this.rootStore.posthog?.capture('game_resumed', { gameplay_mode: 'classic' });
+        }
     }
 }

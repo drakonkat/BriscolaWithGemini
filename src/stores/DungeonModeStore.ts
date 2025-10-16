@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { runInAction } from 'mobx';
+import { runInAction, makeObservable, observable, action, computed, override } from 'mobx';
 import { ClassicModeStore } from './ClassicModeStore';
 import type { RootStore } from '.';
 import type { DungeonRunState, Waifu, DungeonModifier, Card, TrickHistoryEntry, Element, ElementalClashResult } from '../core/types';
@@ -36,6 +36,37 @@ export class DungeonModeStore extends ClassicModeStore {
 
     constructor(rootStore: RootStore) {
         super(rootStore);
+        makeObservable(this, {
+            // New observable properties
+            dungeonRunState: observable,
+            nextDungeonMatchInfo: observable,
+            humanScorePile: observable,
+            aiScorePile: observable,
+            activeElements: observable,
+            elementalClash: observable,
+            trickResolutionTimer: observable,
+            trickResolutionCallback: observable,
+            // New actions
+            saveDungeonState: action,
+            loadDungeonState: action,
+            clearDungeonState: action,
+            startDungeonRun: action,
+            prepareNextDungeonMatch: action,
+            startPreparedDungeonMatch: action,
+            forceCloseClashModal: action,
+            endDungeonRun: action,
+            selectCardForPlay: action, // Annotated for first time in hierarchy
+            // Overridden properties
+            startGame: override,
+            _initializeNewGame: override,
+            resolveTrick: override,
+            getCardPoints: override,
+            handleEndOfGame: override,
+            hasSavedGame: override,
+            saveGame: override,
+            clearSavedGame: override,
+            resumeGame: override,
+        });
     }
 
     saveDungeonState() {
@@ -65,6 +96,37 @@ export class DungeonModeStore extends ClassicModeStore {
             modifiers: [],
         };
         this.saveDungeonState();
+    }
+
+    // FIX: Implement abstract members inherited from the base class to resolve the error.
+    get hasSavedGame(): boolean {
+        // A dungeon run is considered "saved" if it's currently active.
+        return this.dungeonRunState.isActive;
+    }
+
+    saveGame() {
+        // Save the state of the current match (using the classic save logic)
+        super.saveGame();
+        // Also save the overall dungeon run progress
+        this.saveDungeonState();
+    }
+
+    clearSavedGame() {
+        super.clearSavedGame(); // Clears the in-progress match save
+        this.clearDungeonState(); // Clears the overall run state
+    }
+
+    resumeGame() {
+        if (this.dungeonRunState.isActive) {
+            // First, try to load an in-progress match.
+            if (this.loadGame()) {
+                 this.rootStore.posthog?.capture('game_resumed', { gameplay_mode: 'dungeon', state: 'in_match' });
+            } else {
+                // If no match is in progress but a run is active, it means we are between matches.
+                this.prepareNextDungeonMatch();
+                this.rootStore.posthog?.capture('game_resumed', { gameplay_mode: 'dungeon', state: 'between_matches' });
+            }
+        }
     }
 
     startGame(param: Waifu | null | 'R' | 'SR' | 'SSR') {
@@ -472,7 +534,7 @@ export class DungeonModeStore extends ClassicModeStore {
             did_win_run: didWin,
         });
 
-        this.clearDungeonState();
+        this.clearSavedGame();
         this.rootStore.uiStore.openModal('dungeonEnd');
     }
 }

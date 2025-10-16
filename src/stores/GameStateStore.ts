@@ -4,7 +4,7 @@
 */
 // FIX: Import React to use React.MouseEvent and React.TouchEvent types.
 import React from 'react';
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, runInAction, makeObservable, observable, action, computed } from 'mobx';
 import type { RootStore } from '.';
 import type { Card, Player, Suit, GamePhase, GameEmotionalState, Waifu, TrickHistoryEntry, HistoryEntry } from '../core/types';
 import { translations } from '../core/translations';
@@ -58,7 +58,63 @@ export abstract class GameStateStore {
     usedFallbackMessages: string[] = [];
 
     constructor(rootStore: RootStore) {
-        makeAutoObservable(this, { rootStore: false });
+        makeObservable(this, {
+            phase: observable,
+            turn: observable,
+            trickStarter: observable,
+            humanHand: observable,
+            aiHand: observable,
+            deck: observable,
+            cardsOnTable: observable,
+            briscolaCard: observable,
+            briscolaSuit: observable,
+            humanScore: observable,
+            aiScore: observable,
+            trickHistory: observable,
+            lastTrick: observable,
+            trickCounter: observable,
+            isTutorialGame: observable,
+            currentWaifu: observable,
+            message: observable,
+            aiEmotionalState: observable,
+            backgroundUrl: observable,
+            isProcessing: observable,
+            isResolvingTrick: observable,
+            lastResolvedTrick: observable,
+            gameResult: observable,
+            lastGameWinnings: observable,
+            gameMode: observable,
+            isQuotaExceeded: observable,
+            isAiGeneratingMessage: observable,
+            draggingCardInfo: observable,
+            clonePosition: observable,
+            currentDropZone: observable,
+            usedFallbackMessages: observable,
+            T: computed,
+            hasSavedGame: computed,
+            dispose: action,
+            _resetState: action,
+            goToMenu: action,
+            confirmLeaveGame: action,
+            continueFromQuotaModal: action,
+            handleQuotaExceeded: action,
+            selectCardForPlay: action,
+            playCard: action,
+            handleAiTurn: action,
+            playAiCard: action,
+            drawCards: action,
+            updateEmotionalState: action,
+            getWaifuMessage: action,
+            handleDragStart: action,
+            handleDragMove: action,
+            handleDragEnd: action,
+            saveGame: action,
+            loadGame: action,
+            clearSavedGame: action,
+            resumeGame: action,
+            startTutorialGame: action,
+            resolveTrickForTutorial: action,
+        });
         this.rootStore = rootStore;
     }
 
@@ -227,6 +283,10 @@ export abstract class GameStateStore {
                 this.isResolvingTrick = false;
                 this.isProcessing = false;
                 this.handleEndOfGame();
+                // FIX: Save game state after each trick is fully resolved and cards are drawn.
+                if (this.phase === 'playing') {
+                    this.saveGame();
+                }
             });
         };
 
@@ -312,11 +372,12 @@ export abstract class GameStateStore {
     handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => { /* Base implementation */ }
     handleDragEnd = () => { /* Base implementation */ }
 
-    saveGame() { /* Base implementation */ }
-    loadGame() { /* Base implementation */ }
-    clearSavedGame() { /* Base implementation */ }
-    resumeGame() { /* Base implementation */ }
-    get hasSavedGame(): boolean { return false; }
+    // FIX: Made save/load methods abstract to enforce implementation in subclasses.
+    abstract saveGame(): void;
+    abstract loadGame(): boolean;
+    abstract clearSavedGame(): void;
+    abstract resumeGame(): void;
+    abstract get hasSavedGame(): boolean;
     
     startTutorialGame() {
         this.isTutorialGame = true;
