@@ -1253,4 +1253,5 @@
     font-size: 2rem;
     color: var(--gold-accent);
     font-weight: bold;
-    text-shadow: 0 0 8px rgba(var(--gold-
+      text-shadow: 0 0 8px rgba(var(--gold-accent-rgb), 0.5);
+}
