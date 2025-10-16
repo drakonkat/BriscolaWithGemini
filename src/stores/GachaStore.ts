@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { makeAutoObservable, autorun, runInAction } from 'mobx';
+import { makeAutoObservable, autorun, runInAction, reaction } from 'mobx';
 import type { RootStore } from '.';
 import { getImageUrl } from '../core/utils';
 import { translations } from '../core/translations';
@@ -59,6 +59,12 @@ const BACKGROUNDS: BackgroundItem[] = [
     { url: getImageUrl('/background/background21.png'), rarity: 'R' },
 ];
 
+export const DUNGEON_REWARD_BACKGROUNDS: Record<'R' | 'SR' | 'SSR', BackgroundItem> = {
+    R: { url: getImageUrl('/background/dungeon_r.png'), rarity: 'R' },
+    SR: { url: getImageUrl('/background/dungeon_sr.png'), rarity: 'SR' },
+    SSR: { url: getImageUrl('/background/dungeon_ssr.png'), rarity: 'SSR' },
+};
+
 const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
     try {
         const item = localStorage.getItem(key);
@@ -71,17 +77,34 @@ const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
 
 export class GachaStore {
     rootStore: RootStore;
-    waifuCoins: number = loadFromLocalStorage('waifu_coins', 0);
+    waifuCoins: number = loadFromLocalStorage('waifu_coins', 100);
+    r_shards: number = loadFromLocalStorage('r_shards', 0);
+    sr_shards: number = loadFromLocalStorage('sr_shards', 0);
+    ssr_shards: number = loadFromLocalStorage('ssr_shards', 0);
+    fire_essences: number = loadFromLocalStorage('fire_essences', 0);
+    water_essences: number = loadFromLocalStorage('water_essences', 0);
+    air_essences: number = loadFromLocalStorage('air_essences', 0);
+    earth_essences: number = loadFromLocalStorage('earth_essences', 0);
+    // FIX: Add missing transcendental_essences property.
+    transcendental_essences: number = loadFromLocalStorage('transcendental_essences', 0);
+    r_keys: number = loadFromLocalStorage('r_keys', 1);
+    sr_keys: number = loadFromLocalStorage('sr_keys', 1);
+    ssr_keys: number = loadFromLocalStorage('ssr_keys', 1);
     unlockedBackgrounds: string[] = loadFromLocalStorage('unlocked_backgrounds', []);
+    unlockedDungeonBackgrounds: string[] = loadFromLocalStorage('unlocked_dungeon_backgrounds', []);
     hasRolledGacha: boolean = loadFromLocalStorage('has_rolled_gacha', false);
     fullscreenImage: string = '';
     isRolling = false;
     gachaAnimationState: { active: boolean; rarity: 'R' | 'SR' | 'SSR' | null } = { active: false, rarity: null };
+    isCraftingMinigameOpen = false;
+    craftingAttempt: { rarity: 'R' | 'SR' | 'SSR' } | null = null;
+    
+    lastDungeonRunRewards = { coins: 0, shards: { R: 0, SR: 0, SSR: 0 }, unlockedBackground: null as BackgroundItem | null };
+    lastDungeonMatchRewards = { coins: 0, shards: { R: 0, SR: 0, SSR: 0 } };
 
-    // FIX: Added missing properties for gacha results.
     lastGachaResult: BackgroundItem | null = null;
     multiGachaResults: BackgroundItem[] = [];
-    lastMultiGachaRefund: number = 0;
+    lastMultiGachaShards: { R: number; SR: number; SSR: number; } = { R: 0, SR: 0, SSR: 0 };
 
     readonly BACKGROUNDS = BACKGROUNDS;
 
@@ -90,8 +113,30 @@ export class GachaStore {
         this.rootStore = rootStore;
 
         autorun(() => localStorage.setItem('waifu_coins', JSON.stringify(this.waifuCoins)));
+        autorun(() => localStorage.setItem('r_shards', JSON.stringify(this.r_shards)));
+        autorun(() => localStorage.setItem('sr_shards', JSON.stringify(this.sr_shards)));
+        autorun(() => localStorage.setItem('ssr_shards', JSON.stringify(this.ssr_shards)));
+        autorun(() => localStorage.setItem('fire_essences', JSON.stringify(this.fire_essences)));
+        autorun(() => localStorage.setItem('water_essences', JSON.stringify(this.water_essences)));
+        autorun(() => localStorage.setItem('air_essences', JSON.stringify(this.air_essences)));
+        autorun(() => localStorage.setItem('earth_essences', JSON.stringify(this.earth_essences)));
+        // FIX: Add autorun for transcendental_essences.
+        autorun(() => localStorage.setItem('transcendental_essences', JSON.stringify(this.transcendental_essences)));
+        autorun(() => localStorage.setItem('r_keys', JSON.stringify(this.r_keys)));
+        autorun(() => localStorage.setItem('sr_keys', JSON.stringify(this.sr_keys)));
+        autorun(() => localStorage.setItem('ssr_keys', JSON.stringify(this.ssr_keys)));
         autorun(() => localStorage.setItem('unlocked_backgrounds', JSON.stringify(this.unlockedBackgrounds)));
+        autorun(() => localStorage.setItem('unlocked_dungeon_backgrounds', JSON.stringify(this.unlockedDungeonBackgrounds)));
         autorun(() => localStorage.setItem('has_rolled_gacha', JSON.stringify(this.hasRolledGacha)));
+        
+        reaction(
+            () => this.unlockedBackgrounds.length,
+            () => {
+                const ssrBgs = this.BACKGROUNDS.filter(bg => bg.rarity === 'SSR');
+                const unlockedSsrCount = ssrBgs.filter(bg => this.unlockedBackgrounds.includes(bg.url)).length;
+                this.rootStore.missionStore.setProgress('ssrCollected', unlockedSsrCount);
+            }
+        );
     }
     
     get T() {
@@ -100,6 +145,119 @@ export class GachaStore {
 
     addCoins = (amount: number) => {
         this.waifuCoins += amount;
+    }
+    
+    addShards = (rarity: 'R' | 'SR' | 'SSR', amount: number) => {
+        if (rarity === 'R') this.r_shards += amount;
+        if (rarity === 'SR') this.sr_shards += amount;
+        if (rarity === 'SSR') this.ssr_shards += amount;
+    }
+
+    addEssences = (type: 'fire' | 'water' | 'air' | 'earth', amount: number) => {
+        if (type === 'fire') this.fire_essences += amount;
+        if (type === 'water') this.water_essences += amount;
+        if (type === 'air') this.air_essences += amount;
+        if (type === 'earth') this.earth_essences += amount;
+    }
+
+    // FIX: Add method to add transcendental essences to fix MissionStore error.
+    addTranscendentalEssences = (amount: number) => {
+        this.transcendental_essences += amount;
+    }
+
+    get totalEssences() {
+        return this.fire_essences + this.water_essences + this.air_essences + this.earth_essences;
+    }
+
+    addKey = (rarity: 'R' | 'SR' | 'SSR') => {
+        if (rarity === 'R') this.r_keys++;
+        if (rarity === 'SR') this.sr_keys++;
+        if (rarity === 'SSR') this.ssr_keys++;
+    }
+
+    spendKey = (rarity: 'R' | 'SR' | 'SSR') => {
+        if (rarity === 'R' && this.r_keys > 0) this.r_keys--;
+        if (rarity === 'SR' && this.sr_keys > 0) this.sr_keys--;
+        if (rarity === 'SSR' && this.ssr_keys > 0) this.ssr_keys--;
+    }
+
+    unlockSpecificBackground = (bg: BackgroundItem) => {
+        if (!this.unlockedBackgrounds.includes(bg.url)) {
+            this.unlockedBackgrounds.push(bg.url);
+        }
+    }
+
+    unlockDungeonBackground = (rarity: 'R' | 'SR' | 'SSR'): { background: BackgroundItem, isNew: boolean } => {
+        const background = DUNGEON_REWARD_BACKGROUNDS[rarity];
+        if (this.unlockedDungeonBackgrounds.includes(background.url)) {
+            return { background, isNew: false };
+        }
+        this.unlockedDungeonBackgrounds.push(background.url);
+        return { background, isNew: true };
+    }
+
+    unlockRandomBackground = (rarity: 'R' | 'SR' | 'SSR'): BackgroundItem | null => {
+        const T_gallery = this.T.gallery;
+        const available = this.BACKGROUNDS.filter(bg => bg.rarity === rarity && !this.unlockedBackgrounds.includes(bg.url));
+    
+        if (available.length > 0) {
+            const unlockedBg = available[Math.floor(Math.random() * available.length)];
+            this.unlockedBackgrounds.push(unlockedBg.url);
+            this.rootStore.uiStore.showSnackbar(T_gallery.gachaCraftSuccess(rarity), 'success');
+            this.rootStore.posthog?.capture('challenge_reward_unlocked', { rarity });
+            return unlockedBg;
+        } else {
+            const shardAmount = rarity === 'R' ? 10 : rarity === 'SR' ? 5 : 3;
+            this.addShards(rarity, shardAmount);
+            this.rootStore.uiStore.showSnackbar(T_gallery.gachaNoLockedToCraft(rarity), 'success');
+            this.rootStore.posthog?.capture('challenge_reward_shards', { rarity, reason: 'all_unlocked' });
+            return null;
+        }
+    }
+
+    // FIX: Added missing convertShards method.
+    convertShards = (from: 'R' | 'SR', to: 'SR' | 'SSR') => {
+        const T_gallery = this.T.gallery;
+        let cost = 0;
+        const gain = 1;
+
+        if (from === 'R' && to === 'SR') {
+            cost = 10;
+            if (this.r_shards < cost) {
+                this.rootStore.uiStore.showSnackbar(T_gallery.gachaNotEnoughShards, 'warning');
+                return;
+            }
+            this.r_shards -= cost;
+            this.sr_shards += gain;
+            this.rootStore.uiStore.showSnackbar(T_gallery.conversionSuccess(gain, 'SR'), 'success');
+        } else if (from === 'SR' && to === 'SSR') {
+            cost = 10;
+            if (this.sr_shards < cost) {
+                this.rootStore.uiStore.showSnackbar(T_gallery.gachaNotEnoughShards, 'warning');
+                return;
+            }
+            this.sr_shards -= cost;
+            this.ssr_shards += gain;
+            this.rootStore.uiStore.showSnackbar(T_gallery.conversionSuccess(gain, 'SSR'), 'success');
+        }
+        playSound('essence-gain');
+    }
+
+    // FIX: Add missing method to prevent runtime error in GalleryModal.
+    convertElementalToTranscendental = () => {
+        const T_gallery = this.T.gallery;
+        if (this.fire_essences >= 1 && this.water_essences >= 1 && this.air_essences >= 1 && this.earth_essences >= 1) {
+            this.fire_essences--;
+            this.water_essences--;
+            this.air_essences--;
+            this.earth_essences--;
+            this.transcendental_essences++;
+            playSound('essence-gain');
+            // This reuses the shard conversion message. It's not perfect but avoids adding new translations.
+            this.rootStore.uiStore.showSnackbar(T_gallery.conversionSuccess(1, this.T.missions.rewards.transcendental_essences), 'success');
+        } else {
+            this.rootStore.uiStore.showSnackbar(T_gallery.gachaNotEnoughShards, 'warning');
+        }
     }
 
     handleGachaRoll = async () => {
@@ -112,8 +270,8 @@ export class GachaStore {
             return;
         }
 
-        const locked = this.BACKGROUNDS.filter(bg => !this.unlockedBackgrounds.includes(bg.url));
-        if (locked.length === 0) {
+        const areThereAnyLockedItems = this.BACKGROUNDS.length > this.unlockedBackgrounds.length;
+        if (!areThereAnyLockedItems) {
             this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaAllUnlocked, 'success');
             return;
         }
@@ -123,61 +281,56 @@ export class GachaStore {
             this.addCoins(-GACHA_COST);
         }
 
+        this.rootStore.missionStore.incrementProgress('gachaRolls', 1);
+
         playSound('gacha-roll');
         await new Promise(resolve => setTimeout(resolve, 1500));
 
-        if (isFirstRoll || Math.random() < 0.50) {
-            const rand = Math.random();
-            let rarityToPull: 'R' | 'SR' | 'SSR' = rand < 0.05 ? 'SSR' : rand < 0.20 ? 'SR' : 'R';
-            let pool = locked.filter(item => item.rarity === rarityToPull);
-            
-            if (pool.length === 0) { // Pity system
-                pool = locked.filter(item => item.rarity === (rarityToPull === 'SSR' ? 'SR' : 'R')) 
-                    || locked.filter(item => item.rarity !== rarityToPull);
-            }
-            if (pool.length === 0) pool = locked;
+        const rand = Math.random();
+        let rarityToPull: 'R' | 'SR' | 'SSR' = rand < 0.05 ? 'SSR' : rand < 0.20 ? 'SR' : 'R';
+        
+        let availableToPull = this.BACKGROUNDS.filter(item => item.rarity === rarityToPull);
+        if (availableToPull.length === 0) {
+            rarityToPull = rarityToPull === 'SSR' ? 'SR' : 'R';
+            availableToPull = this.BACKGROUNDS.filter(item => item.rarity === rarityToPull);
+        }
+        if (availableToPull.length === 0) {
+            rarityToPull = 'R';
+            availableToPull = this.BACKGROUNDS.filter(item => item.rarity === 'R');
+        }
+        if (availableToPull.length === 0) { // Should be impossible if there are any locked items
+             this.isRolling = false;
+             return;
+        }
 
-            const toUnlock = pool[Math.floor(Math.random() * pool.length)];
-            
-            this.lastGachaResult = toUnlock;
-            
-            playSound(`gacha-unlock-${toUnlock.rarity.toLowerCase() as 'r' | 'sr' | 'ssr'}`);
-            this.gachaAnimationState = { active: true, rarity: toUnlock.rarity };
+        const pulledItem = availableToPull[Math.floor(Math.random() * availableToPull.length)];
+        const isDuplicate = this.unlockedBackgrounds.includes(pulledItem.url);
+
+        if(isDuplicate) {
+            this.addShards(pulledItem.rarity, 1);
+            playSound('gacha-refund');
+            this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaDuplicate(pulledItem.rarity), 'success');
+            this.isRolling = false; // end rolling early
+            this.rootStore.posthog?.capture('gacha_duplicate', { 
+                rarity: pulledItem.rarity,
+            });
+        } else {
+            // New unlock logic
+            this.lastGachaResult = pulledItem;
+            playSound(`gacha-unlock-${pulledItem.rarity.toLowerCase() as 'r' | 'sr' | 'ssr'}`);
+            this.gachaAnimationState = { active: true, rarity: pulledItem.rarity };
 
             setTimeout(() => {
                 runInAction(() => {
-                    this.unlockedBackgrounds.push(toUnlock.url);
+                    this.unlockedBackgrounds.push(pulledItem.url);
                     this.rootStore.uiStore.openModal('gachaSingleUnlock');
                 });
             }, 1000);
 
             this.rootStore.posthog?.capture('gacha_success', { 
-                rarity: toUnlock.rarity,
+                rarity: pulledItem.rarity,
                 is_first_roll: isFirstRoll,
             });
-        } else {
-            const rand = Math.random();
-            let refundAmount = 0;
-            if (rand < 0.40) { // 40% chance
-                refundAmount = 20;
-            } else if (rand < 0.75) { // 35% chance
-                refundAmount = 50;
-            } else if (rand < 0.88) { // 13% chance
-                refundAmount = 100;
-            } else if (rand < 0.95) { // 7% chance
-                refundAmount = 150;
-            } else { // 5% chance
-                refundAmount = 200;
-            }
-            
-            playSound('gacha-refund');
-            this.addCoins(refundAmount);
-            this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaFailureWithRefund(refundAmount), 'success');
-            this.rootStore.posthog?.capture('gacha_failure', { 
-                reason: '50_percent_roll_failed',
-                refund_amount: refundAmount 
-            });
-            this.isRolling = false;
         }
         
         if (isFirstRoll) {
@@ -186,16 +339,16 @@ export class GachaStore {
     }
 
     handleMultiGachaRoll = async () => {
-        const GACHA_COST_X10 = 900; // 10% discount
+        const GACHA_COST_X10 = 900;
 
         if (this.isRolling) return;
         if (this.waifuCoins < GACHA_COST_X10) {
             this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaNotEnoughCoins, 'warning');
             return;
         }
-
-        const locked = this.BACKGROUNDS.filter(bg => !this.unlockedBackgrounds.includes(bg.url));
-        if (locked.length === 0) {
+        
+        const areThereAnyLockedItems = this.BACKGROUNDS.length > this.unlockedBackgrounds.length;
+        if (!areThereAnyLockedItems) {
             this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaAllUnlocked, 'success');
             return;
         }
@@ -203,40 +356,35 @@ export class GachaStore {
         this.isRolling = true;
         this.addCoins(-GACHA_COST_X10);
         this.multiGachaResults = [];
-        this.lastMultiGachaRefund = 0;
+        this.lastMultiGachaShards = { R: 0, SR: 0, SSR: 0 };
+
+        this.rootStore.missionStore.incrementProgress('gachaRolls', 10);
 
         playSound('gacha-roll');
         await new Promise(resolve => setTimeout(resolve, 1500));
 
         let newUnlocks: BackgroundItem[] = [];
-        let totalRefund = 0;
+        let totalShards: { R: number, SR: number, SSR: number } = { R: 0, SR: 0, SSR: 0 };
 
         for (let i = 0; i < 10; i++) {
-            const currentLocked = this.BACKGROUNDS.filter(bg => !this.unlockedBackgrounds.includes(bg.url) && !newUnlocks.some(u => u.url === bg.url));
-            if (currentLocked.length === 0) break;
+            const rand = Math.random();
+            let rarityToPull: 'R' | 'SR' | 'SSR' = rand < 0.05 ? 'SSR' : rand < 0.20 ? 'SR' : 'R';
+            
+            let pool = this.BACKGROUNDS.filter(item => item.rarity === rarityToPull);
+            if (pool.length === 0) {
+                pool = this.BACKGROUNDS.filter(item => item.rarity === (rarityToPull === 'SSR' ? 'SR' : 'R')) 
+                    || this.BACKGROUNDS.filter(item => item.rarity !== rarityToPull);
+            }
+            if (pool.length === 0) pool = this.BACKGROUNDS;
+            if (pool.length === 0) continue;
 
-            if (Math.random() < 0.50) {
-                const rand = Math.random();
-                let rarityToPull: 'R' | 'SR' | 'SSR' = rand < 0.05 ? 'SSR' : rand < 0.20 ? 'SR' : 'R';
-                let pool = currentLocked.filter(item => item.rarity === rarityToPull);
-                
-                if (pool.length === 0) { // Pity system
-                    pool = currentLocked.filter(item => item.rarity === (rarityToPull === 'SSR' ? 'SR' : 'R')) 
-                        || currentLocked.filter(item => item.rarity !== rarityToPull);
-                }
-                if (pool.length === 0) pool = currentLocked;
+            const pulledItem = pool[Math.floor(Math.random() * pool.length)];
+            const isDuplicate = this.unlockedBackgrounds.includes(pulledItem.url) || newUnlocks.some(u => u.url === pulledItem.url);
 
-                const toUnlock = pool[Math.floor(Math.random() * pool.length)];
-                newUnlocks.push(toUnlock);
+            if (isDuplicate) {
+                totalShards[pulledItem.rarity]++;
             } else {
-                const rand = Math.random();
-                let refundAmount = 0;
-                if (rand < 0.40) refundAmount = 20;
-                else if (rand < 0.75) refundAmount = 50;
-                else if (rand < 0.88) refundAmount = 100;
-                else if (rand < 0.95) refundAmount = 150;
-                else refundAmount = 200;
-                totalRefund += refundAmount;
+                newUnlocks.push(pulledItem);
             }
         }
         
@@ -247,10 +395,10 @@ export class GachaStore {
                 this.multiGachaResults = newUnlocks;
                 this.unlockedBackgrounds.push(...newUnlocks.map(u => u.url));
             }
-            if (totalRefund > 0) {
-                this.addCoins(totalRefund);
-                this.lastMultiGachaRefund = totalRefund;
-            }
+            if (totalShards.R > 0) this.addShards('R', totalShards.R);
+            if (totalShards.SR > 0) this.addShards('SR', totalShards.SR);
+            if (totalShards.SSR > 0) this.addShards('SSR', totalShards.SSR);
+            this.lastMultiGachaShards = totalShards;
             
             this.rootStore.uiStore.openModal('gachaMultiUnlock');
             this.isRolling = false;
@@ -258,7 +406,9 @@ export class GachaStore {
 
         this.rootStore.posthog?.capture('gacha_multi_roll_completed', { 
             unlocks_count: newUnlocks.length,
-            refund_amount: totalRefund 
+            shards_r: totalShards.R,
+            shards_sr: totalShards.SR,
+            shards_ssr: totalShards.SSR,
         });
 
         if (!this.hasRolledGacha) {
@@ -277,5 +427,85 @@ export class GachaStore {
 
     closeFullscreenImage = () => {
         this.fullscreenImage = '';
+    }
+    
+    craftKey = (rarity: 'R' | 'SR' | 'SSR') => {
+        const costs = { 
+            R: { r_shards: 10 },
+            SR: { sr_shards: 10, r_shards: 25, essences: 5 },
+            SSR: { ssr_shards: 5, sr_shards: 15, essences: 10 }
+        };
+
+        const cost = costs[rarity];
+
+        if (('r_shards' in cost && this.r_shards < cost.r_shards) ||
+            ('sr_shards' in cost && this.sr_shards < cost.sr_shards) ||
+            ('ssr_shards' in cost && this.ssr_shards < cost.ssr_shards) ||
+            ('essences' in cost && this.totalEssences < cost.essences)) {
+            this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaNotEnoughShards, 'warning');
+            return;
+        }
+
+        this.craftingAttempt = { rarity };
+        this.rootStore.uiStore.openModal('craftingMinigame');
+    }
+
+    cancelCraftingAttempt = () => {
+        this.rootStore.uiStore.closeModal('craftingMinigame');
+        this.craftingAttempt = null;
+    }
+
+    resolveCraftingAttempt = (result: 'critical' | 'success' | 'failure') => {
+        if (!this.craftingAttempt) return;
+        
+        const { rarity } = this.craftingAttempt;
+        
+        if (result === 'failure') {
+            const shardsLost = Math.floor(Math.random() * 3) + 1;
+            this.addShards(rarity, -shardsLost);
+            playSound('shard-shatter');
+            this.rootStore.uiStore.showSnackbar(this.T.craftingMinigame.shardsLost(shardsLost), 'warning');
+            this.rootStore.posthog?.capture('key_crafted', { rarity, result: 'failure', shards_lost: shardsLost });
+            
+        } else { // success or critical
+            const costs = {
+                R: { r_shards: 10 },
+                SR: { sr_shards: 10, r_shards: 25, essences: 5 },
+                SSR: { ssr_shards: 5, sr_shards: 15, essences: 10 }
+            };
+            const cost = costs[rarity];
+
+            // Deduct materials
+            if ('r_shards' in cost) this.r_shards -= cost.r_shards;
+            if ('sr_shards' in cost) this.sr_shards -= cost.sr_shards;
+            if ('ssr_shards' in cost) this.ssr_shards -= cost.ssr_shards;
+            if ('essences' in cost) {
+                let essencesToSpend = cost.essences;
+                // Simple logic to deduct from available essences
+                const essenceTypes: ('fire_essences' | 'water_essences' | 'air_essences' | 'earth_essences')[] = ['fire_essences', 'water_essences', 'air_essences', 'earth_essences'];
+                for (const type of essenceTypes) {
+                    const amountToTake = Math.min(this[type], essencesToSpend);
+                    this[type] -= amountToTake;
+                    essencesToSpend -= amountToTake;
+                    if (essencesToSpend === 0) break;
+                }
+            }
+            
+            this.addKey(rarity);
+            this.rootStore.missionStore.incrementProgress('keysCrafted', 1);
+
+            if (result === 'critical') {
+                // Refund half of the shards
+                if ('r_shards' in cost) this.r_shards += Math.floor(cost.r_shards / 2);
+                if ('sr_shards' in cost) this.sr_shards += Math.floor(cost.sr_shards / 2);
+                if ('ssr_shards' in cost) this.ssr_shards += Math.floor(cost.ssr_shards / 2);
+                playSound('craft-critical');
+                this.rootStore.uiStore.showSnackbar(this.T.craftingMinigame.criticalSuccess, 'success');
+            } else {
+                playSound(`gacha-unlock-${rarity.toLowerCase() as 'r'|'sr'|'ssr'}`);
+                this.rootStore.uiStore.showSnackbar(this.T.gallery.craftKeySuccess(rarity), 'success');
+            }
+            this.rootStore.posthog?.capture('key_crafted', { rarity, result });
+        }
     }
 }

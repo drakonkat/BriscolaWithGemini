@@ -1,3 +1,5 @@
+
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -12,6 +14,7 @@ export interface SoundSettings {
     lfoFrequency: number; // Hz
     lfoDepth: number; // a gain value
     reverbWetness: number; // 0 to 1
+    masterVolume: number; // 0 to 1
     drumPattern: Record<DrumType, boolean[]>;
     chordPattern: Chord[];
 }
@@ -26,6 +29,7 @@ export const defaultSoundSettings: SoundSettings = {
     lfoFrequency: 0.1,
     lfoDepth: 1200,
     reverbWetness: 0.3,
+    masterVolume: 0.5,
     drumPattern: {
         kick: Array(SEQUENCE_LENGTH).fill(false),
         snare: Array(SEQUENCE_LENGTH).fill(false),
@@ -48,7 +52,7 @@ const CHORD_MAP: Record<Chord, number[] | null> = {
 
 export const decadePresets: Record<Decade, SoundSettings> = {
     '40s': { /* Swing */
-        tempo: 140, oscillatorType: 'sine', filterCutoff: 1500, lfoFrequency: 0.1, lfoDepth: 800, reverbWetness: 0.2,
+        tempo: 140, oscillatorType: 'sine', filterCutoff: 1500, lfoFrequency: 0.1, lfoDepth: 800, reverbWetness: 0.2, masterVolume: 0.5,
         drumPattern: {
             kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
             snare: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
@@ -58,7 +62,7 @@ export const decadePresets: Record<Decade, SoundSettings> = {
         chordPattern: ['C','C','G','G','F','F','C','G', 'C','C','G','G','F','F','C','G'],
     },
     '50s': { /* Rock */
-        tempo: 165, oscillatorType: 'square', filterCutoff: 2500, lfoFrequency: 0.2, lfoDepth: 1000, reverbWetness: 0.25,
+        tempo: 165, oscillatorType: 'square', filterCutoff: 2500, lfoFrequency: 0.2, lfoDepth: 1000, reverbWetness: 0.25, masterVolume: 0.5,
         drumPattern: {
             kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
             snare: [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false],
@@ -68,7 +72,7 @@ export const decadePresets: Record<Decade, SoundSettings> = {
         chordPattern: ['C', '---', 'F', '---', 'G', '---', 'F', '---', 'C', '---', 'F', '---', 'G', '---', 'F', '---'],
     },
     '60s': { /* Soul */
-        tempo: 110, oscillatorType: 'sawtooth', filterCutoff: 3000, lfoFrequency: 0.1, lfoDepth: 500, reverbWetness: 0.4,
+        tempo: 110, oscillatorType: 'sawtooth', filterCutoff: 3000, lfoFrequency: 0.1, lfoDepth: 500, reverbWetness: 0.4, masterVolume: 0.5,
         drumPattern: {
             kick: [true, false, false, true, false, false, true, false, true, false, false, true, false, false, true, false],
             snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
@@ -78,7 +82,7 @@ export const decadePresets: Record<Decade, SoundSettings> = {
         chordPattern: ['Am', '---', 'G', '---', 'C', '---', 'F', '---', 'Am', '---', 'G', '---', 'C', '---', 'F', '---'],
     },
     '70s': { /* Disco */
-        tempo: 125, oscillatorType: 'sawtooth', filterCutoff: 4000, lfoFrequency: 0.5, lfoDepth: 1500, reverbWetness: 0.5,
+        tempo: 125, oscillatorType: 'sawtooth', filterCutoff: 4000, lfoFrequency: 0.5, lfoDepth: 1500, reverbWetness: 0.5, masterVolume: 0.5,
         drumPattern: {
             kick: [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false],
             snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
@@ -88,7 +92,7 @@ export const decadePresets: Record<Decade, SoundSettings> = {
         chordPattern: ['Dm', 'Dm', 'G', 'G', 'C', 'C', 'F', 'F', 'Dm', 'Dm', 'G', 'G', 'C', 'C', 'F', 'F'],
     },
     '80s': { /* Synthwave */
-        tempo: 100, oscillatorType: 'square', filterCutoff: 5000, lfoFrequency: 0.8, lfoDepth: 2000, reverbWetness: 0.6,
+        tempo: 100, oscillatorType: 'square', filterCutoff: 5000, lfoFrequency: 0.8, lfoDepth: 2000, reverbWetness: 0.6, masterVolume: 0.5,
         drumPattern: {
             kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
             snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
@@ -98,7 +102,7 @@ export const decadePresets: Record<Decade, SoundSettings> = {
         chordPattern: ['Am', '---', 'G', '---', 'C', '---', 'F', '---', 'Am', '---', 'G', '---', 'E', '---', 'E', '---'],
     },
     '90s': { /* Pop */
-        tempo: 118, oscillatorType: 'sawtooth', filterCutoff: 6000, lfoFrequency: 0.3, lfoDepth: 1000, reverbWetness: 0.4,
+        tempo: 118, oscillatorType: 'sawtooth', filterCutoff: 6000, lfoFrequency: 0.3, lfoDepth: 1000, reverbWetness: 0.4, masterVolume: 0.5,
         drumPattern: {
             kick: [true, false, false, false, true, false, false, true, true, false, false, false, true, false, false, false],
             snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, true, false],
@@ -114,6 +118,7 @@ export const decadePresets: Record<Decade, SoundSettings> = {
         lfoFrequency: 1.8,
         lfoDepth: 1800,
         reverbWetness: 0.5,
+        masterVolume: 0.5,
         drumPattern: {
             kick: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
             snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
@@ -124,7 +129,7 @@ export const decadePresets: Record<Decade, SoundSettings> = {
         chordPattern: ['Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G', 'Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G'],
     },
     '2000s': { /* Dance */
-        tempo: 128, oscillatorType: 'sawtooth', filterCutoff: 7000, lfoFrequency: 1.0, lfoDepth: 2500, reverbWetness: 0.5,
+        tempo: 128, oscillatorType: 'sawtooth', filterCutoff: 7000, lfoFrequency: 1.0, lfoDepth: 2500, reverbWetness: 0.5, masterVolume: 0.5,
         drumPattern: {
             kick: [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false],
             snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
@@ -134,7 +139,7 @@ export const decadePresets: Record<Decade, SoundSettings> = {
         chordPattern: ['Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G', 'Am', 'Am', 'F', 'F', 'C', 'C', 'G', 'G'],
     },
     '2010s': { /* EDM */
-        tempo: 128, oscillatorType: 'square', filterCutoff: 8000, lfoFrequency: 0.9, lfoDepth: 3000, reverbWetness: 0.6,
+        tempo: 128, oscillatorType: 'square', filterCutoff: 8000, lfoFrequency: 0.9, lfoDepth: 3000, reverbWetness: 0.6, masterVolume: 0.5,
         drumPattern: {
             kick: [true, false, false, true, true, false, false, false, true, false, false, true, true, false, false, false],
             snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
@@ -144,7 +149,7 @@ export const decadePresets: Record<Decade, SoundSettings> = {
         chordPattern: ['C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F', 'C', 'G', 'Am', 'F'],
     },
     '2020s': { /* Lo-fi */
-        tempo: 80, oscillatorType: 'triangle', filterCutoff: 1200, lfoFrequency: 0.05, lfoDepth: 400, reverbWetness: 0.7,
+        tempo: 80, oscillatorType: 'triangle', filterCutoff: 1200, lfoFrequency: 0.05, lfoDepth: 400, reverbWetness: 0.7, masterVolume: 0.5,
         drumPattern: {
             kick: [true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false],
             snare: [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
@@ -161,6 +166,7 @@ let audioContext: AudioContext | null = null;
 let isMusicPlaying = false;
 
 // Audio graph nodes
+let masterGainNode: GainNode | null = null;
 let musicGainNode: GainNode | null = null;
 let convolverNode: ConvolverNode | null = null;
 let filterNode: BiquadFilterNode | null = null;
@@ -232,7 +238,8 @@ const createKick = (context: AudioContext, time: number) => {
     const osc = context.createOscillator();
     const gain = context.createGain();
     osc.connect(gain);
-    gain.connect(context.destination);
+    if (!masterGainNode) return;
+    gain.connect(masterGainNode);
 
     osc.frequency.setValueAtTime(150, time);
     osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.1);
@@ -244,12 +251,13 @@ const createKick = (context: AudioContext, time: number) => {
 };
 
 const createSnare = (context: AudioContext, time: number) => {
+    if (!masterGainNode) return;
     const noise = createWhiteNoise(context, 0.2);
     const noiseFilter = context.createBiquadFilter();
     noiseFilter.type = 'highpass';
     noiseFilter.frequency.value = 1500;
     const noiseGain = context.createGain();
-    noise.connect(noiseFilter).connect(noiseGain).connect(context.destination);
+    noise.connect(noiseFilter).connect(noiseGain).connect(masterGainNode);
     noiseGain.gain.setValueAtTime(0.8, time);
     noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
 
@@ -257,7 +265,7 @@ const createSnare = (context: AudioContext, time: number) => {
     const oscGain = context.createGain();
     osc.type = 'triangle';
     osc.frequency.value = 120;
-    osc.connect(oscGain).connect(context.destination);
+    osc.connect(oscGain).connect(masterGainNode);
     oscGain.gain.setValueAtTime(0.7, time);
     oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
 
@@ -268,6 +276,7 @@ const createSnare = (context: AudioContext, time: number) => {
 };
 
 const createHihat = (context: AudioContext, time: number, isOpen: boolean) => {
+    if (!masterGainNode) return;
     const duration = isOpen ? 0.3 : 0.08;
     const noise = createWhiteNoise(context, duration);
     const filter = context.createBiquadFilter();
@@ -275,7 +284,7 @@ const createHihat = (context: AudioContext, time: number, isOpen: boolean) => {
     filter.frequency.value = 7000;
     const gain = context.createGain();
     
-    noise.connect(filter).connect(gain).connect(context.destination);
+    noise.connect(filter).connect(gain).connect(masterGainNode);
     gain.gain.setValueAtTime(0.3, time);
     gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
 
@@ -284,12 +293,13 @@ const createHihat = (context: AudioContext, time: number, isOpen: boolean) => {
 };
 
 const createGuitarChord = (context: AudioContext, time: number, frequencies: number[]) => {
+    if (!masterGainNode) return;
     const duration = 0.8;
     frequencies.forEach((freq, index) => {
         const osc = context.createOscillator();
         const gain = context.createGain();
         osc.connect(gain);
-        gain.connect(context.destination);
+        gain.connect(masterGainNode);
 
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, time + index * 0.02); // Strum effect
@@ -339,6 +349,12 @@ export const playSound = async (name: SoundName) => {
         }
         case 'chat-notify': {
             playNote(context, 1200, now, 0.1, 0.2);
+            break;
+        }
+        case 'mission-complete': {
+            playNote(context, 783.99, now, 0.1, 0.2); // G5
+            playNote(context, 1046.50, now + 0.15, 0.15, 0.2); // C6
+            playNote(context, 1318.51, now + 0.3, 0.2, 0.2); // E6
             break;
         }
         case 'game-start':
@@ -472,6 +488,32 @@ export const playSound = async (name: SoundName) => {
             });
             break;
         }
+        case 'shard-shatter': {
+            const noiseDuration = 0.3;
+            const noise = createWhiteNoise(context, noiseDuration);
+            const bandpass = context.createBiquadFilter();
+            bandpass.type = 'bandpass';
+            bandpass.frequency.value = 4000;
+            bandpass.Q.value = 10;
+            const noiseGain = context.createGain();
+            noise.connect(bandpass).connect(noiseGain).connect(context.destination);
+        
+            noiseGain.gain.setValueAtTime(0.4, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, now + noiseDuration);
+        
+            noise.start(now);
+            noise.stop(now + noiseDuration);
+        
+            playNote(context, 1200, now, 0.1, 0.3);
+            playNote(context, 800, now + 0.05, 0.1, 0.2);
+            break;
+        }
+        case 'essence-gain':
+        case 'craft-critical': {
+            playNote(context, 880.00, now, 0.1, 0.3);
+            playNote(context, 1318.51, now + 0.1, 0.2, 0.3);
+            break;
+        }
     }
 };
 
@@ -496,6 +538,7 @@ const createReverbImpulseResponse = (context: AudioContext): AudioBuffer => {
 const buildMusicGraph = (context: AudioContext) => {
     if (isMusicGraphBuilt) return;
 
+    masterGainNode = context.createGain();
     musicGainNode = context.createGain();
     filterNode = context.createBiquadFilter();
     lfoNode = context.createOscillator();
@@ -511,9 +554,10 @@ const buildMusicGraph = (context: AudioContext) => {
     filterNode.connect(musicGainNode);
     musicGainNode.connect(dryGainNode);
     musicGainNode.connect(wetGainNode);
-    dryGainNode.connect(context.destination);
+    dryGainNode.connect(masterGainNode);
     wetGainNode.connect(convolverNode);
-    convolverNode.connect(context.destination);
+    convolverNode.connect(masterGainNode);
+    masterGainNode.connect(context.destination);
     lfoNode.start();
     isMusicGraphBuilt = true;
 };
@@ -527,6 +571,7 @@ export const updateSoundSettings = (newSettings: SoundSettings) => {
     if (lfoGainNode) lfoGainNode.gain.value = currentSoundSettings.lfoDepth;
     if (dryGainNode) dryGainNode.gain.value = 1.0 - currentSoundSettings.reverbWetness;
     if (wetGainNode) wetGainNode.gain.value = currentSoundSettings.reverbWetness;
+    if (masterGainNode) masterGainNode.gain.value = currentSoundSettings.masterVolume;
 };
 
 const scheduleNotes = (step: number, time: number) => {
@@ -600,9 +645,10 @@ export const startMusic = (settings: SoundSettings) => {
     isMusicPlaying = true;
     currentStep = 0;
     nextNoteTime = context.currentTime;
-    musicGainNode!.gain.cancelScheduledValues(context.currentTime);
-    musicGainNode!.gain.setValueAtTime(0, context.currentTime);
-    musicGainNode!.gain.linearRampToValueAtTime(0.025, context.currentTime + 2.0);
+    if (!musicGainNode) return;
+    musicGainNode.gain.cancelScheduledValues(context.currentTime);
+    musicGainNode.gain.setValueAtTime(0, context.currentTime);
+    musicGainNode.gain.linearRampToValueAtTime(0.025, context.currentTime + 2.0);
     schedulerInterval = window.setInterval(scheduler, schedulerFrequency);
 };
 

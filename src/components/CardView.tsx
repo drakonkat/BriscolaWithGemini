@@ -8,11 +8,25 @@ import type { Card, Language, CardDeckStyle } from '../core/types';
 import { translations } from '../core/translations';
 import { CachedImage } from './CachedImage';
 import { ElementIcon } from './ElementIcon';
-import { Tooltip } from './Tooltip';
 
 type ElementalEffectStatus = 'active' | 'inactive' | 'unset';
 
-export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus, cardDeckStyle, isDraggable, onMouseDown, onTouchStart }: { card: Card, isFaceDown?: boolean, onClick?: () => void, isPlayable?: boolean, lang: Language, className?: string, elementalEffectStatus?: ElementalEffectStatus, cardDeckStyle: CardDeckStyle, isDraggable?: boolean, onMouseDown?: React.MouseEventHandler<HTMLDivElement>, onTouchStart?: React.TouchEventHandler<HTMLDivElement> }) => {
+// FIX: Define props as a separate type and use React.FC to allow React to handle special props like `key` without type errors.
+type CardViewProps = {
+  card: Card;
+  isFaceDown?: boolean;
+  onClick?: () => void;
+  isPlayable?: boolean;
+  lang: Language;
+  className?: string;
+  elementalEffectStatus?: ElementalEffectStatus;
+  cardDeckStyle: CardDeckStyle;
+  isDraggable?: boolean;
+  onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
+  onTouchStart?: React.TouchEventHandler<HTMLDivElement>;
+};
+
+export const CardView: React.FC<CardViewProps> = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus, cardDeckStyle, isDraggable, onMouseDown, onTouchStart }) => {
   const T = translations[lang];
 
   if (isFaceDown) {
@@ -33,6 +47,7 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, classNam
     elementalEffectStatus && elementalEffectStatus !== 'unset' ? `effect-${elementalEffectStatus}` : '',
     card.isFortified ? 'fortified' : '',
     card.isBurned ? 'burned' : '',
+    card.isCursed ? 'cursed' : '',
     className || ''
   ].filter(Boolean).join(' ');
 
@@ -49,11 +64,9 @@ export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, classNam
     >
       <CachedImage imageUrl={imagePath} alt={cardId} />
       {card.element && !isFaceDown && (
-          <Tooltip content={T[card.element]}>
-              <div className="card-element-icon">
-                  <ElementIcon element={card.element} />
-              </div>
-          </Tooltip>
+          <div className="card-element-icon">
+              <ElementIcon element={card.element} />
+          </div>
       )}
       {card.isBurned && (
         <div className="incinerate-particles">

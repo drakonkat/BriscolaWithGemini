@@ -29,12 +29,14 @@ export interface Waifu {
       [key in GameEmotionalState]: string[];
     };
   };
+  followerAbilityId?: 'sakura_blessing' | 'rei_analysis' | 'kasumi_gambit';
 }
 
 export const WAIFUS: Waifu[] = [
   {
     name: 'Sakura',
     avatar: '/waifus/sakura.png',
+    followerAbilityId: 'sakura_blessing',
     personality: {
       it: 'La fidanzata dolce e un po\' goffa.',
       en: 'The sweet and slightly clumsy girlfriend.',
@@ -77,6 +79,7 @@ export const WAIFUS: Waifu[] = [
   {
     name: 'Rei',
     avatar: '/waifus/rei.png',
+    followerAbilityId: 'rei_analysis',
     personality: {
       it: 'L\'analista calma e calcolatrice.',
       en: 'The calm and calculating analyst.',
@@ -119,6 +122,7 @@ export const WAIFUS: Waifu[] = [
   {
     name: 'Kasumi',
     avatar: '/waifus/kasumi.png',
+    followerAbilityId: 'kasumi_gambit',
     personality: {
       it: 'La tsundere orgogliosa e competitiva.',
       en: 'The proud and competitive tsundere.',

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { observer } from 'mobx-react-lite';
-import { useStores } from '../stores';
+import { useStores, RoguelikeModeStore } from '../stores';
 import { translations } from '../core/translations';
 import { ElementIcon } from './ElementIcon';
 import { POWER_UP_DEFINITIONS } from '../core/roguelikePowers';
@@ -17,7 +17,8 @@ interface LegendModalProps {
 
 export const LegendModal = observer(({ isOpen, onClose, language }: LegendModalProps) => {
     const { gameStateStore } = useStores();
-    const { activeElements, roguelikeState } = gameStateStore;
+    const roguelikeStore = gameStateStore as RoguelikeModeStore;
+    const { activeElements, roguelikeState } = roguelikeStore;
 
     if (!isOpen) {
         return null;

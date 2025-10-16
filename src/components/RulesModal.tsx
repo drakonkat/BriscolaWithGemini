@@ -31,12 +31,12 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
     let difficultyMultiplier = 1.0;
     if (difficulty === 'easy') {
         difficultyMultiplier = 0.5;
-    } else if (difficulty === 'hard') {
+    } else if (difficulty === 'hard' || difficulty === 'nightmare' || difficulty === 'apocalypse') {
         difficultyMultiplier = 1.5;
     }
 
     const rewards = {
-        loss: difficulty === 'nightmare' ? Math.round(20 * 1.5) : Math.round(20 * difficultyMultiplier),
+        loss: Math.round(20 * difficultyMultiplier),
         win61: Math.round(45 * difficultyMultiplier),
         win81: Math.round(70 * difficultyMultiplier),
         win101: Math.round(100 * difficultyMultiplier),
@@ -74,8 +74,13 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                     {difficulty === 'nightmare' ? (
                          <>
                             <li className="rules-info-item">{T.waifuCoinRuleLoss(rewards.loss)}</li>
-                            <li className="rules-info-item">{T.waifuCoinRuleWinNightmare(500)}</li>
+                            <li className="rules-info-item">{T.waifuCoinRuleWinNightmare(250)}</li>
                         </>
+                    ) : difficulty === 'apocalypse' ? (
+                        <>
+                            <li className="rules-info-item">{T.waifuCoinRuleLoss(rewards.loss)}</li>
+                            <li className="rules-info-item">{T.waifuCoinRuleWinApocalypse(500)}</li>
+                       </>
                     ) : (
                         <>
                             <li className="rules-info-item">{T.waifuCoinRuleLoss(rewards.loss)}</li>
@@ -93,6 +98,7 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                     <li className={`rules-info-item ${difficulty === 'medium' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierMedium}</li>
                     <li className={`rules-info-item ${difficulty === 'hard' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierHard}</li>
                     <li className={`rules-info-item ${difficulty === 'nightmare' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierNightmare}</li>
+                    <li className={`rules-info-item ${difficulty === 'apocalypse' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierApocalypse}</li>
                 </ul>
 
                 <h3 className="rules-subtitle">{T.gachaRulesTitle}</h3>
@@ -100,8 +106,7 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                     <li className="rules-info-item">{T.gachaFreeFirstRoll}</li>
                     <li className="rules-info-item">{T.gachaCostSingle}</li>
                     <li className="rules-info-item">{T.gachaCostMulti}</li>
-                    <li className="rules-info-item">{T.gachaRule50Percent}</li>
-                    <li className="rules-info-item">{T.gachaRefundDescription}</li>
+                    <li className="rules-info-item">{T.gachaDuplicateShardRule}</li>
                     <li className="rules-info-item">{T.gachaRuleRarityTitle}
                         <ul style={{ listStyle: 'circle', paddingLeft: '20px', marginTop: '0.5rem' }}>
                             <li>{T.gachaRuleRarityR}</li>
@@ -110,14 +115,29 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                         </ul>
                     </li>
                     <li className="rules-info-item">{T.gachaPitySystem}</li>
+                    <li className="rules-info-item">{T.gallery.craftingTitle}
+                        <ul style={{ listStyle: 'circle', paddingLeft: '20px', marginTop: '0.5rem' }}>
+                            <li>{T.gallery.craftingRuleR}</li>
+                            <li>{T.gallery.craftingRuleSR}</li>
+                            <li>{T.gallery.craftingRuleSSR}</li>
+                        </ul>
+                    </li>
                 </ul>
 
                 <h3 className="rules-subtitle">{T.roguelike.roguelikeRulesTitle}</h3>
                 <p>{T.roguelike.roguelikeRulesDescription}</p>
+                <p>{T.roguelike.essenceMultiplierRule}</p>
+                <ul className="rules-info-list">
+                    <li className="rules-info-item">{`${T.difficultyEasy}: x1`}</li>
+                    <li className="rules-info-item">{`${T.difficultyMedium}: x1.25`}</li>
+                    <li className="rules-info-item">{`${T.difficultyHard}: x1.5`}</li>
+                    <li className="rules-info-item">{`${T.difficultyNightmare}: x2`}</li>
+                    <li className="rules-info-item">{`${T.difficultyApocalypse}: x2.5`}</li>
+                </ul>
 
                 <h4 className="rules-subtitle" style={{ fontSize: '1.3rem', marginTop: '1.5rem' }}>{T.roguelike.rewardsTitle}</h4>
                 <div className="roguelike-rewards-rules-grid">
-                    {(['easy', 'medium', 'hard', 'nightmare'] as Difficulty[]).map(diff => {
+                    {(['easy', 'medium', 'hard', 'nightmare', 'apocalypse'] as Difficulty[]).map(diff => {
                         const rewards = ROGUELIKE_REWARDS[diff];
                         const difficultyKey = `difficulty${diff.charAt(0).toUpperCase() + diff.slice(1)}` as keyof typeof T;
                         return (

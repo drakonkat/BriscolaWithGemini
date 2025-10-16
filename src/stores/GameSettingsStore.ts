@@ -5,7 +5,7 @@
 import { makeAutoObservable, autorun } from 'mobx';
 import type { RootStore } from '.';
 import type { Language, GameplayMode, Difficulty, Soundtrack, CardDeckStyle } from '../core/types';
-import { defaultSoundSettings, type SoundSettings } from '../core/soundManager';
+import { defaultSoundSettings, type SoundSettings, DRUM_TYPES } from '../core/soundManager';
 
 const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
     try {
@@ -17,6 +17,35 @@ const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
     }
 };
 
+const loadSoundSettings = (): SoundSettings => {
+    const storedSettings = loadFromLocalStorage('sound_editor_settings', defaultSoundSettings);
+
+    // Deep merge with defaults to ensure data integrity
+    const settings: SoundSettings = {
+        ...defaultSoundSettings,
+        ...storedSettings,
+        drumPattern: {
+            ...defaultSoundSettings.drumPattern,
+            ...(storedSettings.drumPattern || {}),
+        },
+    };
+
+    // Ensure arrays have the correct length
+    const SEQUENCE_LENGTH = 16;
+
+    if (!Array.isArray(settings.chordPattern) || settings.chordPattern.length !== SEQUENCE_LENGTH) {
+        settings.chordPattern = defaultSoundSettings.chordPattern;
+    }
+
+    DRUM_TYPES.forEach(drum => {
+        if (!Array.isArray(settings.drumPattern[drum]) || settings.drumPattern[drum].length !== SEQUENCE_LENGTH) {
+            settings.drumPattern[drum] = defaultSoundSettings.drumPattern[drum];
+        }
+    });
+
+    return settings;
+};
+
 export class GameSettingsStore {
     rootStore: RootStore;
     language: Language = loadFromLocalStorage('language', 'it');
@@ -26,9 +55,10 @@ export class GameSettingsStore {
     waitForWaifuResponse: boolean = loadFromLocalStorage('wait_for_waifu_response', false);
     soundtrack: Soundtrack = loadFromLocalStorage('soundtrack', 'epic');
     isMusicEnabled: boolean = loadFromLocalStorage('is_music_enabled', false);
-    soundEditorSettings: SoundSettings = loadFromLocalStorage('sound_editor_settings', defaultSoundSettings);
+    soundEditorSettings: SoundSettings = loadSoundSettings();
     cardDeckStyle: CardDeckStyle = loadFromLocalStorage('card_deck_style', 'classic');
     isDiceAnimationEnabled: boolean = loadFromLocalStorage('is_dice_animation_enabled', true);
+    isNsfwEnabled: boolean = loadFromLocalStorage('is_nsfw_enabled', true);
     hasCompletedTutorial: boolean = loadFromLocalStorage('has_completed_tutorial', false);
     customSoundPresets: Record<string, SoundSettings> = loadFromLocalStorage('custom_sound_presets', {});
 
@@ -46,12 +76,18 @@ export class GameSettingsStore {
         autorun(() => localStorage.setItem('sound_editor_settings', JSON.stringify(this.soundEditorSettings)));
         autorun(() => localStorage.setItem('card_deck_style', JSON.stringify(this.cardDeckStyle)));
         autorun(() => localStorage.setItem('is_dice_animation_enabled', JSON.stringify(this.isDiceAnimationEnabled)));
+        autorun(() => localStorage.setItem('is_nsfw_enabled', JSON.stringify(this.isNsfwEnabled)));
         autorun(() => localStorage.setItem('has_completed_tutorial', JSON.stringify(this.hasCompletedTutorial)));
         autorun(() => localStorage.setItem('custom_sound_presets', JSON.stringify(this.customSoundPresets)));
     }
 
     setLanguage = (lang: Language) => this.language = lang;
-    setGameplayMode = (mode: GameplayMode) => this.gameplayMode = mode;
+    setGameplayMode = (mode: GameplayMode) => {
+        if (this.rootStore.gameStateStore.phase === 'menu') {
+            this.gameplayMode = mode;
+            this.rootStore.switchGameStateStore(mode);
+        }
+    };
     setDifficulty = (difficulty: Difficulty) => this.difficulty = difficulty;
     setIsChatEnabled = (enabled: boolean) => this.isChatEnabled = enabled;
     setWaitForWaifuResponse = (enabled: boolean) => this.waitForWaifuResponse = enabled;
@@ -60,6 +96,7 @@ export class GameSettingsStore {
     setSoundEditorSettings = (settings: SoundSettings) => this.soundEditorSettings = settings;
     setCardDeckStyle = (style: CardDeckStyle) => this.cardDeckStyle = style;
     setIsDiceAnimationEnabled = (enabled: boolean) => this.isDiceAnimationEnabled = enabled;
+    setIsNsfwEnabled = (enabled: boolean) => this.isNsfwEnabled = enabled;
     setTutorialCompleted = (completed: boolean) => this.hasCompletedTutorial = completed;
     
     saveCustomPreset = (name: string, settings: SoundSettings) => {

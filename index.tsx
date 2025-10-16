@@ -17,6 +17,7 @@ import './src/components/Modals.css';
 import './src/components/PowerSelectionScreen.css';
 import './src/components/TutorialOverlay.css';
 import './src/components/Snackbar.css';
+import './src/components/Tooltip.css';
 
 
 const apiKey = process.env.VITE_PUBLIC_POSTHOG_KEY;

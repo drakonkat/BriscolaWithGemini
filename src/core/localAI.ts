@@ -96,38 +96,6 @@ export const getLocalAIMove = (
 
         // Se l'IA può vincere
         if (winningCards.length > 0) {
-            // Logica per la modalità Roguelike (controlla se le carte hanno un elemento)
-            if (winningCards[0].element) {
-                // Scegli la carta vincente che massimizza i punti, considerando i poteri
-                let bestCard = winningCards[0];
-                let maxPotentialPoints = -1;
-
-                for (const card of winningCards) {
-                    let humanCardPoints = getCardPoints(humanCard);
-                    let aiCardPoints = getCardPoints(card);
-
-                    // Applica potere Acqua
-                    if (humanCard.element === 'water') aiCardPoints = Math.floor(aiCardPoints / 2);
-                    if (card.element === 'water') humanCardPoints = Math.floor(humanCardPoints / 2);
-                    
-                    let potentialPoints = humanCardPoints + aiCardPoints;
-
-                    // Applica potere Fuoco
-                    if (card.element === 'fire') potentialPoints += 3;
-
-                    // Considera potere Aria (evita di sprecare carte buone per 0 punti)
-                    if (humanCard.element === 'air' || card.element === 'air') {
-                        potentialPoints = 0;
-                    }
-
-                    if (potentialPoints > maxPotentialPoints) {
-                        maxPotentialPoints = potentialPoints;
-                        bestCard = card;
-                    }
-                }
-                return bestCard;
-            }
-
             // Difficoltà Difficile: strategia più conservativa con le briscole
             if (difficulty === 'hard') {
                 const bestWinningCard = winningCards[0];

@@ -15,6 +15,7 @@ export type Card = {
   element?: Element;
   elementalEffectActivated?: boolean;
   isTemporaryBriscola?: boolean;
+  isCursed?: boolean;
 };
 export type Player = 'human' | 'ai';
 // FIX: Added 'roguelike-map' to GamePhase to support the roguelike game flow.
@@ -23,13 +24,14 @@ export type ChatMessage = { sender: 'human' | 'ai'; text: string; };
 export type Language = 'it' | 'en';
 export type Waifu = WaifuType;
 export type GameEmotionalState = 'winning' | 'losing' | 'neutral';
-export type GameplayMode = 'classic' | 'roguelike';
-export type Difficulty = 'easy' | 'medium' | 'hard' | 'nightmare';
+export type GameplayMode = 'classic' | 'roguelike' | 'dungeon';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'nightmare' | 'apocalypse';
 export type Soundtrack = 'epic' | 'chill';
 export type Element = 'fire' | 'water' | 'air' | 'earth';
+export type Essence = Element;
 export type AbilityType = 'incinerate' | 'tide' | 'cyclone' | 'fortify';
 export type SnackbarType = 'success' | 'warning';
-export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock' | 'legend' | 'settings';
+export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock' | 'legend' | 'settings' | 'craftingMinigame' | 'challengeMatch' | 'challengeKeySelection' | 'noKeys' | 'dungeonProgress' | 'dungeonEnd' | 'missions' | 'dungeonMatchStart' | 'dungeonModifierInfo';
 export type CardDeckStyle = 'classic' | 'poker';
 export type SoundName =
   | 'game-start'
@@ -49,7 +51,11 @@ export type SoundName =
   | 'gacha-unlock-ssr'
   | 'gacha-refund'
   | 'gacha-multi-unlock'
-  | 'dice-roll';
+  | 'dice-roll'
+  | 'shard-shatter'
+  | 'essence-gain'
+  | 'craft-critical'
+  | 'mission-complete';
 export type DrumType = 'kick' | 'snare' | 'closedHat' | 'openHat';
 
 export type Chord = '---' | 'Am' | 'G' | 'C' | 'F' | 'Dm' | 'E';
@@ -85,6 +91,23 @@ export type RoguelikeState = {
     activePowers: RoguelikePowerUp[];
 };
 
+export type DungeonModifierId = 'NONE' | 'BRISCOLA_CHAOS' | 'CURSED_HAND' | 'ELEMENTAL_FURY' | 'VALUE_INVERSION';
+export type DungeonModifier = {
+    id: DungeonModifierId;
+    name: string;
+    description: string;
+};
+
+export type DungeonRunState = {
+    isActive: boolean;
+    keyRarity: 'R' | 'SR' | 'SSR' | null;
+    currentMatch: number;
+    totalMatches: number;
+    wins: number;
+    waifuOpponents: string[];
+    modifiers: DungeonModifier[];
+};
+
 export type ElementalClashResult = {
     type: 'dice';
     humanRoll: number;
@@ -111,3 +134,57 @@ export type TrickHistoryEntry = {
 
 // FIX: Added RoguelikeEvent type definition.
 export type RoguelikeEvent = { type: 'market' | 'witch_hut' | 'healing_fountain' | 'challenge_altar' };
+
+export type AbilityUseHistoryEntry = {
+  isAbilityUse: true;
+  trickNumber: number;
+  waifuName: string;
+  abilityName: string;
+};
+
+export type HistoryEntry = TrickHistoryEntry | AbilityUseHistoryEntry;
+
+export type MissionRewardType = 'waifuCoins' | 'r_shards' | 'sr_shards' | 'ssr_shards' | 'fire_essences' | 'water_essences' | 'air_essences' | 'earth_essences' | 'transcendental_essences';
+export type MissionType = 'daily' | 'weekly';
+export type MissionCategory = 'gameplay' | 'collection';
+export type MissionProgressKey = 
+    'gamesWon' | 
+    'classicGamesWon' |
+    'roguelikeGamesWon' |
+    'dungeonRunsWon' |
+    'cardsPlayed_coppe' | 
+    'cardsPlayed_denara' |
+    'cardsPlayed_spade' |
+    'cardsPlayed_bastoni' |
+// FIX: Added 'winOnDifficulty_hard' to MissionProgressKey type.
+    'winOnDifficulty_hard' |
+    'winOnDifficulty_nightmare' | 
+    'winOnDifficulty_apocalypse' |
+    'keysCrafted' |
+    'gachaRolls' |
+    'elementalPowersUsed' |
+    'waifusDefeated' |
+    'ssrCollected' |
+    'followersRecruited';
+
+export interface Mission {
+    id: string;
+    type?: MissionType;
+    category: MissionCategory;
+    progressKey: MissionProgressKey;
+    target: number;
+    rewards: Partial<Record<MissionRewardType, number>>;
+}
+
+export type Achievement = Mission;
+
+export interface MissionState {
+    progress: number;
+    claimed: boolean;
+}
+
+export interface AchievementState {
+    progress: number;
+    claimed: boolean;
+    unlockedAt?: number;
+}
