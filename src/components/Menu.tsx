@@ -230,7 +230,11 @@ export const Menu = observer(() => {
     
     const handleStartGame = () => {
         if (gameplayMode === 'roguelike') {
-            (gameStateStore as RoguelikeModeStore).startRoguelikeRun(selectedWaifu);
+            if (gameStateStore instanceof RoguelikeModeStore) {
+                gameStateStore.startRoguelikeRun(selectedWaifu);
+            } else {
+                console.error("Attempted to start roguelike game, but game state is not in roguelike mode.");
+            }
         } else {
             gameStateStore.startGame(selectedWaifu);
         }
