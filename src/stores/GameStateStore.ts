@@ -232,9 +232,10 @@ export abstract class GameStateStore {
         if (this.phase !== 'playing' || this.turn !== 'ai' || this.cardsOnTable.length === 2) return;
         this.isProcessing = true;
         
-        const aiCard = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, this.rootStore.gameSettingsStore.difficulty);
+        // FIX: The result of getLocalAIMove is an object. Access the `cardToPlay` property before passing it to playAiCard.
+        const aiMoveResult = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, this.rootStore.gameSettingsStore.difficulty);
         
-        this.playAiCard(aiCard);
+        this.playAiCard(aiMoveResult.cardToPlay);
     }
 
     playAiCard(card: Card) {
