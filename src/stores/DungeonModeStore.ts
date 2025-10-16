@@ -55,7 +55,6 @@ export class DungeonModeStore extends ClassicModeStore {
             startPreparedDungeonMatch: action,
             forceCloseClashModal: action,
             endDungeonRun: action,
-            selectCardForPlay: action, // Annotated for first time in hierarchy
             // Overridden properties
             startGame: override,
             _initializeNewGame: override,
@@ -66,6 +65,7 @@ export class DungeonModeStore extends ClassicModeStore {
             saveGame: override,
             clearSavedGame: override,
             resumeGame: override,
+            selectCardForPlay: override,
         });
     }
 

@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { runInAction, reaction, makeObservable, action, computed } from 'mobx';
+import { runInAction, reaction, makeObservable, action, computed, override } from 'mobx';
 import { getCardPoints, shuffleDeck } from '../core/utils';
 import type { Waifu, Card, TrickHistoryEntry, Suit, Player, HistoryEntry } from '../core/types';
 import { getTrickWinner as getClassicTrickWinner } from '../core/classicGameLogic';
@@ -41,12 +41,12 @@ export class ClassicModeStore extends GameStateStore {
             resolveTrick: action,
             handleEndOfGame: action,
             getCardPoints: action,
-            // FIX: Added new methods to makeObservable to make them part of the MobX state.
-            saveGame: action,
-            loadGame: action,
-            clearSavedGame: action,
-            resumeGame: action,
-            hasSavedGame: computed,
+            // FIX: Use 'override' for methods and getters already annotated in the base class.
+            saveGame: override,
+            loadGame: override,
+            clearSavedGame: override,
+            resumeGame: override,
+            hasSavedGame: override,
         });
 
         this.addReactionDisposer(reaction(

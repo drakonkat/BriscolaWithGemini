@@ -4,7 +4,7 @@
 */
 // FIX: Import React to use React.MouseEvent and React.TouchEvent types.
 import React from 'react';
-import { runInAction, reaction, makeObservable, observable, action, computed } from 'mobx';
+import { runInAction, reaction, makeObservable, observable, action, computed, override } from 'mobx';
 import { GameStateStore } from './GameStateStore';
 import type { RootStore } from '.';
 import type { Waifu, Card, RoguelikeState, RoguelikePowerUpId, Element, TrickHistoryEntry, AbilityUseHistoryEntry, ElementalClashResult, Value } from '../core/types';
@@ -73,18 +73,18 @@ export class RoguelikeModeStore extends GameStateStore {
             trickResolutionTimer: observable,
             trickResolutionCallback: observable,
             activatedElementsThisMatch: observable,
-            hasSavedGame: computed,
-            saveGame: action,
-            loadGame: action,
-            clearSavedGame: action,
-            resumeGame: action,
+            hasSavedGame: override,
+            saveGame: override,
+            loadGame: override,
+            clearSavedGame: override,
+            resumeGame: override,
             startRoguelikeRun: action,
             selectPowerUp: action,
             startGame: action,
-            selectCardForPlay: action,
+            selectCardForPlay: override,
             confirmElementalChoice: action,
             cancelElementalChoice: action,
-            handleAiTurn: action,
+            handleAiTurn: override,
             resolveTrick: action,
             handleEndOfGame: action,
             goToNextLevel: action,
