@@ -372,6 +372,7 @@ export abstract class GameStateStore {
     handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => { /* Base implementation */ }
     handleDragEnd = () => { /* Base implementation */ }
 
+
     // FIX: Made save/load methods abstract to enforce implementation in subclasses.
     abstract saveGame(): void;
     abstract loadGame(): boolean;
