@@ -245,6 +245,7 @@ export class RoguelikeModeStore extends GameStateStore {
             this.aiScorePile = [];
             this.roguelikeState.followerAbilitiesUsedThisMatch = [];
             this.activatedElementsThisMatch = [];
+            this.newFollower = null; // FIX: Reset newFollower at the start of each match.
             
             this.currentWaifu = opponent;
             this.backgroundUrl = getImageUrl(`/background/landscape${Math.floor(Math.random() * 21) + 1}.png`);
