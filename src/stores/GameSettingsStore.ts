@@ -82,7 +82,12 @@ export class GameSettingsStore {
     }
 
     setLanguage = (lang: Language) => this.language = lang;
-    setGameplayMode = (mode: GameplayMode) => this.gameplayMode = mode;
+    setGameplayMode = (mode: GameplayMode) => {
+        if (this.rootStore.gameStateStore.phase === 'menu') {
+            this.gameplayMode = mode;
+            this.rootStore.switchGameStateStore(mode);
+        }
+    };
     setDifficulty = (difficulty: Difficulty) => this.difficulty = difficulty;
     setIsChatEnabled = (enabled: boolean) => this.isChatEnabled = enabled;
     setWaitForWaifuResponse = (enabled: boolean) => this.waitForWaifuResponse = enabled;

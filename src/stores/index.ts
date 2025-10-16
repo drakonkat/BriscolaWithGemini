@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { createContext, useContext } from 'react';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { GameSettingsStore } from './GameSettingsStore';
 import { UIStateStore } from './UIStateStore';
 import { GachaStore } from './GachaStore';
@@ -15,6 +15,16 @@ import { DungeonModeStore } from './DungeonModeStore';
 import { RoguelikeModeStore } from './RoguelikeModeStore';
 import type { PostHog } from 'posthog-js';
 import type { GameplayMode } from '../core/types';
+
+const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
+    try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : defaultValue;
+    } catch (error) {
+        console.warn(`Error loading ${key} from localStorage`, error);
+        return defaultValue;
+    }
+};
 
 export class RootStore {
     gameSettingsStore: GameSettingsStore;
@@ -39,25 +49,23 @@ export class RootStore {
         this.chatStore = new ChatStore(this);
         
         makeAutoObservable(this, { posthog: false });
+    }
 
-        // When the gameplay mode changes in settings, create a new game state store for that mode.
-        reaction(
-            () => this.gameSettingsStore.gameplayMode,
-            (newMode) => {
-                // Only allow switching modes from the menu to prevent losing an active game.
-                if (this.gameStateStore.phase === 'menu') {
-                    // Dispose listeners on old stores
-                    this.gameStateStore.dispose();
-                    this.chatStore.dispose();
-
-                    // Create and assign new store
-                    this.gameStateStore = this.createGameStateStoreForMode(newMode);
-
-                    // Re-initialize listeners that depend on the new store
-                    this.chatStore.init();
-                }
-            }
-        );
+    switchGameStateStore = (mode: GameplayMode) => {
+        // Check if we even need to switch
+        if (mode === 'classic' && this.gameStateStore instanceof ClassicModeStore) return;
+        if (mode === 'roguelike' && this.gameStateStore instanceof RoguelikeModeStore) return;
+        if (mode === 'dungeon' && this.gameStateStore instanceof DungeonModeStore) return;
+    
+        // Dispose listeners on old stores
+        this.gameStateStore.dispose();
+        this.chatStore.dispose();
+    
+        // Create and assign new store
+        this.gameStateStore = this.createGameStateStoreForMode(mode);
+    
+        // Re-initialize listeners that depend on the new store
+        this.chatStore.init();
     }
 
     // Helper function to create the correct store instance based on the mode.
@@ -74,6 +82,39 @@ export class RootStore {
 
     init = (posthogInstance: PostHog) => {
         this.posthog = posthogInstance;
+    }
+
+    get hasAnySavedGame(): boolean {
+        const hasClassic = loadFromLocalStorage('classic_save', null) !== null;
+        const roguelikeState = loadFromLocalStorage('roguelike_save', { currentLevel: 0 });
+        const hasRoguelike = roguelikeState.currentLevel > 0;
+        const dungeonState = loadFromLocalStorage('dungeon_run_state', { isActive: false });
+        const hasDungeon = dungeonState.isActive;
+        return hasClassic || hasRoguelike || hasDungeon;
+    }
+
+    resumeAnyGame = () => {
+        const hasClassic = loadFromLocalStorage('classic_save', null) !== null;
+        const roguelikeState = loadFromLocalStorage('roguelike_save', { currentLevel: 0 });
+        const hasRoguelike = roguelikeState.currentLevel > 0;
+        const dungeonState = loadFromLocalStorage('dungeon_run_state', { isActive: false });
+        const hasDungeon = dungeonState.isActive;
+
+        let modeToResume: GameplayMode | null = null;
+        // Prioritize more complex/longer modes
+        if (hasRoguelike) {
+            modeToResume = 'roguelike';
+        } else if (hasDungeon) {
+            modeToResume = 'dungeon';
+        } else if (hasClassic) {
+            modeToResume = 'classic';
+        }
+
+        if (modeToResume) {
+            this.gameSettingsStore.gameplayMode = modeToResume;
+            this.switchGameStateStore(modeToResume);
+            this.gameStateStore.resumeGame();
+        }
     }
 }
 

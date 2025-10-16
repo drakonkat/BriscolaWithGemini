@@ -126,7 +126,6 @@ export const Menu = observer(() => {
     const rootStore = useStores();
     const { gameSettingsStore, gameStateStore, uiStore, gachaStore, missionStore } = rootStore;
     const { language, gameplayMode, difficulty, isNsfwEnabled } = gameSettingsStore;
-    const { hasSavedGame } = gameStateStore;
     const { menuBackgroundUrl, isDifficultyDetailsOpen, isWaifuDetailsOpen } = uiStore;
     const { waifuCoins, r_shards, sr_shards, ssr_shards, r_keys, sr_keys, ssr_keys } = gachaStore;
     const { hasUnclaimedRewards } = missionStore;
@@ -503,10 +502,10 @@ export const Menu = observer(() => {
                 </div>
                 
                 <div className="start-game-container" data-tutorial-id="start-game">
-                    {hasSavedGame && (
+                    {rootStore.hasAnySavedGame && (
                         <button
                             className="start-game-button"
-                            onClick={gameStateStore.resumeGame}
+                            onClick={rootStore.resumeAnyGame}
                         >
                             {T.resumeGame}
                         </button>
