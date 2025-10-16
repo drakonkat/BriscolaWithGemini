@@ -681,7 +681,7 @@ export class RoguelikeModeStore extends GameStateStore {
         }
     }
 
-    handleDragStart  (card: Card, e: React.MouseEvent | React.TouchEvent)  {
+    handleDragStart(card: Card, e: React.MouseEvent | React.TouchEvent) {
         if (this.turn !== 'human' || this.isProcessing || !card.element || card.isTemporaryBriscola) return;
 
         e.preventDefault();
@@ -693,9 +693,9 @@ export class RoguelikeModeStore extends GameStateStore {
             this.clonePosition = { x: touch.clientX, y: touch.clientY };
             this.cardForElementalChoice = card; // Set card for choice context
         });
-    };
+    }
 
-    handleDragMove  (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>)  {
+    handleDragMove(e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) {
         if (!this.draggingCardInfo) return;
 
         e.preventDefault(); // Prevent scrolling on touch devices
@@ -729,9 +729,9 @@ export class RoguelikeModeStore extends GameStateStore {
 
             this.currentDropZone = overZone;
         });
-    };
+    }
 
-    handleDragEnd  ()  {
+    handleDragEnd() {
         if (!this.draggingCardInfo) return;
 
         const dropZone = this.currentDropZone;
@@ -751,7 +751,7 @@ export class RoguelikeModeStore extends GameStateStore {
             this.clonePosition = null;
             this.currentDropZone = null;
         });
-    };
+    }
 
     forceCloseClashModal = () => {
         if (this.trickResolutionTimer && this.trickResolutionCallback) {

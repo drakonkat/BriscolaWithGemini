@@ -105,9 +105,9 @@ export abstract class GameStateStore {
             drawCards: action,
             updateEmotionalState: action,
             getWaifuMessage: action,
-            handleDragStart: action,
-            handleDragMove: action,
-            handleDragEnd: action,
+            handleDragStart: action.bound,
+            handleDragMove: action.bound,
+            handleDragEnd: action.bound,
             saveGame: action,
             loadGame: action,
             clearSavedGame: action,
@@ -368,9 +368,9 @@ export abstract class GameStateStore {
         }
     }
 
-    handleDragStart = (card: Card, e: React.MouseEvent | React.TouchEvent) => { /* Base implementation */ }
-    handleDragMove = (e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) => { /* Base implementation */ }
-    handleDragEnd = () => { /* Base implementation */ }
+    handleDragStart(card: Card, e: React.MouseEvent | React.TouchEvent) { /* Base implementation */ }
+    handleDragMove(e: MouseEvent | TouchEvent, zones: Record<string, HTMLElement | null>) { /* Base implementation */ }
+    handleDragEnd() { /* Base implementation */ }
 
 
     // FIX: Made save/load methods abstract to enforce implementation in subclasses.
