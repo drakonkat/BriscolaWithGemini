@@ -14,11 +14,9 @@ export type Card = {
   isFortified?: boolean;
   element?: Element;
   elementalEffectActivated?: boolean;
-  isTemporaryBriscola?: boolean;
   isCursed?: boolean;
 };
 export type Player = 'human' | 'ai';
-// FIX: Added 'roguelike-map' to GamePhase to support the roguelike game flow.
 export type GamePhase = 'menu' | 'playing' | 'gameOver' | 'power-selection' | 'roguelike-map';
 export type ChatMessage = { sender: 'human' | 'ai'; text: string; };
 export type Language = 'it' | 'en';
@@ -81,7 +79,6 @@ export interface RoguelikePowerUp {
   level: number;
 }
 
-// FIX: Added missing properties to RoguelikeState to support game state management.
 export type RoguelikeState = {
     currentLevel: number; // 0 = before starting, 1-4 = in progress
     encounteredWaifus: string[];
@@ -89,6 +86,7 @@ export type RoguelikeState = {
     followerAbilitiesUsedThisMatch: string[];
     initialPower: RoguelikePowerUpId | null;
     activePowers: RoguelikePowerUp[];
+    waifuOpponents: string[];
 };
 
 export type DungeonModifierId = 'NONE' | 'BRISCOLA_CHAOS' | 'CURSED_HAND' | 'ELEMENTAL_FURY' | 'VALUE_INVERSION';

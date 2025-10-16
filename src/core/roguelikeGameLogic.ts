@@ -58,8 +58,8 @@ export const getRoguelikeTrickWinner = (playedCards: Card[], starter: Player, br
     const card2 = playedCards[1];
     const follower: Player = starter === 'human' ? 'ai' : 'human';
     
-    const card1IsBriscola = card1.suit === briscola || card1.isTemporaryBriscola;
-    const card2IsBriscola = card2.suit === briscola || card2.isTemporaryBriscola;
+    const card1IsBriscola = card1.suit === briscola;
+    const card2IsBriscola = card2.suit === briscola;
 
     const rank1 = getRoguelikeCardRank(card1);
     const rank2 = getRoguelikeCardRank(card2);
@@ -67,7 +67,7 @@ export const getRoguelikeTrickWinner = (playedCards: Card[], starter: Player, br
     if (card1IsBriscola && !card2IsBriscola) return starter;
     if (!card1IsBriscola && card2IsBriscola) return follower;
     
-    // If both are considered briscola (real or temporary), the higher rank wins.
+    // If both are briscola, the higher rank wins.
     if (card1IsBriscola && card2IsBriscola) {
       return rank1 > rank2 ? starter : follower;
     }
@@ -189,7 +189,7 @@ export const calculateRoguelikeTrickPoints = (
         }
 
         const briscolaMasteryPower = activePowers.find(p => p.id === 'briscola_mastery');
-        if (briscolaMasteryPower && (humanCard.suit === briscolaSuit || humanCard.isTemporaryBriscola)) {
+        if (briscolaMasteryPower && (humanCard.suit === briscolaSuit)) {
             const masteryBonus = briscolaMasteryPower.level * 2;
             bonusPoints += masteryBonus;
             bonusReasons.push(T.history.bonusReasons.mastery(masteryBonus));

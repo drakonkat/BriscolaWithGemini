@@ -1255,3 +1255,13 @@
     font-weight: bold;
       text-shadow: 0 0 8px rgba(var(--gold-accent-rgb), 0.5);
 }
+
+.follower-ability-row .follower-avatar-small {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  border: 2px solid var(--primary-accent);
+  flex-shrink: 0;
+}
