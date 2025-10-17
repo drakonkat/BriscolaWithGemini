@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import React, { createContext, useContext } from 'react';
+import  { createContext, useContext } from 'react';
 import { makeAutoObservable } from 'mobx';
 import { GameSettingsStore } from './GameSettingsStore.js';
 import { UIStateStore } from './UIStateStore.js';
