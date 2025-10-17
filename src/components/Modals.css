@@ -1316,34 +1316,8 @@
         flex-grow: 1;
     }
 }
-```
-
-Looks perfect.Certamente! Ho notato che in modalità mobile i titoli delle schede nelle modali della Galleria e delle Missioni occupano troppo spazio.
-
-Ho aggiornato lo stile per nascondere il testo e mostrare solo le icone quando lo schermo è più piccolo. Questo crea un'interfaccia più pulita e adatta ai dispositivi mobili, assicurando che tutti gli elementi rimangano ben visibili e accessibili.
-
-Ecco le modifiche apportate:
-
-```xml
-<changes>
-<change>
-<file>src/components/Modals.css</file>
-<description>Ho aggiornato il CSS per le modali della Galleria e delle Missioni. In risoluzione mobile, ora vengono visualizzate solo le icone nelle schede, nascondendo i titoli per ottimizzare lo spazio e migliorare l'usabilità su schermi di piccole dimensioni.</description>
-<content><![CDATA[/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
 
 
-
-/* --- Generic Modal Styles --- */
-.game-over-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 9999; cursor: pointer; overflow-y: auto; padding: 1rem;
-}
-
-.game-over-modal, .rules-modal, .waifu-details-modal, .confirmation-modal, .gallery-modal, .event-modal, .history-modal, .kasumi-swap-modal, .sound-editor-modal, .gacha-multi-unlock-modal, .crafting-minigame-modal, .challenge-key-selection-modal {
-  background-color: var(--ui-bg); backdrop-filter: blur(8px); padding: 2rem 3rem; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(var(--primary-accent-rgb), 0.1); max-width: 90%; width: 500px; cursor: default; position: relative;
-}
 .game-over-modal h2, .rules-modal h2, .event-modal h2, .history-modal h2, .kasumi-swap-modal h2, .sound-editor-modal h2, .crafting-minigame-modal h2, .challenge-key-selection-modal h2 {
   font-size: 2rem; margin-bottom: 1rem; color: var(--primary-accent); padding-right: 3.5rem; text-shadow: 0 0 10px rgba(var(--primary-accent-rgb), 0.3);
 }
@@ -1351,9 +1325,6 @@ Ecco le modifiche apportate:
   font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--font-color-secondary);
 }
 
-.modal-close-button {
-  position: absolute; top: 1rem; right: 1rem; background: none; border: 1px solid var(--border-color); color: var(--font-color-secondary); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; z-index: 10; padding: 0;
-}
 .modal-close-button:hover, .modal-close-button:focus { color: white; border-color: white; transform: scale(1.1); outline: none; background-color: rgba(255, 255, 255, 0.1); }
 .modal-close-button svg { width: 20px; height: 20px; }
 
@@ -1530,13 +1501,3 @@ Ecco le modifiche apportate:
   margin-right: 0.5rem;
 }
 
-.elemental-cycle-display.modal-version {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-weight: bold;
-  font-size: 1.2rem;
-  color: var(--font-color-secondary);
-  padding: 0.75rem;
-  background-color: rgba(0
