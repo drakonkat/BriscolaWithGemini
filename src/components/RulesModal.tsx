@@ -172,6 +172,15 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                         );
                     })}
                 </div>
+
+                <h3 className="rules-subtitle">{T.dungeonRules.title}</h3>
+                <ul className="rules-info-list">
+                    <li className="rules-info-item">{T.dungeonRules.description}</li>
+                    <li className="rules-info-item">{T.dungeonRules.keyCrafting}</li>
+                    <li className="rules-info-item">{T.dungeonRules.runStructure}</li>
+                    <li className="rules-info-item">{T.dungeonRules.modifiers}</li>
+                    <li className="rules-info-item">{T.dungeonRules.rewards}</li>
+                </ul>
             </div>
         </div>
     );
