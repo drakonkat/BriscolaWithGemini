@@ -263,6 +263,109 @@ export const getLocalAIMove = (
             return { cardToPlay: sortedHand[0] };
         }
     }
+
+    if (difficulty === 'nightmare' && deck && deck.length > 0) {
+        const isCarico = (c: Card) => c.value === 'Asso' || c.value === '3';
+        
+        // AI is second to play
+        if (cardsOnTable.length > 0) {
+            const humanCard = cardsOnTable[0];
+            
+            // Try to win, but if not possible, check deck
+            const winningCardsInHand = aiHand.filter(aiCard => {
+                const aiIsBriscola = aiCard.suit === briscolaSuit;
+                const humanIsBriscola = humanCard.suit === briscolaSuit;
+                if (aiIsBriscola && !humanIsBriscola) return true;
+                if (!aiIsBriscola && humanIsBriscola) return false;
+                if (aiIsBriscola && humanIsBriscola) return RANK[aiCard.value] > RANK[humanCard.value];
+                if (aiCard.suit === humanCard.suit) return RANK[aiCard.value] > RANK[humanCard.value];
+                return false;
+            });
+
+            // If it can't win with hand cards, and trick has points, check deck
+            if (winningCardsInHand.length === 0 && getCardPoints(humanCard) > 0) {
+                let cardToTake: Card | undefined;
+                
+                // Look for winning briscola carico
+                if (humanCard.suit !== briscolaSuit) {
+                    const briscolaCarichiInDeck = deck.filter(c => c.suit === briscolaSuit && isCarico(c))
+                        .sort((a,b) => RANK[a.value] - RANK[b.value]); // lowest first
+                    if (briscolaCarichiInDeck.length > 0) cardToTake = briscolaCarichiInDeck[0];
+                } else { // Human played briscola
+                    const winningBriscolaCarichiInDeck = deck.filter(c => c.suit === briscolaSuit && isCarico(c) && RANK[c.value] > RANK[humanCard.value])
+                        .sort((a,b) => RANK[a.value] - RANK[b.value]); // lowest winning first
+                    if (winningBriscolaCarichiInDeck.length > 0) cardToTake = winningBriscolaCarichiInDeck[0];
+                }
+                
+                // Look for winning lead suit carico
+                if (!cardToTake && humanCard.suit !== briscolaSuit) {
+                    const leadSuitCarichiInDeck = deck.filter(c => c.suit === humanCard.suit && isCarico(c) && RANK[c.value] > RANK[humanCard.value])
+                        .sort((a,b) => RANK[a.value] - RANK[b.value]);
+                    if (leadSuitCarichiInDeck.length > 0) cardToTake = leadSuitCarichiInDeck[0];
+                }
+
+                if (cardToTake) {
+                    const cardToTakeIndex = deck.findIndex(c => c.id === cardToTake!.id);
+                    const sortedHand = [...aiHand].sort((a, b) => (getCardPoints(a) - getCardPoints(b)) || (RANK[a.value] - RANK[b.value]));
+                    const cardToDiscard = sortedHand.find(c => c.suit !== briscolaSuit && getCardPoints(c) === 0) || sortedHand[0];
+                    const newHand = [...aiHand.filter(c => c.id !== cardToDiscard.id), cardToTake];
+                    const newDeck = [...deck];
+                    newDeck.splice(cardToTakeIndex, 1, cardToDiscard);
+                    return { cardToPlay: cardToTake, newHand, newDeck };
+                }
+            }
+        } else { // AI is first to play, proactively improve hand.
+            const bestCardInDeck = [...deck].sort((a, b) => {
+                const isABriscola = a.suit === briscolaSuit;
+                const isBBriscola = b.suit === briscolaSuit;
+                if (isABriscola && !isBBriscola) return -1;
+                if (!isABriscola && isBBriscola) return 1;
+                const pointsA = getCardPoints(a);
+                const pointsB = getCardPoints(b);
+                if (pointsA !== pointsB) return pointsB - pointsA;
+                return RANK[b.value] - RANK[a.value];
+            })[0];
+            
+            const worstCardInHand = [...aiHand].sort((a,b) => {
+                const isABriscola = a.suit === briscolaSuit;
+                const isBBriscola = b.suit === briscolaSuit;
+                if (isABriscola && !isBBriscola) return 1;
+                if (!isABriscola && isBBriscola) return -1;
+                const pointsA = getCardPoints(a);
+                const pointsB = getCardPoints(b);
+                if (pointsA !== pointsB) return pointsA - pointsB;
+                return RANK[a.value] - RANK[b.value];
+            })[0];
+
+            const isBestDeckCardGood = getCardPoints(bestCardInDeck) >= 10 || (bestCardInDeck.suit === briscolaSuit && RANK[bestCardInDeck.value] >= RANK['Fante']);
+            const isWorstHandCardBad = getCardPoints(worstCardInHand) === 0 && worstCardInHand.suit !== briscolaSuit;
+
+            if (isBestDeckCardGood && isWorstHandCardBad) {
+                const cardToTake = bestCardInDeck;
+                const cardToTakeIndex = deck.findIndex(c => c.id === cardToTake.id);
+                const cardToDiscard = worstCardInHand;
+
+                const newHand = [...aiHand.filter(c => c.id !== cardToDiscard.id), cardToTake];
+                const newDeck = [...deck];
+                newDeck.splice(cardToTakeIndex, 1, cardToDiscard);
+                
+                const sortedHand = [...newHand].sort((a, b) => (getCardPoints(a) - getCardPoints(b)) || (RANK[a.value] - RANK[b.value]));
+                const nonBriscolaInHand = sortedHand.filter(c => c.suit !== briscolaSuit);
+                let cardToPlay: Card;
+                if (nonBriscolaInHand.length === 0) {
+                     cardToPlay = sortedHand[0];
+                } else {
+                    const lowPointNonBriscola = nonBriscolaInHand.filter(c => getCardPoints(c) < 2);
+                    if (lowPointNonBriscola.length > 0) {
+                         cardToPlay = lowPointNonBriscola[0];
+                    } else {
+                         cardToPlay = nonBriscolaInHand[0];
+                    }
+                }
+                return { cardToPlay, newHand, newDeck };
+            }
+        }
+    }
     
     // Difficoltà Facile: gioca una carta casuale
     if (difficulty === 'easy') {
