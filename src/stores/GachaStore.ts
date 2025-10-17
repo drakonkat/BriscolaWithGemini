@@ -246,11 +246,11 @@ export class GachaStore {
     // FIX: Add missing method to prevent runtime error in GalleryModal.
     convertElementalToTranscendental = () => {
         const T_gallery = this.T.gallery;
-        if (this.fire_essences >= 1 && this.water_essences >= 1 && this.air_essences >= 1 && this.earth_essences >= 1) {
-            this.fire_essences--;
-            this.water_essences--;
-            this.air_essences--;
-            this.earth_essences--;
+        if (this.fire_essences >= 10 && this.water_essences >= 10 && this.air_essences >= 10 && this.earth_essences >= 10) {
+            this.fire_essences=this.fire_essences-10;
+            this.water_essences=this.water_essences-10;
+            this.air_essences=this.air_essences-10;
+            this.earth_essences=this.earth_essences-10;
             this.transcendental_essences++;
             playSound('essence-gain');
             // This reuses the shard conversion message. It's not perfect but avoids adding new translations.

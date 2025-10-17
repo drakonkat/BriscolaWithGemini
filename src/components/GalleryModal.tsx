@@ -286,10 +286,10 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                 <div className="crafting-card from-elemental">
                                     <div className="crafting-card-header">
                                         <h3 className="elemental-conversion-rule">
-                                            1x<ElementIcon element="fire" />,&nbsp;
-                                            1x<ElementIcon element="water" />,&nbsp;
-                                            1x<ElementIcon element="air" />,&nbsp;
-                                            1x<ElementIcon element="earth" />
+                                            10x<ElementIcon element="fire" />,&nbsp;
+                                            10x<ElementIcon element="water" />,&nbsp;
+                                            10x<ElementIcon element="air" />,&nbsp;
+                                            10x<ElementIcon element="earth" />
                                             &nbsp;→&nbsp;
                                             1x<EssenceIcon />
                                         </h3>
@@ -297,10 +297,10 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                     </div>
                                     <div className="crafting-recipe">
                                         <div className="recipe-materials">
-                                            <div className="recipe-material" title={T.missions.rewards.fire_essences}><ElementIcon element="fire" /><span className={gachaStore.fire_essences < 1 ? 'insufficient' : ''}>{gachaStore.fire_essences}</span></div>
-                                            <div className="recipe-material" title={T.missions.rewards.water_essences}><ElementIcon element="water" /><span className={gachaStore.water_essences < 1 ? 'insufficient' : ''}>{gachaStore.water_essences}</span></div>
-                                            <div className="recipe-material" title={T.missions.rewards.air_essences}><ElementIcon element="air" /><span className={gachaStore.air_essences < 1 ? 'insufficient' : ''}>{gachaStore.air_essences}</span></div>
-                                            <div className="recipe-material" title={T.missions.rewards.earth_essences}><ElementIcon element="earth" /><span className={gachaStore.earth_essences < 1 ? 'insufficient' : ''}>{gachaStore.earth_essences}</span></div>
+                                            <div className="recipe-material" title={T.missions.rewards.fire_essences}><ElementIcon element="fire" /><span className={gachaStore.fire_essences < 10 ? 'insufficient' : ''}>{gachaStore.fire_essences}</span></div>
+                                            <div className="recipe-material" title={T.missions.rewards.water_essences}><ElementIcon element="water" /><span className={gachaStore.water_essences < 10 ? 'insufficient' : ''}>{gachaStore.water_essences}</span></div>
+                                            <div className="recipe-material" title={T.missions.rewards.air_essences}><ElementIcon element="air" /><span className={gachaStore.air_essences < 10 ? 'insufficient' : ''}>{gachaStore.air_essences}</span></div>
+                                            <div className="recipe-material" title={T.missions.rewards.earth_essences}><ElementIcon element="earth" /><span className={gachaStore.earth_essences < 10 ? 'insufficient' : ''}>{gachaStore.earth_essences}</span></div>
                                         </div>
                                         <div className="recipe-arrow">→</div>
                                         <div className="recipe-result">
