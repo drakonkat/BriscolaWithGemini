@@ -157,7 +157,7 @@ export class ClassicModeStore extends GameStateStore {
         
         const { difficulty } = this.rootStore.gameSettingsStore;
         const humanHandForAI = difficulty === 'apocalypse' ? this.humanHand : null;
-        const deckForAI = difficulty === 'apocalypse' ? this.deck : null;
+        const deckForAI = (difficulty === 'apocalypse' || difficulty === 'nightmare') ? this.deck : null;
         
         const aiMoveResult = getLocalAIMove(this.aiHand, this.briscolaSuit!, this.cardsOnTable, difficulty, humanHandForAI, deckForAI);
         
