@@ -87,9 +87,9 @@ export class GachaStore {
     earth_essences: number = loadFromLocalStorage('earth_essences', 0);
     // FIX: Add missing transcendental_essences property.
     transcendental_essences: number = loadFromLocalStorage('transcendental_essences', 0);
-    r_keys: number = loadFromLocalStorage('r_keys', 1);
-    sr_keys: number = loadFromLocalStorage('sr_keys', 1);
-    ssr_keys: number = loadFromLocalStorage('ssr_keys', 1);
+    r_keys: number = loadFromLocalStorage('r_keys', 0);
+    sr_keys: number = loadFromLocalStorage('sr_keys', 0);
+    ssr_keys: number = loadFromLocalStorage('ssr_keys', 0);
     unlockedBackgrounds: string[] = loadFromLocalStorage('unlocked_backgrounds', []);
     unlockedDungeonBackgrounds: string[] = loadFromLocalStorage('unlocked_dungeon_backgrounds', []);
     hasRolledGacha: boolean = loadFromLocalStorage('has_rolled_gacha', false);

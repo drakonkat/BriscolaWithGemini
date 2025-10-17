@@ -81,6 +81,22 @@
 .shard-item.sr, .key-item.sr { color: var(--rarity-sr-color); }
 .shard-item.ssr, .key-item.ssr { color: var(--rarity-ssr-color); }
 
+.wallet-item .essence-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.wallet-item .essence-item .element-icon,
+.wallet-item .essence-item .essence-icon-svg {
+    width: 24px;
+    height: 24px;
+}
+.essence-item.fire { color: var(--element-fire-color); }
+.essence-item.water { color: var(--element-water-color); }
+.essence-item.air { color: var(--element-air-color); }
+.essence-item.earth { color: var(--element-earth-color); }
+.essence-item.transcendental { color: var(--primary-accent); }
+
 
 .menu-title-container {
     display: flex;
