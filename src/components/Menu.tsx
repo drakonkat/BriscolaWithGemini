@@ -13,6 +13,7 @@ import { getImageUrl } from '../core/utils';
 import { WAIFUS } from '../core/waifus';
 import { ROGUELIKE_REWARDS } from '../core/constants';
 import { DungeonModeStore, RoguelikeModeStore } from '../stores';
+import { ElementIcon } from './ElementIcon';
 
 const DifficultyDetails = ({ difficulty, language, gameplayMode }: { difficulty: Difficulty, language: 'it' | 'en', gameplayMode: GameplayMode }) => {
     const T = translations[language];
@@ -127,7 +128,7 @@ export const Menu = observer(() => {
     const { gameSettingsStore, gameStateStore, uiStore, gachaStore, missionStore } = rootStore;
     const { language, gameplayMode, difficulty, isNsfwEnabled } = gameSettingsStore;
     const { menuBackgroundUrl, isDifficultyDetailsOpen, isWaifuDetailsOpen } = uiStore;
-    const { waifuCoins, r_shards, sr_shards, ssr_shards, r_keys, sr_keys, ssr_keys } = gachaStore;
+    const { waifuCoins, r_shards, sr_shards, ssr_shards, r_keys, sr_keys, ssr_keys, fire_essences, water_essences, air_essences, earth_essences, transcendental_essences } = gachaStore;
     const { hasUnclaimedRewards } = missionStore;
 
     const T = translations[language];
@@ -341,6 +342,28 @@ export const Menu = observer(() => {
                         <span className="key-item ssr" title={T.gallery.keyLabelSSR(ssr_keys)}>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M14.5,4A5.5,5.5,0,1,0,20,9.5,5.5,5.5,0,0,0,14.5,4ZM11,9.5a3.5,3.5,0,1,1,3.5,3.5A3.5,3.5,0,0,1,11,9.5ZM10,12,2,20v2H4l8-8V12Zm2-4H2v2H12V8Z"/></svg>
                             {ssr_keys}
+                        </span>
+                    </div>
+                    <div className="wallet-item">
+                        <span className="essence-item fire" title={`${fire_essences} ${T.missions.rewards.fire_essences}`}>
+                            <ElementIcon element="fire" />
+                            {fire_essences}
+                        </span>
+                        <span className="essence-item water" title={`${water_essences} ${T.missions.rewards.water_essences}`}>
+                            <ElementIcon element="water" />
+                            {water_essences}
+                        </span>
+                        <span className="essence-item air" title={`${air_essences} ${T.missions.rewards.air_essences}`}>
+                            <ElementIcon element="air" />
+                            {air_essences}
+                        </span>
+                        <span className="essence-item earth" title={`${earth_essences} ${T.missions.rewards.earth_essences}`}>
+                            <ElementIcon element="earth" />
+                            {earth_essences}
+                        </span>
+                        <span className="essence-item transcendental" title={`${transcendental_essences} ${T.missions.rewards.transcendental_essences}`}>
+                            <svg className="essence-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5L12 22L22 8.5L12 2Z" /></svg>
+                            {transcendental_essences}
                         </span>
                     </div>
                 </div>
