@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { PostHogProvider, usePostHog } from 'posthog-js/react';
@@ -40,7 +40,7 @@ const Main = () => {
     return <App />;
 };
 
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+const root = ReactDOM.createRoot(document.getElementById('root'));
 
 const renderApp = () => {
     const appContent = (
