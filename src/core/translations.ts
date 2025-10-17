@@ -532,6 +532,15 @@ export const translations = {
         }
     },
 
+    dungeonRules: {
+      title: "Regole Modalità Dungeon",
+      description: "La Modalità Dungeon è una serie di partite sfida contro avversarie sempre più difficili. Per accedere, devi prima creare una Chiave nella Galleria.",
+      keyCrafting: "Crea Chiavi R, SR o SSR usando i Frammenti ottenuti dai doppioni del Gacha. La rarità della chiave determina la lunghezza della run e la rarità del premio finale.",
+      runStructure: "Ogni run consiste in una serie di partite a difficoltà Incubo. Perdere una singola partita termina la run, ma non consumerà la tua chiave.",
+      modifiers: "Ogni partita avrà un Modificatore casuale che cambia le regole, come 'Caos Briscola' o 'Mano Maledetta'. Adattare la tua strategia è fondamentale.",
+      rewards: "Vincere un'intera run ti garantirà uno sfondo esclusivo della rarità della chiave usata, oltre a monete e altri materiali. Anche in caso di sconfitta, otterrai ricompense per ogni partita vinta."
+    },
+
     tutorial: {
         skip: "Salta Tutorial",
         next: "Avanti",
@@ -540,7 +549,10 @@ export const translations = {
         gameMode: "Qui puoi scegliere tra la Briscola Classica o la nuova Modalità Roguelike. Per ora, continuiamo con la classica.",
         difficulty: "Scegli la difficoltà. Per iniziare, 'Facile' è perfetta!",
         waifu: "Seleziona la tua avversaria. Ognuna ha una personalità unica!",
-        gallery: "Qui puoi accedere alla Galleria e al Gacha per sbloccare nuovi sfondi con le Waifu Coin che guadagni giocando.",
+        gallery: "Questo è il portale per la Galleria e il Gacha. Diamo un'occhiata.",
+        gachaRoll: "Qui puoi usare le tue Waifu Coin per ottenere nuovi sfondi. La prima estrazione è gratuita!",
+        gachaTabs: "Puoi anche navigare tra le schede per creare Chiavi Dungeon o convertire Frammenti ed Essenze.",
+        closeGallery: "Per ora è tutto. Chiudi la galleria per continuare.",
         start: "Perfetto! Quando sei pronto, clicca qui per iniziare la partita.",
         playerHand: "Questa è la tua mano. Le carte con un bagliore possono essere giocate.",
         promptPlayCard: "Clicca su una carta per giocarla. Prova a giocare l'Asso di Bastoni.",
@@ -1080,6 +1092,15 @@ export const translations = {
         }
     },
 
+    dungeonRules: {
+      title: "Dungeon Mode Rules",
+      description: "Dungeon Mode is a series of challenge matches against increasingly difficult opponents. To enter, you must first craft a Key in the Gallery.",
+      keyCrafting: "Craft R, SR, or SSR Keys using Shards obtained from Gacha duplicates. The key's rarity determines the run's length and the final prize's rarity.",
+      runStructure: "Each run consists of a series of matches at Nightmare difficulty. Losing a single match ends the run, but your key will not be consumed.",
+      modifiers: "Each match will have a random Modifier that changes the rules, like 'Briscola Chaos' or 'Cursed Hand'. Adapting your strategy is key.",
+      rewards: "Winning an entire run will grant you an exclusive background of the key's rarity, plus coins and other materials. Even if you lose, you will get rewards for each match you've won."
+    },
+
     tutorial: {
         skip: "Skip Tutorial",
         next: "Next",
@@ -1088,7 +1109,10 @@ export const translations = {
         gameMode: "Here you can choose between Classic Briscola or the new Roguelike Mode. For now, let's stick with classic.",
         difficulty: "Choose the difficulty. 'Easy' is perfect to start!",
         waifu: "Select your opponent. Each one has a unique personality!",
-        gallery: "Here you can access the Gallery and Gacha to unlock new backgrounds with the Waifu Coins you earn by playing.",
+        gallery: "This is the portal to the Gallery and Gacha. Let's take a look inside.",
+        gachaRoll: "Here you can use your Waifu Coins to roll for new backgrounds. Your first roll is free!",
+        gachaTabs: "You can also switch between tabs to craft Dungeon Keys or convert Shards and Essences.",
+        closeGallery: "That's all for now. Close the gallery to continue.",
         start: "Perfect! When you're ready, click here to start the game.",
         playerHand: "This is your hand. Cards with a glow can be played.",
         promptPlayCard: "Click on a card to play it. Try playing the Ace of Batons.",

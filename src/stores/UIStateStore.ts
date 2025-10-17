@@ -18,7 +18,7 @@ const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
     }
 };
 
-type TutorialStepId = 'welcome' | 'gameMode' | 'difficulty' | 'waifu' | 'gallery' | 'start' | 'playerHand' | 'promptPlayCard' | 'aiResponds' | 'trickWon' | 'scoreUpdate' | 'drawingCards' | 'briscola' | 'end';
+type TutorialStepId = 'welcome' | 'gameMode' | 'difficulty' | 'waifu' | 'gallery' | 'gachaRoll' | 'gachaTabs' | 'closeGallery' | 'start' | 'playerHand' | 'promptPlayCard' | 'aiResponds' | 'trickWon' | 'scoreUpdate' | 'drawingCards' | 'briscola' | 'end';
 
 type TutorialStepDetails = {
     elementQuery?: string | null;
@@ -34,7 +34,10 @@ const TUTORIAL_STEPS: Record<TutorialStepId, TutorialStepDetails> = {
     gameMode: { elementQuery: '[data-tutorial-id="game-mode"]', textKey: 'gameMode', position: 'bottom' },
     difficulty: { elementQuery: '[data-tutorial-id="difficulty"]', textKey: 'difficulty', position: 'bottom' },
     waifu: { elementQuery: '[data-tutorial-id="waifu-selector"]', textKey: 'waifu', position: 'top' },
-    gallery: { elementQuery: '[data-tutorial-id="gallery"]', textKey: 'gallery', position: 'top' },
+    gallery: { elementQuery: '[data-tutorial-id="gallery"]', textKey: 'gallery', position: 'top', action: (store) => store.openModal('gallery') },
+    gachaRoll: { elementQuery: '[data-tutorial-id="gacha-controls"]', textKey: 'gachaRoll', position: 'bottom' },
+    gachaTabs: { elementQuery: '[data-tutorial-id="gallery-tabs"]', textKey: 'gachaTabs', position: 'bottom' },
+    closeGallery: { elementQuery: '[data-tutorial-id="gallery-close"]', textKey: 'closeGallery', position: 'top', action: (store) => store.closeModal('gallery') },
     start: { elementQuery: '[data-tutorial-id="start-game"]', textKey: 'start', position: 'top', action: (store) => store.rootStore.gameStateStore.startTutorialGame() },
     // In-Game
     playerHand: { elementQuery: '[data-tutorial-id="player-hand"]', textKey: 'playerHand', position: 'top' },
@@ -48,7 +51,7 @@ const TUTORIAL_STEPS: Record<TutorialStepId, TutorialStepDetails> = {
 };
 
 const TUTORIAL_MENU_SEQUENCE: TutorialStepId[] = [
-    'welcome', 'gameMode', 'difficulty', 'waifu', 'gallery', 'start'
+    'welcome', 'gameMode', 'difficulty', 'waifu', 'gallery', 'gachaRoll', 'gachaTabs', 'closeGallery', 'start'
 ];
 
 const TUTORIAL_INGAME_SEQUENCE: TutorialStepId[] = [
@@ -126,7 +129,7 @@ export class UIStateStore {
     }
 
     openModal = (type: ModalType) => {
-        if (this.isTutorialActive) return; // Prevent modals during tutorial
+        if (this.isTutorialActive && type !== 'gallery') return; // Prevent modals during tutorial, except for gallery
         switch (type) {
             case 'rules': this.isRulesModalOpen = true; break;
             case 'privacy': this.isPrivacyModalOpen = true; break;
@@ -316,8 +319,13 @@ export class UIStateStore {
         if (currentIndex > -1 && currentIndex < this.currentTutorialSequence.length - 1) {
             const nextStepId = this.currentTutorialSequence[currentIndex + 1];
             this.setTutorialStep(nextStepId);
-        } else if (this.tutorialStep === 'end') {
-            this.endTutorial();
+        } else if (this.tutorialStep === 'end' || this.tutorialStep === 'start') {
+            // End tutorial after 'start' if we are in menu sequence.
+            if (this.currentTutorialSequence === TUTORIAL_MENU_SEQUENCE && this.tutorialStep === 'start') {
+                // Do nothing, the action in the step will start the game and switch the sequence
+            } else {
+                 this.endTutorial();
+            }
         }
     };
     

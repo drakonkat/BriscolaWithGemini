@@ -77,7 +77,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
     return (
         <div className="game-over-overlay" onClick={onClose}>
             <div className="gallery-modal" onClick={(e) => e.stopPropagation()}>
-                <button className="modal-close-button" onClick={onClose} aria-label={T.close}>
+                <button className="modal-close-button" onClick={onClose} aria-label={T.close} data-tutorial-id="gallery-close">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                     </svg>
@@ -90,7 +90,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                     />
                 )}
                 
-                <div className="gallery-tabs">
+                <div className="gallery-tabs" data-tutorial-id="gallery-tabs">
                     <button className={`tab-button ${activeTab === 'gallery' ? 'active' : ''}`} onClick={() => setActiveTab('gallery')}>
                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
                         <span>{T_gallery.promoButton}</span>
@@ -108,7 +108,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                 <div className="gallery-content">
                     {activeTab === 'gallery' && (
                         <div className="gallery-tab-content">
-                            <div className="gacha-controls">
+                            <div className="gacha-controls" data-tutorial-id="gacha-controls">
                                 <button onClick={onGachaRoll} disabled={allUnlocked || (!isFirstRoll && !canAfford) || isRolling}>
                                     {buttonText}
                                 </button>
