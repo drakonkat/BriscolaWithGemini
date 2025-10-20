@@ -537,6 +537,15 @@ export const translations = {
       description: "La Modalità Dungeon è una serie di partite sfida contro avversarie sempre più difficili. Per accedere, devi prima creare una Chiave nella Galleria.",
       keyCrafting: "Crea Chiavi R, SR o SSR usando i Frammenti ottenuti dai doppioni del Gacha. La rarità della chiave determina la lunghezza della run e la rarità del premio finale.",
       runStructure: "Ogni run consiste in una serie di partite a difficoltà Incubo. Perdere una singola partita termina la run, ma non consumerà la tua chiave.",
+     wallet: {
+         expandAll: "Espandi Tutto",
+         collapseAll: "Comprimi Tutto",
+         currency: "Valuta",
+         shards: "Frammenti",
+         keys: "Chiavi",
+         essences: "Essenze"
+     },
+
       modifiers: "Ogni partita avrà un Modificatore casuale che cambia le regole, come 'Caos Briscola' o 'Mano Maledetta'. Adattare la tua strategia è fondamentale.",
       rewards: "Vincere un'intera run ti garantirà uno sfondo esclusivo della rarità della chiave usata, oltre a monete e altri materiali. Anche in caso di sconfitta, otterrai ricompense per ogni partita vinta."
     },

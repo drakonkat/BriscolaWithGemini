@@ -11,7 +11,7 @@ import {CachedImage} from './shared/CachedImage';
 import {WAIFUS} from '../core/waifus.js';
 import {ROGUELIKE_REWARDS} from '../core/constants';
 import {Header} from './Menu/Header';
-import {PlayerWallet} from './Menu/PlayerWallet';
+import {PlayerWalletPopover} from './Menu/PlayerWalletPopover';
 import {GameModeCarousel} from './Menu/GameModeCarousel';
 import {DifficultyCarousel} from './Menu/DifficultyCarousel';
 import {StartGameSection} from './Menu/StartGameSection';
@@ -214,7 +214,7 @@ export const Menu = observer(() => {
 
                 <p className="menu-subtitle">{T.subtitle}</p>
 
-                <PlayerWallet
+                <PlayerWalletPopover
                     waifuCoins={waifuCoins}
                     r_shards={r_shards}
                     sr_shards={sr_shards}

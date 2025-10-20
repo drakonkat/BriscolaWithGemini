@@ -1,0 +1,243 @@
+/* PlayerWalletPopover.module.css */
+
+/* Overlay */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 999;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* FAB Button */
+.fab {
+    position: fixed;
+    bottom: var(--radius-lg);
+    right: var(--radius-lg);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-accent) 0%, var(--primary-accent-hover) 100%);
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    font-size: 1.5rem;
+}
+
+.fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.fab:active {
+    transform: scale(0.95);
+}
+
+.fab:focus {
+    outline: 2px solid var(--primary-accent);
+    outline-offset: 2px;
+}
+
+.fab svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Popover */
+.popover {
+    position: fixed;
+    bottom: calc(var(--radius-lg) + 72px); /* Above FAB */
+    right: var(--radius-lg);
+    max-width: 90vw;
+    max-height: 80vh;
+    background-color: var(--ui-bg-glass);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    animation: slideUpFadeIn 0.3s ease-out;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 50%;
+}
+
+.popoverHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--radius-md);
+    border-bottom: 1px solid var(--border-color);
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.popoverTitle {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--font-color);
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    color: var(--font-color-secondary);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.closeButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--font-color);
+}
+
+.closeButton:focus {
+    outline: 2px solid var(--primary-accent);
+    outline-offset: 2px;
+}
+
+.closeButton svg {
+    width: 20px;
+    height: 20px;
+}
+
+.popoverContent {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(80vh - 80px); /* Account for header */
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUpFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .fab {
+        bottom: var(--radius-md);
+        right: var(--radius-md);
+        width: 48px;
+        height: 48px;
+        font-size: 1.25rem;
+    }
+
+    .fab svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .popover {
+        bottom: calc(var(--radius-md) + 64px);
+        right: var(--radius-md);
+        left: var(--radius-md);
+        max-width: none;
+        max-height: 70vh;
+    }
+
+    .popoverHeader {
+        padding: var(--radius-sm);
+    }
+
+    .popoverTitle {
+        font-size: 1.1rem;
+    }
+
+    .closeButton svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .fab {
+        bottom: var(--radius-sm);
+        right: var(--radius-sm);
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+    }
+
+    .fab svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .popover {
+        bottom: calc(var(--radius-sm) + 56px);
+        right: var(--radius-sm);
+        left: var(--radius-sm);
+        max-height: 60vh;
+    }
+
+    .popoverContent {
+        max-height: calc(60vh - 60px);
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .overlay,
+    .popover,
+    .fab {
+        animation: none;
+    }
+
+    .fab,
+    .closeButton {
+        transition: none;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .fab {
+        border: 2px solid var(--font-color);
+    }
+
+    .popover {
+        border: 2px solid var(--font-color);
+    }
+
+    .closeButton {
+        border: 1px solid var(--font-color);
+    }
+}
+
+/* Focus management */
+.popover:focus-within {
+    outline: 2px solid var(--primary-accent);
+    outline-offset: 2px;
+}

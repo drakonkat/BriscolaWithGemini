@@ -1,0 +1,508 @@
+/* PlayerWallet.module.css */
+
+.playerWallet {
+    display: flex;
+    flex-direction: column;
+    gap: var(--radius-md);
+    padding: var(--radius-md);
+    background-color: var(--ui-bg-glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    max-width: 100%;
+    margin: 0 auto;
+    color: var(--font-color);
+}
+
+.globalControls {
+    display: flex;
+    gap: var(--radius-sm);
+    justify-content: center;
+    margin-bottom: var(--radius-sm);
+    padding: var(--radius-sm);
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.globalButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.globalButton:hover {
+    background-color: var(--primary-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--primary-accent-rgb), 0.3);
+}
+
+.globalButton:active {
+    transform: translateY(0);
+}
+
+.globalButton svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.globalButton:focus {
+    outline: 2px solid var(--primary-accent);
+    outline-offset: 2px;
+}
+
+.walletSection {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.walletSection:hover {
+    border-color: var(--primary-accent);
+    box-shadow: 0 0 15px rgba(var(--primary-accent-rgb), 0.3);
+}
+
+.sectionHeader {
+    padding: var(--radius-sm) var(--radius-md);
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--font-color);
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    transition: all 0.3s ease;
+    list-style: none;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: row;
+    gap:0.6rem;
+    align-items: center;
+}
+
+.sectionHeaderContent {
+    display: flex;
+    align-items: center;
+    gap: var(--radius-sm);
+    width: 100%;
+}
+
+.sectionHeaderContent svg {
+    width: 2rem;
+    height: 2rem;
+    color: var(--gold-accent);
+}
+
+.sectionTitle {
+    flex: 1;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--font-color);
+}
+
+.sectionBadge {
+    background-color: var(--primary-accent);
+    color: white;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 700;
+    min-width: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.sectionIconSvg {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    color: var(--gold-accent);
+}
+
+.sectionHeader:hover {
+    background-color: rgba(var(--primary-accent-rgb), 0.1);
+    color: var(--primary-accent);
+}
+
+.sectionHeader::marker {
+    display: none;
+}
+
+.sectionHeader::after {
+    content: '▼';
+    font-size: 0.8rem;
+    color: var(--font-color-secondary);
+    transition: transform 0.3s ease;
+}
+
+.walletSection[open] .sectionHeader::after {
+    transform: rotate(180deg);
+}
+
+.walletContent {
+    padding: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--radius-md);
+}
+
+.walletItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: var(--radius-sm);
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.walletItem:hover {
+    background-color: rgba(0, 0, 0, 0.25);
+    border-color: var(--primary-accent);
+}
+
+.walletItem svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    color: var(--gold-accent);
+    align-self: center;
+}
+
+.walletItem span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: 500;
+    color: var(--font-color);
+}
+
+.currencyName {
+    font-weight: 500;
+    color: var(--font-color);
+    flex: 1;
+}
+
+/* Shard Items */
+.shardItem {
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.shardItem.r {
+    background-color: rgba(var(--rarity-r-color), 0.2);
+    color: var(--rarity-r-color);
+    border: 1px solid var(--rarity-r-color);
+}
+
+.shardItem.sr {
+    background-color: rgba(var(--rarity-sr-color), 0.2);
+    color: var(--rarity-sr-color);
+    border: 1px solid var(--rarity-sr-color);
+}
+
+.shardItem.ssr {
+    background-color: rgba(var(--rarity-ssr-color), 0.2);
+    color: var(--rarity-ssr-color);
+    border: 1px solid var(--rarity-ssr-color);
+}
+
+.shardIconSvg {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+}
+
+/* Key Items */
+.keyItem {
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.keyItem.r {
+    background-color: rgba(var(--rarity-r-color), 0.2);
+    color: var(--rarity-r-color);
+    border: 1px solid var(--rarity-r-color);
+}
+
+.keyItem.sr {
+    background-color: rgba(var(--rarity-sr-color), 0.2);
+    color: var(--rarity-sr-color);
+    border: 1px solid var(--rarity-sr-color);
+}
+
+.keyItem.ssr {
+    background-color: rgba(var(--rarity-ssr-color), 0.2);
+    color: var(--rarity-ssr-color);
+    border: 1px solid var(--rarity-ssr-color);
+}
+
+/* Essence Items */
+.essenceItem {
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.essenceItem.fire {
+    background-color: rgba(var(--element-fire-color), 0.2);
+    color: var(--element-fire-color);
+    border: 1px solid var(--element-fire-color);
+}
+
+.essenceItem.water {
+    background-color: rgba(var(--element-water-color), 0.2);
+    color: var(--element-water-color);
+    border: 1px solid var(--element-water-color);
+}
+
+.essenceItem.air {
+    background-color: rgba(var(--element-air-color), 0.2);
+    color: var(--element-air-color);
+    border: 1px solid var(--element-air-color);
+}
+
+.essenceItem.earth {
+    background-color: rgba(var(--element-earth-color), 0.2);
+    color: var(--element-earth-color);
+    border: 1px solid var(--element-earth-color);
+}
+
+.essenceItem.transcendental {
+    background-color: rgba(var(--primary-accent-rgb), 0.2);
+    color: var(--primary-accent);
+    border: 1px solid var(--primary-accent);
+}
+
+.essenceIconSvg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .playerWallet {
+        padding: var(--radius-sm);
+        gap: var(--radius-sm);
+    }
+
+    .walletContent {
+        padding: var(--radius-sm);
+        gap: var(--radius-sm);
+    }
+}
+
+@media (max-width: 768px) {
+    .playerWallet {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+
+    .globalControls {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+
+    .globalButton {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        gap: 0.4rem;
+    }
+
+    .sectionHeader {
+        padding: 0.5rem 0.75rem;
+        font-size: 1rem;
+    }
+
+    .sectionHeaderContent {
+        gap: 0.5rem;
+    }
+
+    .sectionTitle {
+        font-size: 1rem;
+    }
+
+    .sectionBadge {
+        font-size: 0.7rem;
+        padding: 0.1rem 0.4rem;
+        min-width: 1.25rem;
+    }
+
+    .sectionIconSvg {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .walletContent {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .walletItem {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .walletItem span {
+        flex-wrap: wrap;
+        /*width: 100%;*/
+    }
+
+    .shardItem, .keyItem, .essenceItem {
+        justify-content: space-between;
+        /*width: 100%;*/
+    }
+}
+
+@media (max-width: 480px) {
+    .playerWallet {
+        padding: 0.25rem;
+        gap: 0.25rem;
+    }
+
+    .globalControls {
+        padding: 0.25rem;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .globalButton {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+        gap: 0.3rem;
+    }
+
+    .globalButton svg {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
+
+    .walletContent {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+
+    .walletItem {
+        padding: 0.25rem;
+        gap: 0.25rem;
+    }
+
+    .sectionHeader {
+        padding: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .sectionHeaderContent {
+        gap: 0.25rem;
+    }
+
+    .sectionTitle {
+        font-size: 0.95rem;
+    }
+
+    .sectionBadge {
+        font-size: 0.65rem;
+        padding: 0.075rem 0.3rem;
+        min-width: 1rem;
+    }
+
+    .sectionIconSvg {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
+
+    .shardItem, .keyItem, .essenceItem {
+        padding: 0.125rem 0.25rem;
+        font-size: 0.8rem;
+        gap: 0.125rem;
+    }
+
+    .walletItem svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .shardIconSvg, .essenceIconSvg {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .walletSection, .sectionHeader, .sectionHeader::after, .walletItem {
+        transition: none;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .playerWallet {
+        border: 2px solid var(--font-color);
+    }
+
+    .walletSection {
+        border: 2px solid var(--font-color);
+    }
+
+    .walletItem {
+        border: 2px solid var(--font-color);
+    }
+
+    .shardItem, .keyItem, .essenceItem {
+        border: 2px solid;
+    }
+}
+
+/* Focus styles for accessibility */
+.sectionHeader:focus {
+    outline: 2px solid var(--primary-accent);
+    outline-offset: 2px;
+}
+
+.sectionHeader:focus-visible {
+    outline: 2px solid var(--primary-accent);
+    outline-offset: 2px;
+}
+
+/* Screen reader only text */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
