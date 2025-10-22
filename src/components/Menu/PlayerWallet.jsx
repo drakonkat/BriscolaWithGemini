@@ -66,7 +66,7 @@ export const PlayerWallet = ({
         },
         {
             key: 'shards',
-            name: T.wallet?.shards || 'shards',
+            name: T.wallet?.shards || 'Shards',
             icon: (
                 <svg className={styles.sectionIconSvg} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/>
@@ -217,7 +217,7 @@ export const PlayerWallet = ({
                     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M7 14l5-5 5 5z"/>
                     </svg>
-                    Expand All
+                    {T.wallet?.expandAll || 'Expand All'}
                 </button>
                 <button
                     className={styles.globalButton}

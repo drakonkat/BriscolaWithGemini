@@ -5,6 +5,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PlayerWallet } from './PlayerWallet';
 import styles from './PlayerWalletPopover.module.css';
+import {translations} from "@/src/core/translations.js";
 
 export const PlayerWalletPopover = ({
     waifuCoins,

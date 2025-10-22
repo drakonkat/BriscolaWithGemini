@@ -201,6 +201,22 @@ export const Menu = observer(() => {
 
     return (
         <div className="menu">
+            <PlayerWalletPopover
+                waifuCoins={waifuCoins}
+                r_shards={r_shards}
+                sr_shards={sr_shards}
+                ssr_shards={ssr_shards}
+                r_keys={r_keys}
+                sr_keys={sr_keys}
+                ssr_keys={ssr_keys}
+                fire_essences={fire_essences}
+                water_essences={water_essences}
+                air_essences={air_essences}
+                earth_essences={earth_essences}
+                transcendental_essences={transcendental_essences}
+                language={language}
+                translations={T}
+            />
             {isNsfwEnabled &&
                 <CachedImage imageUrl={menuBackgroundUrl} alt="Game background" className="menu-background"/>}
             <div className="menu-content" data-tutorial-id="welcome">
@@ -214,22 +230,7 @@ export const Menu = observer(() => {
 
                 <p className="menu-subtitle">{T.subtitle}</p>
 
-                <PlayerWalletPopover
-                    waifuCoins={waifuCoins}
-                    r_shards={r_shards}
-                    sr_shards={sr_shards}
-                    ssr_shards={ssr_shards}
-                    r_keys={r_keys}
-                    sr_keys={sr_keys}
-                    ssr_keys={ssr_keys}
-                    fire_essences={fire_essences}
-                    water_essences={water_essences}
-                    air_essences={air_essences}
-                    earth_essences={earth_essences}
-                    transcendental_essences={transcendental_essences}
-                    language={language}
-                    translations={T}
-                />
+
 
                 <div className="menu-section" data-tutorial-id="game-mode">
                     <GameModeCarousel

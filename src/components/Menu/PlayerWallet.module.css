@@ -103,7 +103,9 @@
     height: 2rem;
     color: var(--gold-accent);
 }
-
+.waifu-coin{
+    color: var(--gold-accent);
+}
 .sectionTitle {
     flex: 1;
     font-weight: 600;
