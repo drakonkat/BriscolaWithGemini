@@ -6,7 +6,7 @@ import React from 'react';
 import { getCardId, getCardImagePath, getImageUrl } from '../../core/utils.js';
 import { translations } from '../../core/translations';
 import { CachedImage } from './CachedImage';
-import { ElementIcon } from './ElementIcon';
+import { ElementIcon } from '../../assets/icons/element/ElementIcon.jsx';
 
 export const CardView = ({ card, isFaceDown, onClick, isPlayable, lang, className, elementalEffectStatus, cardDeckStyle, isDraggable, onMouseDown, onTouchStart }) => {
   const T = translations[lang];

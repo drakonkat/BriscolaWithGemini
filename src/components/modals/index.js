@@ -9,7 +9,7 @@ export { EventModal } from './EventModal';
 export { FullscreenImageModal } from './FullscreenImageModal';
 export { GachaMultiUnlockModal } from './GachaMultiUnlockModal';
 export { GachaSingleUnlockModal } from './GachaSingleUnlockModal';
-export { GalleryModal } from './GalleryModal';
+export {default as GalleryModal} from './GalleryModal'
 export { GameModals } from './GameModals';
 export { GameOverModal } from './GameOverModal';
 export { HistoryModal } from './HistoryModal';

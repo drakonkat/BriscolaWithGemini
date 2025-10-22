@@ -5,7 +5,7 @@
 import { observer } from 'mobx-react-lite';
 import { useStores, RoguelikeModeStore } from '../../stores';
 import { translations } from '../../core/translations';
-import { ElementIcon } from '../shared/ElementIcon';
+import { ElementIcon } from '../../assets/icons/element/ElementIcon.jsx';
 import { POWER_UP_DEFINITIONS } from '../../core/roguelikePowers';
 import { CachedImage } from '../shared/CachedImage';
 import { getImageUrl } from '../../core/utils.js';

@@ -13,7 +13,7 @@ import { ConfirmationModal } from './ConfirmationModal';
 import { SupportModal } from './SupportModal';
 import { PrivacyPolicyModal } from './PrivacyPolicyModal';
 import { TermsAndConditionsModal } from './TermsAndConditionsModal';
-import { GalleryModal } from './GalleryModal';
+import GalleryModal from './GalleryModal';
 import { FullscreenImageModal } from './FullscreenImageModal';
 import { HistoryModal } from './HistoryModal';
 import { KasumiSwapModal } from './KasumiSwapModal';

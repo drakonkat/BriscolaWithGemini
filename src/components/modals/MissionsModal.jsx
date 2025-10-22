@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStores } from '../../stores';
 import { translations } from '../../core/translations';
-import { ElementIcon } from '../shared/ElementIcon';
+import { ElementIcon } from '../../assets/icons/element/ElementIcon.jsx';
 
 // FIX: Changed RewardIcon to be a React.FC to correctly handle the 'key' prop provided during list rendering.
 const RewardIcon = ({ type, amount }) => {

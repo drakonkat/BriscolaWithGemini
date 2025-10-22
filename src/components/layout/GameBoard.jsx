@@ -10,8 +10,8 @@ import { getCardId, getImageUrl } from '../../core/utils.js';
 import { translations } from '../../core/translations';
 import { defaultSoundSettings } from '../../core/soundManager';
 import { CachedImage } from '../shared/CachedImage';
-import { ElementIcon } from '../shared/ElementIcon';
-import { DiceRollAnimation } from '../shared/DiceRollAnimation';
+import { ElementIcon } from '../../assets/icons/element/ElementIcon.jsx';
+import { DiceRollAnimation } from '../../assets/animations/DiceRollAnimation.jsx';
 import { SUITS_IT } from '../../core/constants';
 
 export const GameBoard = observer(() => {
@@ -155,7 +155,7 @@ export const GameBoard = observer(() => {
 
             {isRoguelike && roguelikeStore?.isElementalChoiceOpen && roguelikeStore.cardForElementalChoice && (
                 <div className="elemental-choice-modal">
-                    <h2>{T.elementalChoice?.title || 'Choose Element'}</h2>
+                    <h2>{T.elementalChoice?.title || 'Choose element'}</h2>
                     <p>{T.elementalChoice?.description || 'Select an element for this card'}</p>
                     <div className="elemental-choice-options">
                         <button onClick={() => roguelikeStore.confirmElementalChoice('fire')}>Fire</button>

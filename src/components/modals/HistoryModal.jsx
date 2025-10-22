@@ -4,7 +4,7 @@
  */
 import { translations } from '../../core/translations';
 import { CardView } from '../shared/CardView';
-import { ElementIcon } from '../shared/ElementIcon';
+import { ElementIcon } from '../../assets/icons/element/ElementIcon.jsx';
 import { useStores, RoguelikeModeStore } from '../../stores';
 import { observer } from 'mobx-react-lite';
 

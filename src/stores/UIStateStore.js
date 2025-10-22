@@ -88,7 +88,7 @@ export class UIStateStore {
     isTutorialWaitingForInput = false;
     currentTutorialSequence = TUTORIAL_MENU_SEQUENCE;
 
-    // UI Element States
+    // UI element States
     menuBackgroundUrl = getImageUrl(`/background/landscape${Math.floor(Math.random() * 19) + 3}.png`);
     snackbar = { message: '', type: 'success' };
     waifuBubbleMessage = '';

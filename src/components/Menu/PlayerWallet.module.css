@@ -177,7 +177,7 @@
     width: 1.25rem;
     height: 1.25rem;
     flex-shrink: 0;
-    color: var(--gold-accent);
+    /*color: var(--gold-accent);*/
     align-self: center;
 }
 
