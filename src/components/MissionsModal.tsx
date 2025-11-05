@@ -15,7 +15,6 @@ interface MissionsModalProps {
     onClose: () => void;
 }
 
-// FIX: Changed RewardIcon to be a React.FC to correctly handle the 'key' prop provided during list rendering.
 interface RewardIconProps {
     type: MissionRewardType;
     amount: number;
@@ -33,7 +32,6 @@ const RewardIcon: React.FC<RewardIconProps> = ({ type, amount }) => {
         water_essences: <ElementIcon element="water" />,
         air_essences: <ElementIcon element="air" />,
         earth_essences: <ElementIcon element="earth" />,
-        // FIX: Add missing transcendental_essences to iconMap to fix type error.
         transcendental_essences: <EssenceIcon />,
     };
 
@@ -121,7 +119,7 @@ export const MissionsModal = observer(({ isOpen, onClose }: MissionsModalProps) 
             <div className="gallery-modal missions-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close-button" onClick={onClose} aria-label={T.close}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
                     </svg>
                 </button>
 

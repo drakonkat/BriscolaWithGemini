@@ -55,10 +55,7 @@ export const POWER_UP_DEFINITIONS: Record<RoguelikePowerUpId, {
     maxLevel: 3
   },
   'third_eye': {
-    // FIX: Use type assertion to correctly access the 'third_eye' property from translations.
     name: (lang) => (translations[lang].roguelike.powers as TranslatedRoguelikePowers).third_eye.name,
-    // FIX: Use type assertion to correctly access the 'third_eye' property from translations.
-    // The 'desc' property is a string, so it needs to be wrapped in a function to match the `description` type.
     description: (lang, _level) => (translations[lang].roguelike.powers as TranslatedRoguelikePowers).third_eye.desc,
     maxLevel: 1
   },
