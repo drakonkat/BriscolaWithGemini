@@ -85,6 +85,7 @@ export class UIStateStore {
     isMissionsModalOpen = false;
     isDungeonMatchStartModalOpen = false;
     isDungeonModifierInfoModalOpen = false;
+    isPlayerWalletOpen = false; // New state for player wallet popover
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
 
     // Menu collapsible sections
@@ -152,6 +153,7 @@ export class UIStateStore {
             case 'missions': this.isMissionsModalOpen = true; break;
             case 'dungeonMatchStart': this.isDungeonMatchStartModalOpen = true; break;
             case 'dungeonModifierInfo': this.isDungeonModifierInfoModalOpen = true; break;
+            case 'playerWallet': this.isPlayerWalletOpen = true; break; // Open wallet
             case 'chat': 
                 this.isChatModalOpen = true; 
                 this.setUnreadMessageCount(0);
@@ -182,6 +184,7 @@ export class UIStateStore {
             case 'missions': this.isMissionsModalOpen = false; break;
             case 'dungeonMatchStart': this.isDungeonMatchStartModalOpen = false; break;
             case 'dungeonModifierInfo': this.isDungeonModifierInfoModalOpen = false; break;
+            case 'playerWallet': this.isPlayerWalletOpen = false; break; // Close wallet
             case 'chat': this.isChatModalOpen = false; break;
         }
     }
@@ -252,6 +255,10 @@ export class UIStateStore {
 
     toggleWaifuDetails = () => {
         this.isWaifuDetailsOpen = !this.isWaifuDetailsOpen;
+    }
+
+    togglePlayerWallet = () => {
+        this.isPlayerWalletOpen = !this.isPlayerWalletOpen;
     }
 
     // --- Tutorial Methods ---

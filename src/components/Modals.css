@@ -198,6 +198,12 @@
 .elemental-powers-legend-list .elemental-power-description strong {
   margin-right: 0.5rem;
 }
+.elemental-powers-legend-list .elemental-power-row .essence-icon-svg {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    color: var(--primary-accent);
+}
 
 .elemental-cycle-display.modal-version {
   display: flex;
@@ -390,6 +396,8 @@
 .crafting-card.rarity-r, .crafting-card.from-r { border-color: var(--rarity-r-color); }
 .crafting-card.rarity-sr, .crafting-card.from-sr { border-color: var(--rarity-sr-color); }
 .crafting-card.rarity-ssr, .crafting-card.from-ssr { border-color: var(--rarity-ssr-color); }
+.crafting-card.from-elemental { border-color: var(--element-air-color); } /* Use air color for elemental */
+
 
 .crafting-card-header { text-align: center; }
 .crafting-card-header h3 {
@@ -400,10 +408,6 @@
 .crafting-card-header .rarity-r { color: var(--rarity-r-color); }
 .crafting-card-header .rarity-sr { color: var(--rarity-sr-color); }
 .crafting-card-header .rarity-ssr { color: var(--rarity-ssr-color); }
-
-.crafting-card.rarity-r .crafting-card-header h3 { color: var(--rarity-r-color); }
-.crafting-card.rarity-sr .crafting-card-header h3 { color: var(--rarity-sr-color); }
-.crafting-card.rarity-ssr .crafting-card-header h3 { color: var(--rarity-ssr-color); }
 .crafting-card-header span { font-size: 0.9rem; color: var(--font-color-secondary); }
 
 .elemental-conversion-rule {
@@ -414,15 +418,16 @@
     font-size: 1.2rem;
     flex-wrap: wrap;
     color: var(--font-color);
+    margin-bottom: 0.5rem; /* Space below title */
 }
 .elemental-conversion-rule .element-icon,
-.elemental-conversion-rule .essence-icon {
+.elemental-conversion-rule .essence-icon-svg {
     width: 1.2em;
     height: 1.2em;
     vertical-align: middle;
     margin: 0 0.1em;
 }
-.elemental-conversion-rule .essence-icon {
+.elemental-conversion-rule .essence-icon-svg {
     color: var(--primary-accent);
 }
 
@@ -449,7 +454,7 @@
 .crafting-card.rarity-sr button { background: var(--rarity-sr-color); color: #fff; }
 .crafting-card.rarity-ssr button { background: var(--rarity-ssr-color); color: #2a2a3e; }
 /* Convert buttons */
-.crafting-card.from-r button, .crafting-card.from-sr button { background: var(--primary-accent); color: white; }
+.crafting-card.from-r button, .crafting-card.from-sr button, .crafting-card.from-elemental button { background: var(--primary-accent); color: white; }
 
 .crafting-card button:hover:not(:disabled) {
     transform: scale(1.05);
@@ -457,7 +462,7 @@
 }
 .crafting-card button:disabled {
     background: #555;
-    color: #999;
+    color: #888;
     cursor: not-allowed;
     opacity: 0.7;
 }
@@ -465,1039 +470,740 @@
 .crafting-recipe {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 0.75rem;
-    width: 100%;
-    background-color: rgba(0,0,0,0.3);
-    padding: 0.75rem;
-    border-radius: var(--radius-sm);
-    flex-wrap: wrap;
     margin: 1rem 0;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
 }
+
 .recipe-materials {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 0.5rem;
     flex-wrap: wrap;
+    justify-content: center;
 }
+
 .recipe-material {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.25rem;
-    background-color: rgba(0,0,0,0.4);
-    padding: 0.5rem;
-    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    color: var(--font-color-secondary);
     min-width: 50px;
 }
-.recipe-material .shard-item,
-.recipe-material .essence-icon {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.recipe-material .shard-item, .recipe-material .key-item, .recipe-material .element-icon, .recipe-material .essence-icon-svg {
+    width: 24px;
+    height: 24px;
 }
-.recipe-material .shard-item .shard-icon-svg {
-    width: 100%;
-    height: 100%;
+.recipe-material .shard-item.r { color: var(--rarity-r-color); }
+.recipe-material .shard-item.sr { color: var(--rarity-sr-color); }
+.recipe-material .shard-item.ssr { color: var(--rarity-ssr-color); }
+
+.recipe-material .shard-icon-svg,
+.recipe-material .key-icon-svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor; /* Ensure SVG inherits color */
 }
-.essence-icon {
-    color: var(--primary-accent);
-}
+
 .material-amount-wrapper {
     display: flex;
     align-items: baseline;
-    gap: 0.2rem;
-    font-size: 0.9rem;
     font-weight: bold;
+    font-size: 1.1rem;
+    gap: 0.2em;
+}
+.material-amount {
     color: var(--font-color);
 }
 .material-amount.insufficient {
     color: var(--red-suit);
 }
 .material-required {
+    font-size: 0.9em;
     color: var(--font-color-secondary);
-    font-size: 0.8em;
+    opacity: 0.7; /* Make it lighter */
 }
+
+
 .recipe-separator {
     font-size: 1.5rem;
+    font-weight: bold;
     color: var(--font-color-secondary);
-    align-self: center;
 }
+
 .recipe-arrow {
     font-size: 2rem;
-    color: var(--font-color-secondary);
+    font-weight: bold;
+    color: var(--primary-accent);
 }
+
 .recipe-result {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-accent);
 }
-.recipe-result .key-item {
+.recipe-result .key-item, .recipe-result .essence-icon-svg {
     width: 32px;
     height: 32px;
 }
-.recipe-result span:last-child {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--font-color);
-}
+.recipe-result .key-item.r { color: var(--rarity-r-color); }
+.recipe-result .key-item.sr { color: var(--rarity-sr-color); }
+.recipe-result .key-item.ssr { color: var(--rarity-ssr-color); }
+.recipe-result .essence-icon-svg { color: var(--primary-accent); fill: currentColor; }
 
-
-/* --- Gacha Animations --- */
-.gacha-unlock-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 100; }
-.gacha-unlock-overlay .particle { position: absolute; top: 50%; left: 50%; border-radius: 50%; animation-name: gacha-particle-fly; animation-timing-function: cubic-bezier(0.1, 0.8, 0.7, 1); animation-fill-mode: forwards; }
-.gacha-unlock-overlay .flash { position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; border-radius: 50%; transform-origin: center; animation: gacha-flash 0.5s ease-out forwards; }
-.gacha-unlock-overlay.rarity-r .particle { width: 8px; height: 8px; background: var(--rarity-r-color); box-shadow: 0 0 4px var(--rarity-r-color); animation-duration: 1.5s; }
-.gacha-unlock-overlay.rarity-sr .flash { background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(77, 208, 225, 0.5) 50%, rgba(77, 208, 225, 0) 70%); }
-.gacha-unlock-overlay.rarity-sr .particle { animation-duration: 2s; }
-.gacha-unlock-overlay.rarity-sr .particle:nth-child(even) { width: 10px; height: 10px; background: var(--rarity-sr-color); box-shadow: 0 0 6px var(--rarity-sr-color); }
-.gacha-unlock-overlay.rarity-sr .particle:nth-child(odd) { width: 5px; height: 15px; background: #ffffff; border-radius: 2px; box-shadow: 0 0 8px #ffffff; }
-.gacha-unlock-overlay.rarity-ssr .flash { background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,215,0,0.6) 50%, rgba(255,215,0,0) 70%); }
-.gacha-unlock-overlay.rarity-ssr .particle { animation-duration: 2.5s; }
-.gacha-unlock-overlay.rarity-ssr .particle:nth-child(5n) { width: 12px; height: 12px; background: hsl(calc(var(--angle-deg) * 1), 100%, 70%); box-shadow: 0 0 8px hsl(calc(var(--angle-deg) * 1), 100%, 70%); --angle-deg: calc(360 / 60 * var(--i)); }
-.gacha-unlock-overlay.rarity-ssr .particle:nth-child(5n + 1) { width: 7px; height: 20px; border-radius: 3px; background: hsl(calc(var(--angle-deg) * 1.2), 100%, 75%); box-shadow: 0 0 10px hsl(calc(var(--angle-deg) * 1.2), 100%, 75%); }
-.gacha-unlock-overlay.rarity-ssr .particle:nth-child(5n + 2) { width: 8px; height: 8px; background: white; animation-duration: 1.5s; }
-.gacha-unlock-overlay.rarity-ssr .particle:nth-child(5n + 3) { width: 10px; height: 10px; background: hsl(calc(var(--angle-deg) * 0.8), 100%, 65%); box-shadow: 0 0 7px hsl(calc(var(--angle-deg) * 0.8), 100%, 65%); }
-.gacha-unlock-overlay.rarity-ssr .particle:nth-child(5n + 4) { width: 15px; height: 15px; background: transparent; border: 2px solid hsl(calc(var(--angle-deg) * 1.5), 100%, 80%); animation-duration: 3s; }
-.gacha-rolling-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 99; }
-.gacha-coin { width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(45deg, var(--gold-accent), #f7971e); display: flex; justify-content: center; align-items: center; color: #a0522d; font-size: 4rem; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); box-shadow: 0 0 20px var(--gold-accent), inset 0 0 10px rgba(255,255,255,0.3); animation: coin-spin 1.5s linear infinite; transform-style: preserve-3d; }
-.gacha-coin svg { width: 80px; height: 80px; color: #fff; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4)); }
-
-.gacha-unlock-modal {
-  background-color: var(--ui-bg);
-  backdrop-filter: blur(8px);
-  padding: 2rem;
-  border-radius: var(--radius-lg);
-  text-align: center;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  max-width: 90vw;
-  width: 800px;
-  max-height: 90vh;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-}
-.gacha-unlock-modal .unlocked-image {
-  max-width: 100%;
-  max-height: 65vh;
-  object-fit: contain;
-  border-radius: var(--radius-md);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-}
-.gacha-unlock-modal .unlocked-rarity-banner {
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: bold;
-  margin-bottom: 0;
-  text-shadow: 0 0 10px black, 0 0 20px black;
-  animation: pulse-outcome 1.5s infinite;
-  width: 100%;
-  text-align: center;
-}
-.unlocked-rarity-banner.rarity-r { color: var(--rarity-r-color); }
-.unlocked-rarity-banner.rarity-sr { color: var(--rarity-sr-color); }
-.unlocked-rarity-banner.rarity-ssr { color: var(--rarity-ssr-color); }
-.gacha-unlock-modal .modal-actions {
-  margin-top: 0;
-}
-
-.gacha-multi-unlock-modal { width: 90vw; max-width: 1200px; max-height: 90vh; display: flex; flex-direction: column; }
-.gacha-multi-unlock-modal h2 { font-size: 2rem; color: var(--primary-accent); margin-bottom: 0.5rem; padding-right: 3.5rem; }
-.gacha-multi-unlock-modal .refund-info { font-size: 1.1rem; color: var(--font-color-secondary); margin-bottom: 1.5rem; }
-.multi-unlock-grid { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; overflow-y: auto; padding: 0.5rem; min-height: 0; }
-.multi-unlock-item { position: relative; border-radius: var(--radius-sm); overflow: hidden; }
-.multi-unlock-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.multi-unlock-rarity { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); padding: 0.2rem 0.6rem; border-radius: var(--radius-full); font-size: 0.9rem; font-weight: bold; }
-.multi-unlock-rarity.rarity-r { color: var(--rarity-r-color); }
-.multi-unlock-rarity.rarity-sr { color: var(--rarity-sr-color); }
-.multi-unlock-rarity.rarity-ssr { color: var(--rarity-ssr-color); }
-.gacha-multi-unlock-modal .modal-actions { margin-top: 1.5rem; text-align: center; }
+/* Styles for the "1" text next to the icons in the recipe result */
+.recipe-result .rarity-r-text { color: var(--rarity-r-color); }
+.recipe-result .rarity-sr-text { color: var(--rarity-sr-color); }
+.recipe-result .rarity-ssr-text { color: var(--rarity-ssr-color); }
+.recipe-result .primary-accent-text { color: var(--primary-accent); }
 
 
 /* --- Fullscreen Image Modal --- */
-.fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 10001; }
-.fullscreen-content { position: relative; max-width: 95vw; max-height: 95vh; display: flex; }
-.fullscreen-image { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--radius-sm); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.fullscreen-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; }
-.fullscreen-button { background: rgba(0, 0, 0, 0.6); border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; transition: background-color 0.2s, transform 0.2s; }
-.fullscreen-button:hover, .fullscreen-button:focus { background: rgba(0, 0, 0, 0.8); transform: scale(1.1); outline: none; }
+.fullscreen-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); display: flex; justify-content: center; align-items: center; z-index: 10000;
+}
+.fullscreen-content {
+  position: relative; max-width: 90%; max-height: 90%; display: flex; flex-direction: column; justify-content: center; align-items: center;
+}
+.fullscreen-image {
+  max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--radius-sm);
+}
+.fullscreen-actions {
+  position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.5rem;
+}
+.fullscreen-button {
+  background: rgba(0, 0, 0, 0.5); border: 1px solid white; color: white; border-radius: 50%; width: 44px; height: 44px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s;
+}
+.fullscreen-button:hover { background: rgba(0, 0, 0, 0.7); }
 .fullscreen-button svg { width: 24px; height: 24px; }
-.fullscreen-button .spinner { width: 24px; height: 24px; border-width: 3px; }
 
-/* --- Event Modal --- */
-.event-modal { max-height: 85vh; overflow-y: auto; }
-.event-modal p { font-size: 1.1rem; color: var(--font-color-secondary); line-height: 1.6; margin-bottom: 2rem; }
-.event-choices { display: flex; flex-direction: column; gap: 1rem; }
-.event-choice-button { background-color: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; text-align: left; color: white; cursor: pointer; transition: all 0.2s ease; width: 100%; }
-.event-choice-button:hover, .event-choice-button:focus { background-color: rgba(255,255,255,0.1); border-color: var(--primary-accent); outline: none; }
-.event-choice-button strong { display: block; font-size: 1.2rem; color: #a0d8a2; margin-bottom: 0.5rem; }
-.event-choice-button span { font-size: 0.9rem; color: #bbb; }
-
-/* --- Elemental Clash Modal --- */
-.elemental-clash-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 10001; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(4px); cursor: pointer; }
-.elemental-clash-modal { background-color: var(--ui-bg); padding: 2rem; border-radius: var(--radius-md); text-align: center; border: 2px solid var(--gold-accent); box-shadow: 0 0 30px rgba(var(--gold-accent-rgb), 0.5); animation: fade-in 0.3s ease-out; min-width: 400px; position: relative; cursor: default; }
-.elemental-clash-modal h2 { font-size: 2.5rem; color: var(--gold-accent); margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 2px; padding-right: 0; }
-.elemental-clash-modal.weakness { border-color: var(--primary-accent); box-shadow: 0 0 30px rgba(var(--primary-accent-rgb), 0.5); }
-.elemental-clash-modal.weakness h2 { color: var(--primary-accent); }
-.clash-results { display: flex; justify-content: space-around; gap: 3rem; margin-bottom: 2rem; min-height: 280px; align-items: center; }
-.clash-player-result { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 1rem; border-radius: var(--radius-sm); transition: all 0.3s; }
-.clash-player-result .card { pointer-events: none; }
-.clash-player-result.winner { transform: scale(1.1); background-color: rgba(var(--primary-accent-rgb), 0.2); box-shadow: 0 0 15px var(--primary-accent); }
-.clash-player-result.tie { background-color: rgba(255, 255, 255, 0.1); }
-.clash-player-result h3 { font-size: 1.2rem; margin-bottom: 0; color: var(--font-color-secondary); }
-.clash-roll {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 0 8px rgba(var(--gold-accent-rgb), 0.7);
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.5);
-  border-radius: var(--radius-md);
-  border: 2px solid var(--gold-accent);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-.weakness-indicator { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem; }
-.weakness-indicator .element-icon { width: 48px; height: 48px; }
-.weakness-indicator span { font-size: 1.5rem; font-weight: bold; color: var(--font-color-secondary); }
-.clash-outcome { font-size: 1.8rem; font-weight: bold; color: #a0d8a2; animation: pulse-outcome 1s infinite; min-height: 2.2rem; }
-.clash-rolling-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
-    width: 100%;
-}
-.clash-cards-preview { display: flex; justify-content: space-around; width: 100%; gap: 2rem; }
-.dice-animation-wrapper {
-    width: 100%;
-    min-height: 120px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    perspective: 1000px;
-    gap: 2rem;
-}
-.dice-container {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  transform-style: preserve-3d;
-  animation: dice-spin 3s ease-out forwards;
-}
-.dice-container:nth-child(2) { animation-delay: 0.1s; }
-.dice-face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  border: 2px solid var(--gold-accent);
-  border-radius: var(--radius-md);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #fff;
-  text-shadow: 0 0 8px rgba(var(--gold-accent-rgb), 0.7);
-  transform: translateZ(0px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
 
 /* --- History Modal --- */
-.history-modal { width: 800px; max-width: 95%; display: flex; flex-direction: column; max-height: 85vh; }
-.history-content { flex-grow: 1; overflow-y: auto; margin: 1.5rem 0; padding-right: 1rem; }
-.history-header { display: grid; grid-template-columns: 0.5fr 1fr 1fr 1fr 0.8fr 0.8fr 1.5fr; gap: 1rem; font-weight: bold; color: var(--font-color-secondary); padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); text-align: center; }
-.history-list { display: flex; flex-direction: column; gap: 1rem; }
-.history-entry { display: grid; grid-template-columns: 0.5fr 1fr 1fr 1fr 0.8fr 0.8fr 1.5fr; gap: 1rem; align-items: center; text-align: center; background-color: rgba(0, 0, 0, 0.2); padding: 0.5rem; border-radius: var(--radius-sm); }
-.history-modal.classic-mode .history-header, .history-modal.classic-mode .history-entry { grid-template-columns: 0.5fr 1fr 1fr 0.8fr 0.8fr; }
-.history-entry .card { --card-height: 54px; --card-width: 30px; margin: 0 auto; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-.history-clash-result { display: flex; align-items: center; justify-content: center; gap: 0.25rem; font-size: 0.9rem; font-weight: bold; }
-.history-clash-result .element-icon { width: 20px; height: 20px; }
-.history-points.human { color: #a0d8a2; font-weight: bold; }
-.history-points.ai { color: #e57373; font-weight: bold; }
-.history-bonus-reason { font-size: 0.8rem; color: var(--font-color-secondary); line-height: 1.3; }
-
+.history-modal { width: 800px; max-width: 95vw; max-height: 80vh; overflow-y: auto; text-align: left; }
+.history-modal h2 { padding-right: 3.5rem; }
+.history-content { margin-top: 1.5rem; }
+.history-header, .history-entry { display: grid; grid-template-columns: 0.5fr 1fr 1fr 1fr 0.7fr 0.7fr 1.5fr; align-items: center; gap: 0.5rem; padding: 0.75rem 0.5rem; border-bottom: 1px solid var(--border-color); }
+.history-header { font-weight: bold; color: var(--primary-accent); font-size: 0.9rem; }
+.history-header span:nth-child(2), .history-header span:nth-child(3) { text-align: center; }
+.history-entry { font-size: 0.9rem; color: var(--font-color); }
+.history-entry > div { display: flex; justify-content: center; }
+.history-entry .card { width: calc(var(--card-width) * 0.7); height: calc(var(--card-height) * 0.7); border-radius: 3px; box-shadow: none; }
+.history-entry .card img { border-radius: 3px; }
+.history-entry .history-points { font-weight: bold; }
+.history-entry .history-points.human { color: var(--primary-accent); }
+.history-entry .history-points.ai { color: var(--red-suit); }
+.history-entry .history-clash-result { display: flex; align-items: center; gap: 0.25rem; font-size: 0.8em; color: var(--font-color-secondary); }
+.history-entry .history-clash-result .element-icon { width: 1.2em; height: 1.2em; }
 .history-ability-entry {
-    grid-column: 1 / -1;
+    font-size: 0.9rem;
+    color: var(--font-color-secondary);
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--border-color);
     text-align: center;
-    padding: 0.75rem;
     font-style: italic;
-    background-color: rgba(var(--primary-accent-rgb), 0.1);
-    border-radius: var(--radius-sm);
-    margin: 0.5rem 0;
-    color: var(--font-color);
-    font-size: 0.95rem;
+    background-color: rgba(0,0,0,0.1);
 }
 
-/* --- Kasumi Swap Modal --- */
-.kasumi-swap-modal .modal-content { display: flex; flex-direction: column; gap: 1.5rem; align-items: center; }
-.kasumi-swap-modal p { font-size: 1.1rem; margin: 0; }
-.kasumi-swap-cards { display: flex; gap: 2rem; align-items: center; }
-.kasumi-swap-cards .card { pointer-events: none; }
-.kasumi-swap-modal .hand { justify-content: center; flex-wrap: wrap; }
-.kasumi-swap-modal .hand .card { cursor: pointer; }
-.kasumi-swap-modal .hand .card:hover { transform: translateY(-10px); }
-.kasumi-swap-modal .modal-actions button { margin-top: 0; }
+/* Classic mode has simpler history */
+.history-modal.classic-mode .history-header, .history-modal.classic-mode .history-entry {
+    grid-template-columns: 0.5fr 1fr 1fr 0.7fr 0.7fr; /* Remove clash and bonus columns */
+}
+.history-modal.classic-mode .history-header span:nth-child(4) { /* This would be pointsYou */
+    grid-column: 4;
+}
+
+/* --- Kasumi/Briscola Swap Modal --- */
+.kasumi-swap-modal { width: 450px; max-width: 90vw; }
+.kasumi-swap-modal h2 { margin-bottom: 0.5rem; }
+.kasumi-swap-modal p { margin-bottom: 1.5rem; font-size: 1.1rem; }
+.kasumi-swap-cards { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.kasumi-swap-cards .card { width: var(--card-width); height: var(--card-height); }
+.kasumi-swap-modal .hand { display: flex; justify-content: center; gap: 1rem; }
+.kasumi-swap-modal .hand .card { width: calc(var(--card-width) * 0.9); height: calc(var(--card-height) * 0.9); transition: transform 0.2s; cursor: pointer; }
+.kasumi-swap-modal .hand .card:hover { transform: translateY(-10px) scale(1.1); }
+.kasumi-swap-modal .modal-actions { margin-top: 1.5rem; }
+
 
 /* --- Sound Editor Modal --- */
-.sound-editor-modal { width: auto; max-width: 95%; display: flex; flex-direction: column; max-height: 85vh; }
-.sound-editor-content { overflow-y: auto; margin: 2rem 0; padding: 0 1rem; }
+.sound-editor-modal { max-width: 1000px; width: 95vw; max-height: 90vh; overflow-y: auto; text-align: left; padding: 2rem; }
+.sound-editor-modal h2 { text-align: center; margin-bottom: 1.5rem; }
+.sound-editor-content { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; }
 .sound-editor-controls { display: flex; flex-direction: column; gap: 1rem; }
-.sound-editor-control { display: flex; flex-direction: column; text-align: left; gap: 0.5rem; }
-.sound-editor-control label { font-size: 1.1rem; color: var(--font-color-secondary); display: flex; justify-content: space-between; }
-.sound-editor-control label span { font-weight: bold; color: white; }
-.sound-editor-control input[type="range"] { width: 100%; }
-.sound-editor-control select { font-size: 1rem; padding: 0.5rem 0.8rem; border-radius: var(--radius-sm); background-color: #333; color: white; border: 1px solid var(--border-color); cursor: pointer; }
-.sound-editor-modal .modal-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
-.sound-editor-modal .modal-actions button { font-size: 1.1rem; padding: 0.7rem 1.5rem; border-radius: var(--radius-full); border: none; cursor: pointer; min-width: 150px; }
-.sound-editor-modal .modal-actions button.button-primary { background: var(--primary-accent); color: white; }
-.sound-editor-modal .modal-actions button.button-primary:hover { background: var(--primary-accent-hover); }
+.sound-editor-control { display: flex; flex-direction: column; gap: 0.5rem; }
+.sound-editor-control label { font-size: 0.95rem; color: var(--font-color-secondary); }
+.sound-editor-control input[type="range"] { width: 100%; -webkit-appearance: none; appearance: none; height: 8px; border-radius: 5px; background: var(--border-color); outline: none; transition: opacity .2s; }
+.sound-editor-control input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-accent); cursor: pointer; box-shadow: 0 0 5px rgba(var(--primary-accent-rgb), 0.5); }
+.sound-editor-control input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--primary-accent); cursor: pointer; box-shadow: 0 0 5px rgba(var(--primary-accent-rgb), 0.5); }
+.preset-select-wrapper { display: flex; gap: 0.5rem; align-items: center; }
+.delete-preset-button { background-color: var(--red-suit); color: white; border: none; padding: 0.5rem 0.8rem; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.9rem; transition: background-color 0.2s; }
+.delete-preset-button:hover { background-color: #e53e3e; }
 
-/* --- Sound Sequencer Styles --- */
-.sound-editor-drums, .sound-editor-chords {
-  margin-top: 1.5rem;
-  text-align: left;
+
+.sound-editor-drums, .sound-editor-chords { grid-column: 1 / -1; }
+.sound-editor-drums h3, .sound-editor-chords h3, .save-preset-section h3 { font-size: 1.3rem; color: #a0d8a2; margin-top: 1.5rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); }
+
+.drum-sequencer, .chord-sequencer { display: flex; flex-direction: column; gap: 0.5rem; }
+.drum-row, .chord-row { display: flex; align-items: center; gap: 1rem; }
+.drum-label, .chord-label { min-width: 100px; font-weight: bold; color: var(--font-color); }
+
+.drum-steps, .chord-steps { display: grid; grid-template-columns: repeat(16, 1fr); gap: 2px; flex-grow: 1; }
+.step-button { background-color: var(--border-color); border: 1px solid rgba(0,0,0,0.3); width: 20px; height: 20px; border-radius: 3px; cursor: pointer; transition: background-color 0.1s; }
+.step-button:hover { background-color: #777; }
+.step-button.active { background-color: var(--primary-accent); }
+.step-button.beat-strong { border: 1px solid var(--primary-accent); }
+
+.step-chord-wrapper { width: 100%; }
+.step-chord-wrapper select {
+    width: 100%;
+    padding: 0.2rem;
+    font-size: 0.8rem;
+    background-color: rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+    color: white;
+    border-radius: 3px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    text-align: center;
 }
-.sound-editor-drums h3, .sound-editor-chords h3 {
-  font-size: 1.3rem;
-  color: var(--primary-accent);
-  margin-bottom: 1rem;
-}
-.drum-sequencer, .chord-sequencer {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  background-color: rgba(0,0,0,0.2);
-  padding: 1rem;
-  border-radius: var(--radius-sm);
-  overflow-x: auto;
-}
-.drum-row, .chord-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  min-height: 40px;
-}
-.drum-label {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: var(--font-color-secondary);
-  width: 100px;
-  flex-shrink: 0;
-  text-align: right;
-  padding-right: 1rem;
-}
-.drum-steps, .chord-steps {
-  display: grid;
-  grid-template-columns: repeat(16, minmax(35px, 1fr));
-  gap: 6px;
-  min-width: 650px;
-}
-.step-button {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-  background-color: rgba(255,255,255,0.05);
-  cursor: pointer;
-  transition: all 0.1s ease-in-out;
-}
-.step-button:hover {
-  background-color: rgba(255,255,255,0.1);
-  border-color: var(--primary-accent-hover);
-}
-.step-button.beat-strong {
-  background-color: rgba(0,0,0,0.2);
-}
-.step-button.active {
-  background-color: var(--primary-accent);
-  border-color: var(--primary-accent-hover);
-  box-shadow: 0 0 8px rgba(var(--primary-accent-rgb), 0.5);
-}
-.step-chord-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.step-select {
-  width: 100%;
-  padding: 0.3rem;
-  font-size: 0.8rem;
-  appearance: none;
-  background-color: var(--border-color);
-  color: white;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  text-align: center;
-  cursor: pointer;
-}
-.preset-select-wrapper {
-  display: flex;
-  gap: 0.5rem;
-}
-.preset-select-wrapper select {
-  flex-grow: 1;
-}
-.delete-preset-button {
-  background: var(--red-suit);
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0 1rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
-}
-.delete-preset-button:hover {
-  background: #e53e3e;
-}
-.save-preset-section {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
-  text-align: left;
-}
-.save-preset-section h3 {
-  font-size: 1.3rem;
-  color: var(--primary-accent);
-  margin-bottom: 1rem;
-}
-.save-preset-controls {
-  display: flex;
-  gap: 0.5rem;
-}
-.save-preset-controls input {
-  flex-grow: 1;
-  font-size: 1rem;
-  padding: 0.5rem 0.8rem;
-  border-radius: var(--radius-sm);
-  background-color: rgba(0,0,0,0.3);
-  color: white;
-  border: 1px solid var(--border-color);
-}
-.save-preset-controls button {
-  background: var(--primary-accent);
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0 1.5rem;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s;
-}
-.save-preset-controls button:hover {
-    background-color: var(--primary-accent-hover);
-}
-.save-preset-controls button:disabled {
-  background-color: #555;
-  cursor: not-allowed;
+.step-chord-wrapper select:focus {
+    outline: none;
+    border-color: var(--primary-accent);
 }
 
-/* --- Support Modal Poll --- */
-.support-modal-poll { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
-.support-modal-poll h3 { font-size: 1.3rem; color: #a0d8a2; margin-bottom: 0.75rem; }
-.support-modal-poll p { font-size: 0.95rem; color: var(--font-color-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
-.support-modal-poll .poll-actions { display: flex; justify-content: center; gap: 1rem; }
-.support-modal-poll .poll-actions button { min-width: 100px; margin-top: 0; font-size: 1rem; padding: 0.5rem 1rem; border-radius: var(--radius-full); cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
-.support-modal-poll .poll-thanks { font-size: 1.2rem; font-weight: bold; color: var(--primary-accent); }
+.save-preset-section { grid-column: 1 / -1; margin-top: 1.5rem; }
+.save-preset-controls { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+.save-preset-controls input { flex-grow: 1; padding: 0.6rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background-color: rgba(0,0,0,0.3); color: white; outline: none; }
+.save-preset-controls input::placeholder { color: var(--font-color-secondary); }
+.save-preset-controls button { background-color: var(--primary-accent); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: var(--radius-sm); cursor: pointer; transition: background-color 0.2s; }
+.save-preset-controls button:hover { background-color: var(--primary-accent-hover); }
 
-/* --- Settings Modal --- */
-.settings-modal-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin-top: 2rem;
-  text-align: left;
+.sound-editor-modal .modal-actions { margin-top: 2rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+.sound-editor-modal .modal-actions button { margin-top: 0; }
+
+/* --- Gacha Unlock Animations --- */
+.gacha-unlock-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.95) 100%); z-index: 10001; }
+.gacha-unlock-overlay .particle { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; border-radius: 50%; opacity: 0; animation: gacha-particle-fly 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.gacha-unlock-overlay.rarity-r .particle { background: var(--rarity-r-color); animation-duration: 2s; animation-delay: calc(var(--i) * 0.05s + var(--delay)); }
+.gacha-unlock-overlay.rarity-sr .particle { background: var(--rarity-sr-color); animation-duration: 2.5s; animation-delay: calc(var(--i) * 0.04s + var(--delay)); width: 12px; height: 12px; }
+.gacha-unlock-overlay.rarity-ssr .particle { background: var(--rarity-ssr-color); animation-duration: 3s; animation-delay: calc(var(--i) * 0.03s + var(--delay)); width: 15px; height: 15px; }
+
+.gacha-unlock-overlay .flash { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); width: 200px; height: 200px; border-radius: 50%; background-color: white; animation: gacha-flash 0.5s ease-out forwards; }
+.gacha-unlock-overlay.rarity-sr .flash { background-color: var(--rarity-sr-color); }
+.gacha-unlock-overlay.rarity-ssr .flash { background-color: var(--rarity-ssr-color); }
+
+
+/* --- Gacha Rolling Animation --- */
+.gacha-rolling-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 10001; }
+.gacha-coin { width: 100px; height: 100px; animation: coin-spin 1s infinite linear; color: var(--gold-accent); }
+.gacha-coin svg { width: 100%; height: 100%; }
+
+/* --- Gacha Single Unlock Modal --- */
+.gacha-unlock-modal { width: 450px; padding: 1.5rem; }
+.gacha-unlock-modal h2 { margin-top: 1rem; }
+.unlocked-rarity-banner {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    display: inline-block;
 }
-.settings-modal-content .settings-selector {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.unlocked-rarity-banner.rarity-r { background-color: var(--rarity-r-color); color: white; }
+.unlocked-rarity-banner.rarity-sr { background-color: var(--rarity-sr-color); color: white; }
+.unlocked-rarity-banner.rarity-ssr { background-color: var(--rarity-ssr-color); color: var(--black-suit); }
+
+.unlocked-image { width: 100%; height: auto; border-radius: var(--radius-sm); box-shadow: 0 5px 15px rgba(0,0,0,0.4); margin-bottom: 1rem; }
+
+/* --- Gacha Multi Unlock Modal --- */
+.gacha-multi-unlock-modal {
+    width: 900px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2rem;
 }
-.settings-modal-content .settings-selector label {
-  font-size: 1.1rem;
+.gacha-multi-unlock-modal h2 { margin-bottom: 1rem; }
+.gacha-multi-unlock-modal .refund-info { font-size: 1.1rem; color: var(--font-color-secondary); margin-bottom: 1.5rem; }
+.multi-unlock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
 }
+.multi-unlock-item {
+    position: relative;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+}
+.multi-unlock-item img {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;
+}
+.multi-unlock-rarity {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(0,0,0,0.7);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+.multi-unlock-rarity.rarity-r { background-color: var(--rarity-r-color); }
+.multi-unlock-rarity.rarity-sr { background-color: var(--rarity-sr-color); }
+.multi-unlock-rarity.rarity-ssr { background-color: var(--rarity-ssr-color); color: var(--black-suit); }
 
 /* --- Crafting Minigame Modal --- */
-.crafting-minigame-modal {
-  width: 700px;
-  max-width: 90vw;
-  text-align: center;
-  overflow: visible; /* Allow countdown to be part of flow */
-}
+.crafting-minigame-modal { width: 600px; max-width: 95vw; }
+.crafting-minigame-modal h2 { margin-bottom: 0.5rem; }
+.crafting-minigame-modal p { font-size: 1rem; margin-bottom: 1.5rem; }
+.minigame-container { width: 100%; background-color: rgba(0,0,0,0.3); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.5rem; }
+.minigame-track { width: 100%; height: 20px; background-color: var(--border-color); border-radius: 10px; position: relative; }
+.minigame-zone { position: absolute; height: 100%; border-radius: 10px; opacity: 0.6; }
+.minigame-success-zone { background-color: #4CAF50; }
+.minigame-critical-zone { background-color: #FFD700; z-index: 1; }
+.minigame-marker { position: absolute; top: 50%; transform: translateY(-50%); width: 10px; height: 30px; background-color: white; border-radius: 5px; z-index: 2; box-shadow: 0 0 10px rgba(255,255,255,0.7); }
+.minigame-timer { font-size: 1.5rem; font-weight: bold; color: var(--gold-accent); margin-bottom: 1rem; }
+.minigame-result { font-size: 2rem; font-weight: bold; margin-top: 1.5rem; }
+.minigame-result.critical { color: var(--gold-accent); }
+.minigame-result.success { color: #4CAF50; }
+.minigame-result.failure { color: var(--red-suit); }
+.minigame-countdown { font-size: 3rem; font-weight: bold; color: var(--primary-accent); margin-bottom: 1rem; animation: pulse-outcome 1s infinite; }
 
-.crafting-minigame-modal h2 {
-    color: var(--gold-accent);
-}
-
-.crafting-minigame-modal p {
-  font-size: 1.1rem;
-  color: var(--font-color-secondary);
-  margin-bottom: 2rem;
-}
-
-.minigame-container {
-  width: 100%;
-  padding: 1rem;
-  background-color: rgba(0,0,0,0.3);
-  border-radius: var(--radius-md);
-  margin-bottom: 2rem;
-}
-
-.minigame-track {
-  width: 100%;
-  height: 40px;
-  background-color: #222;
-  border-radius: var(--radius-sm);
-  position: relative;
-  overflow: hidden;
-  border: 2px solid var(--border-color);
-}
-
-.minigame-zone {
-  position: absolute;
-  top: 0;
-  height: 100%;
-}
-
-.minigame-success-zone {
-  background: rgba(76, 175, 80, 0.4);
-  border-left: 2px solid #4CAF50;
-  border-right: 2px solid #4CAF50;
-  z-index: 1;
-}
-
-.minigame-marker {
-  background: linear-gradient(var(--primary-accent), var(--primary-accent-hover));
-  box-shadow: 0 0 10px var(--primary-accent);
-  width: 10px;
-  z-index: 2;
-  border-radius: 2px;
-}
-
-.minigame-result {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-top: 2rem;
-  min-height: 2.5rem;
-}
-
-.minigame-result.success {
-  color: var(--gold-accent);
-  animation: pulse-outcome 1s infinite;
-}
-
-.minigame-result.failure {
-  color: var(--red-suit);
-}
-
-.minigame-timer {
-  font-size: 2rem;
-  font-weight: bold;
-  color: var(--gold-accent);
-  margin-bottom: 2rem;
-  text-shadow: 0 0 10px rgba(var(--gold-accent-rgb), 0.5);
-}
-
-.minigame-countdown {
-  font-size: clamp(6rem, 25vmin, 10rem);
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-  position: relative;
-  animation: pulse-outcome 1s ease-in-out infinite;
-  min-width: 1ch;
-  text-align: center;
-  margin: 2rem 0;
-  line-height: 1;
-}
-
-/* --- Challenge Key Selection Modal --- */
-.challenge-key-selection-modal {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  width: 600px;
-  max-width: 90vw;
-}
-
-.challenge-key-selection-modal .challenge-buttons {
-    margin-top: 1rem;
-    justify-content: space-around;
-}
-
-.challenge-key-selection-modal .challenge-button {
-    min-width: 150px;
-}
-
-/* --- Missions Modal --- */
-.missions-modal {
-    width: 800px;
-    max-width: 95vw;
-}
-
-.missions-list {
-    flex-grow: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 0.5rem;
-}
-
-.mission-item {
-    display: flex;
-    justify-content: space-between;
-    gap: 1.5rem;
-    align-items: center;
-    background: rgba(0,0,0,0.25);
-    padding: 1rem 1.5rem;
+/* --- Dungeon Modals --- */
+.dungeon-result-modal { width: 550px; } /* Slightly wider for dungeon summary */
+.dungeon-rewards-summary {
+    background: rgba(0,0,0,0.3);
     border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-top: 1.5rem;
     border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-}
-
-.mission-item.claimed {
-    opacity: 0.6;
-    filter: grayscale(50%);
-}
-
-.mission-item:not(.claimed) .claim-button:not(:disabled) {
-  border: 1px solid var(--gold-accent);
-  box-shadow: 0 0 10px rgba(var(--gold-accent-rgb), 0.5);
-}
-
-.mission-details {
+    text-align: center;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    text-align: left;
-    flex-grow: 1;
-    min-width: 0; /* Fix for flexbox text overflow */
 }
-
-.mission-right-panel {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    flex-shrink: 0;
-}
-
-.mission-description {
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin: 0;
-    color: var(--font-color);
-    line-height: 1.4;
-}
-
-.mission-progress-bar {
-    width: 100%;
-    height: 24px;
-    background-color: rgba(0,0,0,0.4);
-    border-radius: var(--radius-full);
-    position: relative;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-}
-
-.mission-progress-bar .progress {
-    height: 100%;
-    background: linear-gradient(90deg, var(--primary-accent), var(--primary-accent-hover));
-    border-radius: var(--radius-full);
-    transition: width 0.5s ease;
-}
-
-.mission-progress-bar .progress-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 0.9rem;
-    font-weight: bold;
-    color: white;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-}
-
-.mission-rewards-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    min-width: 130px;
-}
-
-.mission-right-panel .rewards-label {
-    display: none; /* Hidden by default, shown via media query */
-    font-size: 0.9rem;
-    color: var(--font-color-secondary);
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-}
-
-.mission-rewards {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.mission-reward-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    min-width: 50px;
-}
-
-.reward-icon-wrapper {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.3);
-}
-
-.reward-icon-wrapper svg {
-    width: 20px;
-    height: 20px;
+.dungeon-rewards-summary h3 {
+    font-size: 1.3rem;
     color: var(--gold-accent);
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
-.reward-icon-wrapper .element-icon {
-    width: 24px;
-    height: 24px;
+.dungeon-rewards-summary span {
+    font-size: 1.1rem;
+    color: var(--font-color-secondary);
 }
-.reward-icon-wrapper .shard-icon {
+.dungeon-reward-background {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+.dungeon-reward-background span {
+    font-weight: bold;
+    color: var(--primary-accent);
+}
+.reward-image-container {
+    position: relative;
+    width: 200px;
+    height: 0;
+    padding-bottom: 112.5%; /* 16:9, but for portrait image to fit, if it's 9:16 aspect ratio */
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 3px solid var(--primary-accent);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+}
+.reward-image-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    background: none;
+    object-fit: cover;
 }
-
-.mission-reward-item span {
-    font-size: 0.9rem;
+.reward-rarity {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: rgba(0,0,0,0.7);
+    color: white;
+    font-size: 0.8rem;
     font-weight: bold;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
 }
+.reward-rarity.rarity-r { background-color: var(--rarity-r-color); }
+.reward-rarity.rarity-sr { background-color: var(--rarity-sr-color); }
+.reward-rarity.rarity-ssr { background-color: var(--rarity-ssr-color); color: var(--black-suit); }
 
-.shard-icon {
-    font-size: 1.2rem;
-    font-weight: bold;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.3);
-}
-.shard-icon.r { color: var(--rarity-r-color); }
-.shard-icon.sr { color: var(--rarity-sr-color); }
-.shard-icon.ssr { color: var(--rarity-ssr-color); }
+/* --- Missions Modal --- */
+.missions-modal { width: 800px; max-width: 95vw; max-height: 90vh; overflow-y: auto; padding: 2rem; }
+.missions-modal h2 { text-align: center; margin-bottom: 1.5rem; }
 
-.mission-action {
+.missions-list { display: flex; flex-direction: column; gap: 1rem; padding: 0.5rem; }
+.mission-item {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
     display: flex;
-    justify-content: center;
+    flex-direction: row;
+    gap: 1rem;
     align-items: center;
-    min-height: 48px;
-    width: 130px; /* Align claim buttons */
 }
+.mission-item.claimed {
+    opacity: 0.7;
+    filter: grayscale(50%);
+}
+.mission-details { flex-grow: 1; text-align: left; }
+.mission-description { font-size: 1.1rem; color: var(--font-color); margin-bottom: 0.5rem; line-height: 1.4; }
+.mission-progress-bar {
+    width: 100%; height: 8px; background-color: rgba(0,0,0,0.4); border-radius: 4px; position: relative; overflow: hidden;
+}
+.mission-progress-bar .progress { height: 100%; background-color: var(--primary-accent); border-radius: 4px; transition: width 0.3s ease-out; }
+.mission-progress-bar .progress-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.8rem; font-weight: bold; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.mission-right-panel { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+.mission-rewards-container { display: flex; align-items: center; gap: 0.5rem; }
+.rewards-label { font-size: 0.9rem; color: var(--font-color-secondary); }
+.mission-rewards { display: flex; gap: 0.5rem; }
+.mission-reward-item {
+    display: flex; flex-direction: column; align-items: center; gap: 0.2rem; font-size: 0.8rem; color: var(--font-color);
+}
+.reward-icon-wrapper { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+.mission-reward-item svg { width: 100%; height: 100%; color: var(--gold-accent); }
+.mission-reward-item .shard-icon {
+    font-size: 0.7em; font-weight: bold; display: flex; align-items: center; justify-content: center; width: 1.8em; height: 1.8em; border-radius: 50%;
+}
+.mission-reward-item .shard-icon.r { background-color: var(--rarity-r-color); }
+.mission-reward-item .shard-icon.sr { background-color: var(--rarity-sr-color); }
+.mission-reward-item .shard-icon.ssr { background-color: var(--rarity-ssr-color); color: var(--black-suit); }
+
+.mission-reward-item .element-icon, .mission-reward-item .essence-icon-svg {
+    width: 24px; height: 24px;
+}
+.mission-reward-item .essence-icon-svg { color: var(--primary-accent); }
 
 .claim-button {
-    font-size: 1.1rem;
-    padding: 0.6rem 1.8rem;
-    border-radius: var(--radius-full);
+    background-color: var(--primary-accent); color: white; border: none; padding: 0.5rem 1rem; border-radius: var(--radius-full); font-weight: bold; cursor: pointer; transition: all 0.2s;
+}
+.claim-button:hover:not(:disabled) { background-color: var(--primary-accent-hover); transform: scale(1.05); }
+.claim-button:disabled { background-color: var(--border-color); cursor: not-allowed; opacity: 0.7; }
+.no-missions { text-align: center; font-style: italic; color: var(--font-color-secondary); margin-top: 2rem; font-size: 1.1rem; }
+
+/* Player Wallet Popover */
+.player-wallet-popover {
+    position: fixed;
+    bottom: 90px; /* Above the FAB */
+    right: 20px;
+    width: 320px;
+    max-width: 90vw;
+    background-color: var(--ui-bg);
+    backdrop-filter: blur(8px);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    z-index: 9000;
+    transform: translateX(120%);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0s 0.3s;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.player-wallet-popover.open {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0s;
+}
+
+.player-wallet-popover .popover-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: rgba(0,0,0,0.2);
+}
+.player-wallet-popover .popover-header h2 {
+    font-size: 1.3rem;
+    margin: 0;
+    color: var(--primary-accent);
+}
+.player-wallet-popover .modal-close-button {
+    position: static;
     border: none;
+    background: none;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    color: var(--font-color-secondary);
+}
+.player-wallet-popover .modal-close-button:hover {
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Removed popover-actions as per screenshot */
+/* .player-wallet-popover .popover-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.player-wallet-popover .popover-actions button {
+    background-color: rgba(var(--primary-accent-rgb), 0.2);
+    border: 1px solid var(--primary-accent);
+    color: var(--primary-accent);
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-full);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.player-wallet-popover .popover-actions button:hover {
+    background-color: rgba(var(--primary-accent-rgb), 0.4);
+    color: white;
+} */
+
+.player-wallet-popover .wallet-categories {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.player-wallet-popover .wallet-category {
+    margin-bottom: 0.75rem; /* Reduced margin for tighter grouping */
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+.player-wallet-popover .category-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Changed from space-between */
+    padding: 0.75rem 1rem;
+    background-color: rgba(0,0,0,0.2);
+    border: none;
+    color: var(--font-color);
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: default; /* Changed from pointer */
+    transition: background-color 0.2s;
+}
+.player-wallet-popover .category-header:hover {
+    background-color: rgba(0,0,0,0.2); /* Keep background same on hover */
+}
+.player-wallet-popover .category-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    flex-grow: 1;
+    text-align: left;
+    margin-left: 0.5rem;
+}
+.player-wallet-popover .category-header svg {
+    width: 20px;
+    height: 20px;
+    color: var(--font-color-secondary);
+}
+.player-wallet-popover .category-header .shard-icon-svg,
+.player-wallet-popover .category-header .key-icon-svg,
+.player-wallet-popover .category-header .essence-icon-svg {
+    color: var(--primary-accent);
+}
+/* Removed collapse icon styles as it's no longer present */
+/*
+.player-wallet-popover .category-header .collapse-icon svg {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s ease;
+}
+.player-wallet-popover .category-header .collapse-icon.open svg {
+    transform: rotate(180deg);
+}
+*/
+
+.player-wallet-popover .category-content {
+    display: grid;
+    grid-template-rows: 1fr; /* Always open */
+    transition: none; /* No transition needed */
+    overflow: visible; /* Always visible */
+    padding: 0.5rem 1rem; /* Apply padding when open */
+}
+.player-wallet-popover .category-content > div {
+    min-height: 0;
+}
+
+.player-wallet-popover .wallet-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid rgba(var(--border-color), 0.5);
+    font-size: 0.95rem;
+    color: var(--font-color-secondary);
+}
+.player-wallet-popover .wallet-detail-item:last-child {
+    border-bottom: none;
+}
+.player-wallet-popover .wallet-detail-item span {
+    font-weight: normal;
+}
+.player-wallet-popover .wallet-detail-item strong {
+    font-weight: bold;
+    color: var(--font-color);
+}
+.player-wallet-popover .wallet-detail-item.rarity-r strong { color: var(--rarity-r-color); }
+.player-wallet-popover .wallet-detail-item.rarity-sr strong { color: var(--rarity-sr-color); }
+.player-wallet-popover .wallet-detail-item.rarity-ssr strong { color: var(--rarity-ssr-color); }
+.player-wallet-popover .wallet-detail-item.element-fire strong { color: var(--element-fire-color); }
+.player-wallet-popover .wallet-detail-item.element-water strong { color: var(--element-water-color); }
+.player-wallet-popover .wallet-detail-item.element-air strong { color: var(--element-air-color); }
+.player-wallet-popover .wallet-detail-item.element-earth strong { color: var(--element-earth-color); }
+.player-wallet-popover .wallet-detail-item.transcendental strong { color: var(--primary-accent); }
+
+/* New: Waifu Coins summary at the bottom, mimicking the screenshot */
+.player-wallet-popover .wallet-summary-currency {
+    display: flex;
+    justify-content: flex-end; /* Align to the right as in screenshot */
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: rgba(0,0,0,0.2);
+    border-top: 1px solid var(--border-color); /* Separator from categories */
+    font-size: 1.1rem;
+    color: var(--font-color);
+    gap: 0.5rem;
+}
+.player-wallet-popover .wallet-summary-currency svg {
+    width: 24px;
+    height: 24px;
+    color: var(--gold-accent);
+}
+.player-wallet-popover .wallet-summary-currency strong {
+    font-size: 1.3rem; /* Slightly larger for emphasis */
+    color: var(--gold-accent); /* Gold color for coins */
+}
+
+
+/* FAB for Player Wallet */
+.fab-player-wallet {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
     background: linear-gradient(45deg, var(--gold-accent), #f7971e);
     color: var(--black-suit);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
-    font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    z-index: 8000; /* Below modals, above game content */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
-.claim-button:hover, .claim-button:focus {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.3), 0 0 10px rgba(var(--gold-accent-rgb), 0.5);
+.fab-player-wallet:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4), 0 0 15px rgba(var(--gold-accent-rgb), 0.7);
 }
-
-.claim-button:disabled {
-    background: linear-gradient(45deg, #7d7d7d, #5a5a5a);
-    color: #aaa;
-    cursor: not-allowed;
-    box-shadow: none;
-    border: 1px solid #444;
-}
-
-.claim-button:disabled:hover, .claim-button:disabled:focus {
-    transform: none;
-    box-shadow: none;
-}
-
-.mission-item.claimed .mission-action::after {
-    content: '✓';
-    font-size: 2rem;
-    color: var(--gold-accent);
-    font-weight: bold;
-      text-shadow: 0 0 8px rgba(var(--gold-accent-rgb), 0.5);
-}
-
-.follower-ability-row .follower-avatar-small {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  object-position: top;
-  border: 2px solid var(--primary-accent);
-  flex-shrink: 0;
+.fab-player-wallet svg {
+    width: 32px;
+    height: 32px;
+    fill: var(--black-suit);
 }
 
 @media (max-width: 768px) {
-    .missions-modal, .gallery-modal {
-        width: 95vw;
-        max-width: 95vw;
-        padding: 1.5rem 1rem;
+    .gallery-modal { padding: 1rem; }
+    .gallery-tabs { justify-content: center; }
+    .tab-button { font-size: 1rem; padding: 0.5rem 0.8rem; }
+    .gacha-controls { flex-direction: column; gap: 0.75rem; padding: 0.75rem; }
+    .gacha-controls button { font-size: 1rem; padding: 0.6rem 1rem; }
+    .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
+    .crafting-grid { grid-template-columns: 1fr; gap: 1rem; padding: 0.5rem; }
+    .crafting-card { padding: 1rem; }
+    .crafting-card-header h3 { font-size: 1.3rem; }
+    .elemental-conversion-rule { font-size: 1rem; }
+    .crafting-card button { font-size: 1rem; padding: 0.5rem 1rem; }
+    .recipe-material { min-width: unset; }
+
+    /* History Modal */
+    .history-modal { padding: 1rem; }
+    .history-header, .history-entry { grid-template-columns: 0.5fr 1fr 1fr 1fr 0.7fr 0.7fr 1.5fr; gap: 0.2rem; font-size: 0.8rem; padding: 0.5rem 0.2rem; }
+    .history-entry .card { width: calc(var(--card-width) * 0.6); height: calc(var(--card-height) * 0.6); border-radius: 3px; box-shadow: none; }
+    .history-entry .card img { border-radius: 3px; }
+    .history-modal.classic-mode .history-header, .history-modal.classic-mode .history-entry {
+        grid-template-columns: 0.5fr 1fr 1fr 0.7fr 0.7fr;
     }
 
-    .mission-item {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
-        padding: 1rem;
-    }
-
-    .mission-right-panel {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
-    }
-
-    .mission-rewards-container {
-        min-width: 0;
-        align-items: flex-start;
-    }
+    /* Kasumi/Briscola Swap Modal */
+    .kasumi-swap-modal { padding: 1rem; }
+    .kasumi-swap-modal p { font-size: 1rem; }
+    .kasumi-swap-modal .hand .card { width: calc(var(--card-width) * 0.7); height: calc(var(--card-height) * 0.7); }
     
-    .mission-right-panel .rewards-label {
-        display: block;
+    /* Sound Editor Modal */
+    .sound-editor-modal { padding: 1.5rem; }
+    .sound-editor-content { grid-template-columns: 1fr; }
+    .drum-row, .chord-row { flex-wrap: wrap; }
+    .drum-label, .chord-label { min-width: 80px; }
+    .drum-steps, .chord-steps { grid-template-columns: repeat(8, 1fr); gap: 1px; }
+    .step-button { width: 15px; height: 15px; }
+    .step-chord-wrapper select { font-size: 0.7rem; padding: 0.1rem; }
+
+    /* Player Wallet FAB and Popover */
+    .fab-player-wallet {
+        width: 50px;
+        height: 50px;
+        bottom: 10px;
+        right: 10px;
     }
-
-    .mission-rewards {
-        justify-content: flex-start;
+    .fab-player-wallet svg {
+        width: 28px;
+        height: 28px;
     }
-    
-    .mission-action {
-        width: 100%;
-        margin-top: 0.5rem;
-    }
-    
-    .claim-button {
-        width: 100%;
-    }
-
-    .gallery-tabs .tab-button span {
-        display: none;
-    }
-    .gallery-tabs .tab-button {
-        padding: 0.75rem;
-        flex-grow: 1;
+    .player-wallet-popover {
+        bottom: 70px; /* Adjust for smaller FAB */
+        right: 10px;
+        width: calc(100% - 20px); /* Fill most of the screen width */
     }
 }
+@media (max-width: 480px) {
+    .history-header, .history-entry {
+        grid-template-columns: 0.3fr 1fr 1fr 0.7fr 0.7fr 1.5fr;
+    }
+    .history-modal.classic-mode .history-header, .history-modal.classic-mode .history-entry {
+        grid-template-columns: 0.3fr 1fr 1fr 0.7fr 0.7fr;
+    }
+    .history-entry .card { width: calc(var(--card-width) * 0.5); height: calc(var(--card-height) * 0.5); }
+    .history-entry .history-clash-result { flex-direction: column; font-size: 0.7em; }
+    .history-entry .history-clash-result .element-icon { width: 1em; height: 1em; }
 
-
-.game-over-modal h2, .rules-modal h2, .event-modal h2, .history-modal h2, .kasumi-swap-modal h2, .sound-editor-modal h2, .crafting-minigame-modal h2, .challenge-key-selection-modal h2 {
-  font-size: 2rem; margin-bottom: 1rem; color: var(--primary-accent); padding-right: 3.5rem; text-shadow: 0 0 10px rgba(var(--primary-accent-rgb), 0.3);
+    .missions-modal { padding: 1rem; }
+    .missions-modal .tab-button { font-size: 0.9rem; padding: 0.4rem 0.6rem; }
+    .mission-item { flex-direction: column; align-items: flex-start; }
+    .mission-right-panel { width: 100%; align-items: center; margin-top: 0.75rem; }
+    .mission-rewards-container { justify-content: center; width: 100%; }
+    .mission-progress-bar { margin-bottom: 0.5rem; }
+    .mission-description { text-align: center; }
 }
-.game-over-modal p, .rules-modal p, .event-modal p, .crafting-minigame-modal p, .challenge-key-selection-modal p {
-  font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--font-color-secondary);
-}
-
-.modal-close-button:hover, .modal-close-button:focus { color: white; border-color: white; transform: scale(1.1); outline: none; background-color: rgba(255, 255, 255, 0.1); }
-.modal-close-button svg { width: 20px; height: 20px; }
-
-/* --- Game Over Modal --- */
-.game-over-winnings {
-  font-size: 1.4rem; font-weight: bold; color: var(--gold-accent); margin: 1rem 0 0.5rem; text-shadow: 0 0 8px rgba(var(--gold-accent-rgb), 0.5);
-}
-.game-over-modal h3 {
-  font-size: 1.5rem; margin: 0.5rem 0 1.5rem; color: var(--font-color);
-}
-.game-over-modal .modal-actions button, .rules-modal .modal-actions button, .history-modal .modal-actions button, .kasumi-swap-modal .modal-actions button,
-.gacha-unlock-modal .modal-actions button, .gacha-multi-unlock-modal .modal-actions button {
-  font-size: 1.2rem; padding: 0.7rem 2rem; border-radius: var(--radius-full); border: none; background: linear-gradient(45deg, var(--primary-accent), var(--primary-accent-hover)); color: white; cursor: pointer; transition: all 0.2s; margin-top: 1.5rem;
-}
-.game-over-modal .modal-actions button:hover, .game-over-modal .modal-actions button:focus,
-.rules-modal .modal-actions button:hover, .rules-modal .modal-actions button:focus,
-.history-modal .modal-actions button:hover, .history-modal .modal-actions button:focus,
-.kasumi-swap-modal .modal-actions button:hover, .kasumi-swap-modal .modal-actions button:focus,
-.gacha-unlock-modal .modal-actions button:hover, .gacha-unlock-modal .modal-actions button:focus,
-.gacha-multi-unlock-modal .modal-actions button:hover, .gacha-multi-unlock-modal .modal-actions button:focus {
-  transform: translateY(-2px); box-shadow: 0 4px 15px rgba(var(--primary-accent-rgb), 0.4);
-}
-.game-over-modal .quota-info { margin-top: 1rem; font-size: 0.9rem; color: var(--font-color-secondary); font-style: italic; }
-.game-over-modal .modal-actions { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-top: 1.5rem; }
-.game-over-modal .modal-actions button, .gacha-unlock-modal .modal-actions button, .gacha-multi-unlock-modal .modal-actions button { margin-top: 0; }
-.game-over-modal h2 { padding-right: 0; }
-
-.dungeon-opponent-display {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    margin: 1.5rem 0;
-}
-.dungeon-opponent-display img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 3px solid var(--primary-accent);
-    object-fit: cover;
-    object-position: top;
-}
-.dungeon-opponent-display h3 {
-    font-size: 1.5rem;
-    color: var(--font-color);
-    margin: 0;
-}
-.modifier-details {
-    margin-top: 1rem;
-}
-.modifier-details h4 {
-    font-size: 1.2rem;
-    color: var(--gold-accent);
-    margin: 0 0 0.5rem 0;
-}
-.modifier-details p {
-    font-size: 1rem;
-    color: var(--font-color-secondary);
-    margin: 0;
-}
-
-/* --- Rules Modal --- */
-.rules-modal { text-align: left; max-height: 85vh; overflow-y: auto; }
-.rules-modal p { font-size: 1.1rem; line-height: 1.5; margin-bottom: 1.5rem; }
-.rules-modal h3.rules-subtitle { font-size: 1.5rem; color: #a0d8a2; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); }
-.rules-points-list { list-style: none; padding: 0; margin: 1rem 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.5rem; }
-.rules-point-item { display: flex; justify-content: space-between; font-size: 1.1rem; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color); }
-.rules-point-item span:first-child { font-weight: bold; }
-.rules-info-list { list-style: none; padding: 0; margin: 1rem 0; display: flex; flex-direction: column; gap: 0.8rem; }
-.rules-info-item { font-size: 1.1rem; background-color: rgba(0, 0, 0, 0.2); padding: 0.8rem 1rem; border-radius: var(--radius-sm); border-left: 4px solid var(--primary-accent); }
-.rules-info-item.active-difficulty { border-left-color: var(--gold-accent); background-color: rgba(var(--gold-accent-rgb), 0.1); font-weight: bold; }
-.rules-modal .modal-actions { text-align: center; }
-
-.roguelike-powers-rules-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin-top: 1rem;
-}
-.power-rule-entry {
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 1rem;
-    border-radius: var(--radius-sm);
-    border-left: 4px solid #a0d8a2;
-}
-.power-rule-entry strong {
-    font-size: 1.2rem;
-    color: #a0d8a2;
-}
-.power-rule-entry ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-.power-rule-entry li {
-    font-size: 0.95rem;
-    color: var(--font-color-secondary);
-    line-height: 1.4;
-}
-.power-rule-entry li span {
-    font-weight: bold;
-    color: #ccc;
-    margin-right: 0.5rem;
-}
-
-.roguelike-rewards-rules-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 1rem;
-    border-radius: var(--radius-sm);
-}
-.reward-difficulty-column strong {
-    display: block;
-    margin-bottom: 0.75rem;
-    font-size: 1.1rem;
-    text-align: center;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid;
-}
-.reward-difficulty-column ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-.reward-difficulty-column li {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.95rem;
-}
-.reward-difficulty-column li span:last-child {
-    font-weight: bold;
-    color: var(--gold-accent);
-}
-.reward-difficulty-column.difficulty-easy strong { border-color: var(--element-earth-color); color: var(--element-earth-color); }
-.reward-difficulty-column.difficulty-medium strong { border-color: var(--element-water-color); color: var(--element-water-color); }
-.reward-difficulty-column.difficulty-hard strong { border-color: var(--element-fire-color); color: var(--element-fire-color); }
-.reward-difficulty-column.difficulty-nightmare strong { border-color: var(--rarity-r-color); color: var(--rarity-r-color); }
-
-/* --- Legend Modal --- */
-.elemental-powers-legend-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-.elemental-powers-legend-list .elemental-power-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  font-size: 1.1rem;
-  background-color: rgba(0,0,0,0.2);
-  padding: 0.75rem;
-  border-radius: var(--radius-sm);
-}
-.elemental-powers-legend-list .elemental-power-row .element-icon {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-}
-.elemental-powers-legend-list .elemental-power-description {
-  text-align: left;
-  line-height: 1.4;
-}
-.elemental-powers-legend-list .elemental-power-description strong {
-  margin-right: 0.5rem;
-}
-

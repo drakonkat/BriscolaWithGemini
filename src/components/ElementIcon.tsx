@@ -2,9 +2,15 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
+import React from 'react';
 import type { Element } from '../core/types';
 
-export const ElementIcon = ({ element }: { element: Element }) => {
+interface ElementIconProps {
+  element: Element;
+  className?: string; // Allow additional class names
+}
+
+export const ElementIcon: React.FC<ElementIconProps> = ({ element, className }) => {
     const paths: Record<Element, string> = {
         fire: "M10.5 0.5C10.5 0.5 11 1.83333 11 3C11 4.16667 10.5 6 10.5 6C10.5 6 12.5 4.5 13.5 3.5C14.5 2.5 14.5 0.5 14.5 0.5C14.5 0.5 14 2.16667 14 3C14 3.83333 13.5 5.5 13.5 5.5C13.5 5.5 15 4.5 16 4C17 3.5 18 2 18 2C18 2 16.5 6 15 7C13.5 8 12.5 8.5 12.5 8.5C12.5 8.5 13.5 10.1667 13.5 11C13.5 11.8333 12 15.5 12 15.5C12 15.5 11.5 11.5 10.5 10.5C9.5 9.5 7.5 8.5 7.5 8.5C7.5 8.5 9.125 8.125 10 7.5C10.875 6.875 10.5 5 10.5 5C10.5 5 8.5 6.5 7.5 7C6.5 7.5 5.5 8.5 5.5 8.5C5.5 8.5 6.5 6.5 7 5.5C7.5 4.5 8.5 1.5 8.5 1.5C8.5 1.5 7.5 3.5 7 4.5C6.5 5.5 5.5 7 5.5 7C5.5 7 4 5.5 3 5C2 4.5 0 4.5 0 4.5C0 4.5 2.5 3.5 4 3C5.5 2.5 7.5 0.5 7.5 0.5C7.5 0.5 7 2.16667 7.5 3.5C8 4.83333 10.5 5 10.5 5L10.5 0.5Z",
         water: "M12 20C12 20 6 14.5 6 9.5C6 4.5 10 2 12 2C14 2 18 4.5 18 9.5C18 14.5 12 20 12 20ZM12 4.5C10.5 4.5 8 6.5 8 9.5C8 12.5 10.5 15.5 12 17.5C13.5 15.5 16 12.5 16 9.5C16 6.5 13.5 4.5 12 4.5Z",
@@ -13,7 +19,7 @@ export const ElementIcon = ({ element }: { element: Element }) => {
     };
     
     return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className={`element-icon ${element}`}>
+        <svg viewBox="0 0 24 24" fill="currentColor" className={`element-icon ${element} ${className || ''}`}>
             <path d={paths[element]} />
         </svg>
     );

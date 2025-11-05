@@ -39,65 +39,6 @@
   z-index: -1;
 }
 
-.player-wallet {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    background-color: rgba(0,0,0,0.3);
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--radius-full);
-    margin: 1rem 0 2rem 0;
-    border: 1px solid var(--border-color);
-}
-.wallet-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-size: 1.1rem;
-    font-weight: bold;
-}
-.wallet-item > svg {
-    width: 28px;
-    height: 28px;
-    color: var(--gold-accent);
-}
-.wallet-item .shard-item,
-.wallet-item .key-item {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-}
-.wallet-item .shard-icon-svg {
-    width: 24px;
-    height: 24px;
-}
-.wallet-item .key-item svg {
-    width: 24px;
-    height: 24px;
-}
-.shard-item.r, .key-item.r { color: var(--rarity-r-color); }
-.shard-item.sr, .key-item.sr { color: var(--rarity-sr-color); }
-.shard-item.ssr, .key-item.ssr { color: var(--rarity-ssr-color); }
-
-.wallet-item .essence-item {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-}
-.wallet-item .essence-item .element-icon,
-.wallet-item .essence-item .essence-icon-svg {
-    width: 24px;
-    height: 24px;
-}
-.essence-item.fire { color: var(--element-fire-color); }
-.essence-item.water { color: var(--element-water-color); }
-.essence-item.air { color: var(--element-air-color); }
-.essence-item.earth { color: var(--element-earth-color); }
-.essence-item.transcendental { color: var(--primary-accent); }
-
-
 .menu-title-container {
     display: flex;
     justify-content: center;
@@ -1023,15 +964,14 @@ input:checked + .slider:before {
     position: relative;
   }
   .menu-subtitle { margin: 0.5rem 0 1rem; font-size: 1rem; }
-  .player-wallet {
-    order: 2; /* Position it after title container */
+  
+  /* Removed .player-wallet to be replaced by popover */
+  /* .player-wallet {
+    order: 2;
     margin: 1rem 0 1.5rem 0;
     gap: 1rem;
-  }
-  .wallet-item {
-      font-size: 1rem;
-      gap: 0.75rem;
-  }
+  } */
+
   .start-game-container { margin: 1.5rem 0; }
   .start-game-button { font-size: 1.5rem; padding: 0.8rem 2rem; }
   .promo-buttons-container { margin: 1rem 0; }
@@ -1048,12 +988,10 @@ input:checked + .slider:before {
   .carousel-nav-button {
       width: 36px;
       height: 36px;
-  }
-  .carousel-nav-button.prev {
-      left: -5px;
+      left: -5px; /* Adjust for padding on small screens */
   }
   .carousel-nav-button.next {
-      right: -5px;
+      right: -5px; /* Adjust for padding on small screens */
   }
   
   .game-mode-carousel-wrapper {

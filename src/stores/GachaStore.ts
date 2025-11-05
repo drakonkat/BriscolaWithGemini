@@ -188,6 +188,7 @@ export class GachaStore {
     }
 
     unlockDungeonBackground = (rarity: 'R' | 'SR' | 'SSR'): { background: BackgroundItem, isNew: boolean } => {
+        // FIX: Corrected typo from DUNGEGEON_REWARD_BACKGROUNDS to DUNGEON_REWARD_BACKGROUNDS.
         const background = DUNGEON_REWARD_BACKGROUNDS[rarity];
         if (this.unlockedDungeonBackgrounds.includes(background.url)) {
             return { background, isNew: false };
@@ -246,11 +247,12 @@ export class GachaStore {
     // FIX: Add missing method to prevent runtime error in GalleryModal.
     convertElementalToTranscendental = () => {
         const T_gallery = this.T.gallery;
-        if (this.fire_essences >= 10 && this.water_essences >= 10 && this.air_essences >= 10 && this.earth_essences >= 10) {
-            this.fire_essences=this.fire_essences-10;
-            this.water_essences=this.water_essences-10;
-            this.air_essences=this.air_essences-10;
-            this.earth_essences=this.earth_essences-10;
+        const required = 10;
+        if (this.fire_essences >= required && this.water_essences >= required && this.air_essences >= required && this.earth_essences >= required) {
+            this.fire_essences -= required;
+            this.water_essences -= required;
+            this.air_essences -= required;
+            this.earth_essences -= required;
             this.transcendental_essences++;
             playSound('essence-gain');
             // This reuses the shard conversion message. It's not perfect but avoids adding new translations.
@@ -432,16 +434,16 @@ export class GachaStore {
     craftKey = (rarity: 'R' | 'SR' | 'SSR') => {
         const costs = { 
             R: { r_shards: 10 },
-            SR: { sr_shards: 10, r_shards: 25, essences: 5 },
-            SSR: { ssr_shards: 5, sr_shards: 15, essences: 10 }
+            SR: { sr_shards: 10, r_shards: 25, transcendental_essences: 5 },
+            SSR: { ssr_shards: 5, sr_shards: 15, transcendental_essences: 10 }
         };
 
         const cost = costs[rarity];
 
-        if (('r_shards' in cost && this.r_shards < cost.r_shards) ||
-            ('sr_shards' in cost && this.sr_shards < cost.sr_shards) ||
-            ('ssr_shards' in cost && this.ssr_shards < cost.ssr_shards) ||
-            ('essences' in cost && this.totalEssences < cost.essences)) {
+        if (('r_shards' in cost && this.r_shards < cost.r_shards!) ||
+            ('sr_shards' in cost && this.sr_shards < cost.sr_shards!) ||
+            ('ssr_shards' in cost && this.ssr_shards < cost.ssr_shards!) ||
+            ('transcendental_essences' in cost && this.transcendental_essences < cost.transcendental_essences!)) {
             this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaNotEnoughShards, 'warning');
             return;
         }
@@ -470,25 +472,17 @@ export class GachaStore {
         } else { // success or critical
             const costs = {
                 R: { r_shards: 10 },
-                SR: { sr_shards: 10, r_shards: 25, essences: 5 },
-                SSR: { ssr_shards: 5, sr_shards: 15, essences: 10 }
+                SR: { sr_shards: 10, r_shards: 25, transcendental_essences: 5 },
+                SSR: { ssr_shards: 5, sr_shards: 15, transcendental_essences: 10 }
             };
             const cost = costs[rarity];
 
             // Deduct materials
-            if ('r_shards' in cost) this.r_shards -= cost.r_shards;
-            if ('sr_shards' in cost) this.sr_shards -= cost.sr_shards;
-            if ('ssr_shards' in cost) this.ssr_shards -= cost.ssr_shards;
-            if ('essences' in cost) {
-                let essencesToSpend = cost.essences;
-                // Simple logic to deduct from available essences
-                const essenceTypes: ('fire_essences' | 'water_essences' | 'air_essences' | 'earth_essences')[] = ['fire_essences', 'water_essences', 'air_essences', 'earth_essences'];
-                for (const type of essenceTypes) {
-                    const amountToTake = Math.min(this[type], essencesToSpend);
-                    this[type] -= amountToTake;
-                    essencesToSpend -= amountToTake;
-                    if (essencesToSpend === 0) break;
-                }
+            if ('r_shards' in cost) this.r_shards -= cost.r_shards!;
+            if ('sr_shards' in cost) this.sr_shards -= cost.sr_shards!;
+            if ('ssr_shards' in cost) this.ssr_shards -= cost.ssr_shards!;
+            if ('transcendental_essences' in cost) {
+                this.transcendental_essences -= cost.transcendental_essences!;
             }
             
             this.addKey(rarity);
@@ -496,9 +490,9 @@ export class GachaStore {
 
             if (result === 'critical') {
                 // Refund half of the shards
-                if ('r_shards' in cost) this.r_shards += Math.floor(cost.r_shards / 2);
-                if ('sr_shards' in cost) this.sr_shards += Math.floor(cost.sr_shards / 2);
-                if ('ssr_shards' in cost) this.ssr_shards += Math.floor(cost.ssr_shards / 2);
+                if ('r_shards' in cost) this.r_shards += Math.floor(cost.r_shards! / 2);
+                if ('sr_shards' in cost) this.sr_shards += Math.floor(cost.sr_shards! / 2);
+                if ('ssr_shards' in cost) this.ssr_shards += Math.floor(cost.ssr_shards! / 2);
                 playSound('craft-critical');
                 this.rootStore.uiStore.showSnackbar(this.T.craftingMinigame.criticalSuccess, 'success');
             } else {

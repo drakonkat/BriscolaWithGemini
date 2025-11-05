@@ -476,7 +476,7 @@ export class DungeonModeStore extends ClassicModeStore {
         let unlockedBg = null;
         let totalCoins = 0;
         const totalShards = { R: 0, SR: 0, SSR: 0 };
-        let totalEssences = 0;
+        let totalTranscendentalEssences = 0;
 
         if (didWin) {
             this.rootStore.gachaStore.spendKey(keyRarity);
@@ -496,7 +496,7 @@ export class DungeonModeStore extends ClassicModeStore {
                     totalCoins = 600;
                     totalShards.R = 10;
                     totalShards.SR = 5;
-                    totalEssences = 5;
+                    totalTranscendentalEssences = 5;
                     this.rootStore.gachaStore.addKey('R');
                     if (!isNew) totalShards.SR += 5;
                     break;
@@ -505,7 +505,7 @@ export class DungeonModeStore extends ClassicModeStore {
                     totalShards.R = 15;
                     totalShards.SR = 10;
                     totalShards.SSR = 1;
-                    totalEssences = 10;
+                    totalTranscendentalEssences = 10;
                     this.rootStore.gachaStore.addKey('SR');
                     if (!isNew) totalShards.SSR += 1;
                     break;
@@ -516,7 +516,7 @@ export class DungeonModeStore extends ClassicModeStore {
             this.rootStore.gachaStore.addShards('SR', totalShards.SR);
             this.rootStore.gachaStore.addShards('SSR', totalShards.SSR);
             // FIX: Grant transcendental essences instead of fire essences.
-            if (totalEssences > 0) this.rootStore.gachaStore.addTranscendentalEssences(totalEssences);
+            if (totalTranscendentalEssences > 0) this.rootStore.gachaStore.addTranscendentalEssences(totalTranscendentalEssences);
 
             this.rootStore.missionStore.incrementProgress('dungeonRunsWon');
         }

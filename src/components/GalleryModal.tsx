@@ -11,6 +11,7 @@ import { CachedImage } from './CachedImage';
 import { GachaUnlockAnimation } from './GachaUnlockAnimation';
 import { GachaRollingAnimation } from './GachaRollingAnimation';
 import { ElementIcon } from './ElementIcon';
+import { EssenceIcon } from './EssenceIcon';
 
 type BackgroundItem = {
     url: string;
@@ -33,13 +34,6 @@ interface GalleryModalProps {
     onImageSelect: (url: string) => void;
     isNsfwEnabled: boolean;
 }
-
-const EssenceIcon = ({ type = 'transcendental' }: { type?: 'transcendental' | 'elemental' }) => (
-    <svg className="essence-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2L2 8.5L12 22L22 8.5L12 2Z" />
-    </svg>
-);
-
 
 export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onGachaMultiRoll, hasRolledGacha, isRolling, gachaAnimationState, onAnimationEnd, onImageSelect, isNsfwEnabled }: GalleryModalProps) => {
     const { gachaStore } = useStores();
@@ -71,7 +65,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
 
     const canConvertRtoSR = gachaStore.r_shards >= 10;
     const canConvertSRtoSSR = gachaStore.sr_shards >= 10;
-    const canConvertElemental = gachaStore.fire_essences >= 1 && gachaStore.water_essences >= 1 && gachaStore.air_essences >= 1 && gachaStore.earth_essences >= 1;
+    const canConvertElemental = gachaStore.fire_essences >= 10 && gachaStore.water_essences >= 10 && gachaStore.air_essences >= 10 && gachaStore.earth_essences >= 10;
 
 
     return (
@@ -155,7 +149,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                     </div>
                                     <div className="crafting-recipe">
                                         <div className="recipe-materials">
-                                            <div className="recipe-material" title={`${gachaStore.r_shards} / 10 ${T_gallery.shardLabelR(10).replace(/\d+\s/, '')}`}>
+                                            <div className="recipe-material" title={T_gallery.craftingRuleR}>
                                                 <span className="shard-item r"><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
                                                 <div className="material-amount-wrapper">
                                                     <span className={`material-amount ${gachaStore.r_shards < 10 ? 'insufficient' : ''}`}>{gachaStore.r_shards}</span>
@@ -166,9 +160,9 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                         <div className="recipe-arrow">→</div>
                                         <div className="recipe-result">
                                             <span className="key-item r" title={T_gallery.keyNameR}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M14.5,4A5.5,5.5,0,1,0,20,9.5,5.5,5.5,0,0,0,14.5,4ZM11,9.5a3.5,3.5,0,1,1,3.5,3.5A3.5,3.5,0,0,1,11,9.5ZM10,12,2,20v2H4l8-8V12Zm2-4H2v2H12V8Z"/></svg>
+                                                <svg className="key-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14.5,4A5.5,5.5,0,1,0,20,9.5,5.5,5.5,0,0,0,14.5,4ZM11,9.5a3.5,3.5,0,1,1,3.5,3.5A3.5,3.5,0,0,1,11,9.5ZM10,12,2,20v2H4l8-8V12Zm2-4H2v2H12V8Z"/></svg>
                                             </span>
-                                            <span>1</span>
+                                            <span className="rarity-r-text">1</span>
                                         </div>
                                     </div>
                                     <button onClick={() => gachaStore.craftKey('R')} disabled={!canCraftR}>
@@ -181,7 +175,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                     </div>
                                     <div className="crafting-recipe">
                                         <div className="recipe-materials">
-                                            <div className="recipe-material" title={`${gachaStore.sr_shards} / 10 ${T_gallery.shardLabelSR(10).replace(/\d+\s/, '')}`}>
+                                            <div className="recipe-material" title={T_gallery.shardLabelSR(10)}>
                                                 <span className="shard-item sr"><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
                                                 <div className="material-amount-wrapper">
                                                     <span className={`material-amount ${gachaStore.sr_shards < 10 ? 'insufficient' : ''}`}>{gachaStore.sr_shards}</span>
@@ -189,7 +183,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                                 </div>
                                             </div>
                                             <div className="recipe-separator">+</div>
-                                            <div className="recipe-material" title={`${gachaStore.r_shards} / 25 ${T_gallery.shardLabelR(25).replace(/\d+\s/, '')}`}>
+                                            <div className="recipe-material" title={T_gallery.shardLabelR(25)}>
                                                 <span className="shard-item r"><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
                                                 <div className="material-amount-wrapper">
                                                     <span className={`material-amount ${gachaStore.r_shards < 25 ? 'insufficient' : ''}`}>{gachaStore.r_shards}</span>
@@ -197,7 +191,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                                 </div>
                                             </div>
                                             <div className="recipe-separator">+</div>
-                                            <div className="recipe-material" title={`${gachaStore.transcendental_essences} / 5 ${T.missions.rewards.transcendental_essences}`}>
+                                            <div className="recipe-material" title={T.missions.rewards.transcendental_essences}>
                                                 <EssenceIcon />
                                                 <div className="material-amount-wrapper">
                                                     <span className={`material-amount ${gachaStore.transcendental_essences < 5 ? 'insufficient' : ''}`}>{gachaStore.transcendental_essences}</span>
@@ -207,8 +201,8 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                         </div>
                                         <div className="recipe-arrow">→</div>
                                         <div className="recipe-result">
-                                            <span className="key-item sr" title={T_gallery.keyNameSR}><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M14.5,4A5.5,5.5,0,1,0,20,9.5,5.5,5.5,0,0,0,14.5,4ZM11,9.5a3.5,3.5,0,1,1,3.5,3.5A3.5,3.5,0,0,1,11,9.5ZM10,12,2,20v2H4l8-8V12Zm2-4H2v2H12V8Z"/></svg></span>
-                                            <span>1</span>
+                                            <span className="key-item sr" title={T_gallery.keyNameSR}><svg className="key-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14.5,4A5.5,5.5,0,1,0,20,9.5,5.5,5.5,0,0,0,14.5,4ZM11,9.5a3.5,3.5,0,1,1,3.5,3.5A3.5,3.5,0,0,1,11,9.5ZM10,12,2,20v2H4l8-8V12Zm2-4H2v2H12V8Z"/></svg></span>
+                                            <span className="rarity-sr-text">1</span>
                                         </div>
                                     </div>
                                     <button onClick={() => gachaStore.craftKey('SR')} disabled={!canCraftSR}>
@@ -221,7 +215,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                     </div>
                                     <div className="crafting-recipe">
                                         <div className="recipe-materials">
-                                            <div className="recipe-material" title={`${gachaStore.ssr_shards} / 5 ${T_gallery.shardLabelSSR(5).replace(/\d+\s/, '')}`}>
+                                            <div className="recipe-material" title={T_gallery.shardLabelSSR(5)}>
                                                 <span className="shard-item ssr"><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
                                                 <div className="material-amount-wrapper">
                                                     <span className={`material-amount ${gachaStore.ssr_shards < 5 ? 'insufficient' : ''}`}>{gachaStore.ssr_shards}</span>
@@ -229,7 +223,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                                 </div>
                                             </div>
                                             <div className="recipe-separator">+</div>
-                                            <div className="recipe-material" title={`${gachaStore.sr_shards} / 15 ${T_gallery.shardLabelSR(15).replace(/\d+\s/, '')}`}>
+                                            <div className="recipe-material" title={T_gallery.shardLabelSR(15)}>
                                                 <span className="shard-item sr"><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
                                                 <div className="material-amount-wrapper">
                                                     <span className={`material-amount ${gachaStore.sr_shards < 15 ? 'insufficient' : ''}`}>{gachaStore.sr_shards}</span>
@@ -237,7 +231,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                                 </div>
                                             </div>
                                             <div className="recipe-separator">+</div>
-                                            <div className="recipe-material" title={`${gachaStore.transcendental_essences} / 10 ${T.missions.rewards.transcendental_essences}`}>
+                                            <div className="recipe-material" title={T.missions.rewards.transcendental_essences}>
                                                 <EssenceIcon />
                                                 <div className="material-amount-wrapper">
                                                     <span className={`material-amount ${gachaStore.transcendental_essences < 10 ? 'insufficient' : ''}`}>{gachaStore.transcendental_essences}</span>
@@ -247,8 +241,8 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                         </div>
                                         <div className="recipe-arrow">→</div>
                                         <div className="recipe-result">
-                                            <span className="key-item ssr" title={T_gallery.keyNameSSR}><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M14.5,4A5.5,5.5,0,1,0,20,9.5,5.5,5.5,0,0,0,14.5,4ZM11,9.5a3.5,3.5,0,1,1,3.5,3.5A3.5,3.5,0,0,1,11,9.5ZM10,12,2,20v2H4l8-8V12Zm2-4H2v2H12V8Z"/></svg></span>
-                                            <span>1</span>
+                                            <span className="key-item ssr" title={T_gallery.keyNameSSR}><svg className="key-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14.5,4A5.5,5.5,0,1,0,20,9.5,5.5,5.5,0,0,0,14.5,4ZM11,9.5a3.5,3.5,0,1,1,3.5,3.5A3.5,3.5,0,0,1,11,9.5ZM10,12,2,20v2H4l8-8V12Zm2-4H2v2H12V8Z"/></svg></span>
+                                            <span className="rarity-ssr-text">1</span>
                                         </div>
                                     </div>
                                     <button onClick={() => gachaStore.craftKey('SSR')} disabled={!canCraftSSR}>
@@ -264,9 +258,23 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                 <div className="crafting-card from-r">
                                     <div className="crafting-card-header">
                                         <h3>10 <span className="rarity-r">R</span> → 1 <span className="rarity-sr">SR</span></h3>
+                                        <span>{T_gallery.convertTitle}</span>
                                     </div>
-                                    <div className="crafting-shard-info">
-                                        <span>{T_gallery.shardLabelR(gachaStore.r_shards)}</span>
+                                    <div className="crafting-recipe">
+                                        <div className="recipe-materials">
+                                            <div className="recipe-material">
+                                                <span className="shard-item r" title={T_gallery.shardLabelR(gachaStore.r_shards)}><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                                                <div className="material-amount-wrapper">
+                                                    <span className={`material-amount ${gachaStore.r_shards < 10 ? 'insufficient' : ''}`}>{gachaStore.r_shards}</span>
+                                                    <span className="material-required">/ 10</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="recipe-arrow">→</div>
+                                        <div className="recipe-result">
+                                            <span className="shard-item sr" title={T_gallery.shardLabelSR(1)}><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                                            <span className="rarity-sr-text">1</span>
+                                        </div>
                                     </div>
                                     <button onClick={() => gachaStore.convertShards('R', 'SR')} disabled={!canConvertRtoSR}>
                                         {T_gallery.convertButton}
@@ -275,9 +283,23 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                 <div className="crafting-card from-sr">
                                     <div className="crafting-card-header">
                                         <h3>10 <span className="rarity-sr">SR</span> → 1 <span className="rarity-ssr">SSR</span></h3>
+                                        <span>{T_gallery.convertTitle}</span>
                                     </div>
-                                    <div className="crafting-shard-info">
-                                        <span>{T_gallery.shardLabelSR(gachaStore.sr_shards)}</span>
+                                    <div className="crafting-recipe">
+                                        <div className="recipe-materials">
+                                            <div className="recipe-material">
+                                                <span className="shard-item sr" title={T_gallery.shardLabelSR(gachaStore.sr_shards)}><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                                                <div className="material-amount-wrapper">
+                                                    <span className={`material-amount ${gachaStore.sr_shards < 10 ? 'insufficient' : ''}`}>{gachaStore.sr_shards}</span>
+                                                    <span className="material-required">/ 10</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="recipe-arrow">→</div>
+                                        <div className="recipe-result">
+                                            <span className="shard-item ssr" title={T_gallery.shardLabelSSR(1)}><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                                            <span className="rarity-ssr-text">1</span>
+                                        </div>
                                     </div>
                                     <button onClick={() => gachaStore.convertShards('SR', 'SSR')} disabled={!canConvertSRtoSSR}>
                                         {T_gallery.convertButton}
@@ -294,18 +316,19 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                                             1x<EssenceIcon />
                                         </h3>
                                         <span>{T_gallery.convertEssencesTitle}</span>
+                                        <p>{T_gallery.conversionRuleElemental}</p>
                                     </div>
                                     <div className="crafting-recipe">
                                         <div className="recipe-materials">
-                                            <div className="recipe-material" title={T.missions.rewards.fire_essences}><ElementIcon element="fire" /><span className={gachaStore.fire_essences < 10 ? 'insufficient' : ''}>{gachaStore.fire_essences}</span></div>
-                                            <div className="recipe-material" title={T.missions.rewards.water_essences}><ElementIcon element="water" /><span className={gachaStore.water_essences < 10 ? 'insufficient' : ''}>{gachaStore.water_essences}</span></div>
-                                            <div className="recipe-material" title={T.missions.rewards.air_essences}><ElementIcon element="air" /><span className={gachaStore.air_essences < 10 ? 'insufficient' : ''}>{gachaStore.air_essences}</span></div>
-                                            <div className="recipe-material" title={T.missions.rewards.earth_essences}><ElementIcon element="earth" /><span className={gachaStore.earth_essences < 10 ? 'insufficient' : ''}>{gachaStore.earth_essences}</span></div>
+                                            <div className="recipe-material" title={`${gachaStore.fire_essences} / 10 ${T.missions.rewards.fire_essences}`}><ElementIcon element="fire" /><div className="material-amount-wrapper"><span className={gachaStore.fire_essences < 10 ? 'insufficient' : ''}>{gachaStore.fire_essences}</span><span className="material-required">/ 10</span></div></div>
+                                            <div className="recipe-material" title={`${gachaStore.water_essences} / 10 ${T.missions.rewards.water_essences}`}><ElementIcon element="water" /><div className="material-amount-wrapper"><span className={gachaStore.water_essences < 10 ? 'insufficient' : ''}>{gachaStore.water_essences}</span><span className="material-required">/ 10</span></div></div>
+                                            <div className="recipe-material" title={`${gachaStore.air_essences} / 10 ${T.missions.rewards.air_essences}`}><ElementIcon element="air" /><div className="material-amount-wrapper"><span className={gachaStore.air_essences < 10 ? 'insufficient' : ''}>{gachaStore.air_essences}</span><span className="material-required">/ 10</span></div></div>
+                                            <div className="recipe-material" title={`${gachaStore.earth_essences} / 10 ${T.missions.rewards.earth_essences}`}><ElementIcon element="earth" /><div className="material-amount-wrapper"><span className={gachaStore.earth_essences < 10 ? 'insufficient' : ''}>{gachaStore.earth_essences}</span><span className="material-required">/ 10</span></div></div>
                                         </div>
                                         <div className="recipe-arrow">→</div>
                                         <div className="recipe-result">
                                             <EssenceIcon />
-                                            <span>{gachaStore.transcendental_essences}</span>
+                                            <span className="primary-accent-text">{gachaStore.transcendental_essences}</span>
                                         </div>
                                     </div>
                                     <button onClick={gachaStore.convertElementalToTranscendental} disabled={!canConvertElemental}>

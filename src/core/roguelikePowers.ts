@@ -5,6 +5,20 @@
 import { translations } from './translations';
 import type { RoguelikePowerUpId, Language } from './types';
 
+// Define the expected structure of the 'powers' object within translations
+// This is used to ensure TypeScript correctly recognizes all properties,
+// especially for complex literal objects like 'translations'.
+interface TranslatedRoguelikePowers {
+    upgrade: string;
+    bonus_point_per_trick: { name: string; desc: (level: number) => string; };
+    king_bonus: { name: string; desc: (level: number) => string; };
+    ace_of_briscola_start: { name: string; desc: (level: number) => string; };
+    briscola_mastery: { name: string; desc: (level: number) => string; };
+    value_swap: { name: string; desc: (level: number) => string; };
+    last_trick_insight: { name: string; desc: (level: number) => string; };
+    third_eye: { name: string; desc: string; historyLockedDesc: string; };
+}
+
 export const POWER_UP_DEFINITIONS: Record<RoguelikePowerUpId, {
     name: (lang: Language) => string;
     description: (lang: Language, level: number) => string;
@@ -41,8 +55,11 @@ export const POWER_UP_DEFINITIONS: Record<RoguelikePowerUpId, {
     maxLevel: 3
   },
   'third_eye': {
-    name: (lang) => translations[lang].roguelike.powers.third_eye.name,
-    description: (lang, level) => translations[lang].roguelike.powers.third_eye.desc,
+    // FIX: Use type assertion to correctly access the 'third_eye' property from translations.
+    name: (lang) => (translations[lang].roguelike.powers as TranslatedRoguelikePowers).third_eye.name,
+    // FIX: Use type assertion to correctly access the 'third_eye' property from translations.
+    // The 'desc' property is a string, so it needs to be wrapped in a function to match the `description` type.
+    description: (lang, _level) => (translations[lang].roguelike.powers as TranslatedRoguelikePowers).third_eye.desc,
     maxLevel: 1
   },
 };

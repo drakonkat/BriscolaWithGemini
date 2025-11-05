@@ -80,6 +80,7 @@ export const translations = {
     // In-Game
     // FIX: Added missing translation key for the game's win condition.
     winCondition: "Vince il primo giocatore che raggiunge 61 punti. Il totale dei punti nel mazzo è 120.",
+    coinsEarned: (amount: number) => `Hai guadagnato ${amount} WC!`, // FIX: Added missing translation key for coins earned
     yourTurn: "È il tuo turno.",
     yourTurnMessage: "È il tuo turno, scegli una carta.",
     aiStarts: (name: string) => `${name} inizia il turno.`,
@@ -110,7 +111,6 @@ export const translations = {
     youWin: "Hai Vinto!",
     aiWins: (name: string) => `${name} ha vinto!`,
     tie: "Pareggio!",
-    coinsEarned: (amount: number) => `Hai guadagnato ${amount} Waifu Coin!`,
     cursedCardError: "Non puoi giocare la carta maledetta finché non è l'ultima del suo seme.",
     
     // Waifu Prompts
@@ -278,9 +278,9 @@ export const translations = {
         keyNameSR: "Chiave Super Rara",
         keyNameSSR: "Chiave Super Super Rara",
         essencesLabel: "Essenze",
-        convertEssencesTitle: "Converti Essenze",
-        conversionRuleElemental: "",
-        essencesLabelTranscendental: (amount: number) => `${amount} Trascendentali`,
+        convertEssencesTitle: "Converti Essenze Elementali",
+        conversionRuleElemental: "10x di ogni Essenza Elementale → 1x Essenza Trascendentale",
+        essencesLabelTranscendental: (amount: number) => `${amount} Essenze Trascendentali`,
     },
 
     craftingMinigame: {
@@ -564,6 +564,27 @@ export const translations = {
         end: "Hai imparato le basi! Ora tocca a te. Buona fortuna e divertiti!",
     },
 
+    playerWallet: {
+        title: "Portafoglio",
+        expandAll: "Espandi Tutto",
+        collapseAll: "Comprimi Tutto",
+        currency: "Valuta",
+        shards: "Frammenti",
+        keys: "Chiavi",
+        essences: "Essenze",
+        waifuCoin: "Waifu Coin",
+        shardR: "Frammenti R",
+        shardSR: "Frammenti SR",
+        shardSSR: "Frammenti SSR",
+        keyR: "Chiave Rara",
+        keySR: "Chiave Super Rara",
+        keySSR: "Chiave Super Super Rara",
+        essenceFire: "Essenze di Fuoco",
+        essenceWater: "Essenze d'Acqua",
+        essenceAir: "Essenze d'Aria",
+        essenceEarth: "Essenze di Terra",
+        essenceTranscendental: "Essenze Trascendentali"
+    }
   },
   en: {
     // Menu
@@ -640,6 +661,7 @@ export const translations = {
     // In-Game
     // FIX: Added missing translation key for the game's win condition.
     winCondition: "The first player to reach 61 points wins. The total points in the deck is 120.",
+    coinsEarned: (amount: number) => `You earned ${amount} WC!`, // FIX: Added missing translation key for coins earned
     yourTurn: "It's your turn.",
     yourTurnMessage: "It's your turn, choose a card.",
     aiStarts: (name: string) => `${name} starts the trick.`,
@@ -670,7 +692,6 @@ export const translations = {
     youWin: "You Win!",
     aiWins: (name: string) => `${name} wins!`,
     tie: "It's a Tie!",
-    coinsEarned: (amount: number) => `You earned ${amount} Waifu Coin!`,
     cursedCardError: "You can't play the cursed card until it's the last of its suit.",
     
     // Waifu Prompts
@@ -783,7 +804,7 @@ export const translations = {
             ]
         },
         liability: {
-            title: "Limitation of Liability",
+            title: "Limitazione of Liability",
             text: "In no event shall Mauro Mazzocchetti, nor his partners, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, goodwill, or other intangible losses, resulting from (i) your access to or use of or inability to access or use the Service; (ii) any content obtained from the Service."
         },
         changes: {
@@ -804,7 +825,7 @@ export const translations = {
         gachaButtonX10: (cost: number) => `Roll x10 (${cost} WC)`,
         gachaNotEnoughCoins: "You don't have enough Waifu Coins!",
         gachaAllUnlocked: "You've unlocked all backgrounds!",
-        gachaDuplicate: (rarity: string) => `Duplicate! You received 1 ${rarity} Shard.`,
+        gachaDuplicate: (rarity: string) => `Duplicate! You received 1 ${rarity} Shard.` ,
         backgroundAlt: "Unlocked background",
         fullscreenView: "Click to view fullscreen.",
         locked: "Locked",
@@ -838,9 +859,9 @@ export const translations = {
         keyNameSR: "Super Rare Key",
         keyNameSSR: "Super Super Rare Key",
         essencesLabel: "Essences",
-        convertEssencesTitle: "Convert Essences",
-        conversionRuleElemental: "",
-        essencesLabelTranscendental: (amount: number) => `${amount} Transcendental`,
+        convertEssencesTitle: "Convert Elemental Essences",
+        conversionRuleElemental: "10x of each Elemental Essence → 1x Transcendental Essence",
+        essencesLabelTranscendental: (amount: number) => `${amount} Transcendental Essences`,
     },
 
     craftingMinigame: {
@@ -893,23 +914,6 @@ export const translations = {
             air_essences: "Air Essences",
             earth_essences: "Earth Essences",
             transcendental_essences: "Transcendental Essences"
-        },
-        descriptions: {
-            daily_win_classic: "Win {target} game in Classic mode.",
-            daily_play_cards_coppe: "Play {target} Cards of Cups.",
-            daily_use_elemental_power: "Activate {target} elemental powers in Roguelike mode.",
-            weekly_win_any: "Win {target} games in any mode.",
-            weekly_win_hard: "Win {target} game on Hard difficulty or higher.",
-            weekly_craft_key: "Craft {target} key of any rarity.",
-            weekly_gacha_10: "Roll the Gacha {target} times.",
-            achievement_win_10: "Win {target} games.",
-            achievement_win_50: "Win {target} games.",
-            achievement_win_100: "Win {target} games.",
-            achievement_win_nightmare: "Win {target} game on Nightmare difficulty.",
-            achievement_win_apocalypse: "Win {target} game on Apocalypse difficulty.",
-            achievement_defeat_all_waifus: "Defeat every Waifu at least once.",
-            achievement_collect_all_ssr: "Collect all SSR rarity backgrounds.",
-            achievement_recruit_follower: "Recruit your first follower in Roguelike mode."
         }
     },
 
@@ -1044,7 +1048,7 @@ export const translations = {
         newFollowerMessage: (name: string) => `${name} has joined you! Her ability will be available in the next matches.`,
         continueRun: "Continue Run",
         runCompleted: "Run Completed!",
-        runCompletedMessage: (winnings: number) => `You have defeated all opponents! You earned ${winnings} WC.`,
+        runCompletedMessage: (winnings: number) => `You have defeated all opponents! You earned ${winnings} WC.` ,
         runFailed: "Run Failed",
         runFailedMessage: (winnings: number) => `You were defeated. You still earned ${winnings} WC for your efforts.`,
         chooseYourPower: "Choose Your Initial Power",
@@ -1083,11 +1087,6 @@ export const translations = {
             last_trick_insight: {
                 name: "Sixth Sense",
                 desc: (level: number) => level === 1 ? "The opponent's hand is revealed during the last trick of the match." : (level === 2 ? "Once every 3 turns, you can reveal the opponent's hand for the current turn." : "The opponent's hand is always visible.")
-            },
-            third_eye: {
-                name: "Third Eye",
-                desc: "You can see the entire history of played tricks, not just the last one.",
-                historyLockedDesc: "Unlock the 'Third Eye' power to see the full history."
             }
         }
     },
@@ -1123,5 +1122,27 @@ export const translations = {
         briscola: "This is the trump card. Cards of this suit beat all others, unless the opponent plays a higher-value trump card.",
         end: "You've learned the basics! Now it's up to you. Good luck and have fun!",
     },
+
+    playerWallet: {
+        title: "Wallet",
+        expandAll: "Expand All",
+        collapseAll: "Collapse All",
+        currency: "Currency",
+        shards: "Shards",
+        keys: "Keys",
+        essences: "Essences",
+        waifuCoin: "Waifu Coin",
+        shardR: "R Shard",
+        shardSR: "SR Shard",
+        shardSSR: "SSR Shard",
+        keyR: "Rare Key",
+        keySR: "Super Rare Key",
+        keySSR: "Super Super Rare Key",
+        essenceFire: "Fire Essence",
+        essenceWater: "Water Essence",
+        essenceAir: "Air Essence",
+        essenceEarth: "Earth Essence",
+        essenceTranscendental: "Transcendental Essence"
+    }
   }
 };

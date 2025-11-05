@@ -8,6 +8,7 @@ import { useStores } from '../stores';
 import { translations } from '../core/translations';
 import { ElementIcon } from './ElementIcon';
 import type { Mission, MissionRewardType } from '../core/types';
+import { EssenceIcon } from './EssenceIcon'; // Import the new EssenceIcon
 
 interface MissionsModalProps {
     isOpen: boolean;
@@ -33,7 +34,7 @@ const RewardIcon: React.FC<RewardIconProps> = ({ type, amount }) => {
         air_essences: <ElementIcon element="air" />,
         earth_essences: <ElementIcon element="earth" />,
         // FIX: Add missing transcendental_essences to iconMap to fix type error.
-        transcendental_essences: <svg className="essence-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5L12 22L22 8.5L12 2Z" /></svg>,
+        transcendental_essences: <EssenceIcon />,
     };
 
     return (
