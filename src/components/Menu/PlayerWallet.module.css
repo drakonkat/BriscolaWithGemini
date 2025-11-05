@@ -485,6 +485,13 @@
     }
 }
 
+/* Desktop resolution */
+@media (min-width: 1025px) {
+    .playerWallet {
+        max-width: 600px;
+    }
+}
+
 /* Focus styles for accessibility */
 .sectionHeader:focus {
     outline: 2px solid var(--primary-accent);

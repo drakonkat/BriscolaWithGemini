@@ -235,6 +235,12 @@
         border: 1px solid var(--font-color);
     }
 }
+@media (min-width: 1025px) {
+    .popover {
+        max-width: 600px;
+        min-width: 600px;
+    }
+}
 
 /* Focus management */
 .popover:focus-within {
