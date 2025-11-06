@@ -17,7 +17,7 @@ export const PrivacyPolicyModal = ({ isOpen, onClose, language }: LegalModalProp
     }
 
     // FIX: Cast T to the specific language type to resolve TypeScript errors for nested properties.
-    const T = translations[language];
+    const T = translations[language] as typeof translations[Language];
     const content = T.privacyPolicy;
     // FIX: Explicitly assert the type of content.collection to resolve property access errors.
     const collectionContent = content.collection as typeof translations['it']['privacyPolicy']['collection'];
@@ -27,7 +27,7 @@ export const PrivacyPolicyModal = ({ isOpen, onClose, language }: LegalModalProp
             <div className="rules-modal legal-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close-button" onClick={onClose} aria-label={T.close}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
                     </svg>
                 </button>
                 <h2>{content.title}</h2>

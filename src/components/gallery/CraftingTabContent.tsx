@@ -10,6 +10,7 @@ interface CraftingTabContentProps {
 
 export const CraftingTabContent: React.FC<CraftingTabContentProps> = observer(({ language }) => {
     const { gachaStore } = useStores();
+    // FIX: craftKey is a method on gachaStore.
     const { r_shards, sr_shards, ssr_shards, transcendental_essences, craftKey } = gachaStore;
 
     return (

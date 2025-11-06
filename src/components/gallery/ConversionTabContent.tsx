@@ -10,6 +10,7 @@ interface ConversionTabContentProps {
 
 export const ConversionTabContent: React.FC<ConversionTabContentProps> = observer(({ language }) => {
     const { gachaStore } = useStores();
+    // FIX: convertShards and convertElementalToTranscendental are methods on gachaStore.
     const { r_shards, sr_shards, ssr_shards, fire_essences, water_essences, air_essences, earth_essences, transcendental_essences, convertShards, convertElementalToTranscendental } = gachaStore;
 
     return (

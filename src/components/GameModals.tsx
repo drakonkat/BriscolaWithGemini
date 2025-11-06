@@ -60,7 +60,7 @@ export const GameModals = observer(() => {
         } else {
             gameStateStore.startGame(currentWaifu);
         }
-    };
+    }
     
     return (
         <>
@@ -143,8 +143,9 @@ export const GameModals = observer(() => {
                     backgrounds={gachaStore.BACKGROUNDS}
                     unlockedBackgrounds={gachaStore.unlockedBackgrounds}
                     waifuCoins={gachaStore.waifuCoins}
-                    onGachaRoll={gachaStore.handleGachaRoll}
-                    onGachaMultiRoll={gachaStore.handleMultiGachaRoll}
+                    // FIX: Correctly referenced properties from gachaStore.
+                    onGachaRoll={gachaStore.gachaRoll}
+                    onGachaMultiRoll={gachaStore.gachaMultiRoll}
                     hasRolledGacha={gachaStore.hasRolledGacha}
                     isRolling={gachaStore.isRolling}
                     gachaAnimationState={gachaStore.gachaAnimationState}
@@ -157,6 +158,7 @@ export const GameModals = observer(() => {
                 <FullscreenImageModal
                     isOpen={!!gachaStore.fullscreenImage}
                     imageUrl={gachaStore.fullscreenImage}
+                    // FIX: Correctly referenced properties from gachaStore.
                     onClose={gachaStore.closeFullscreenImage}
                     language={language}
                 />

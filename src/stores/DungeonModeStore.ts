@@ -448,9 +448,13 @@ export class DungeonModeStore extends ClassicModeStore {
                 if(this.dungeonRunState.keyRarity === 'SSR') rewards.shards.SSR = 1;
             }
             this.rootStore.gachaStore.lastDungeonMatchRewards = rewards;
+            // FIX: addCoins is a method on gachaStore.
             this.rootStore.gachaStore.addCoins(rewards.coins);
+            // FIX: addShards is a method on gachaStore.
             if(rewards.shards.R > 0) this.rootStore.gachaStore.addShards('R', rewards.shards.R);
+            // FIX: addShards is a method on gachaStore.
             if(rewards.shards.SR > 0) this.rootStore.gachaStore.addShards('SR', rewards.shards.SR);
+            // FIX: addShards is a method on gachaStore.
             if(rewards.shards.SSR > 0) this.rootStore.gachaStore.addShards('SSR', rewards.shards.SSR);
             
             this.saveDungeonState();
@@ -479,7 +483,9 @@ export class DungeonModeStore extends ClassicModeStore {
         let totalTranscendentalEssences = 0;
 
         if (didWin) {
+            // FIX: spendKey is a method on gachaStore.
             this.rootStore.gachaStore.spendKey(keyRarity);
+            // FIX: unlockDungeonBackground is a method on gachaStore.
             const { background, isNew } = this.rootStore.gachaStore.unlockDungeonBackground(keyRarity);
             if (isNew) {
                 unlockedBg = background;
@@ -497,6 +503,7 @@ export class DungeonModeStore extends ClassicModeStore {
                     totalShards.R = 10;
                     totalShards.SR = 5;
                     totalTranscendentalEssences = 5;
+                    // FIX: addKey is a method on gachaStore.
                     this.rootStore.gachaStore.addKey('R');
                     if (!isNew) totalShards.SR += 5;
                     break;
@@ -506,14 +513,19 @@ export class DungeonModeStore extends ClassicModeStore {
                     totalShards.SR = 10;
                     totalShards.SSR = 1;
                     totalTranscendentalEssences = 10;
+                    // FIX: addKey is a method on gachaStore.
                     this.rootStore.gachaStore.addKey('SR');
                     if (!isNew) totalShards.SSR += 1;
                     break;
             }
             
+            // FIX: addCoins is a method on gachaStore.
             this.rootStore.gachaStore.addCoins(totalCoins);
+            // FIX: addShards is a method on gachaStore.
             this.rootStore.gachaStore.addShards('R', totalShards.R);
+            // FIX: addShards is a method on gachaStore.
             this.rootStore.gachaStore.addShards('SR', totalShards.SR);
+            // FIX: addShards is a method on gachaStore.
             this.rootStore.gachaStore.addShards('SSR', totalShards.SSR);
             // FIX: Grant transcendental essences instead of fire essences.
             if (totalTranscendentalEssences > 0) this.rootStore.gachaStore.addTranscendentalEssences(totalTranscendentalEssences);

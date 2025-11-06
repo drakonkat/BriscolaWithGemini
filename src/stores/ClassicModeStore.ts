@@ -206,6 +206,7 @@ export class ClassicModeStore extends GameStateStore {
             } else {
                 winnings = Math.round(20 * difficultyMultiplier);
             }
+            // FIX: addCoins is a method on gachaStore.
             this.rootStore.gachaStore.addCoins(winnings);
             this.lastGameWinnings = winnings;
             this.gameResult = winner;

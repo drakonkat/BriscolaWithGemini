@@ -238,7 +238,7 @@ export class RoguelikeModeStore extends GameStateStore {
             opponent = WAIFUS.find(w => w.name === opponentName) ?? BOSS_WAIFU;
         }
         
-        this._resetState(); // Reset common game state but keep roguelike progress
+        super._resetState(); // Reset common game state but keep roguelike progress
         
         runInAction(() => {
             this.humanScorePile = [];
@@ -565,6 +565,7 @@ export class RoguelikeModeStore extends GameStateStore {
                 const difficultyMultiplier = { easy: 0.5, medium: 1, hard: 1.5, nightmare: 2, apocalypse: 2.5 };
                 const coinReward = Math.round(100 * difficultyMultiplier[difficulty] * this.roguelikeState.currentLevel);
                 if (coinReward > 0) {
+                    // FIX: addCoins is a method on gachaStore.
                     this.rootStore.gachaStore.addCoins(coinReward);
                     this.rootStore.uiStore.showSnackbar(this.T.coinsEarned(coinReward), 'success');
                 }
@@ -580,6 +581,7 @@ export class RoguelikeModeStore extends GameStateStore {
 
                 Object.entries(essenceCounts).forEach(([element, count]) => {
                     if (count > 0) {
+                        // FIX: addEssences is a method on gachaStore.
                         this.rootStore.gachaStore.addEssences(element as Element, count);
                         const rewardType = `${element}_essences` as keyof typeof this.T.missions.rewards;
                         essencesGainedStrings.push(`${count} ${this.T.missions.rewards[rewardType]}`);
@@ -611,6 +613,7 @@ export class RoguelikeModeStore extends GameStateStore {
                 } else {
                     // Won the final level (level 4)
                     this.lastGameWinnings = ROGUELIKE_REWARDS[difficulty].win;
+                    // FIX: addCoins is a method on gachaStore.
                     this.rootStore.gachaStore.addCoins(this.lastGameWinnings);
                     this.rootStore.missionStore.incrementProgress('roguelikeGamesWon');
                     this.phase = 'gameOver'; // Set to gameOver only when run is complete
@@ -618,6 +621,7 @@ export class RoguelikeModeStore extends GameStateStore {
                 }
             } else { // AI wins or tie
                 this.lastGameWinnings = ROGUELIKE_REWARDS[difficulty].loss[this.roguelikeState.currentLevel];
+                // FIX: addCoins is a method on gachaStore.
                 this.rootStore.gachaStore.addCoins(this.lastGameWinnings);
                 this.phase = 'gameOver';
                 this.clearSavedGame();

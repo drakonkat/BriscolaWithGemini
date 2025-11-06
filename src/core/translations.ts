@@ -239,6 +239,8 @@ export const translations = {
     gallery: {
         gachaTabTitle: "Gacha",
         backgroundsTabTitle: "Galleria Sfondi",
+        packBaseGalleryTitle: "Pack base",
+        dungeonBaseGalleryTitle: "Dungeon Base",
         title: "Galleria Sfondi",
         gachaButtonFree: "Estrai (Gratis!)",
         gachaButton: (cost: number) => `Estrai (${cost} WC)`,
@@ -271,7 +273,7 @@ export const translations = {
         gachaCraftSuccess: (rarity: string) => `Creazione riuscita! Hai sbloccato un nuovo sfondo ${rarity}.`,
         convertTitle: "Converti Frammenti",
         conversionSuccess: (amount: number, rarity: string) => `Hai ricevuto ${amount} Frammento ${rarity}!`,
-        convertButton: "Converti",
+        convertButton: "Convert",
         keyLabelR: (keys: number) => `x${keys} Chiavi R`,
         keyLabelSR: (keys: number) => `x${keys} Chiavi SR`,
         keyLabelSSR: (keys: number) => `x${keys} Chiavi SSR`,
@@ -878,6 +880,8 @@ export const translations = {
     gallery: {
         gachaTabTitle: "Gacha",
         backgroundsTabTitle: "Background Gallery",
+        packBaseGalleryTitle: "Base Pack",
+        dungeonBaseGalleryTitle: "Dungeon Pack",
         title: "Background Gallery",
         gachaButtonFree: "Roll (Free!)",
         gachaButton: (cost: number) => `Roll (${cost} WC)`,

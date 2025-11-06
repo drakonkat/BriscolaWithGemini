@@ -91,8 +91,6 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                     {activeTab === 'backgrounds' && (
                         <BackgroundGalleryTab
                             language={language}
-                            backgrounds={backgrounds}
-                            unlockedBackgrounds={unlockedBackgrounds}
                             onImageSelect={onImageSelect}
                         />
                     )}

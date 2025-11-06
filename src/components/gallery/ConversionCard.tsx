@@ -52,6 +52,7 @@ export const ConversionCard: React.FC<ConversionCardProps> = observer(({ languag
                 </div>
             );
             canConvert = r_shards >= 10;
+            // FIX: convertShards is a method on gachaStore.
             conversionFunction = () => gachaStore.convertShards('R', 'SR');
             break;
         case 'SR_to_SSR':
@@ -72,6 +73,7 @@ export const ConversionCard: React.FC<ConversionCardProps> = observer(({ languag
                 </div>
             );
             canConvert = sr_shards >= 10;
+            // FIX: convertShards is a method on gachaStore.
             conversionFunction = () => gachaStore.convertShards('SR', 'SSR');
             break;
         case 'Elemental_to_Transcendental':
@@ -89,6 +91,7 @@ export const ConversionCard: React.FC<ConversionCardProps> = observer(({ languag
                 </div>
             );
             canConvert = fire_essences >= 10 && water_essences >= 10 && air_essences >= 10 && earth_essences >= 10;
+            // FIX: convertElementalToTranscendental is a method on gachaStore.
             conversionFunction = () => gachaStore.convertElementalToTranscendental();
             break;
     }

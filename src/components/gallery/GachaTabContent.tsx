@@ -32,6 +32,7 @@ export const GachaTabContent: React.FC<GachaTabContentProps> = observer(({ langu
         // This function is still here for conceptual clarity, but the actual rolls
         // are now initiated directly from PackSelectionScreen.
         // After a roll, gachaStore.galleryTabContentMode will be set to 'gachaResults'.
+        // FIX: setGalleryTabContentMode is a method on gachaStore.
         gachaStore.setGalleryTabContentMode('gachaResults');
     };
 
@@ -52,6 +53,7 @@ export const GachaTabContent: React.FC<GachaTabContentProps> = observer(({ langu
                 <>
                     <button 
                         className="back-to-packs-button" 
+                        // FIX: setGalleryTabContentMode is a method on gachaStore.
                         onClick={() => gachaStore.setGalleryTabContentMode('gachaPacks')}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">

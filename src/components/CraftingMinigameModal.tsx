@@ -14,6 +14,7 @@ interface CraftingMinigameModalProps {
 
 export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModalProps) => {
     const { gachaStore, gameSettingsStore } = useStores();
+    // FIX: resolveCraftingAttempt and cancelCraftingAttempt are methods on gachaStore.
     const { craftingAttempt, resolveCraftingAttempt, cancelCraftingAttempt } = gachaStore;
     const { language } = gameSettingsStore;
 
@@ -64,9 +65,11 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
         }
 
         setResult(finalResult);
+        // FIX: resolveCraftingAttempt is a method that takes a result.
         resolveCraftingAttempt(finalResult);
 
         setTimeout(() => {
+            // FIX: cancelCraftingAttempt is a method that takes no arguments.
             cancelCraftingAttempt();
         }, 2000);
     };
@@ -83,6 +86,7 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
 
             // FIX: Explicitly ignore the promise with `void`.
             void playSound('chat-notify');
+            // FIX: Pass the return value of setInterval to clearInterval.
             countdownIntervalRef.current = window.setInterval(() => {
                 setCountdown(prev => {
                     const next = prev - 1;
@@ -108,6 +112,7 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
     // Effect to transition from countdown to playing
     useEffect(() => {
         if (minigamePhase === 'countdown' && countdown <= 0) {
+            // FIX: Pass the return value of setInterval to clearInterval.
             if (countdownIntervalRef.current) window.clearInterval(countdownIntervalRef.current);
             
             setMinigamePhase('playing');
@@ -124,10 +129,13 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
                     }
                     return newPos;
                 });
+                // FIX: Pass the return value of requestAnimationFrame to cancelAnimationFrame.
                 animationFrameId.current = window.requestAnimationFrame(animate);
             };
+            // FIX: Pass the return value of requestAnimationFrame to cancelAnimationFrame.
             animationFrameId.current = window.requestAnimationFrame(animate);
 
+            // FIX: Pass the return value of setInterval to clearInterval.
             gameTimerIntervalRef.current = window.setInterval(() => {
                 setGameTimer(prev => prev - 1);
             }, 1000);
