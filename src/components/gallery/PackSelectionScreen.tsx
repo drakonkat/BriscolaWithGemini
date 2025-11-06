@@ -21,7 +21,7 @@ export const PackSelectionScreen: React.FC<PackSelectionScreenProps> = observer(
             id: 'base_pack',
             title: T_gallery.basePackTitle,
             description: T_gallery.basePackDescription,
-            imageUrl: getImageUrl('/cardpacks/basepack.png'), // Placeholder image
+            imageUrl: getImageUrl('/packs/BasePack_NoBG.png'), // Placeholder image
         },
         // Add more packs here in the future
     ];

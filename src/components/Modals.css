@@ -304,7 +304,7 @@
     flex-direction: column;
     min-height: 0;
     position: relative; /* Make this relative for the absolute button */
-    padding-top: 4.5rem; /* Push content down to avoid overlap with absolute button */
+   
 }
 
 /* New wrapper to create space when the button is absolutely positioned */
@@ -569,6 +569,7 @@
 .recipe-result .key-item.sr { color: var(--rarity-sr-color); }
 .recipe-result .key-item.ssr { color: var(--rarity-ssr-color); }
 .recipe-result .essence-icon-svg { color: var(--primary-accent); fill: currentColor; }
+.recipe-material .essence-icon-svg { color: var(--primary-accent); fill: currentColor; }
 
 /* Styles for the "1" text next to the icons in the recipe result */
 .recipe-result .rarity-r-text { color: var(--rarity-r-color); }
@@ -882,7 +883,7 @@
     filter: grayscale(50%);
     background: rgba(0,0,0,0.1);
 }
-.mission-details { flex-grow: 1; text-align: left; }
+.mission-details { flex-grow: 1; text-align: left;     width: 100%;max-width: 580px;}
 .mission-description { font-size: 1.1rem; color: var(--font-color); margin-bottom: 0.5rem; line-height: 1.4; }
 .mission-progress-bar {
     width: 100%; height: 20px; /* Increased height */
@@ -898,7 +899,7 @@
 .mission-right-panel { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
 .mission-rewards-container { display: flex; align-items: center; gap: 0.5rem; }
 .rewards-label { font-size: 0.9rem; color: var(--font-color-secondary); }
-.mission-rewards { display: flex; gap: 0.5rem; align-items: center; } /* Aligned items vertically */
+.mission-rewards { display: flex; gap: 0.5rem; align-items: center;    width: 100%; } /* Aligned items vertically */
 .mission-reward-item {
     display: flex; flex-direction: column; align-items: center; justify-content: center; /* Centered items vertically */
     gap: 0.2rem; font-size: 0.8rem; color: var(--font-color);
