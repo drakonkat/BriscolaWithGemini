@@ -33,7 +33,7 @@ export const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, 
                 <h2>{title}</h2>
                 <p>{message}</p>
                 <div className="modal-actions">
-                    <button className="button-secondary" onClick={onClose}>{cancelText}</button>
+                    {cancelText && <button className="button-secondary" onClick={onClose}>{cancelText}</button>}
                     <button className="button-danger" onClick={onConfirm}>{confirmText}</button>
                 </div>
             </div>

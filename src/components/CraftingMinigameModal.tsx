@@ -81,13 +81,16 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
             setCountdown(3);
             setMinigamePhase('countdown');
 
+            // FIX: Explicitly ignore the promise with `void`.
             void playSound('chat-notify');
             countdownIntervalRef.current = window.setInterval(() => {
                 setCountdown(prev => {
                     const next = prev - 1;
                     if (next > 0) {
+                        // FIX: Explicitly ignore the promise with `void`.
                         void playSound('chat-notify');
                     } else if (next === 0) {
+                        // FIX: Explicitly ignore the promise with `void`.
                         void playSound('trick-win');
                     }
                     return next;
