@@ -86,6 +86,7 @@ export class UIStateStore {
     isDungeonMatchStartModalOpen = false;
     isDungeonModifierInfoModalOpen = false;
     isPlayerWalletOpen = false; // New state for player wallet popover
+    isDungeonRewardsModalOpen = false; // New state for Dungeon Rewards modal
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
 
     // Menu collapsible sections
@@ -157,6 +158,7 @@ export class UIStateStore {
             case 'dungeonMatchStart': this.isDungeonMatchStartModalOpen = true; break;
             case 'dungeonModifierInfo': this.isDungeonModifierInfoModalOpen = true; break;
             case 'playerWallet': this.isPlayerWalletOpen = true; break; // Open wallet
+            case 'dungeonRewards': this.isDungeonRewardsModalOpen = true; break; // Open Dungeon Rewards modal
             case 'chat': 
                 this.isChatModalOpen = true; 
                 this.setUnreadMessageCount(0);
@@ -188,6 +190,7 @@ export class UIStateStore {
             case 'dungeonMatchStart': this.isDungeonMatchStartModalOpen = false; break;
             case 'dungeonModifierInfo': this.isDungeonModifierInfoModalOpen = false; break;
             case 'playerWallet': this.isPlayerWalletOpen = false; break; // Close wallet
+            case 'dungeonRewards': this.isDungeonRewardsModalOpen = false; break; // Close Dungeon Rewards modal
             case 'chat': this.isChatModalOpen = false; break;
         }
     }

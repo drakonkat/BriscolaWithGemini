@@ -29,7 +29,7 @@ export type Element = 'fire' | 'water' | 'air' | 'earth';
 export type Essence = Element;
 export type AbilityType = 'incinerate' | 'tide' | 'cyclone' | 'fortify';
 export type SnackbarType = 'success' | 'warning';
-export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock' | 'legend' | 'settings' | 'craftingMinigame' | 'challengeMatch' | 'challengeKeySelection' | 'noKeys' | 'dungeonProgress' | 'dungeonEnd' | 'missions' | 'dungeonMatchStart' | 'dungeonModifierInfo' | 'playerWallet';
+export type ModalType = 'rules' | 'privacy' | 'terms' | 'gallery' | 'waifuDetails' | 'support' | 'confirmLeave' | 'chat' | 'history' | 'soundEditor' | 'gachaSingleUnlock' | 'gachaMultiUnlock' | 'legend' | 'settings' | 'craftingMinigame' | 'challengeMatch' | 'challengeKeySelection' | 'noKeys' | 'dungeonProgress' | 'dungeonEnd' | 'missions' | 'dungeonMatchStart' | 'dungeonModifierInfo' | 'playerWallet' | 'dungeonRewards';
 export type CardDeckStyle = 'classic' | 'poker';
 export type SoundName =
   | 'game-start'

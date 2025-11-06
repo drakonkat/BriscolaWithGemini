@@ -325,7 +325,7 @@ export const translations = {
         daily: "Giornaliere",
         weekly: "Settimanali",
         achievements: "Obiettivi",
-        claim: "Riscuoti",
+        claim: "Riscuosti",
         claimed: "Riscattato",
         noMissions: "Nessuna missione disponibile al momento.",
         rewardsLabel: "Ricompense:",
@@ -548,6 +548,69 @@ export const translations = {
       runStructure: "Ogni run consiste in una serie di partite a difficoltà Incubo. Perdere una singola partita termina la run, ma non consumerà la tua chiave.",
       modifiers: "Ogni partita avrà un Modificatore casuale che cambia le regole, come 'Caos Briscola' o 'Mano Maledetta'. Adattare la tua strategia è fondamentale.",
       rewards: "Vincere un'intera run ti garantirà uno sfondo esclusivo della rarità della chiave usata, oltre a monete e altri materiali. Anche in caso di sconfitta, otterrai ricompense per ogni partita vinta."
+    },
+
+    dungeonRewardsModal: {
+        title: "Ricompense e Stagione Dungeon",
+        seasonEndDate: (days: number) => `L'attuale stagione del Dungeon terminerà il 24 Dicembre (mancano ${days} giorni), dando il via alla stagione natalizia con ricompense speciali!`,
+        perMatchRewardsTitle: "Ricompense per Incontro Vinto (Intermedie)",
+        perMatchCoins: "Waifu Coin: 50 WC (più 25 WC aggiuntivi per ogni match successivo)",
+        perMatchFragments: "Frammenti: 1 per rarità chiave usata (es. 1 Frammento R per chiave R, 1 Frammento SR per chiave SR, 1 Frammento SSR per chiave SSR)",
+        finalRewardsTitle: "Ricompense Finali (al completamento dell'intera run)",
+
+        // R Key Rewards
+        rKey: {
+            title: "Chiave R (Rara) - 3 Partite",
+            firstTime: {
+                header: "Prima volta che completi un Dungeon R:",
+                background: "Sfondo Esclusivo sbloccato (se non già posseduto)",
+                coins: "Waifu Coin: 250 WC",
+                fragments: "Frammenti: 5 Frammenti R, 1 Frammento SR"
+            },
+            subsequent: {
+                header: "Dalla seconda volta in poi che completi un Dungeon R:",
+                coins: "Waifu Coin: 250 WC",
+                fragments: "Frammenti: 15 Frammenti R, 1 Frammento SR (se sfondo già sbloccato, 10 Frammenti R aggiuntivi)"
+            }
+        },
+        // SR Key Rewards
+        srKey: {
+            title: "Chiave SR (Super Rara) - 4 Partite",
+            firstTime: {
+                header: "Prima volta che completi un Dungeon SR:",
+                background: "Sfondo Esclusivo sbloccato (se non già posseduto)",
+                coins: "Waifu Coin: 600 WC",
+                fragments: "Frammenti: 10 Frammenti R, 5 Frammenti SR",
+                essences: "Essenze: 5 Essenze Trascendentali",
+                additionalKey: "Chiave Aggiuntiva: 1 Chiave R"
+            },
+            subsequent: {
+                header: "Dalla seconda volta in poi che completi un Dungeon SR:",
+                coins: "Waifu Coin: 600 WC",
+                fragments: "Frammenti: 10 Frammenti R, 10 Frammenti SR (se sfondo già sbloccato, 5 Frammenti SR aggiuntivi)",
+                essences: "Essenze: 5 Essenze Trascendentali",
+                additionalKey: "Chiave Aggiuntiva: 1 Chiave R"
+            }
+        },
+        // SSR Key Rewards
+        ssrKey: {
+            title: "Chiave SSR (Super Super Rara) - 5 Partite",
+            firstTime: {
+                header: "Prima volta che completi un Dungeon SSR:",
+                background: "Sfondo Esclusivo sbloccato (se non già posseduto)",
+                coins: "Waifu Coin: 1200 WC",
+                fragments: "Frammenti: 15 Frammenti R, 10 Frammenti SR, 1 Frammento SSR",
+                essences: "Essenze: 10 Essenze Trascendentali",
+                additionalKey: "Chiave Aggiuntiva: 1 Chiave SR"
+            },
+            subsequent: {
+                header: "Dalla seconda volta in poi che completi un Dungeon SSR:",
+                coins: "Waifu Coin: 1200 WC",
+                fragments: "Frammenti: 15 Frammenti R, 10 Frammenti SR, 2 Frammenti SSR (se sfondo già sbloccato, 1 Frammento SSR aggiuntivo)",
+                essences: "Essenze: 10 Essenze Trascendentali",
+                additionalKey: "Chiave Aggiuntiva: 1 Chiave SR"
+            }
+        }
     },
 
     tutorial: {
@@ -842,7 +905,7 @@ export const translations = {
         gachaNotEnoughShards: "You don't have enough Shards!",
         gachaNoLockedToCraft: (rarity: string) => `You already have all ${rarity} backgrounds!`,
         craftKeySuccess: (rarity: string) => `You crafted a ${rarity} Key!`,
-        gachaCraftSuccess: (rarity: string) => `Crafting successful! You unlocked a new ${rarity} background.`,
+        gachaCraftSuccess: (rarity: string) => `Crafting successful! You unlocked a new ${rarity} background.` ,
         convertTitle: "Convert Shards",
         conversionSuccess: (amount: number, rarity: string) => `You received ${amount} ${rarity} Shard!`,
         convertButton: "Convert",
@@ -1116,13 +1179,67 @@ export const translations = {
         }
     },
 
-    dungeonRules: {
-      title: "Dungeon Mode Rules",
-      description: "Dungeon Mode is a series of challenge matches against increasingly difficult opponents. To enter, you must first craft a Key in the Gallery.",
-      keyCrafting: "Craft R, SR, or SSR Keys using Shards obtained from Gacha duplicates. The key's rarity determines the run's length and the final prize's rarity.",
-      runStructure: "Each run consists of a series of matches at Nightmare difficulty. Losing a single match ends the run, but your key will not be consumed.",
-      modifiers: "Each match will have a random Modifier that changes the rules, like 'Briscola Chaos' or 'Cursed Hand'. Adapting your strategy is key.",
-      rewards: "Winning an entire run will grant you an exclusive background of the key's rarity, plus coins and other materials. Even if you lose, you will get rewards for each match you've won."
+    dungeonRewardsModal: {
+        title: "Dungeon Rewards & Season",
+        seasonEndDate: (days: number) => `The current Dungeon season ends on December 24th (${days} days remaining), ushering in the holiday season with special rewards!`,
+        perMatchRewardsTitle: "Per-Match Rewards (Intermediate)",
+        perMatchCoins: "Waifu Coins: 50 WC (plus 25 additional WC for each subsequent match)",
+        perMatchFragments: "Fragments: 1 per key rarity used (e.g., 1 R Fragment for R key)",
+        finalRewardsTitle: "Final Rewards (upon completing the entire run)",
+
+        // R Key Rewards
+        rKey: {
+            title: "R Key (Rare) - 3 Matches",
+            firstTime: {
+                header: "First time completing an R Dungeon:",
+                background: "Exclusive Background unlocked (if not already owned)",
+                coins: "Waifu Coins: 250 WC",
+                fragments: "Fragments: 5 R Fragments, 1 SR Fragment"
+            },
+            subsequent: {
+                header: "From the second time onwards completing an R Dungeon:",
+                coins: "Waifu Coins: 250 WC",
+                fragments: "Fragments: 15 R Fragments, 1 SR Fragment (if background already unlocked, 10 additional R Fragments)"
+            }
+        },
+        // SR Key Rewards
+        srKey: {
+            title: "SR Key (Super Rare) - 4 Matches",
+            firstTime: {
+                header: "First time completing an SR Dungeon:",
+                background: "Exclusive Background unlocked (if not already owned)",
+                coins: "Waifu Coins: 600 WC",
+                fragments: "Fragments: 10 R Fragments, 5 SR Fragments",
+                essences: "Essences: 5 Transcendental Essences",
+                additionalKey: "Additional Key: 1 R Key"
+            },
+            subsequent: {
+                header: "From the second time onwards completing an SR Dungeon:",
+                coins: "Waifu Coins: 600 WC",
+                fragments: "Fragments: 10 R Fragments, 10 SR Fragments (if background already unlocked, 5 additional SR Fragments)",
+                essences: "Essences: 5 Transcendental Essences",
+                additionalKey: "Additional Key: 1 R Key"
+            }
+        },
+        // SSR Key Rewards
+        ssrKey: {
+            title: "SSR Key (Super Super Rare) - 5 Matches",
+            firstTime: {
+                header: "First time completing an SSR Dungeon:",
+                background: "Exclusive Background unlocked (if not already owned)",
+                coins: "Waifu Coins: 1200 WC",
+                fragments: "Fragments: 15 R Fragments, 10 SR Fragments, 1 SSR Fragment",
+                essences: "Essences: 10 Transcendental Essences",
+                additionalKey: "Additional Key: 1 SR Key"
+            },
+            subsequent: {
+                header: "From the second time onwards completing an SSR Dungeon:",
+                coins: "Waifu Coins: 1200 WC",
+                fragments: "Fragments: 15 R Fragments, 10 SR Fragments, 2 SSR Fragments (if background already unlocked, 1 additional SSR Fragment)",
+                essences: "Essences: 10 Transcendental Essences",
+                additionalKey: "Additional Key: 1 SR Key"
+            }
+        }
     },
 
     tutorial: {

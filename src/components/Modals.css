@@ -863,6 +863,34 @@
 .reward-rarity.rarity-sr { background-color: var(--rarity-sr-color); }
 .reward-rarity.rarity-ssr { background-color: var(--rarity-ssr-color); color: var(--black-suit); }
 
+/* --- Dungeon Rewards Modal Specifics --- */
+.dungeon-season-end-info {
+    font-size: 1rem;
+    color: var(--font-color);
+    background-color: rgba(var(--gold-accent-rgb), 0.1);
+    border: 1px solid var(--gold-accent);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+}
+.dungeon-reward-section {
+    margin-bottom: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+.dungeon-reward-section h4 {
+    font-size: 1.6rem;
+    color: var(--gold-accent);
+    margin-bottom: 0.75rem;
+}
+.dungeon-reward-section h5 {
+    font-size: 1.2rem;
+    color: var(--primary-accent);
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
 /* --- Missions Modal --- */
 .missions-modal { width: 800px; max-width: 95vw; max-height: 90vh; overflow-y: auto; padding: 2rem; }
 .missions-modal h2 { text-align: center; margin-bottom: 1.5rem; }
@@ -1307,6 +1335,11 @@
     .history-header, .history-entry { display: grid; grid-template-columns: 0.5fr 1fr 1fr 1fr 0.7fr 0.7fr 1.5fr; gap: 0.2rem; font-size: 0.8rem; padding: 0.5rem 0.2rem; }
     .history-entry .card { width: calc(var(--card-width) * 0.6); height: calc(var(--card-height) * 0.6); border-radius: 3px; box-shadow: none; }
     .history-entry .card img { border-radius: 3px; }
+    .history-entry .history-points { font-weight: bold; }
+    .history-entry .history-points.human { color: var(--primary-accent); }
+    .history-entry .history-points.ai { color: var(--red-suit); }
+    .history-entry .history-clash-result { display: flex; align-items: center; gap: 0.25rem; font-size: 0.8em; color: var(--font-color-secondary); }
+    .history-entry .history-clash-result .element-icon { width: 1.2em; height: 1.2em; }
     .history-modal.classic-mode .history-header, .history-modal.classic-mode .history-entry {
         grid-template-columns: 0.5fr 1fr 1fr 0.7fr 0.7fr;
     }
