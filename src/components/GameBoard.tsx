@@ -16,6 +16,8 @@ import { DiceRollAnimation } from './DiceRollAnimation';
 import { SUITS_IT } from '../core/constants';
 import { DungeonModeStore, RoguelikeModeStore } from '../stores';
 import { ElementalChoiceModal } from './ElementalChoiceModal';
+// FIX: Import TranslatedRoguelikePowers for type assertion.
+import type { TranslatedRoguelikePowers } from '../core/roguelikePowers';
 
 export const GameBoard = observer(() => {
     const { gameStateStore, uiStore, gameSettingsStore } = useStores();
@@ -30,13 +32,11 @@ export const GameBoard = observer(() => {
     
     const T = translations[language];
     const TH = T.history;
+    // FIX: Cast T.roguelike.powers to TranslatedRoguelikePowers for correct type inference.
+    const TRoguelikePowers = T.roguelike.powers as TranslatedRoguelikePowers;
     const [isDiceRolling, setIsDiceRolling] = useState(false);
     const [isPlayerMenuOpen, setIsPlayerMenuOpen] = useState(false);
     const playerMenuRef = useRef<HTMLDivElement>(null);
-
-    const normalZoneRef = useRef<HTMLDivElement>(null);
-    const powerZoneRef = useRef<HTMLDivElement>(null);
-    const cancelZoneRef = useRef<HTMLDivElement>(null);
 
     // Mode-specific access
     const isRoguelike = gameplayMode === 'roguelike' && gameStateStore instanceof RoguelikeModeStore;
@@ -113,9 +113,10 @@ export const GameBoard = observer(() => {
     const waifuIconAriaLabel = isChatEnabled ? T.chatWith(currentWaifu?.name ?? '') : T.waifuDetails(currentWaifu?.name ?? '');
     
     const canSeeFullHistory = isRoguelike && roguelikeStore.roguelikeState.activePowers.some(p => p.id === 'third_eye');
+    // FIX: Use the correctly typed TRoguelikePowers to access historyLockedDesc.
     const historyButtonTitle = gameplayMode === 'classic' || canSeeFullHistory
       ? TH.title
-      : T.roguelike.powers.third_eye.historyLockedDesc;
+      : TRoguelikePowers.third_eye.historyLockedDesc;
 
     const elementalClash = isRoguelike ? roguelikeStore.elementalClash : (isDungeon ? dungeonStore.elementalClash : null);
     const humanCardForClash = elementalClash ? (trickStarter === 'human' ? cardsOnTable[0] : cardsOnTable[1]) : null;

@@ -24,8 +24,6 @@ import { CraftingMinigameModal } from './CraftingMinigameModal';
 import { DungeonProgressModal } from './DungeonProgressModal';
 import { DungeonEndModal } from './DungeonEndModal';
 import { MissionsModal } from './MissionsModal';
-import { CachedImage } from './CachedImage';
-import { getImageUrl } from '../core/utils';
 
 
 import { translations } from '../core/translations';
@@ -33,6 +31,9 @@ import { BriscolaSwapModal } from './BriscolaSwapModal';
 import { LegendModal } from './LegendModal';
 import { SettingsModal } from './SettingsModal';
 import { NewFollowerModal } from './NewFollowerModal';
+// FIX: Corrected import path for CachedImage.
+import { CachedImage } from './CachedImage';
+import { getImageUrl } from '../core/utils';
 
 export const GameModals = observer(() => {
     const { uiStore, gameStateStore, gachaStore, gameSettingsStore } = useStores();
@@ -216,7 +217,7 @@ export const GameModals = observer(() => {
                 isOpen={uiStore.isSoundEditorModalOpen}
                 onClose={() => uiStore.closeModal('soundEditor')}
                 settings={gameSettingsStore.soundEditorSettings}
-                onSettingsChange={(v) => gameSettingsStore.soundEditorSettings = typeof v === 'function' ? v(gameSettingsStore.soundEditorSettings) : v}
+                onSettingsChange={(v) => gameSettingsStore.setSoundEditorSettings(typeof v === 'function' ? v(gameSettingsStore.soundEditorSettings) : v)}
                 language={language}
             />
 
@@ -233,7 +234,7 @@ export const GameModals = observer(() => {
                             <div className="game-over-modal dungeon-result-modal" onClick={(e) => e.stopPropagation()}>
                                 <button className="modal-close-button" onClick={() => uiStore.closeModal('dungeonModifierInfo')} aria-label={T.close}>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
                                     </svg>
                                 </button>
                                 <div className="dungeon-rewards-summary">
@@ -254,7 +255,7 @@ export const GameModals = observer(() => {
                             <div className="game-over-modal dungeon-result-modal">
                                 <button className="modal-close-button" onClick={gameStateStore.goToMenu} aria-label={T.close}>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
                                     </svg>
                                 </button>
                                 <h2>{`Incontro ${dungeonStore.dungeonRunState.currentMatch + 1} / ${dungeonStore.dungeonRunState.totalMatches}`}</h2>
@@ -283,7 +284,7 @@ export const GameModals = observer(() => {
                             <div className="confirmation-modal" onClick={(e) => e.stopPropagation()}>
                                 <button className="modal-close-button" onClick={() => uiStore.closeModal('noKeys')} aria-label={T.close}>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
                                     </svg>
                                 </button>
                                 <h2>{T.challengeMatch.noKeysModalTitle}</h2>
@@ -300,7 +301,7 @@ export const GameModals = observer(() => {
                             <div className="challenge-key-selection-modal" onClick={(e) => e.stopPropagation()}>
                                 <button className="modal-close-button" onClick={() => uiStore.closeModal('challengeKeySelection')} aria-label={T.close}>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
                                     </svg>
                                 </button>
                                 <h2>{T.challengeMatch.keySelectionTitle}</h2>
