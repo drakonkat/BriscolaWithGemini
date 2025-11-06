@@ -315,6 +315,14 @@
     min-height: 0;
 }
 
+/* Added for new Background Gallery Tab */
+.gallery-section-title {
+    font-size: 1.8rem;
+    color: var(--primary-accent);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
 
 .gacha-controls {
     display: flex;

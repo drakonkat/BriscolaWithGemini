@@ -141,7 +141,7 @@ export const translations = {
     buyWaifuCoffee: "Offri un caffè alle Waifu",
     supportModal: {
       title: "Sostieni il Progetto",
-      message: "Waifu Briscola è un progetto amatoriale gratuito. I costi per le API di Gemini e per gli artisti che disegnano le Waifu sono sostenuti tramite donazioni. Se ti stai divertendo, considera di offrirci un caffè!",
+      message: "Waifu Briscola è un progetto amatoriale gratuito. I costi per le API di Gemini e per gli artisti che disegnano le Waifu sono sostenuti tramite donazioni. Se ti stai divertendo, considera di offrirli un caffè!",
       subscriptionPoll: {
           title: "Sondaggio: Abbonamento Mensile?",
           description: "Stiamo valutando di introdurre un piccolo abbonamento mensile (es. 1-2€) per coprire i costi e garantire chat illimitate. Saresti interessato?",
@@ -237,14 +237,15 @@ export const translations = {
     },
 
     gallery: {
-        promoButton: "Galleria Sfondi & Gacha",
+        gachaTabTitle: "Gacha",
+        backgroundsTabTitle: "Galleria Sfondi",
         title: "Galleria Sfondi",
         gachaButtonFree: "Estrai (Gratis!)",
         gachaButton: (cost: number) => `Estrai (${cost} WC)`,
         gachaButtonX10: (cost: number) => `Estrai x10 (${cost} WC)`,
         gachaNotEnoughCoins: "Non hai abbastanza Waifu Coin!",
         gachaAllUnlocked: "Hai sbloccato tutti gli sfondi!",
-        gachaDuplicate: (rarity: string) => `Duplicato! Hai ricevuto 1 Frammento ${rarity}.`,
+        gachaDuplicate: (rarity: string) => `Duplicato! Hai ricevuto 1 Frammento della sua rarità.`,
         backgroundAlt: "Sfondo sbloccato",
         fullscreenView: "Clicca per vedere a schermo intero.",
         locked: "Bloccato",
@@ -875,7 +876,8 @@ export const translations = {
     },
 
     gallery: {
-        promoButton: "Gallery & Gacha",
+        gachaTabTitle: "Gacha",
+        backgroundsTabTitle: "Background Gallery",
         title: "Background Gallery",
         gachaButtonFree: "Roll (Free!)",
         gachaButton: (cost: number) => `Roll (${cost} WC)`,

@@ -102,7 +102,7 @@ export class GachaStore {
     multiGachaResults: BackgroundItem[] = [];
     lastMultiGachaShards: { R: number; SR: number; SSR: number; } = { R: 0, SR: 0, SSR: 0 };
 
-    galleryTabContentMode: GalleryTabContentMode = 'packSelection'; // New: Controls what's shown inside GalleryModal
+    galleryTabContentMode: GalleryTabContentMode = 'gachaPacks'; // New: Controls what's shown inside GalleryModal
 
     readonly BACKGROUNDS = BACKGROUNDS;
 
@@ -325,6 +325,7 @@ export class GachaStore {
                 runInAction(() => {
                     this.unlockedBackgrounds.push(pulledItem.url);
                     this.rootStore.uiStore.openModal('gachaSingleUnlock');
+                    this.setGalleryTabContentMode('gachaResults'); // Set mode to results
                 });
             }, 1000);
 
@@ -403,6 +404,7 @@ export class GachaStore {
             
             this.rootStore.uiStore.openModal('gachaMultiUnlock');
             this.isRolling = false;
+            this.setGalleryTabContentMode('gachaResults'); // Set mode to results
         });
 
         this.rootStore.posthog?.capture('gacha_multi_roll_completed', { 

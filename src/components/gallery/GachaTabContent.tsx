@@ -1,10 +1,9 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { GachaControls } from './GachaControls';
 import { BackgroundGrid } from './BackgroundGrid';
 import { useStores } from '../../stores';
 import type { Language } from '../../core/types';
-import { PackSelectionScreen } from './PackSelectionScreen'; // Import PackSelectionScreen
+import { PackSelectionScreen } from './PackSelectionScreen';
 import { translations } from '../../core/translations';
 
 type BackgroundItem = {
@@ -12,7 +11,7 @@ type BackgroundItem = {
     rarity: 'R' | 'SR' | 'SSR';
 };
 
-interface GalleryTabContentProps {
+interface GachaTabContentProps { // Renamed from GalleryTabContentProps
     language: Language;
     backgrounds: BackgroundItem[];
     unlockedBackgrounds: string[];
@@ -24,38 +23,35 @@ interface GalleryTabContentProps {
     onImageSelect: (url: string) => void;
 }
 
-export const GalleryTabContent: React.FC<GalleryTabContentProps> = observer(({ language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onGachaMultiRoll, hasRolledGacha, isRolling, onImageSelect }) => {
-    const { gachaStore } = useStores(); // Access gachaStore to control view mode
+export const GachaTabContent: React.FC<GachaTabContentProps> = observer(({ language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onGachaMultiRoll, hasRolledGacha, isRolling, onImageSelect }) => {
+    const { gachaStore } = useStores();
     const T = translations[language];
     const allUnlocked = unlockedBackgrounds.length >= backgrounds.length;
 
     const handleSelectPack = (packId: string) => {
-        // For now, always go to content view for any selected pack.
-        // In the future, this could load specific content based on packId.
-        // FIX: Changed 'content' to 'gachaResults' to match the GalleryTabContentMode type.
+        // This function is still here for conceptual clarity, but the actual rolls
+        // are now initiated directly from PackSelectionScreen.
+        // After a roll, gachaStore.galleryTabContentMode will be set to 'gachaResults'.
         gachaStore.setGalleryTabContentMode('gachaResults');
     };
 
     return (
         <div className="gallery-tab-content">
-            {/* FIX: Changed 'packSelection' to 'gachaPacks' to match the GalleryTabContentMode type. */}
             {gachaStore.galleryTabContentMode === 'gachaPacks' ? (
                 <PackSelectionScreen 
                     language={language} 
-                    onSelectPack={handleSelectPack} 
-                    waifuCoins={waifuCoins} // Pass props for multi-roll logic
+                    onSelectPack={handleSelectPack} // This will now typically set mode to 'gachaResults'
+                    waifuCoins={waifuCoins}
                     onGachaMultiRoll={onGachaMultiRoll}
-                    // FIX: Added missing onGachaRoll and hasRolledGacha props.
-                    onGachaRoll={onGachaRoll}
+                    onGachaRoll={onGachaRoll} // Pass single roll handler
                     isRolling={isRolling}
                     allUnlocked={allUnlocked}
                     hasRolledGacha={hasRolledGacha}
                 />
-            ) : (
+            ) : ( // gachaStore.galleryTabContentMode === 'gachaResults'
                 <>
                     <button 
                         className="back-to-packs-button" 
-                        // FIX: Changed 'packSelection' to 'gachaPacks' to match the GalleryTabContentMode type.
                         onClick={() => gachaStore.setGalleryTabContentMode('gachaPacks')}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -63,16 +59,8 @@ export const GalleryTabContent: React.FC<GalleryTabContentProps> = observer(({ l
                         </svg>
                         <span>{T.gallery.backToPackPicker}</span>
                     </button>
-                    <div className="gallery-content-wrapper"> {/* NEW WRAPPER */}
-                        <GachaControls
-                            language={language}
-                            waifuCoins={waifuCoins}
-                            onGachaRoll={onGachaRoll}
-                            onGachaMultiRoll={onGachaMultiRoll}
-                            hasRolledGacha={hasRolledGacha}
-                            isRolling={isRolling}
-                            allUnlocked={allUnlocked}
-                        />
+                    <div className="gallery-content-wrapper">
+                         {/* When in gachaResults mode, display the grid of backgrounds with a way to go back */}
                         <BackgroundGrid
                             language={language}
                             backgrounds={backgrounds}

@@ -12,10 +12,11 @@ import { GachaRollingAnimation } from './GachaRollingAnimation';
 
 // Import new sub-components
 import { GalleryTabs } from './gallery/GalleryTabs';
-import { GalleryTabContent } from './gallery/GalleryTabContent';
+import { GachaTabContent } from './gallery/GachaTabContent'; // Renamed from GalleryTabContent
 import { CraftingTabContent } from './gallery/CraftingTabContent';
 import { ConversionTabContent } from './gallery/ConversionTabContent';
-// Removed direct import of PackSelectionScreen as it will be in GalleryTabContent
+import { BackgroundGalleryTab } from './gallery/BackgroundGalleryTab'; // New: dedicated background gallery tab
+
 
 type BackgroundItem = {
     url: string;
@@ -40,8 +41,8 @@ interface GalleryModalProps {
 }
 
 export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onGachaMultiRoll, hasRolledGacha, isRolling, gachaAnimationState, onAnimationEnd, onImageSelect, isNsfwEnabled }: GalleryModalProps) => {
-    // Removed gachaStore access here, as galleryTabContentMode is now managed within GalleryTabContent
-    const [activeTab, setActiveTab] = useState<'gallery' | 'crafting' | 'convert'>('gallery');
+    // Renamed 'gallery' to 'gacha' for clarity matching the new tab structure
+    const [activeTab, setActiveTab] = useState<'gacha' | 'backgrounds' | 'crafting' | 'convert'>('gacha');
 
     useEffect(() => {
         if (isOpen && !isNsfwEnabled) {
@@ -74,8 +75,8 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                 <GalleryTabs language={language} activeTab={activeTab} setActiveTab={setActiveTab} />
 
                 <div className="gallery-content">
-                    {activeTab === 'gallery' && (
-                        <GalleryTabContent // This component will now manage PackSelectionScreen internally
+                    {activeTab === 'gacha' && (
+                        <GachaTabContent // This component now manages PackSelectionScreen internally
                             language={language}
                             backgrounds={backgrounds}
                             unlockedBackgrounds={unlockedBackgrounds}
@@ -84,6 +85,14 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
                             onGachaMultiRoll={onGachaMultiRoll}
                             hasRolledGacha={hasRolledGacha}
                             isRolling={isRolling}
+                            onImageSelect={onImageSelect}
+                        />
+                    )}
+                    {activeTab === 'backgrounds' && (
+                        <BackgroundGalleryTab
+                            language={language}
+                            backgrounds={backgrounds}
+                            unlockedBackgrounds={unlockedBackgrounds}
                             onImageSelect={onImageSelect}
                         />
                     )}

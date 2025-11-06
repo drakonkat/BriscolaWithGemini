@@ -137,7 +137,8 @@ export class UIStateStore {
             case 'privacy': this.isPrivacyModalOpen = true; break;
             case 'terms': this.isTermsModalOpen = true; break;
             case 'gallery': 
-                this.rootStore.gachaStore.setGalleryTabContentMode('packSelection'); // New: Reset gallery view mode to pack selection
+                // FIX: Changed 'packSelection' to 'gachaPacks' to match the GalleryTabContentMode type.
+                this.rootStore.gachaStore.setGalleryTabContentMode('gachaPacks'); // New: Reset gallery view mode to pack selection
                 this.isGalleryModalOpen = true; 
                 break;
             case 'waifuDetails': this.isWaifuModalOpen = true; break;
