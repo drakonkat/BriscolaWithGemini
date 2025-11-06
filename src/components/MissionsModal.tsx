@@ -19,7 +19,7 @@ interface RewardIconProps {
     type: MissionRewardType;
     amount: number;
 }
-const RewardIcon: React.FC<RewardIconProps> = ({ type, amount }) => {
+const RewardIcon: React.FC<RewardIconProps> = observer(({ type, amount }) => {
     const { gameSettingsStore } = useStores();
     const T = translations[gameSettingsStore.language];
 
@@ -41,7 +41,7 @@ const RewardIcon: React.FC<RewardIconProps> = ({ type, amount }) => {
             <span>{amount}</span>
         </div>
     );
-};
+});
 
 export const MissionsModal = observer(({ isOpen, onClose }: MissionsModalProps) => {
     const { missionStore, gameSettingsStore } = useStores();
@@ -89,13 +89,10 @@ export const MissionsModal = observer(({ isOpen, onClose }: MissionsModalProps) 
                                 </div>
                             </div>
                             <div className="mission-right-panel">
-                                <div className="mission-rewards-container">
-                                    {/* Removed rewardsLabel as it's implied by reward items */}
-                                    <div className="mission-rewards">
-                                        {Object.entries(mission.rewards).map(([type, amount]) => (
-                                            <RewardIcon key={type} type={type as MissionRewardType} amount={amount!} />
-                                        ))}
-                                    </div>
+                                <div className="mission-rewards">
+                                    {Object.entries(mission.rewards).map(([type, amount]) => (
+                                        <RewardIcon key={type} type={type as MissionRewardType} amount={amount!} />
+                                    ))}
                                 </div>
                                 <div className="mission-action">
                                     {!state?.claimed ? (
