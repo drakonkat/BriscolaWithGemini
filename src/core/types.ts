@@ -187,3 +187,5 @@ export interface AchievementState {
     claimed: boolean;
     unlockedAt?: number;
 }
+
+export type GalleryTabContentMode = 'packSelection' | 'content';

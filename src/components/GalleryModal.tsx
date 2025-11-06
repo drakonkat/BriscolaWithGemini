@@ -15,6 +15,7 @@ import { GalleryTabs } from './gallery/GalleryTabs';
 import { GalleryTabContent } from './gallery/GalleryTabContent';
 import { CraftingTabContent } from './gallery/CraftingTabContent';
 import { ConversionTabContent } from './gallery/ConversionTabContent';
+// Removed direct import of PackSelectionScreen as it will be in GalleryTabContent
 
 type BackgroundItem = {
     url: string;
@@ -39,6 +40,7 @@ interface GalleryModalProps {
 }
 
 export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, unlockedBackgrounds, waifuCoins, onGachaRoll, onGachaMultiRoll, hasRolledGacha, isRolling, gachaAnimationState, onAnimationEnd, onImageSelect, isNsfwEnabled }: GalleryModalProps) => {
+    // Removed gachaStore access here, as galleryTabContentMode is now managed within GalleryTabContent
     const [activeTab, setActiveTab] = useState<'gallery' | 'crafting' | 'convert'>('gallery');
 
     useEffect(() => {
@@ -73,7 +75,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
 
                 <div className="gallery-content">
                     {activeTab === 'gallery' && (
-                        <GalleryTabContent
+                        <GalleryTabContent // This component will now manage PackSelectionScreen internally
                             language={language}
                             backgrounds={backgrounds}
                             unlockedBackgrounds={unlockedBackgrounds}

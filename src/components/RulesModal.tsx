@@ -19,7 +19,8 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
         return null;
     }
 
-    const T = translations[language];
+    // FIX: Cast T to the specific language type to resolve TypeScript errors for nested properties.
+    const T = translations[language] as typeof translations['it'];
     const pointValues = [
         { value: T.values[VALUES_IT.indexOf('Asso')], points: 11 },
         { value: T.values[VALUES_IT.indexOf('3')], points: 10 },
@@ -47,7 +48,7 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
             <div className="rules-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close-button" onClick={onClose} aria-label={T.close}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
                     </svg>
                 </button>
                 <h2>{T.rulesTitle}</h2>
@@ -95,7 +96,7 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty }: RulesModal
                 <p>{T.waifuCoinDifficultyMultiplierInfo}</p>
                 <ul className="rules-info-list">
                     <li className={`rules-info-item ${difficulty === 'easy' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierEasy}</li>
-                    <li className={`rules-info-item ${difficulty === 'medium' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierMedium}</li>
+                    <li className="rules-info-item active-difficulty">{T.waifuCoinDifficultyMultiplierMedium}</li>
                     <li className={`rules-info-item ${difficulty === 'hard' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierHard}</li>
                     <li className={`rules-info-item ${difficulty === 'nightmare' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierNightmare}</li>
                     <li className={`rules-info-item ${difficulty === 'apocalypse' ? 'active-difficulty' : ''}`}>{T.waifuCoinDifficultyMultiplierApocalypse}</li>

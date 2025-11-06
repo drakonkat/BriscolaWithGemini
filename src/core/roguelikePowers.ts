@@ -8,13 +8,13 @@ import type { RoguelikePowerUpId, Language } from './types';
 // Define the expected structure of the 'powers' object within translations
 // This is used to ensure TypeScript correctly recognizes all properties,
 // especially for complex literal objects like 'translations'.
-interface TranslatedRoguelikePowers {
+export interface TranslatedRoguelikePowers {
     upgrade: string;
     bonus_point_per_trick: { name: string; desc: (level: number) => string; };
     king_bonus: { name: string; desc: (level: number) => string; };
     ace_of_briscola_start: { name: string; desc: (level: number) => string; };
     briscola_mastery: { name: string; desc: (level: number) => string; };
-    value_swap: { name: string; desc: (level: number) => string; };
+    value_swap: { name: string; desc: (cooldown: number) => string; };
     last_trick_insight: { name: string; desc: (level: number) => string; };
     third_eye: { name: string; desc: string; historyLockedDesc: string; };
 }
@@ -46,7 +46,7 @@ export const POWER_UP_DEFINITIONS: Record<RoguelikePowerUpId, {
   },
   'value_swap': { 
     name: (lang) => translations[lang].roguelike.powers.value_swap.name, 
-    description: (lang, level) => translations[lang].roguelike.powers.value_swap.desc(4 - level), 
+    description: (lang, level) => (translations[lang].roguelike.powers as TranslatedRoguelikePowers).value_swap.desc(4 - level), 
     maxLevel: 3 
   },
   'last_trick_insight': { 

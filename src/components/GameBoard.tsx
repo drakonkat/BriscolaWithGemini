@@ -38,6 +38,11 @@ export const GameBoard = observer(() => {
     const [isPlayerMenuOpen, setIsPlayerMenuOpen] = useState(false);
     const playerMenuRef = useRef<HTMLDivElement>(null);
 
+    // FIX: Declare these refs to fix "Cannot find name" errors.
+    const normalZoneRef = useRef<HTMLDivElement>(null);
+    const powerZoneRef = useRef<HTMLDivElement>(null);
+    const cancelZoneRef = useRef<HTMLDivElement>(null);
+
     // Mode-specific access
     const isRoguelike = gameplayMode === 'roguelike' && gameStateStore instanceof RoguelikeModeStore;
     const isDungeon = gameplayMode === 'dungeon' && gameStateStore instanceof DungeonModeStore;
@@ -341,7 +346,7 @@ export const GameBoard = observer(() => {
                             )}
                             <button className="bubble-close-button" onClick={uiStore.closeWaifuBubble} aria-label={T.close}>
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
                                 </svg>
                             </button>
                         </div>

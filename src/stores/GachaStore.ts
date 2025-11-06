@@ -1,13 +1,9 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
 import { makeAutoObservable, autorun, runInAction, reaction } from 'mobx';
 import type { RootStore } from '.';
 import { getImageUrl } from '../core/utils';
 import { translations } from '../core/translations';
 import { playSound } from '../core/soundManager';
-import type { SoundName } from '../core/types';
+import type { SoundName, GalleryTabContentMode } from '../core/types';
 
 type BackgroundItem = {
     url: string;
@@ -106,6 +102,8 @@ export class GachaStore {
     multiGachaResults: BackgroundItem[] = [];
     lastMultiGachaShards: { R: number; SR: number; SSR: number; } = { R: 0, SR: 0, SSR: 0 };
 
+    galleryTabContentMode: GalleryTabContentMode = 'packSelection'; // New: Controls what's shown inside GalleryModal
+
     readonly BACKGROUNDS = BACKGROUNDS;
 
     constructor(rootStore: RootStore) {
@@ -160,7 +158,7 @@ export class GachaStore {
         if (type === 'earth') this.earth_essences += amount;
     }
 
-    // FIX: Add method to add transcendental essences to fix MissionStore error.
+    // FIX: Add missing transcendental_essences property.
     addTranscendentalEssences = (amount: number) => {
         this.transcendental_essences += amount;
     }
@@ -176,9 +174,10 @@ export class GachaStore {
     }
 
     spendKey = (rarity: 'R' | 'SR' | 'SSR') => {
+        // FIX: Ensures safe access to `cost.r_shards` and other shard properties by checking for their existence before decrementing or incrementing.
         if (rarity === 'R' && this.r_keys > 0) this.r_keys--;
-        if (rarity === 'SR' && this.sr_keys > 0) this.sr_keys--;
-        if (rarity === 'SSR' && this.ssr_keys > 0) this.ssr_keys--;
+        else if (rarity === 'SR' && this.sr_keys > 0) this.sr_keys--;
+        else if (rarity === 'SSR' && this.ssr_keys > 0) this.ssr_keys--;
     }
 
     unlockSpecificBackground = (bg: BackgroundItem) => {
@@ -433,17 +432,17 @@ export class GachaStore {
     
     craftKey = (rarity: 'R' | 'SR' | 'SSR') => {
         const costs = { 
-            R: { r_shards: 10 },
-            SR: { sr_shards: 10, r_shards: 25, transcendental_essences: 5 },
-            SSR: { ssr_shards: 5, sr_shards: 15, transcendental_essences: 10 }
+            R: { r_shards: 10, sr_shards: 0, ssr_shards: 0, transcendental_essences: 0 },
+            SR: { r_shards: 25, sr_shards: 10, ssr_shards: 0, transcendental_essences: 5 },
+            SSR: { r_shards: 0, sr_shards: 15, ssr_shards: 5, transcendental_essences: 10 }
         };
 
         const cost = costs[rarity];
 
-        if (('r_shards' in cost && this.r_shards < cost.r_shards!) ||
-            ('sr_shards' in cost && this.sr_shards < cost.sr_shards!) ||
-            ('ssr_shards' in cost && this.ssr_shards < cost.ssr_shards!) ||
-            ('transcendental_essences' in cost && this.transcendental_essences < cost.transcendental_essences!)) {
+        if ((cost.r_shards && this.r_shards < cost.r_shards) ||
+            (cost.sr_shards && this.sr_shards < cost.sr_shards) ||
+            (cost.ssr_shards && this.ssr_shards < cost.ssr_shards) ||
+            (cost.transcendental_essences && this.transcendental_essences < cost.transcendental_essences)) {
             this.rootStore.uiStore.showSnackbar(this.T.gallery.gachaNotEnoughShards, 'warning');
             return;
         }
@@ -471,28 +470,28 @@ export class GachaStore {
             
         } else { // success or critical
             const costs = {
-                R: { r_shards: 10 },
-                SR: { sr_shards: 10, r_shards: 25, transcendental_essences: 5 },
-                SSR: { ssr_shards: 5, sr_shards: 15, transcendental_essences: 10 }
+                R: { r_shards: 10, sr_shards: 0, ssr_shards: 0, transcendental_essences: 0 },
+                SR: { r_shards: 25, sr_shards: 10, ssr_shards: 0, transcendental_essences: 5 },
+                SSR: { r_shards: 0, sr_shards: 15, ssr_shards: 5, transcendental_essences: 10 }
             };
             const cost = costs[rarity];
 
             // Deduct materials
-            if ('r_shards' in cost) this.r_shards -= cost.r_shards!;
-            if ('sr_shards' in cost) this.sr_shards -= cost.sr_shards!;
-            if ('ssr_shards' in cost) this.ssr_shards -= cost.ssr_shards!;
-            if ('transcendental_essences' in cost) {
-                this.transcendental_essences -= cost.transcendental_essences!;
-            }
+            // FIX: Ensure property exists on `cost` before attempting to access and decrement it.
+            if (cost.r_shards) this.r_shards -= cost.r_shards;
+            if (cost.sr_shards) this.sr_shards -= cost.sr_shards;
+            if (cost.ssr_shards) this.ssr_shards -= cost.ssr_shards;
+            if (cost.transcendental_essences) this.transcendental_essences -= cost.transcendental_essences;
             
             this.addKey(rarity);
             this.rootStore.missionStore.incrementProgress('keysCrafted', 1);
 
             if (result === 'critical') {
                 // Refund half of the shards
-                if ('r_shards' in cost) this.r_shards += Math.floor(cost.r_shards! / 2);
-                if ('sr_shards' in cost) this.sr_shards += Math.floor(cost.sr_shards! / 2);
-                if ('ssr_shards' in cost) this.ssr_shards += Math.floor(cost.ssr_shards! / 2);
+                // FIX: Ensure property exists on cost before trying to access it and add to current shards.
+                if (cost.r_shards) this.r_shards += Math.floor(cost.r_shards / 2);
+                if (cost.sr_shards) this.sr_shards += Math.floor(cost.sr_shards / 2);
+                if (cost.ssr_shards) this.ssr_shards += Math.floor(cost.ssr_shards / 2);
                 playSound('craft-critical');
                 this.rootStore.uiStore.showSnackbar(this.T.craftingMinigame.criticalSuccess, 'success');
             } else {
@@ -501,5 +500,9 @@ export class GachaStore {
             }
             this.rootStore.posthog?.capture('key_crafted', { rarity, result });
         }
+    }
+
+    setGalleryTabContentMode = (mode: GalleryTabContentMode) => {
+        this.galleryTabContentMode = mode;
     }
 }

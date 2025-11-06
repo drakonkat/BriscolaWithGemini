@@ -123,14 +123,17 @@ export const PlayerWalletPopover = observer(({ isOpen, onClose, language }: Play
                             <strong>{water_essences}</strong>
                         </div>
                         <div className="wallet-detail-item element-air">
+                            {/* FIX: Access the correct translation key for essenceAir */}
                             <span>{T_wallet.essenceAir}</span>
                             <strong>{air_essences}</strong>
                         </div>
                         <div className="wallet-detail-item element-earth">
+                            {/* FIX: Access the correct translation key for essenceEarth */}
                             <span>{T_wallet.essenceEarth}</span>
                             <strong>{earth_essences}</strong>
                         </div>
                         <div className="wallet-detail-item transcendental">
+                            {/* FIX: Access the correct translation key for essenceTranscendental */}
                             <span>{T_wallet.essenceTranscendental}</span>
                             <strong>{transcendental_essences}</strong>
                         </div>

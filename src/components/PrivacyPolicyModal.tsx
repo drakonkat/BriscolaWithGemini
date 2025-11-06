@@ -16,8 +16,11 @@ export const PrivacyPolicyModal = ({ isOpen, onClose, language }: LegalModalProp
         return null;
     }
 
+    // FIX: Cast T to the specific language type to resolve TypeScript errors for nested properties.
     const T = translations[language];
     const content = T.privacyPolicy;
+    // FIX: Explicitly assert the type of content.collection to resolve property access errors.
+    const collectionContent = content.collection as typeof translations['it']['privacyPolicy']['collection'];
 
     return (
         <div className="game-over-overlay" onClick={onClose}>
@@ -32,11 +35,11 @@ export const PrivacyPolicyModal = ({ isOpen, onClose, language }: LegalModalProp
                 <p><strong>{content.contactPrefix}</strong> {content.contactName}</p>
                 <p>{content.intro}</p>
                 
-                <h3>{content.collection.title}</h3>
-                <p>{content.collection.intro}</p>
+                <h3>{collectionContent.title}</h3>
+                <p>{collectionContent.intro}</p>
                 <ul>
-                    <li><strong>{content.collection.posthog.title}</strong> {content.collection.posthog.text}</li>
-                    <li><strong>{content.collection.gemini.title}</strong> <span dangerouslySetInnerHTML={{ __html: content.collection.gemini.text }} /></li>
+                    <li><strong>{collectionContent.posthog.title}</strong> {collectionContent.posthog.text}</li>
+                    <li><strong>{collectionContent.gemini.title}</strong> <span dangerouslySetInnerHTML={{ __html: collectionContent.gemini.text }} /></li>
                 </ul>
 
                 <h3>{content.usage.title}</h3>

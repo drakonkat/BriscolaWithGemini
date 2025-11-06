@@ -228,7 +228,7 @@ export const translations = {
         },
         changes: {
             title: "Modifiche ai Termini",
-            text: "Ci riserviamo il diritto, a nostra esclusiva discrezione, di modificare o sostituire questi Termini in qualsiasi momento. Continuando ad accedere o utilizzare il nostro Servizio dopo che tali revisioni diventano efficaci, accetti di essere vincolato dai termini rivisti."
+            text: "Ci riserviamo il diritto, a nostra esclusiva discrezione, di modificare o sostituire questi Termini in qualsiasi momento. Ti informeremo di eventuali modifiche pubblicando la nuova Privacy Policy su questa pagina."
         },
         governingLaw: {
             title: "Legge Applicabile",
@@ -281,6 +281,12 @@ export const translations = {
         convertEssencesTitle: "Converti Essenze Elementali",
         conversionRuleElemental: "10x di ogni Essenza Elementale → 1x Essenza Trascendentale",
         essencesLabelTranscendental: (amount: number) => `${amount} Essenze Trascendentali`,
+        // New: Pack Selection
+        packSelectionTitle: "Scegli un Pacchetto Carte",
+        selectPack: "Seleziona",
+        basePackTitle: "Pacchetto Base",
+        basePackDescription: "Contiene sfondi della collezione principale.",
+        backToPackPicker: "Indietro ai Pacchetti",
     },
 
     craftingMinigame: {
@@ -319,7 +325,7 @@ export const translations = {
         daily: "Giornaliere",
         weekly: "Settimanali",
         achievements: "Obiettivi",
-        claim: "Riscuoti",
+        claim: "Riscuosti",
         claimed: "Riscattato",
         noMissions: "Nessuna missione disponibile al momento.",
         rewardsLabel: "Ricompense:",
@@ -640,13 +646,6 @@ export const translations = {
     waifuCoinRuleWin101: (amount: number) => `Win (101+ points): +${amount} WC`,
     waifuCoinRuleWinNightmare: (amount: number) => `Win (Nightmare): +${amount} WC`,
     waifuCoinRuleWinApocalypse: (amount: number) => `Win (Apocalypse): +${amount} WC`,
-    waifuCoinDifficultyMultiplier: "Difficulty Multiplier",
-    waifuCoinDifficultyMultiplierInfo: "The amount of Waifu Coins you receive depends on the difficulty:",
-    waifuCoinDifficultyMultiplierEasy: "Easy: 50%",
-    waifuCoinDifficultyMultiplierMedium: "Normal: 100%",
-    waifuCoinDifficultyMultiplierHard: "Hard: 150%",
-    waifuCoinDifficultyMultiplierNightmare: "Nightmare: +250 WC",
-    waifuCoinDifficultyMultiplierApocalypse: "Apocalypse: +500 WC",
     gachaRulesTitle: "Gacha Rules",
     gachaFreeFirstRoll: "Your first roll is free!",
     gachaCostSingle: "Single roll cost: 100 WC.",
@@ -743,16 +742,8 @@ export const translations = {
         contactName: "Mauro Mazzocchetti",
         intro: "This Privacy Policy describes how your information is handled when you use the Waifu Briscola application ('Service').",
         collection: {
-            title: "Information We Collect",
-            intro: "To improve your experience, we use third-party services that may collect information:",
-            posthog: {
-                title: "Usage Data (PostHog):",
-                text: "We collect anonymous or pseudonymous analytics data about how you interact with the game. This includes events like starting a game, cards played, and final results. This data helps us understand how the game is used and how we can improve it. We do not collect personally identifiable information (PII) through PostHog."
-            },
-            gemini: {
-                title: "AI Interactions (Google Gemini):",
-                text: "The chat messages you send and game state information (like cards in your hand and on the table) are sent to the Google Gemini API to generate the AI's responses and moves. These interactions are subject to <a href='https://policies.google.com/privacy' target='_blank' rel='noopener noreferrer'>Google's Privacy Policy</a>. We do not send any personal information to Google other than the content of your game interactions."
-            },
+            title: "Usage Data (PostHog):",
+            text: "We collect anonymous or pseudonymous analytics data about how you interact with the game. This includes events like starting a game, cards played, and final results. This data helps us understand how the game is used and how we can improve it. We do not collect personally identifiable information (PII) through PostHog."
         },
         usage: {
             title: "How We Use Your Information",
@@ -865,6 +856,12 @@ export const translations = {
         convertEssencesTitle: "Convert Elemental Essences",
         conversionRuleElemental: "10x of each Elemental Essence → 1x Transcendental Essence",
         essencesLabelTranscendental: (amount: number) => `${amount} Transcendental Essences`,
+        // New: Pack Selection
+        packSelectionTitle: "Choose a Card Pack",
+        selectPack: "Select",
+        basePackTitle: "Base Pack",
+        basePackDescription: "Contains backgrounds from the main collection.",
+        backToPackPicker: "Back to Packs",
     },
 
     craftingMinigame: {
@@ -1110,6 +1107,11 @@ export const translations = {
             last_trick_insight: {
                 name: "Sixth Sense",
                 desc: (level: number) => level === 1 ? "The opponent's hand is revealed during the last trick of the match." : (level === 2 ? "Once every 3 turns, you can reveal the opponent's hand for the current turn." : "The opponent's hand is always visible.")
+            },
+            third_eye: {
+                name: "Sixth Sense",
+                desc: "You can see the entire trick history, not just the last one.",
+                historyLockedDesc: "Unlock 'Sixth Sense' power to see full history."
             }
         }
     },

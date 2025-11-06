@@ -12,8 +12,8 @@ const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
     try {
         const item = localStorage.getItem(key);
         return item ? JSON.parse(item) : defaultValue;
-    } catch (error) {
-        console.warn(`Error loading ${key} from localStorage`, error);
+    } catch (e) {
+        console.warn('Could not read from localStorage:', e);
         return defaultValue;
     }
 };
@@ -135,7 +135,10 @@ export class UIStateStore {
             case 'rules': this.isRulesModalOpen = true; break;
             case 'privacy': this.isPrivacyModalOpen = true; break;
             case 'terms': this.isTermsModalOpen = true; break;
-            case 'gallery': this.isGalleryModalOpen = true; break;
+            case 'gallery': 
+                this.rootStore.gachaStore.setGalleryTabContentMode('packSelection'); // New: Reset gallery view mode to pack selection
+                this.isGalleryModalOpen = true; 
+                break;
             case 'waifuDetails': this.isWaifuModalOpen = true; break;
             case 'support': this.isSupportModalOpen = true; break;
             case 'confirmLeave': this.isConfirmLeaveModalOpen = true; break;

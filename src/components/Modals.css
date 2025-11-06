@@ -296,13 +296,25 @@
     display: flex;
     flex-direction: column;
     min-height: 0; /* Important for flex child with overflow */
+    /* REMOVED position: relative; here, moved to .gallery-tab-content */
 }
-.gallery-tab-content, .crafting-tab-content {
+.gallery-tab-content {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     min-height: 0;
+    position: relative; /* Make this relative for the absolute button */
+    padding-top: 4.5rem; /* Push content down to avoid overlap with absolute button */
 }
+
+/* New wrapper to create space when the button is absolutely positioned */
+.gallery-content-wrapper {
+    flex-grow: 1; /* Allow it to take up remaining space */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
 
 .gacha-controls {
     display: flex;
@@ -1151,6 +1163,125 @@
     fill: var(--black-suit);
 }
 
+/* New: Pack Selection Screen Styles */
+.pack-selection-screen {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.pack-selection-title {
+    font-size: 1.8rem;
+    color: var(--primary-accent);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.pack-cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    width: 100%;
+}
+
+.pack-card {
+    background-color: rgba(0,0,0,0.3);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    width: 250px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.pack-card:hover, .pack-card:focus {
+    transform: translateY(-10px) scale(1.05);
+    background-color: rgba(var(--primary-accent-rgb), 0.15);
+    border-color: var(--primary-accent);
+    box-shadow: 0 0 25px rgba(var(--primary-accent-rgb), 0.7), 0 8px 25px rgba(0,0,0,0.4);
+    outline: none;
+}
+
+.pack-card-image {
+    width: 150px; /* Adjust size as needed */
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 1rem;
+}
+
+.pack-card-details h3 {
+    font-size: 1.5rem;
+    color: var(--font-color);
+    margin-bottom: 0.5rem;
+}
+
+.pack-card-details p {
+    font-size: 0.95rem;
+    color: var(--font-color-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.select-pack-button {
+    background: linear-gradient(45deg, var(--primary-accent), var(--primary-accent-hover));
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: var(--radius-full);
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.select-pack-button:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+/* Back to Pack Picker Button */
+.back-to-packs-button {
+    position: absolute; /* Desktop: absolute positioning */
+    top: 1.5rem;
+    left: 2rem;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border-color);
+    color: var(--font-color-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 5;
+}
+.back-to-packs-button:hover {
+    background-color: rgba(var(--primary-accent-rgb), 0.2);
+    border-color: var(--primary-accent);
+    color: var(--primary-accent);
+    transform: scale(1.05);
+}
+.back-to-packs-button svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor; /* Inherit color */
+}
+
+
 @media (max-width: 768px) {
     .gallery-modal { padding: 1rem; }
     .gallery-tabs { justify-content: center; }
@@ -1208,6 +1339,55 @@
         bottom: 70px; /* Adjust for smaller FAB */
         right: 10px;
         width: calc(100% - 20px); /* Fill most of the screen width */
+    }
+
+    /* Pack Selection Screen Mobile Styles */
+    .pack-selection-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .pack-cards-container {
+        gap: 1rem;
+    }
+    .pack-card {
+        width: 100%;
+        max-width: 280px;
+        padding: 1rem;
+    }
+    .pack-card-image {
+        width: 120px;
+    }
+    .pack-card-details h3 {
+        font-size: 1.3rem;
+    }
+    .pack-card-details p {
+        font-size: 0.85rem;
+    }
+    .select-pack-button {
+        font-size: 1rem;
+        padding: 0.6rem 1.2rem;
+    }
+    .back-to-packs-button {
+        position: static; /* Mobile: static positioning */
+        top: unset;
+        left: unset;
+        margin-top: 0.5rem; /* Spacing from modal's top edge or tab buttons */
+        margin-bottom: 1rem; /* Space below the button */
+        margin-left: 1rem; /* Align with other content padding */
+        margin-right: auto; /* Push it to the left */
+        flex-shrink: 0;
+    }
+    .back-to-packs-button svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .gallery-tab-content {
+        padding-top: 0; /* Remove top padding on mobile, button is static */
+    }
+    
+    .gacha-controls {
+        margin-top: 0; /* It directly follows the static button, which has margin-bottom */
     }
 }
 @media (max-width: 480px) {
