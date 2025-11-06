@@ -92,7 +92,7 @@
 .rules-point-item { display: flex; justify-content: space-between; font-size: 1.1rem; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color); }
 .rules-point-item span:first-child { font-weight: bold; }
 .rules-info-list { list-style: none; padding: 0; margin: 1rem 0; display: flex; flex-direction: column; gap: 0.8rem; }
-.rules-info-item { font-size: 1.1rem; background-color: rgba(0, 0, 0, 0.2); padding: 0.8rem 1rem; border-radius: var(--radius-sm); border-left: 4px solid var(--primary-accent); }
+.rules-info-item { font-size: 1.1rem; background-color: rgba(0, 0, 0, 0.2); padding: 0.8rem 1rem; border-left: 4px solid var(--primary-accent); border-radius: var(--radius-sm); }
 .rules-info-item.active-difficulty { border-left-color: var(--gold-accent); background-color: rgba(var(--gold-accent-rgb), 0.1); font-weight: bold; }
 .rules-modal .modal-actions { text-align: center; }
 
@@ -1486,4 +1486,12 @@
     .mission-description { text-align: center; }
     .missions-list { padding: 0; }
     .mission-item { padding: 0.75rem; }
+
+    .player-wallet-popover.open {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0s;
+        height: calc(100% - 80px);
+}
 }

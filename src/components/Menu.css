@@ -25,6 +25,8 @@
   margin-bottom: auto;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .menu-background {
   position: fixed;
@@ -796,12 +798,6 @@ input:checked + .slider:before {
     align-items: stretch;
     gap: 0.5rem;
 }
-.difficulty-rewards.roguelike .reward-item {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 0.25rem 0;
-}
 .difficulty-rewards.roguelike .reward-item:first-child {
     font-size: 1.1em;
     padding-bottom: 0.5rem;
@@ -987,8 +983,11 @@ input:checked + .slider:before {
     height: auto;
     max-width: 100%;
     margin: 0 auto;
-    overflow-y: visible;
+    overflow-y: auto; /* Changed to auto for scrolling on mobile */
     padding: 1.5rem 1rem;
+    flex-grow: 1; /* Allow it to take up available space */
+    display: flex; /* Ensure it's a flex container for its children */
+    flex-direction: column; /* Its children are stacked vertically */
   }
   .menu-title-container {
     display: flex;
@@ -1144,8 +1143,6 @@ input:checked + .slider:before {
     scroll-snap-type: x mandatory;
     padding: 1rem;
     margin: 0 -1rem;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
   }
   .difficulty-selection::-webkit-scrollbar {
       display: none;

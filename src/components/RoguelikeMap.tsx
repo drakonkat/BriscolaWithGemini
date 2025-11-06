@@ -9,6 +9,7 @@ import { translations } from '../core/translations';
 import { CachedImage } from './CachedImage';
 import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
 import { getImageUrl } from '../core/utils';
+import type { Waifu } from '../core/types'; // Import Waifu for type definition
 
 const MapNode = ({ type, label, avatarUrl, state }: { type: 'opponent' | 'powerup' | 'boss', label: string, avatarUrl?: string, state: 'completed' | 'current' | 'future' }) => {
     return (
@@ -27,6 +28,13 @@ const MapNode = ({ type, label, avatarUrl, state }: { type: 'opponent' | 'poweru
     );
 };
 
+// FIX: Define an interface for the stage nodes to ensure correct type inference.
+interface StageNode {
+    type: 'opponent' | 'powerup' | 'boss';
+    label: string;
+    level?: number;
+    opponent?: Waifu;
+}
 
 export const RoguelikeMap = observer(() => {
     const { gameStateStore, gameSettingsStore, uiStore } = useStores();
@@ -41,20 +49,21 @@ export const RoguelikeMap = observer(() => {
 
     const { currentLevel, waifuOpponents } = roguelikeState;
 
-    const getOpponent = (index: number) => {
+    const getOpponent = (index: number): Waifu | undefined => {
         const name = waifuOpponents[index];
         return name === BOSS_WAIFU.name ? BOSS_WAIFU : WAIFUS.find(w => w.name === name);
     };
 
-    const stages = [
+    // FIX: Explicitly type the stages array to StageNode[] to maintain literal types for `type`.
+    const stages: StageNode[] = [
         { type: 'powerup', label: T.roguelike.chooseYourPower },
-        { type: 'opponent', level: 1, opponent: getOpponent(0) },
+        { type: 'opponent', level: 1, opponent: getOpponent(0), label: getOpponent(0)?.name || '' },
         { type: 'powerup', level: 1, label: T.roguelike.chooseYourPath },
-        { type: 'opponent', level: 2, opponent: getOpponent(1) },
+        { type: 'opponent', level: 2, opponent: getOpponent(1), label: getOpponent(1)?.name || '' },
         { type: 'powerup', level: 2, label: T.roguelike.chooseYourPath },
-        { type: 'opponent', level: 3, opponent: getOpponent(2) },
+        { type: 'opponent', level: 3, opponent: getOpponent(2), label: getOpponent(2)?.name || '' },
         { type: 'powerup', level: 3, label: T.roguelike.chooseYourPath },
-        { type: 'boss', level: 4, opponent: getOpponent(3) },
+        { type: 'boss', level: 4, opponent: getOpponent(3), label: getOpponent(3)?.name || '' },
     ];
     
     // The current stage index is determined by the level we are *about to start*
@@ -67,7 +76,7 @@ export const RoguelikeMap = observer(() => {
             const isMobile = window.innerWidth <= 768;
             const container = isMobile ? mobileScrollContainerRef.current : desktopScrollContainerRef.current;
             // FIX: The querySelector generic may not be supported in all TypeScript configurations. Replaced with an explicit type cast.
-            const currentNode = container?.querySelector<HTMLElement>('.map-node.current');
+            const currentNode = container?.querySelector('.map-node.current') as HTMLElement | null;
 
             if (container && currentNode) {
                 if (isMobile) {
@@ -109,7 +118,7 @@ export const RoguelikeMap = observer(() => {
                         return (
                             <React.Fragment key={index}>
                                 <MapNode
-                                    type={stage.type as any}
+                                    type={stage.type}
                                     label={stage.opponent?.name || stage.label}
                                     avatarUrl={stage.opponent ? getImageUrl(stage.opponent.avatar) : undefined}
                                     state={state}
