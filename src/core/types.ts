@@ -154,7 +154,8 @@ export type MissionProgressKey =
     'cardsPlayed_denara' |
     'cardsPlayed_spade' |
     'cardsPlayed_bastoni' |
-// FIX: Added 'winOnDifficulty_hard' to MissionProgressKey type.
+    'winOnDifficulty_easy' |
+    'winOnDifficulty_medium' |
     'winOnDifficulty_hard' |
     'winOnDifficulty_nightmare' | 
     'winOnDifficulty_apocalypse' |

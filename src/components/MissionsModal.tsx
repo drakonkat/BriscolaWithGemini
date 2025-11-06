@@ -45,7 +45,7 @@ const RewardIcon: React.FC<RewardIconProps> = ({ type, amount }) => {
 
 export const MissionsModal = observer(({ isOpen, onClose }: MissionsModalProps) => {
     const { missionStore, gameSettingsStore } = useStores();
-    const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'achievements'>('daily');
+    const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'achievements'>('weekly'); // Set default tab to Weekly as per screenshot
     const T = translations[gameSettingsStore.language];
     const TM = T.missions;
 
@@ -80,7 +80,9 @@ export const MissionsModal = observer(({ isOpen, onClose }: MissionsModalProps) 
                     return (
                         <div key={mission.id} className={`mission-item ${state?.claimed ? 'claimed' : ''}`}>
                             <div className="mission-details">
-                                <p className="mission-description">{TM.descriptions[mission.id as keyof typeof TM.descriptions]?.replace('{target}', mission.target.toString()) ?? mission.id}</p>
+                                <p className="mission-description">
+                                    {TM.descriptions[mission.id as keyof typeof TM.descriptions]?.replace('{target}', mission.target.toString()) ?? mission.id}
+                                </p>
                                 <div className="mission-progress-bar">
                                     <div className="progress" style={{ width: `${(progress / mission.target) * 100}%` }} />
                                     <span className="progress-text">{progress} / {mission.target}</span>
@@ -88,7 +90,7 @@ export const MissionsModal = observer(({ isOpen, onClose }: MissionsModalProps) 
                             </div>
                             <div className="mission-right-panel">
                                 <div className="mission-rewards-container">
-                                    <span className="rewards-label">{TM.rewardsLabel}</span>
+                                    {/* Removed rewardsLabel as it's implied by reward items */}
                                     <div className="mission-rewards">
                                         {Object.entries(mission.rewards).map(([type, amount]) => (
                                             <RewardIcon key={type} type={type as MissionRewardType} amount={amount!} />
@@ -96,7 +98,7 @@ export const MissionsModal = observer(({ isOpen, onClose }: MissionsModalProps) 
                                     </div>
                                 </div>
                                 <div className="mission-action">
-                                    {!state?.claimed && (
+                                    {!state?.claimed ? (
                                         <button
                                             className="claim-button"
                                             onClick={() => missionStore.claimReward(mission.id)}
@@ -104,6 +106,8 @@ export const MissionsModal = observer(({ isOpen, onClose }: MissionsModalProps) 
                                         >
                                             {TM.claim}
                                         </button>
+                                    ) : (
+                                        <div className="claimed-text">{TM.claimed}</div>
                                     )}
                                 </div>
                             </div>

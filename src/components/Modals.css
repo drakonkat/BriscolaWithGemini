@@ -868,31 +868,40 @@
 .mission-item.claimed {
     opacity: 0.7;
     filter: grayscale(50%);
+    background: rgba(0,0,0,0.1);
 }
 .mission-details { flex-grow: 1; text-align: left; }
 .mission-description { font-size: 1.1rem; color: var(--font-color); margin-bottom: 0.5rem; line-height: 1.4; }
 .mission-progress-bar {
-    width: 100%; height: 16px; background-color: rgba(0,0,0,0.4); border-radius: 8px; position: relative; overflow: hidden; /* Increased height and radius */
+    width: 100%; height: 20px; /* Increased height */
+    background-color: rgba(0,0,0,0.4); border-radius: var(--radius-full); /* Increased radius */
+    position: relative; overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
 }
-.mission-progress-bar .progress { height: 100%; background-color: var(--primary-accent); border-radius: 8px; transition: width 0.3s ease-out; } /* Increased radius */
+.mission-progress-bar .progress { height: 100%; background-color: var(--primary-accent); border-radius: var(--radius-full); transition: width 0.3s ease-out; } /* Increased radius */
 .mission-progress-bar .progress-text {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.8rem; font-weight: bold; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.9rem; /* Increased font size */
+    font-weight: bold; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 .mission-right-panel { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
 .mission-rewards-container { display: flex; align-items: center; gap: 0.5rem; }
 .rewards-label { font-size: 0.9rem; color: var(--font-color-secondary); }
-.mission-rewards { display: flex; gap: 0.5rem; }
+.mission-rewards { display: flex; gap: 0.5rem; align-items: center; } /* Aligned items vertically */
 .mission-reward-item {
-    display: flex; flex-direction: column; align-items: center; gap: 0.2rem; font-size: 0.8rem; color: var(--font-color);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; /* Centered items vertically */
+    gap: 0.2rem; font-size: 0.8rem; color: var(--font-color);
+    min-width: 40px; /* Ensure consistent spacing */
 }
 .reward-icon-wrapper { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
 .mission-reward-item svg { width: 100%; height: 100%; color: var(--gold-accent); }
 .mission-reward-item .shard-icon {
-    font-size: 0.7em; font-weight: bold; display: flex; align-items: center; justify-content: center; width: 1.8em; height: 1.8em; border-radius: 50%;
+    font-size: 0.8em; /* Slightly larger text inside */
+    font-weight: bold; display: flex; align-items: center; justify-content: center; width: 1.8em; height: 1.8em; border-radius: 50%;
+    color: var(--black-suit); /* Text color for shards */
 }
 .mission-reward-item .shard-icon.r { background-color: var(--rarity-r-color); }
 .mission-reward-item .shard-icon.sr { background-color: var(--rarity-sr-color); }
-.mission-reward-item .shard-icon.ssr { background-color: var(--rarity-ssr-color); color: var(--black-suit); }
+.mission-reward-item .shard-icon.ssr { background-color: var(--rarity-ssr-color); }
 
 .mission-reward-item .element-icon, .mission-reward-item .essence-icon-svg {
     width: 24px; height: 24px;
@@ -904,6 +913,14 @@
 }
 .claim-button:hover:not(:disabled) { background-color: var(--primary-accent-hover); transform: scale(1.05); }
 .claim-button:disabled { background-color: var(--border-color); cursor: not-allowed; opacity: 0.7; }
+.claimed-text { /* New style for "Riscattato" */
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: var(--font-color-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    background-color: rgba(0,0,0,0.2);
+}
 .no-missions { text-align: center; font-style: italic; color: var(--font-color-secondary); margin-top: 2rem; font-size: 1.1rem; }
 
 /* Player Wallet Popover */
@@ -1211,4 +1228,6 @@
     .mission-rewards-container { justify-content: center; width: 100%; }
     .mission-progress-bar { margin-bottom: 0.5rem; }
     .mission-description { text-align: center; }
+    .missions-list { padding: 0; }
+    .mission-item { padding: 0.75rem; }
 }

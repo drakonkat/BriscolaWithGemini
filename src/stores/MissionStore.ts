@@ -22,14 +22,16 @@ const DAILY_MISSIONS_DEFINITIONS: Mission[] = [
     { id: 'daily_win_classic', type: 'daily', category: 'gameplay', progressKey: 'classicGamesWon', target: 1, rewards: { waifuCoins: 50, r_shards: 1 } },
     { id: 'daily_play_cards_coppe', type: 'daily', category: 'gameplay', progressKey: 'cardsPlayed_coppe', target: 5, rewards: { waifuCoins: 25 } },
     { id: 'daily_use_elemental_power', type: 'daily', category: 'gameplay', progressKey: 'elementalPowersUsed', target: 3, rewards: { fire_essences: 1, water_essences: 1 } },
+    { id: 'daily_win_easy', type: 'daily', category: 'gameplay', progressKey: 'winOnDifficulty_easy', target: 1, rewards: { waifuCoins: 20 } },
 ];
 
 const WEEKLY_MISSIONS_DEFINITIONS: Mission[] = [
     { id: 'weekly_win_any', type: 'weekly', category: 'gameplay', progressKey: 'gamesWon', target: 5, rewards: { waifuCoins: 150, sr_shards: 1 } },
-    // FIX: Corrected progressKey to match the updated MissionProgressKey type.
     { id: 'weekly_win_hard', type: 'weekly', category: 'gameplay', progressKey: 'winOnDifficulty_hard', target: 1, rewards: { waifuCoins: 100, sr_shards: 2 } },
     { id: 'weekly_craft_key', type: 'weekly', category: 'collection', progressKey: 'keysCrafted', target: 1, rewards: { r_shards: 5 } },
     { id: 'weekly_gacha_10', type: 'weekly', category: 'collection', progressKey: 'gachaRolls', target: 10, rewards: { waifuCoins: 100 } },
+    { id: 'weekly_play_cards_spade', type: 'weekly', category: 'gameplay', progressKey: 'cardsPlayed_spade', target: 20, rewards: { waifuCoins: 50, fire_essences: 2 } },
+    { id: 'weekly_win_roguelike', type: 'weekly', category: 'gameplay', progressKey: 'roguelikeGamesWon', target: 1, rewards: { waifuCoins: 200, transcendental_essences: 1 } },
 ];
 
 const ACHIEVEMENTS_DEFINITIONS: Achievement[] = [
@@ -53,6 +55,7 @@ export class MissionStore {
     missionProgress: Record<string, MissionState> = loadFromLocalStorage('mission_progress', {});
     achievementProgress: Record<string, AchievementState> = loadFromLocalStorage('achievement_progress', {});
     
+    // Initialize with a past date that guarantees a reset on first load
     lastDailyReset: number = loadFromLocalStorage('last_daily_reset', 0);
     lastWeeklyReset: number = loadFromLocalStorage('last_weekly_reset', 0);
     
@@ -62,6 +65,7 @@ export class MissionStore {
         makeAutoObservable(this, { rootStore: false });
         this.rootStore = rootStore;
         
+        // Immediately check for resets on instantiation
         this.checkForResets();
 
         autorun(() => localStorage.setItem('mission_progress', JSON.stringify(this.missionProgress)));
@@ -84,6 +88,12 @@ export class MissionStore {
                checkList(this.achievements, this.achievementProgress);
     }
 
+    private _resetProgress(missions: Mission[], progressStore: Record<string, MissionState | AchievementState>) {
+        missions.forEach(mission => {
+            progressStore[mission.id] = { progress: 0, claimed: false };
+        });
+    }
+
     checkForResets() {
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -92,21 +102,30 @@ export class MissionStore {
         if (this.lastDailyReset < today) {
             runInAction(() => {
                 this.lastDailyReset = today;
+                this._resetProgress(this.dailyMissions, this.missionProgress);
+                // Also clear unique progress for daily missions
                 this.dailyMissions.forEach(mission => {
-                    this.missionProgress[mission.id] = { progress: 0, claimed: false };
+                    if (this.uniqueProgress[mission.progressKey]) {
+                        delete this.uniqueProgress[mission.progressKey];
+                    }
                 });
             });
         }
         
         // Weekly Reset (Monday midnight)
         const dayOfWeek = now.getDay(); // Sunday is 0, Monday is 1
-        const daysSinceMonday = (dayOfWeek + 6) % 7;
+        const daysSinceMonday = (dayOfWeek + 6) % 7; // Calculate days since Monday (0 for Monday, 1 for Tuesday, etc.)
         const monday = new Date(today - daysSinceMonday * 24 * 60 * 60 * 1000).getTime();
+
         if (this.lastWeeklyReset < monday) {
             runInAction(() => {
                 this.lastWeeklyReset = monday;
+                this._resetProgress(this.weeklyMissions, this.missionProgress);
+                // Also clear unique progress for weekly missions
                 this.weeklyMissions.forEach(mission => {
-                    this.missionProgress[mission.id] = { progress: 0, claimed: false };
+                    if (this.uniqueProgress[mission.progressKey]) {
+                        delete this.uniqueProgress[mission.progressKey];
+                    }
                 });
             });
         }
