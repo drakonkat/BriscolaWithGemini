@@ -1,3 +1,4 @@
+
 .menu {
   display: flex;
   flex-direction: column;
@@ -157,12 +158,7 @@
 }
 
 .menu-subtitle {
-  font-size: clamp(1rem, 4vw, 1.2rem);
-  margin: 0;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  color: var(--font-color-secondary);
+  display: none;
 }
 
 .project-description {
@@ -438,6 +434,11 @@ input:checked + .slider:before {
 }
 .random-waifu-card h3 {
   font-size: 1.4rem;
+}
+.random-waifu-card p {
+    font-size: 0.9rem;
+    color: var(--font-color-secondary);
+    margin-top: 0.5rem;
 }
 
 .start-game-container {
@@ -816,6 +817,12 @@ input:checked + .slider:before {
     color: var(--gold-accent);
 }
 
+.desktop-only { display: flex; }
+.mobile-only { display: none; }
+.difficulty-mobile-view { display: none; }
+.game-mode-mobile-view { display: none; }
+.waifu-mobile-view { display: none; }
+
 @media (min-width: 769px) {
     .waifu-carousel-wrapper {
         padding: 0; /* Remove space for buttons */
@@ -1027,6 +1034,12 @@ input:checked + .slider:before {
   .menu-section-header h2 {
     font-size: 1.5rem;
   }
+
+  .desktop-only { display: none; }
+  .mobile-only { display: flex; justify-content: center; }
+  .difficulty-mobile-view { display: flex; justify-content: center; width: 100%; margin-top: 1rem; }
+  .game-mode-mobile-view { display: flex; justify-content: center; width: 100%; margin-top: 1rem; }
+  .waifu-mobile-view { display: flex; justify-content: center; width: 100%; margin-top: 1rem; }
 }
 
 @media (max-width: 480px) {

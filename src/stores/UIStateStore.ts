@@ -88,6 +88,9 @@ export class UIStateStore {
     isPlayerWalletOpen = false; // New state for player wallet popover
     isDungeonRewardsModalOpen = false; // New state for Dungeon Rewards modal
     isWaifuCoinRulesModalOpen = false;
+    isDifficultySelectionModalOpen = false;
+    isGameModeSelectionModalOpen = false; // New
+    isWaifuSelectionModalOpen = false; // New
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
 
     waifuForDetails: Waifu | null = null;
@@ -160,6 +163,9 @@ export class UIStateStore {
             case 'playerWallet': this.isPlayerWalletOpen = true; break; // Open wallet
             case 'dungeonRewards': this.isDungeonRewardsModalOpen = true; break; // Open Dungeon Rewards modal
             case 'waifuCoinRules': this.isWaifuCoinRulesModalOpen = true; break;
+            case 'difficultySelection': this.isDifficultySelectionModalOpen = true; break;
+            case 'gameModeSelection': this.isGameModeSelectionModalOpen = true; break;
+            case 'waifuSelection': this.isWaifuSelectionModalOpen = true; break;
             case 'chat': 
                 this.isChatModalOpen = true; 
                 this.setUnreadMessageCount(0);
@@ -196,6 +202,9 @@ export class UIStateStore {
             case 'playerWallet': this.isPlayerWalletOpen = false; break; // Close wallet
             case 'dungeonRewards': this.isDungeonRewardsModalOpen = false; break; // Close Dungeon Rewards modal
             case 'waifuCoinRules': this.isWaifuCoinRulesModalOpen = false; break;
+            case 'difficultySelection': this.isDifficultySelectionModalOpen = false; break;
+            case 'gameModeSelection': this.isGameModeSelectionModalOpen = false; break;
+            case 'waifuSelection': this.isWaifuSelectionModalOpen = false; break;
             case 'chat': this.isChatModalOpen = false; break;
         }
     }

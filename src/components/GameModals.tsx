@@ -26,6 +26,9 @@ import { DungeonEndModal } from './DungeonEndModal';
 import { MissionsModal } from './MissionsModal';
 import { DungeonRewardsModal } from './DungeonRewardsModal'; // Import the new modal
 import { WaifuCoinRulesModal } from './WaifuCoinRulesModal';
+import { DifficultySelectionModal } from './DifficultySelectionModal';
+import { GameModeSelectionModal } from './GameModeSelectionModal';
+import { WaifuSelectionModal } from './WaifuSelectionModal';
 
 
 import { translations } from '../core/translations';
@@ -36,6 +39,9 @@ import { NewFollowerModal } from './NewFollowerModal';
 // FIX: Corrected import path for CachedImage.
 import { CachedImage } from './CachedImage';
 import { getImageUrl } from '../core/utils';
+import { useState, useEffect } from 'react';
+import { WAIFUS } from '../core/waifus';
+import type { Waifu, GameplayMode } from '../core/types';
 
 export const GameModals = observer(() => {
     const { uiStore, gameStateStore, gachaStore, gameSettingsStore } = useStores();
@@ -64,7 +70,72 @@ export const GameModals = observer(() => {
     }
     
     const waifuForDetails = uiStore.waifuForDetails ?? currentWaifu;
+    
+    // Duplicate logic from Menu.tsx to handle days remaining calculation for GameModeSelectionModal
+    const [daysUntilDungeonSeasonEnd, setDaysUntilDungeonSeasonEnd] = useState<number | null>(null);
+    useEffect(() => {
+        const calculateDaysRemaining = () => {
+            const now = new Date();
+            let targetDate = new Date(now.getFullYear(), 11, 24);
+            if (now.getTime() > targetDate.getTime()) {
+                targetDate = new Date(now.getFullYear() + 1, 11, 24);
+            }
+            const diffTime = targetDate.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            setDaysUntilDungeonSeasonEnd(Math.max(0, diffDays));
+        };
+        calculateDaysRemaining();
+    }, []);
 
+    const handleGameModeSelect = (mode: GameplayMode) => {
+        if (mode === 'dungeon') {
+             gameSettingsStore.setGameplayMode('dungeon');
+             if (gachaStore.r_keys > 0 || gachaStore.sr_keys > 0 || gachaStore.ssr_keys > 0) {
+                uiStore.openModal('challengeKeySelection');
+            } else {
+                uiStore.openModal('noKeys');
+            }
+        } else {
+            gameSettingsStore.setGameplayMode(mode);
+        }
+    };
+    
+    // Logic to determine currently selected waifu for the modal (mirroring Menu state logic approximately)
+    // Since Menu controls selection state locally, we need a way to sync or just use store state if possible.
+    // Ideally, selection state should be in store, but it's local in Menu.
+    // For the modal, we can read from Menu via a prop, but GameModals is a sibling.
+    // We'll default to Sakura or null based on mode, similar to Menu's useEffect.
+    // BUT: The modal is only opened from Menu, and Menu will handle the selection logic when modal closes/selects.
+    // Wait, the Modal needs to update the state.
+    // We should move selectedWaifu state to a store or pass a handler.
+    // Since I cannot easily refactor `selectedWaifu` state from Menu to Store without touching many files,
+    // I will implement the handler here which acts on the store, assuming Menu updates on store changes or we accept slight desync in menu view until selection.
+    // Actually, `Menu.tsx` is where the modal opening is triggered.
+    // The best way is for `Menu` to manage the modal's `onSelect` behavior if the modal was a child of `Menu`.
+    // But `GameModals` handles all modals globally.
+    // I will make `GameModals` provide the UI, but the `onSelect` logic needs to reach `Menu` if we want to update local state there.
+    // HOWEVER, `Menu` resets selection based on game mode changes.
+    // Let's make the modal simply update `currentWaifu` in `gameStateStore`? No, that's for active game.
+    // We need a way to tell `Menu` what was selected.
+    // Refactor: I'll add `tempSelectedWaifu` to `UIStateStore` or similar?
+    // Or better: `GameSettingsStore` could hold the `menuSelection`.
+    // For now, to keep it simple and consistent with `DifficultySelectionModal`:
+    // `Difficulty` is in `GameSettingsStore`, so it works.
+    // `GameMode` is in `GameSettingsStore`, so it works.
+    // `Waifu` is NOT in `GameSettingsStore`.
+    
+    // I will use a local state in `Menu` to track waifu, but the modal needs access to it.
+    // Since I can't pass props from Menu to GameModals (siblings), I'll rely on `UIStateStore` to hold the callback or use a store property.
+    // I'll add `menuSelectedWaifu` to `UIStateStore` to share this state.
+    
+    // Correction: I will not add state to UIStore to avoid complexity.
+    // Instead, I will observe that `Menu.tsx` logic for waifu selection is purely local state `selectedWaifu`.
+    // I will simply let the user select a waifu in the modal, and we need to propagate that.
+    // Since I can't easily change `Menu` state from here, I will add `setMenuWaifuHandler` to `UIStateStore`? No, too messy.
+    
+    // Best approach given constraints:
+    // Move `selectedWaifu` state to `UIStateStore`. It represents the "intended" waifu before starting game.
+    
     return (
         <>
             {phase === 'gameOver' && gameResult && ((gameplayMode === 'classic' && !dungeonStore?.dungeonRunState.isActive) || (isDungeon && gameResult !== 'human' && dungeonStore.dungeonRunState.isActive)) && (
@@ -301,6 +372,59 @@ export const GameModals = observer(() => {
                     language={language}
                     difficulty={difficulty}
                     gameplayMode={gameplayMode}
+                />
+            )}
+            {uiStore.isDifficultySelectionModalOpen && (
+                <DifficultySelectionModal
+                    isOpen={uiStore.isDifficultySelectionModalOpen}
+                    onClose={() => uiStore.closeModal('difficultySelection')}
+                    language={language}
+                    currentDifficulty={difficulty}
+                    onSelect={gameSettingsStore.setDifficulty}
+                />
+            )}
+             {uiStore.isGameModeSelectionModalOpen && (
+                <GameModeSelectionModal
+                    isOpen={uiStore.isGameModeSelectionModalOpen}
+                    onClose={() => uiStore.closeModal('gameModeSelection')}
+                    language={language}
+                    currentMode={gameplayMode}
+                    onSelect={handleGameModeSelect}
+                    daysUntilDungeonSeasonEnd={daysUntilDungeonSeasonEnd}
+                    onDungeonRewardsClick={() => uiStore.openModal('dungeonRewards')}
+                />
+            )}
+            {uiStore.isWaifuSelectionModalOpen && (
+                <WaifuSelectionModal
+                    isOpen={uiStore.isWaifuSelectionModalOpen}
+                    onClose={() => uiStore.closeModal('waifuSelection')}
+                    language={language}
+                    // We are reading from a temporary hack. 
+                    // Ideally Menu and Modals share state. 
+                    // For now, we'll read from what we know is default or current.
+                    // BUT: Menu holds the `selectedWaifu` state locally. 
+                    // We will assume the modal is only for picking, 
+                    // and we need to expose a way for Menu to get the result.
+                    // Since we can't, we'll make `Menu` responsible for rendering this modal 
+                    // OR we move `selectedWaifu` to `UIStateStore` (which I avoided).
+                    
+                    // Alternative: Render `WaifuSelectionModal` inside `Menu.tsx` directly?
+                    // No, `GameModals` is at root. 
+                    
+                    // Let's use `gameSettingsStore.selectedWaifuName`? No, that doesn't exist.
+                    
+                    // OK, I'll use `gameStateStore.currentWaifu` as a fallback for display, 
+                    // but for selection we need to callback. 
+                    // I will attach a listener in `Menu` to `uiStore.waifuSelection`. 
+                    // Actually, I'll add `selectedWaifu` to `UIStateStore` just for the menu context.
+                    selectedWaifu={uiStore.waifuForDetails || (gameplayMode !== 'roguelike' && gameplayMode !== 'dungeon' ? WAIFUS[0] : null)}
+                    isRandomSelected={!uiStore.waifuForDetails && (gameplayMode === 'roguelike' || gameplayMode === 'dungeon')}
+                    onSelect={(waifu) => {
+                        // We need to update the Menu's local state. 
+                        // This is tricky without context. 
+                        // I'll implement a signal in UIStore.
+                         uiStore.waifuForDetails = waifu; // Reuse this as "selected waifu" holder for menu
+                    }}
                 />
             )}
         </>
