@@ -631,8 +631,8 @@ input:checked + .slider:before {
 /* Dungeon Badge Styles */
 .dungeon-badge {
     position: absolute;
-    top: -15px; /* Adjust as needed */
-    right: -15px; /* Adjust as needed */
+    top: -15px;
+    right: -15px;
     background-color: rgba(0, 0, 0, 0.6);
     border: 1px solid var(--gold-accent);
     border-radius: var(--radius-sm);
@@ -641,12 +641,20 @@ input:checked + .slider:before {
     font-weight: bold;
     color: white;
     display: flex;
-    flex-direction: column; /* Stack icon and text */
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     box-shadow: 0 0 8px rgba(var(--gold-accent-rgb), 0.5);
-    line-height: 1; /* Tighter spacing */
+    line-height: 1;
+    cursor: pointer;
+    z-index: 2;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+.dungeon-badge:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 12px rgba(var(--gold-accent-rgb), 0.8);
+}
+
 
 .dungeon-badge-icon {
     width: 20px;

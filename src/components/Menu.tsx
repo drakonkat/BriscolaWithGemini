@@ -266,12 +266,17 @@ export const Menu = observer(() => {
                                 onClick={handleDungeonClick}
                             >
                                 {daysUntilDungeonSeasonEnd !== null && daysUntilDungeonSeasonEnd > 0 && (
-                                    <button className="dungeon-badge-wrapper" onClick={(e) => { e.stopPropagation(); uiStore.openModal('dungeonRewards'); }} aria-label={T.dungeonRewardsModal.title}>
-                                        <div className="dungeon-badge">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="dungeon-badge-icon"><path d="M19 10c0-1.1-.9-2-2-2h-3V5c0-1.1-.9-2-2-2s-2 .9-2 2v3H7c-1.1 0-2 .9-2 2v2h14v-2zm-2 2H7v-2h10v2zm-5 4c0-1.1-.9-2-2-2s-2 .9-2 2v2c0 1.1.9 2 2 2s2-.9 2-2v-2z"/></svg>
-                                            <span className="dungeon-badge-countdown">{daysUntilDungeonSeasonEnd}</span>
-                                        </div>
-                                    </button>
+                                    <div 
+                                        className="dungeon-badge" 
+                                        onClick={(e) => { e.stopPropagation(); uiStore.openModal('dungeonRewards'); }} 
+                                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); uiStore.openModal('dungeonRewards'); } }}
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-label={T.dungeonRewardsModal.title}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="dungeon-badge-icon"><path d="M19 10c0-1.1-.9-2-2-2h-3V5c0-1.1-.9-2-2-2s-2 .9-2 2v3H7c-1.1 0-2 .9-2 2v2h14v-2zm-2 2H7v-2h10v2zm-5 4c0-1.1-.9-2-2-2s-2 .9-2 2v2c0 1.1.9 2 2 2s2-.9 2-2v-2z"/></svg>
+                                        <span className="dungeon-badge-countdown">{daysUntilDungeonSeasonEnd}</span>
+                                    </div>
                                 )}
                                 <span className="game-mode-icon">⚔️</span>
                                 <h3>{T.gameModeDungeon}</h3>
