@@ -233,6 +233,8 @@ export const Menu = observer(() => {
                     </div>
                 </div>
 
+                <p className="menu-subtitle">{T.subtitle}</p>
+
                 {/* The player wallet component will now be rendered by App.tsx in a popover */}
                 
 

@@ -8,6 +8,7 @@ export const translations = {
   it: {
     // Menu
     title: "Waifu Briscola",
+    subtitle: "Sfida un'avversaria controllata da Gemini AI.",
     projectDescription1: "Questo è un piccolo progetto senza pretese, nato per divertimento. L'obiettivo è aggiungere gradualmente nuove funzionalità, più mazzi di carte e, soprattutto, tantissime nuove Waifu con personalità uniche tutte da scoprire!",
     projectDescription2: "I fondi raccolti dalle donazioni serviranno ad assumere disegnatori e artisti per migliorare sempre più le waifu e il gioco, così da ridistribuire la ricchezza tra gli umani e non far rubare il loro lavoro all'IA.",
     startGame: "Inizia Partita",
@@ -664,6 +665,7 @@ export const translations = {
   en: {
     // Menu
     title: "Waifu Briscola",
+    subtitle: "Challenge a Gemini AI opponent.",
     projectDescription1: "This is a small, unpretentious project born for fun. The goal is to gradually add new features, more card decks, and, above all, lots of new Waifus with unique personalities to discover!",
     projectDescription2: "The funds raised from donations will be used to hire designers and artists to improve the waifus and the game, thus redistributing wealth among humans and not letting AI steal their jobs.",
     startGame: "Start Game",

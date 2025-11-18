@@ -156,6 +156,15 @@
     height: 20px;
 }
 
+.menu-subtitle {
+  font-size: clamp(1rem, 4vw, 1.2rem);
+  margin: 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--font-color-secondary);
+}
+
 .project-description {
     display: none;
 }
@@ -875,6 +884,7 @@ input:checked + .slider:before {
     order: 3;
     position: relative;
   }
+  .menu-subtitle { margin: 0.5rem 0 1rem; font-size: 1rem; }
   
   /* Removed .player-wallet to be replaced by popover */
   /* .player-wallet {
