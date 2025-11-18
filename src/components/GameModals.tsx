@@ -63,6 +63,8 @@ export const GameModals = observer(() => {
         }
     }
     
+    const waifuForDetails = uiStore.waifuForDetails ?? currentWaifu;
+
     return (
         <>
             {phase === 'gameOver' && gameResult && ((gameplayMode === 'classic' && !dungeonStore?.dungeonRunState.isActive) || (isDungeon && gameResult !== 'human' && dungeonStore.dungeonRunState.isActive)) && (
@@ -93,11 +95,11 @@ export const GameModals = observer(() => {
                     difficulty={difficulty}
                 />
             )}
-            {uiStore.isWaifuModalOpen && currentWaifu && (
+            {uiStore.isWaifuModalOpen && waifuForDetails && (
                 <WaifuDetailsModal
                     isOpen={uiStore.isWaifuModalOpen}
                     onClose={() => uiStore.closeModal('waifuDetails')}
-                    waifu={currentWaifu}
+                    waifu={waifuForDetails}
                     language={language}
                 />
             )}

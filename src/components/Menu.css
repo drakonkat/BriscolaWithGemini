@@ -816,138 +816,6 @@ input:checked + .slider:before {
     color: var(--gold-accent);
 }
 
-.featured-waifu-container {
-  margin: 2rem auto 1rem;
-  width: 100%;
-  max-width: 700px;
-  min-height: 160px; /* Prevent layout shift */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.featured-waifu-placeholder {
-  width: 100%;
-  height: 100%;
-}
-
-.featured-waifu-display {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 2rem;
-    padding: 1.5rem;
-    width: 100%;
-    background-color: rgba(0,0,0,0.2);
-    border-radius: var(--radius-md);
-    text-align: left;
-}
-.featured-waifu-avatar {
-    width: 120px;
-    height: 120px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    border: 3px solid var(--primary-accent);
-    object-fit: cover;
-    object-position: top;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    transition: border-color 0.4s ease;
-}
-.featured-waifu-desc {
-    font-size: 1rem;
-    line-height: 1.6;
-    color: var(--font-color-secondary);
-    margin: 0;
-}
-
-.featured-waifu-display.random .featured-waifu-avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(0,0,0,0.2);
-}
-.featured-waifu-display.random .featured-waifu-avatar svg {
-    width: 60%;
-    height: 60%;
-    color: var(--primary-accent);
-}
-
-.featured-waifu-container.difficulty-easy .featured-waifu-avatar {
-    border-color: var(--element-earth-color); /* Green */
-}
-
-.featured-waifu-container.difficulty-medium .featured-waifu-avatar {
-    border-color: var(--element-water-color); /* Light Blue */
-}
-
-.featured-waifu-container.difficulty-hard .featured-waifu-avatar {
-    border-color: var(--gold-accent); /* Yellow */
-}
-
-.featured-waifu-container.difficulty-nightmare .featured-waifu-avatar {
-    border-color: var(--element-fire-color); /* Orange */
-}
-
-.featured-waifu-container.difficulty-apocalypse .featured-waifu-avatar {
-    border-color: var(--red-suit); /* Red */
-}
-
-/* --- Challenge Match Section --- */
-.challenge-matches {
-    background: rgba(0,0,0,0.25);
-    border-radius: var(--radius-md);
-    padding: 1.5rem;
-    margin-top: 1rem;
-    border: 1px solid var(--border-color);
-}
-.challenge-matches h2 {
-    font-size: 1.5rem;
-    color: var(--gold-accent);
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-}
-.challenge-matches p {
-    color: var(--font-color-secondary);
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
-.challenge-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-.challenge-button {
-    background: none;
-    border: 2px solid;
-    border-radius: var(--radius-full);
-    color: white;
-    padding: 0.6rem 1.2rem;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-.challenge-button svg { width: 20px; height: 20px; }
-.challenge-button.r { border-color: var(--rarity-r-color); color: var(--rarity-r-color); }
-.challenge-button.sr { border-color: var(--rarity-sr-color); color: var(--rarity-sr-color); }
-.challenge-button.ssr { border-color: var(--rarity-ssr-color); color: var(--rarity-ssr-color); }
-
-.challenge-button.r:hover:not(:disabled) { background-color: var(--rarity-r-color); color: white; box-shadow: 0 0 10px var(--rarity-r-color); }
-.challenge-button.sr:hover:not(:disabled) { background-color: var(--rarity-sr-color); color: white; box-shadow: 0 0 10px var(--rarity-sr-color); }
-.challenge-button.ssr:hover:not(:disabled) { background-color: var(--rarity-ssr-color); color: var(--black-suit); box-shadow: 0 0 10px var(--rarity-ssr-color); }
-.challenge-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    filter: grayscale(50%);
-}
-
 @media (min-width: 769px) {
     .waifu-carousel-wrapper {
         padding: 0; /* Remove space for buttons */
@@ -1119,24 +987,6 @@ input:checked + .slider:before {
       box-shadow: 0 0 25px rgba(var(--primary-accent-rgb), 0.7);
   }
   
-  .featured-waifu-container {
-      margin: 1.5rem 0;
-  }
-  .featured-waifu-display {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.5rem 1rem;
-    text-align: center;
-  }
-  .featured-waifu-avatar {
-    width: 100px;
-    height: 100px;
-  }
-  .featured-waifu-desc {
-    font-size: 0.9rem;
-  }
-  
   .game-mode-card h3 {
     font-size: 1rem;
   }
@@ -1237,7 +1087,8 @@ input:checked + .slider:before {
     justify-content: center;
 }
 
-.difficulty-info-button {
+.difficulty-info-button,
+.waifu-info-button {
     background: none;
     border: 1px solid var(--border-color);
     color: var(--font-color-secondary);
@@ -1252,7 +1103,8 @@ input:checked + .slider:before {
     transition: all 0.2s ease;
 }
 
-.difficulty-info-button:hover, .difficulty-info-button:focus {
+.difficulty-info-button:hover:not(:disabled), .difficulty-info-button:focus:not(:disabled),
+.waifu-info-button:hover:not(:disabled), .waifu-info-button:focus:not(:disabled) {
     background-color: rgba(var(--primary-accent-rgb), 0.2);
     border-color: var(--primary-accent);
     color: var(--primary-accent);
@@ -1260,7 +1112,17 @@ input:checked + .slider:before {
     outline: none;
 }
 
-.difficulty-info-button svg {
+.waifu-info-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    background: none;
+    border-color: var(--border-color);
+    color: var(--font-color-secondary);
+}
+
+.difficulty-info-button svg,
+.waifu-info-button svg {
     width: 100%;
     height: 100%;
 }
@@ -1276,14 +1138,24 @@ input:checked + .slider:before {
     gap: 0.5rem;
 }
 
+.waifu-selection-header {
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0;
+}
+
 .menu-section-header h2,
-.menu-section-header h3 {
+.menu-section-header h3,
+.waifu-selection-header h2 {
     text-align: center;
     margin: 0;
     padding: 0;
 }
 
-.menu-section-header h2 {
+.menu-section-header h2,
+.waifu-selection-header h2 {
     color: var(--primary-accent);
     font-size: 1.8rem;
 }
@@ -1325,7 +1197,8 @@ input:checked + .slider:before {
 }
 
 @media (max-width: 768px) {
-    .menu-section-header h2 {
+    .menu-section-header h2,
+    .waifu-selection-header h2 {
         font-size: 1.5rem;
     }
 }

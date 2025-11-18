@@ -4,7 +4,7 @@
 */
 import { makeAutoObservable, runInAction, autorun } from 'mobx';
 import type { RootStore } from '.';
-import type { Player, Card, ModalType, SnackbarType } from '../core/types';
+import type { Player, Card, ModalType, SnackbarType, Waifu } from '../core/types';
 import { getImageUrl } from '../core/utils';
 import { translations } from '../core/translations';
 
@@ -90,8 +90,7 @@ export class UIStateStore {
     isWaifuCoinRulesModalOpen = false;
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
 
-    // Menu collapsible sections
-    isWaifuDetailsOpen: boolean = loadFromLocalStorage('ui_waifu_details_open', window.innerWidth > 768);
+    waifuForDetails: Waifu | null = null;
 
     // Tutorial State
     isTutorialActive = false;
@@ -116,8 +115,6 @@ export class UIStateStore {
     constructor(rootStore: RootStore) {
         makeAutoObservable(this, { rootStore: false, bubbleTimeoutRef: false });
         this.rootStore = rootStore;
-
-        autorun(() => localStorage.setItem('ui_waifu_details_open', JSON.stringify(this.isWaifuDetailsOpen)));
     }
 
     get currentTutorialStepIndex() {
@@ -129,8 +126,11 @@ export class UIStateStore {
         return this.currentTutorialSequence.length;
     }
 
-    openModal = (type: ModalType) => {
+    openModal = (type: ModalType, payload?: { waifu?: Waifu }) => {
         if (this.isTutorialActive && type !== 'gallery') return; // Prevent modals during tutorial, except for gallery
+        if (type === 'waifuDetails' && payload?.waifu) {
+            this.waifuForDetails = payload.waifu;
+        }
         switch (type) {
             case 'rules': this.isRulesModalOpen = true; break;
             case 'privacy': this.isPrivacyModalOpen = true; break;
@@ -173,7 +173,10 @@ export class UIStateStore {
             case 'privacy': this.isPrivacyModalOpen = false; break;
             case 'terms': this.isTermsModalOpen = false; break;
             case 'gallery': this.isGalleryModalOpen = false; break;
-            case 'waifuDetails': this.isWaifuModalOpen = false; break;
+            case 'waifuDetails': 
+                this.isWaifuModalOpen = false;
+                this.waifuForDetails = null; // Also clear the waifu for details
+                break;
             case 'support': this.isSupportModalOpen = false; break;
             case 'confirmLeave': this.isConfirmLeaveModalOpen = false; break;
             case 'history': this.isHistoryModalOpen = false; break;
@@ -255,10 +258,6 @@ export class UIStateStore {
     setHasVotedForSubscription = (voted: boolean) => {
         this.hasVotedForSubscription = voted;
         localStorage.setItem('has_voted_subscription', JSON.stringify(voted));
-    }
-
-    toggleWaifuDetails = () => {
-        this.isWaifuDetailsOpen = !this.isWaifuDetailsOpen;
     }
 
     togglePlayerWallet = () => {

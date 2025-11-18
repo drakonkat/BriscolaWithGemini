@@ -61,8 +61,6 @@ export const WaifuSelector = ({ language, onWaifuSelected, selectedWaifu, isRand
 
     return (
         <div className="waifu-selection">
-            <h2>{T.chooseOpponent}</h2>
-
             <div className="waifu-carousel-wrapper">
                 <button 
                     className="carousel-nav-button prev" 
