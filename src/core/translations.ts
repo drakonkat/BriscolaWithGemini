@@ -808,8 +808,16 @@ export const translations = {
         contactName: "Mauro Mazzocchetti",
         intro: "This Privacy Policy describes how your information is handled when you use the Waifu Briscola application ('Service').",
         collection: {
-            title: "Usage Data (PostHog):",
-            text: "We collect anonymous or pseudonymous analytics data about how you interact with the game. This includes events like starting a game, cards played, and final results. This data helps us understand how the game is used and how we can improve it. We do not collect personally identifiable information (PII) through PostHog."
+            title: "Information We Collect",
+            intro: "To improve your experience, we use third-party services that may collect information:",
+            posthog: {
+                title: "Usage Data (PostHog):",
+                text: "We collect anonymous or pseudonymous analytics data about how you interact with the game. This includes events like starting a game, cards played, and final results. This data helps us understand how the game is used and how we can improve it. We do not collect personally identifiable information (PII) through PostHog."
+            },
+            gemini: {
+                title: "AI Interactions (Google Gemini):",
+                text: "Chat messages you send and game state information (like cards in your hand and on the table) are sent to the Google Gemini API to generate the AI's responses and moves. These interactions are subject to <a href='https://policies.google.com/privacy' target='_blank' rel='noopener noreferrer'>Google's Privacy Policy</a>. We do not send any personal information to Google beyond the content of your game interactions."
+            }
         },
         usage: {
             title: "How We Use Your Information",
@@ -1235,14 +1243,14 @@ export const translations = {
                 background: "Exclusive Background unlocked (if not already owned)",
                 coins: "Waifu Coins: 1200 WC",
                 fragments: "Fragments: 15 R Fragments, 10 SR Fragments, 1 SSR Fragment",
-                essences: "Essences: 10 Transcendental Essences",
+                essences: "Essenze: 10 Transcendental Essences",
                 additionalKey: "Additional Key: 1 SR Key"
             },
             subsequent: {
                 header: "From the second time onwards completing an SSR Dungeon:",
                 coins: "Waifu Coins: 1200 WC",
                 fragments: "Fragments: 15 R Fragments, 10 SR Fragments, 2 SSR Fragments (if background already unlocked, 1 additional SSR Fragment)",
-                essences: "Essences: 10 Transcendental Essences",
+                essences: "Essenze: 10 Transcendental Essences",
                 additionalKey: "Additional Key: 1 SR Key"
             }
         }

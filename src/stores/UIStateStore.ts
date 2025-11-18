@@ -87,10 +87,10 @@ export class UIStateStore {
     isDungeonModifierInfoModalOpen = false;
     isPlayerWalletOpen = false; // New state for player wallet popover
     isDungeonRewardsModalOpen = false; // New state for Dungeon Rewards modal
+    isWaifuCoinRulesModalOpen = false;
     hasVotedForSubscription = loadFromLocalStorage('has_voted_subscription', false);
 
     // Menu collapsible sections
-    isDifficultyDetailsOpen: boolean = loadFromLocalStorage('ui_difficulty_details_open', window.innerWidth > 768);
     isWaifuDetailsOpen: boolean = loadFromLocalStorage('ui_waifu_details_open', window.innerWidth > 768);
 
     // Tutorial State
@@ -117,7 +117,6 @@ export class UIStateStore {
         makeAutoObservable(this, { rootStore: false, bubbleTimeoutRef: false });
         this.rootStore = rootStore;
 
-        autorun(() => localStorage.setItem('ui_difficulty_details_open', JSON.stringify(this.isDifficultyDetailsOpen)));
         autorun(() => localStorage.setItem('ui_waifu_details_open', JSON.stringify(this.isWaifuDetailsOpen)));
     }
 
@@ -160,6 +159,7 @@ export class UIStateStore {
             case 'dungeonModifierInfo': this.isDungeonModifierInfoModalOpen = true; break;
             case 'playerWallet': this.isPlayerWalletOpen = true; break; // Open wallet
             case 'dungeonRewards': this.isDungeonRewardsModalOpen = true; break; // Open Dungeon Rewards modal
+            case 'waifuCoinRules': this.isWaifuCoinRulesModalOpen = true; break;
             case 'chat': 
                 this.isChatModalOpen = true; 
                 this.setUnreadMessageCount(0);
@@ -192,6 +192,7 @@ export class UIStateStore {
             case 'dungeonModifierInfo': this.isDungeonModifierInfoModalOpen = false; break;
             case 'playerWallet': this.isPlayerWalletOpen = false; break; // Close wallet
             case 'dungeonRewards': this.isDungeonRewardsModalOpen = false; break; // Close Dungeon Rewards modal
+            case 'waifuCoinRules': this.isWaifuCoinRulesModalOpen = false; break;
             case 'chat': this.isChatModalOpen = false; break;
         }
     }
@@ -254,10 +255,6 @@ export class UIStateStore {
     setHasVotedForSubscription = (voted: boolean) => {
         this.hasVotedForSubscription = voted;
         localStorage.setItem('has_voted_subscription', JSON.stringify(voted));
-    }
-
-    toggleDifficultyDetails = () => {
-        this.isDifficultyDetailsOpen = !this.isDifficultyDetailsOpen;
     }
 
     toggleWaifuDetails = () => {

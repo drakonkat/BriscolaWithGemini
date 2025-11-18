@@ -16,119 +16,11 @@ import { DungeonModeStore, RoguelikeModeStore } from '../stores';
 import { ElementIcon } from './ElementIcon';
 import { EssenceIcon } from './EssenceIcon'; // Import the new EssenceIcon
 
-const DifficultyDetails = ({ difficulty, language, gameplayMode }: { difficulty: Difficulty, language: 'it' | 'en', gameplayMode: GameplayMode }) => {
-    const T = translations[language];
-
-    if (gameplayMode === 'roguelike') {
-        const rewards = ROGUELIKE_REWARDS[difficulty];
-        
-        const difficultyDescKey = `difficulty${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}Desc` as keyof typeof T;
-        const difficultyDesc = T[difficultyDescKey] as string;
-
-        const essenceMultipliers: Record<Difficulty, string> = {
-            easy: 'x1',
-            medium: 'x1.25',
-            hard: 'x1.5',
-            nightmare: 'x2',
-            apocalypse: 'x2.5',
-        };
-
-        return (
-            <div className="difficulty-details-panel fade-in-up" key={`${difficulty}-roguelike`}>
-                <p className="difficulty-description">{difficultyDesc}</p>
-                <div className="difficulty-rewards roguelike">
-                    <div className="reward-item">
-                        <span>{T.roguelike.rewardWinRun}</span>
-                        <strong>+{rewards.win} WC</strong>
-                    </div>
-                    {rewards.loss.slice(1).map((lossAmount, index) => (
-                        <div className="reward-item" key={index}>
-                            <span>{T.roguelike.rewardLossLevel(index + 1)}</span>
-                            <strong>+{lossAmount} WC</strong>
-                        </div>
-                    ))}
-                    <div className="reward-item multiplier">
-                        <span>{T.rewardEssenceMultiplier}</span>
-                        <strong>{essenceMultipliers[difficulty]}</strong>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    const details = {
-        easy: {
-            desc: T.difficultyEasyDesc,
-            multiplier: '50%',
-            multiplierVal: 0.5,
-            isSpecial: false,
-        },
-        medium: {
-            desc: T.difficultyMediumDesc,
-            multiplier: '100%',
-            multiplierVal: 1.0,
-            isSpecial: false,
-        },
-        hard: {
-            desc: T.difficultyHardDesc,
-            multiplier: '150%',
-            multiplierVal: 1.5,
-            isSpecial: false,
-        },
-        nightmare: {
-            desc: T.difficultyNightmareDesc,
-            multiplier: T.rewardSpecial,
-            multiplierVal: 1.5, // for loss calculation
-            isSpecial: true,
-            winAmount: 250,
-        },
-        apocalypse: {
-            desc: T.difficultyApocalypseDesc,
-            multiplier: T.rewardSpecial,
-            multiplierVal: 1.5, // for loss calculation
-            isSpecial: true,
-            winAmount: 500,
-        }
-    }[difficulty];
-
-    const rewards = {
-        loss: details.isSpecial ? Math.round(20 * 1.5) : Math.round(20 * details.multiplierVal),
-        win_min: details.isSpecial ? details.winAmount : Math.round(45 * details.multiplierVal),
-        win_max: details.isSpecial ? details.winAmount : Math.round(100 * details.multiplierVal),
-    };
-
-    return (
-        <div className="difficulty-details-panel fade-in-up" key={difficulty}>
-            <p className="difficulty-description">{details.desc}</p>
-            <div className="difficulty-rewards">
-                <div className="reward-item multiplier">
-                    <span>{T.rewardCoinMultiplier}</span>
-                    <strong>{details.multiplier}</strong>
-                </div>
-                <div className="reward-item">
-                    <span>{T.rewardWin}</span>
-                    <strong>
-                        {details.isSpecial
-                            ? `+${rewards.win_min} WC`
-                            : `+${rewards.win_min} - ${rewards.win_max} WC`
-                        }
-                    </strong>
-                </div>
-                <div className="reward-item">
-                    <span>{T.rewardLoss}</span>
-                    <strong>+{rewards.loss} WC</strong>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-
 export const Menu = observer(() => {
     const rootStore = useStores();
     const { gameSettingsStore, gameStateStore, uiStore, gachaStore, missionStore } = rootStore;
     const { language, gameplayMode, difficulty, isNsfwEnabled } = gameSettingsStore;
-    const { menuBackgroundUrl, isDifficultyDetailsOpen, isWaifuDetailsOpen } = uiStore;
+    const { menuBackgroundUrl, isWaifuDetailsOpen } = uiStore;
     const { hasUnclaimedRewards } = missionStore;
 
     const T = translations[language];
@@ -393,6 +285,9 @@ export const Menu = observer(() => {
                 <div className="menu-section" data-tutorial-id="difficulty">
                     <div className="menu-section-header non-collapsible">
                         <h2>{T.difficultyLabel}</h2>
+                        <button className="difficulty-info-button" onClick={() => uiStore.openModal('waifuCoinRules')} aria-label={T.waifuCoinRulesTitle}>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                        </button>
                     </div>
                     {gameplayMode === 'dungeon' ? (
                         <div className="difficulty-locked-message">
@@ -451,18 +346,6 @@ export const Menu = observer(() => {
                             <button className="carousel-nav-button next" onClick={() => changeDifficulty(1)} aria-label="Next difficulty">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
                             </button>
-                        </div>
-                        
-                        <button className="menu-section-header details-header" onClick={uiStore.toggleDifficultyDetails} aria-expanded={isDifficultyDetailsOpen}>
-                            <h3>{T.waifuCoinRulesTitle}</h3>
-                            <span className={`collapse-icon ${isDifficultyDetailsOpen ? 'open' : ''}`}>
-                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
-                            </span>
-                        </button>
-                        <div className={`collapsible-content ${isDifficultyDetailsOpen ? 'open' : ''}`}>
-                            <div>
-                                <DifficultyDetails difficulty={difficulty} language={language} gameplayMode={gameplayMode} />
-                            </div>
                         </div>
                     </>
                     )}

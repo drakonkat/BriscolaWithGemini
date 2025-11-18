@@ -296,7 +296,6 @@
     display: flex;
     flex-direction: column;
     min-height: 0; /* Important for flex child with overflow */
-    /* REMOVED position: relative; here, moved to .gallery-tab-content */
 }
 .gallery-tab-content {
     flex-grow: 1;
@@ -426,12 +425,19 @@
 .legend-color-box.ssr { background-color: var(--rarity-ssr-color); }
 
 /* --- Crafting & Conversion Section --- */
+.crafting-tab-content { /* Added for scrollability */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
 .crafting-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
     padding: 1rem;
     overflow-y: auto;
+    flex-grow: 1; /* Make grid grow to fill space */
 }
 .crafting-card {
     background: rgba(0,0,0,0.3);
@@ -1494,4 +1500,20 @@
     transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0s;
         height: calc(100% - 80px);
 }
+}
+
+/* --- Settings Modal --- */
+.settings-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.settings-modal-content .settings-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
 }

@@ -25,6 +25,7 @@ import { DungeonProgressModal } from './DungeonProgressModal';
 import { DungeonEndModal } from './DungeonEndModal';
 import { MissionsModal } from './MissionsModal';
 import { DungeonRewardsModal } from './DungeonRewardsModal'; // Import the new modal
+import { WaifuCoinRulesModal } from './WaifuCoinRulesModal';
 
 
 import { translations } from '../core/translations';
@@ -289,6 +290,15 @@ export const GameModals = observer(() => {
                     isOpen={uiStore.isDungeonRewardsModalOpen}
                     onClose={() => uiStore.closeModal('dungeonRewards')}
                     language={language}
+                />
+            )}
+            {uiStore.isWaifuCoinRulesModalOpen && (
+                <WaifuCoinRulesModal
+                    isOpen={uiStore.isWaifuCoinRulesModalOpen}
+                    onClose={() => uiStore.closeModal('waifuCoinRules')}
+                    language={language}
+                    difficulty={difficulty}
+                    gameplayMode={gameplayMode}
                 />
             )}
         </>
