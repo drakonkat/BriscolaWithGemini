@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -38,7 +39,7 @@ const TUTORIAL_STEPS: Record<TutorialStepId, TutorialStepDetails> = {
     gachaRoll: { elementQuery: '[data-tutorial-id="gacha-controls"]', textKey: 'gachaRoll', position: 'bottom' },
     gachaTabs: { elementQuery: '[data-tutorial-id="gallery-tabs"]', textKey: 'gachaTabs', position: 'bottom' },
     closeGallery: { elementQuery: '[data-tutorial-id="gallery-close"]', textKey: 'closeGallery', position: 'top', action: (store) => store.closeModal('gallery') },
-    start: { elementQuery: '[data-tutorial-id="start-game"]', textKey: 'start', position: 'top', action: (store) => store.rootStore.gameStateStore.startTutorialGame() },
+    start: { elementQuery: '[data-tutorial-id="start-game"]', textKey: 'start', action: (store) => store.rootStore.gameStateStore.startTutorialGame() },
     // In-Game
     playerHand: { elementQuery: '[data-tutorial-id="player-hand"]', textKey: 'playerHand', position: 'top' },
     promptPlayCard: { elementQuery: '[data-tutorial-id="player-hand"]', textKey: 'promptPlayCard', position: 'top', waitForInput: true },
@@ -63,6 +64,7 @@ export class UIStateStore {
     
     // Modal States
     isRulesModalOpen = false;
+    rulesContext: 'full' | 'gameMode' = 'full';
     isPrivacyModalOpen = false;
     isTermsModalOpen = false;
     isGalleryModalOpen = false;
@@ -129,10 +131,13 @@ export class UIStateStore {
         return this.currentTutorialSequence.length;
     }
 
-    openModal = (type: ModalType, payload?: { waifu?: Waifu }) => {
+    openModal = (type: ModalType, payload?: { waifu?: Waifu, context?: 'full' | 'gameMode' }) => {
         if (this.isTutorialActive && type !== 'gallery') return; // Prevent modals during tutorial, except for gallery
         if (type === 'waifuDetails' && payload?.waifu) {
             this.waifuForDetails = payload.waifu;
+        }
+        if (payload?.context) {
+            this.rulesContext = payload.context;
         }
         switch (type) {
             case 'rules': this.isRulesModalOpen = true; break;
@@ -175,7 +180,10 @@ export class UIStateStore {
 
     closeModal = (type: ModalType) => {
         switch (type) {
-            case 'rules': this.isRulesModalOpen = false; break;
+            case 'rules': 
+                this.isRulesModalOpen = false;
+                this.rulesContext = 'full'; // Reset context
+                break;
             case 'privacy': this.isPrivacyModalOpen = false; break;
             case 'terms': this.isTermsModalOpen = false; break;
             case 'gallery': this.isGalleryModalOpen = false; break;

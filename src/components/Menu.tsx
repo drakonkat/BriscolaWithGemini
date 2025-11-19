@@ -263,7 +263,7 @@ export const Menu = observer(() => {
                         </button>
                     </div>
                     <nav className="drawer-nav">
-                         <button className="drawer-item" onClick={() => { uiStore.openModal('rules'); setIsDrawerOpen(false); }}>
+                         <button className="drawer-item" onClick={() => { uiStore.openModal('rules', { context: 'full' }); setIsDrawerOpen(false); }}>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
                             </svg>
@@ -315,6 +315,19 @@ export const Menu = observer(() => {
                 {/* Main Scrollable Content */}
                 <div className="menu-scrollable-area">
                     <div className="menu-section" data-tutorial-id="game-mode">
+                        <div className="menu-section-header non-collapsible game-mode-header">
+                            <h2>{T.gameModeLabel}</h2>
+                            <button 
+                                className="difficulty-info-button" 
+                                onClick={() => uiStore.openModal('rules', { context: 'gameMode' })}
+                                aria-label={T.rulesTitle}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                                </svg>
+                            </button>
+                        </div>
+
                         {/* Desktop View: Carousel */}
                         <div className="game-mode-carousel-wrapper desktop-only">
                             <button className="carousel-nav-button prev" onClick={() => changeGameMode(-1)} aria-label="Previous game mode">
@@ -435,10 +448,10 @@ export const Menu = observer(() => {
                                 className={`difficulty-card selected ${gameplayMode === 'dungeon' ? 'disabled' : ''}`}
                                 onClick={() => gameplayMode !== 'dungeon' && uiStore.openModal('difficultySelection')}
                             >
-                                <span className={`difficulty-icon ${difficulty === 'nightmare' ? 'nightmare-icon' : ''}`}>
-                                    {getDifficultyIcon(difficulty)}
+                                <span className={`difficulty-icon ${gameplayMode === 'dungeon' ? 'nightmare-icon' : (difficulty === 'nightmare' ? 'nightmare-icon' : '')}`}>
+                                    {gameplayMode === 'dungeon' ? getDifficultyIcon('nightmare') : getDifficultyIcon(difficulty)}
                                 </span>
-                                <h3>{getDifficultyTitle(difficulty)}</h3>
+                                <h3>{gameplayMode === 'dungeon' ? getDifficultyTitle('nightmare') : getDifficultyTitle(difficulty)}</h3>
                             </button>
                         </div>
 
@@ -452,12 +465,11 @@ export const Menu = observer(() => {
 
                     <div className="menu-section waifu-selection-section" data-tutorial-id="waifu-selector">
                          <div className="waifu-selection-header">
-                            <h2>{T.chooseOpponent}</h2>
-                             <button 
+                         <h2>{T.chooseOpponent}</h2>
+                            <button 
                                 className="waifu-info-button" 
-                                onClick={() => uiStore.openModal('waifuDetails')}
-                                disabled={isRandomCardSelected}
-                                aria-label={T.waifuDetails(selectedWaifu?.name || '')}
+                                onClick={() => uiStore.openModal('waifuDetails', { waifu: isRandomCardSelected ? { name: T.randomOpponent, fullDescription: { [language]: T.randomOpponentModalDesc } } as Waifu : selectedWaifu! })}
+                                aria-label={T.waifuDetails(selectedWaifu?.name || T.randomOpponent)}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>

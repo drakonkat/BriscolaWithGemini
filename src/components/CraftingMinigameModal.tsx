@@ -24,9 +24,9 @@ export const CraftingMinigameModal = observer(({ isOpen }: CraftingMinigameModal
     const [countdown, setCountdown] = useState(3);
     const [gameTimer, setGameTimer] = useState(15);
 
-    const animationFrameId = useRef<number>();
-    const countdownIntervalRef = useRef<number>();
-    const gameTimerIntervalRef = useRef<number>();
+    const animationFrameId = useRef<number | null>(null);
+    const countdownIntervalRef = useRef<number | null>(null);
+    const gameTimerIntervalRef = useRef<number | null>(null);
     const directionRef = useRef(1);
     
     const T = translations[language];

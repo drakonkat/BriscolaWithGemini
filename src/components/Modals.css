@@ -1,11 +1,4 @@
 
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
-
-
-
 /* --- Generic Modal Styles --- */
 .game-over-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 9999; cursor: pointer; overflow-y: auto; padding: 1rem;
@@ -1091,29 +1084,6 @@
     transform: scale(1.1);
 }
 
-/* Removed popover-actions as per screenshot */
-/* .player-wallet-popover .popover-actions {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid var(--border-color);
-}
-.player-wallet-popover .popover-actions button {
-    background-color: rgba(var(--primary-accent-rgb), 0.2);
-    border: 1px solid var(--primary-accent);
-    color: var(--primary-accent);
-    padding: 0.4rem 0.8rem;
-    border-radius: var(--radius-full);
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.player-wallet-popover .popover-actions button:hover {
-    background-color: rgba(var(--primary-accent-rgb), 0.4);
-    color: white;
-} */
-
 .player-wallet-popover .wallet-categories {
     flex-grow: 1;
     overflow-y: auto;
@@ -1160,17 +1130,6 @@
 .player-wallet-popover .category-header .essence-icon-svg {
     color: var(--primary-accent);
 }
-/* Removed collapse icon styles as it's no longer present */
-/*
-.player-wallet-popover .category-header .collapse-icon svg {
-    width: 24px;
-    height: 24px;
-    transition: transform 0.3s ease;
-}
-.player-wallet-popover .category-header .collapse-icon.open svg {
-    transform: rotate(180deg);
-}
-*/
 
 .player-wallet-popover .category-content {
     display: grid;
@@ -1250,7 +1209,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 10002; /* Below modals, above game content */
+    z-index: 100; /* Below modals and drawers */
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .fab-player-wallet:hover {
@@ -1412,8 +1371,12 @@
 .settings-modal-content .settings-selector:last-child {
     border-bottom: none;
 }
-.settings-modal-content .settings-selector label {
-    flex-grow: 1; /* Let label take available space */
+.settings-modal-content .settings-selector label:not(.toggle-switch) {
+    flex-grow: 1; /* Let text label take available space */
+}
+.settings-modal-content .settings-selector label.toggle-switch {
+    flex-grow: 0;
+    flex-shrink: 0;
 }
 
 /* --- Difficulty Selection Modal --- */
