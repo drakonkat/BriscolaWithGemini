@@ -1,5 +1,4 @@
 
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -1476,5 +1475,44 @@
     .gallery-tabs {
         justify-content: space-between;
         gap: 0;
+    }
+
+    /* --- Waifu Selection Modal Mobile --- */
+    .waifu-selection-modal {
+        max-height: 85vh; /* Limit modal height to allow space around it */
+        overflow-y: hidden; /* Prevent the whole modal from scrolling */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .waifu-selection-modal .waifu-selection-grid {
+        grid-template-columns: 1fr; /* Change to a single column list */
+        overflow-y: auto; /* Allow this grid to scroll internally */
+        flex-grow: 1; /* Make it take the available space */
+        padding-right: 0.5rem; /* Small padding for scrollbar */
+        margin-right: -0.5rem;
+    }
+
+    .waifu-selection-modal .waifu-card,
+    .waifu-selection-modal .random-waifu-card {
+        flex-direction: row; /* Horizontal card layout */
+        align-items: center;
+        text-align: left;
+        padding: 0.75rem;
+        gap: 1rem;
+        max-width: 100%; /* Ensure it takes full width of the column */
+    }
+
+    .waifu-selection-modal .waifu-card img,
+    .waifu-selection-modal .random-waifu-card svg {
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0;
+        margin-bottom: 0; /* Override vertical layout margin */
+    }
+    
+    .waifu-selection-modal .random-waifu-card div {
+      display: flex;
+      flex-direction: column;
     }
 }
