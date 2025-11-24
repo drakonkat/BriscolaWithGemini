@@ -329,7 +329,7 @@ export const translations = {
         daily: "Giornaliere",
         weekly: "Settimanali",
         achievements: "Obiettivi",
-        claim: "Riscuosti",
+        claim: "Riscuoti",
         claimed: "Riscattato",
         noMissions: "Nessuna missione disponibile al momento.",
         rewardsLabel: "Ricompense:",
