@@ -328,53 +328,49 @@ export const Menu = observer(() => {
                             </button>
                         </div>
 
-                        {/* Desktop View: Carousel */}
-                        <div className="game-mode-carousel-wrapper desktop-only">
-                            <button className="carousel-nav-button prev" onClick={() => changeGameMode(-1)} aria-label="Previous game mode">
-                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12l4.58-4.59z"/></svg>
-                            </button>
-                            <div className="game-mode-selection" ref={gameModeContainerRef}>
-                                <button 
-                                    ref={el => { gameModeCardRefs.current[0] = el; }}
-                                    className={`game-mode-card ${gameplayMode === 'classic' ? 'selected' : ''}`}
-                                    onClick={() => setGameMode('classic')}
-                                >
-                                    <span className="game-mode-icon">👑</span>
-                                    <h3>{T.gameModeClassic}</h3>
-                                </button>
-                                <button 
-                                    ref={el => { gameModeCardRefs.current[1] = el; }}
-                                    className={`game-mode-card ${gameplayMode === 'roguelike' ? 'selected' : ''}`}
-                                    onClick={() => setGameMode('roguelike')}
-                                >
-                                    <span className="game-mode-icon">🗺️</span>
-                                    <h3>{T.gameModeRoguelike}</h3>
-                                </button>
-                                <button 
-                                    ref={el => { gameModeCardRefs.current[2] = el; }}
-                                    className={`game-mode-card ${gameplayMode === 'dungeon' ? 'selected' : ''}`}
-                                    onClick={handleDungeonClick}
-                                >
-                                    {daysUntilDungeonSeasonEnd !== null && daysUntilDungeonSeasonEnd > 0 && (
-                                        <div 
-                                            className="dungeon-badge" 
-                                            onClick={(e) => { e.stopPropagation(); uiStore.openModal('dungeonRewards'); }} 
-                                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); uiStore.openModal('dungeonRewards'); } }}
-                                            role="button"
-                                            tabIndex={0}
-                                            aria-label={T.dungeonRewardsModal.title}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="dungeon-badge-icon"><path d="M19 10c0-1.1-.9-2-2-2h-3V5c0-1.1-.9-2-2-2s-2 .9-2 2v3H7c-1.1 0-2 .9-2 2v2h14v-2zm-2 2H7v-2h10v2zm-5 4c0-1.1-.9-2-2-2s-2 .9-2 2v2c0 1.1.9 2 2 2s2-.9 2-2v-2z"/></svg>
-                                            <span className="dungeon-badge-countdown">{daysUntilDungeonSeasonEnd}</span>
-                                        </div>
-                                    )}
-                                    <span className="game-mode-icon">⚔️</span>
-                                    <h3>{T.gameModeDungeon}</h3>
-                                </button>
+                        {/* Desktop View: Dashboard Style */}
+                        <div className="game-mode-dashboard desktop-only">
+                            <div className="game-mode-dashed-container">
+                                <div className="game-mode-selection" ref={gameModeContainerRef}>
+                                    <button 
+                                        ref={el => { gameModeCardRefs.current[0] = el; }}
+                                        className={`game-mode-card ${gameplayMode === 'classic' ? 'selected' : ''}`}
+                                        onClick={() => setGameMode('classic')}
+                                    >
+                                        <span className="game-mode-icon">👑</span>
+                                        <h3>{T.gameModeClassic}</h3>
+                                    </button>
+                                    <button 
+                                        ref={el => { gameModeCardRefs.current[1] = el; }}
+                                        className={`game-mode-card ${gameplayMode === 'roguelike' ? 'selected' : ''}`}
+                                        onClick={() => setGameMode('roguelike')}
+                                    >
+                                        <span className="game-mode-icon">🗺️</span>
+                                        <h3>{T.gameModeRoguelike}</h3>
+                                    </button>
+                                    <button 
+                                        ref={el => { gameModeCardRefs.current[2] = el; }}
+                                        className={`game-mode-card ${gameplayMode === 'dungeon' ? 'selected' : ''}`}
+                                        onClick={handleDungeonClick}
+                                    >
+                                        {daysUntilDungeonSeasonEnd !== null && daysUntilDungeonSeasonEnd > 0 && (
+                                            <div 
+                                                className="dungeon-badge" 
+                                                onClick={(e) => { e.stopPropagation(); uiStore.openModal('dungeonRewards'); }} 
+                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); uiStore.openModal('dungeonRewards'); } }}
+                                                role="button"
+                                                tabIndex={0}
+                                                aria-label={T.dungeonRewardsModal.title}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="dungeon-badge-icon"><path d="M19 10c0-1.1-.9-2-2-2h-3V5c0-1.1-.9-2-2-2s-2 .9-2 2v3H7c-1.1 0-2 .9-2 2v2h14v-2zm-2 2H7v-2h10v2zm-5 4c0-1.1-.9-2-2-2s-2 .9-2 2v2c0 1.1.9 2 2 2s2-.9 2-2v-2z"/></svg>
+                                                <span className="dungeon-badge-countdown">{daysUntilDungeonSeasonEnd}</span>
+                                            </div>
+                                        )}
+                                        <span className="game-mode-icon">⚔️</span>
+                                        <h3>{T.gameModeDungeon}</h3>
+                                    </button>
+                                </div>
                             </div>
-                            <button className="carousel-nav-button next" onClick={() => changeGameMode(1)} aria-label="Next game mode">
-                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                            </button>
                         </div>
 
                         {/* Mobile View: Single Card */}
