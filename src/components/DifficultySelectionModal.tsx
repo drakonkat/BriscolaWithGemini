@@ -6,6 +6,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { translations } from '../core/translations';
 import type { Language, Difficulty } from '../core/types';
+import { CloseIcon } from './icons/CloseIcon';
 
 interface DifficultySelectionModalProps {
     isOpen: boolean;
@@ -55,9 +56,7 @@ export const DifficultySelectionModal = observer(({ isOpen, onClose, language, c
         <div className="game-over-overlay" onClick={onClose}>
             <div className="difficulty-selection-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close-button" onClick={onClose} aria-label={T.close}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
-                    </svg>
+                    <CloseIcon />
                 </button>
                 <h2>{T.difficultyLabel}</h2>
                 <div className="difficulty-selection-grid">

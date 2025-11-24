@@ -1478,4 +1478,53 @@
       display: flex;
       flex-direction: column;
     }
+
+    /* --- Crafting Modal Mobile --- */
+    .gallery-modal {
+        padding: 0.5rem; /* Further reduce padding to maximize space */
+    }
+    
+    .crafting-grid {
+        grid-template-columns: 1fr; /* Single column on mobile */
+        padding: 0.5rem; /* Reduce internal padding */
+        gap: 1rem;
+    }
+
+    .crafting-card {
+        width: 100%; 
+        padding: 0.75rem; /* Reduce padding inside card */
+        min-width: 0; 
+    }
+    
+    .crafting-recipe {
+        flex-direction: column; /* Stack vertically */
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    .recipe-materials {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .recipe-material {
+        min-width: auto; /* Remove rigid min-width */
+        font-size: 0.8rem;
+        margin: 0 2px;
+    }
+    
+    .recipe-material .shard-item, .recipe-material .key-item, .recipe-material .element-icon, .recipe-material .essence-icon-svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .recipe-arrow { 
+        font-size: 1.5rem; 
+        transform: rotate(90deg); /* Point down */
+        margin: 0;
+    }
+    .recipe-separator { font-size: 1.2rem; margin: 0 2px; }
+    
+    .recipe-result { font-size: 1.1rem; }
+    .recipe-result .key-item, .recipe-result .essence-icon-svg { width: 28px; height: 28px; }
 }

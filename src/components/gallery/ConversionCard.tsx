@@ -5,6 +5,7 @@ import { useStores } from '../../stores';
 import { ElementIcon } from '../ElementIcon';
 import { EssenceIcon } from '../EssenceIcon';
 import type { Language } from '../../core/types';
+import { ShardIcon } from '../icons/ShardIcon';
 
 type ConversionType = 'R_to_SR' | 'SR_to_SSR' | 'Elemental_to_Transcendental';
 
@@ -38,7 +39,7 @@ export const ConversionCard: React.FC<ConversionCardProps> = observer(({ languag
             headerTitle = `10 ${T.missions.rewards.r_shards} → 1 ${T.missions.rewards.sr_shards}`;
             materials.push(
                 <div className="recipe-material" title={T_gallery.shardLabelR(10)}>
-                    <span className="shard-item r"><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                    <span className="shard-item r"><ShardIcon className="shard-icon-svg" /></span>
                     <div className="material-amount-wrapper">
                         <span className={`material-amount ${r_shards < 10 ? 'insufficient' : ''}`}>{r_shards}</span>
                         <span className="material-required">/ 10</span>
@@ -47,7 +48,7 @@ export const ConversionCard: React.FC<ConversionCardProps> = observer(({ languag
             );
             result = (
                 <div className="recipe-result">
-                    <span className="shard-item sr" title={T_gallery.shardLabelSR(1)}><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                    <span className="shard-item sr" title={T_gallery.shardLabelSR(1)}><ShardIcon className="shard-icon-svg" /></span>
                     <span className="rarity-sr-text">1</span>
                 </div>
             );
@@ -59,7 +60,7 @@ export const ConversionCard: React.FC<ConversionCardProps> = observer(({ languag
             headerTitle = `10 ${T.missions.rewards.sr_shards} → 1 ${T.missions.rewards.ssr_shards}`;
             materials.push(
                 <div className="recipe-material" title={T_gallery.shardLabelSR(10)}>
-                    <span className="shard-item sr"><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                    <span className="shard-item sr"><ShardIcon className="shard-icon-svg" /></span>
                     <div className="material-amount-wrapper">
                         <span className={`material-amount ${sr_shards < 10 ? 'insufficient' : ''}`}>{sr_shards}</span>
                         <span className="material-required">/ 10</span>
@@ -68,7 +69,7 @@ export const ConversionCard: React.FC<ConversionCardProps> = observer(({ languag
             );
             result = (
                 <div className="recipe-result">
-                    <span className="shard-item ssr" title={T_gallery.shardLabelSSR(1)}><svg className="shard-icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 8.5l10 13.5L22 8.5 12 2zm0 2.311L19.225 8.5 12 17.589 4.775 8.5 12 4.311z"/></svg></span>
+                    <span className="shard-item ssr" title={T_gallery.shardLabelSSR(1)}><ShardIcon className="shard-icon-svg" /></span>
                     <span className="rarity-ssr-text">1</span>
                 </div>
             );

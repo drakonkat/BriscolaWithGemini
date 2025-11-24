@@ -4,6 +4,7 @@
 */
 import { translations } from '../core/translations';
 import type { Language } from '../core/types';
+import { CloseIcon } from './icons/CloseIcon';
 
 interface SupportModalProps {
     isOpen: boolean;
@@ -28,9 +29,7 @@ export const SupportModal = ({ isOpen, onClose, onVote, hasVoted, language }: Su
         <div className="game-over-overlay" onClick={onClose}>
             <div className="rules-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close-button" onClick={onClose} aria-label={T_common.close}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
-                    </svg>
+                    <CloseIcon />
                 </button>
                 <h2>{T.title}</h2>
                 <p>{T.message}</p>

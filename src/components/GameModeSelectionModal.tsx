@@ -6,6 +6,8 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { translations } from '../core/translations';
 import type { Language, GameplayMode } from '../core/types';
+import { CloseIcon } from './icons/CloseIcon';
+import { DungeonBadgeIcon } from './icons/DungeonBadgeIcon';
 
 interface GameModeSelectionModalProps {
     isOpen: boolean;
@@ -39,9 +41,7 @@ export const GameModeSelectionModal = observer(({ isOpen, onClose, language, cur
         <div className="game-over-overlay" onClick={onClose}>
             <div className="game-mode-selection-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close-button" onClick={onClose} aria-label={T.close}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
-                    </svg>
+                    <CloseIcon />
                 </button>
                 <h2>{T.gameModeLabel}</h2>
                 <div className="game-mode-selection-grid">
@@ -59,7 +59,7 @@ export const GameModeSelectionModal = observer(({ isOpen, onClose, language, cur
                                     tabIndex={0}
                                     aria-label={T.dungeonRewardsModal.title}
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="dungeon-badge-icon"><path d="M19 10c0-1.1-.9-2-2-2h-3V5c0-1.1-.9-2-2-2s-2 .9-2 2v3H7c-1.1 0-2 .9-2 2v2h14v-2zm-2 2H7v-2h10v2zm-5 4c0-1.1-.9-2-2-2s-2 .9-2 2v2c0 1.1.9 2 2 2s2-.9 2-2v-2z"/></svg>
+                                    <DungeonBadgeIcon className="dungeon-badge-icon" />
                                     <span className="dungeon-badge-countdown">{daysUntilDungeonSeasonEnd}</span>
                                 </div>
                             )}

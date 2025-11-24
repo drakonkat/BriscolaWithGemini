@@ -1,4 +1,5 @@
 
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -8,6 +9,7 @@ import { translations } from '../core/translations';
 import { VALUES_IT, ROGUELIKE_REWARDS } from '../core/constants';
 import type { Language, Difficulty, RoguelikePowerUpId, GameplayMode } from '../core/types';
 import { POWER_UP_DEFINITIONS, ALL_POWER_UP_IDS } from '../core/roguelikePowers';
+import { CloseIcon } from './icons/CloseIcon';
 
 interface RulesModalProps {
     isOpen: boolean;
@@ -155,9 +157,7 @@ export const RulesModal = ({ isOpen, onClose, language, difficulty, gameplayMode
         <div className="game-over-overlay" onClick={onClose}>
             <div className="rules-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close-button" onClick={onClose} aria-label={T.close}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
-                    </svg>
+                    <CloseIcon />
                 </button>
                 <h2>{getModalTitle()}</h2>
                 {renderContent()}

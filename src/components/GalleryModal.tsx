@@ -9,6 +9,7 @@ import { translations } from '../core/translations';
 import type { Language } from '../core/types';
 import { GachaUnlockAnimation } from './GachaUnlockAnimation';
 import { GachaRollingAnimation } from './GachaRollingAnimation';
+import { CloseIcon } from './icons/CloseIcon';
 
 // Import new sub-components
 import { GalleryTabs } from './gallery/GalleryTabs';
@@ -60,9 +61,7 @@ export const GalleryModal = observer(({ isOpen, onClose, language, backgrounds, 
         <div className="game-over-overlay" onClick={onClose}>
             <div className="gallery-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close-button" onClick={onClose} aria-label={T.close} data-tutorial-id="gallery-close">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12z"/>
-                    </svg>
+                    <CloseIcon />
                 </button>
                 {isRolling && !gachaAnimationState.active && <GachaRollingAnimation />}
                 {gachaAnimationState.active && gachaAnimationState.rarity && (

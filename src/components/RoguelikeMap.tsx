@@ -10,15 +10,14 @@ import { CachedImage } from './CachedImage';
 import { WAIFUS, BOSS_WAIFU } from '../core/waifus';
 import { getImageUrl } from '../core/utils';
 import type { Waifu } from '../core/types'; // Import Waifu for type definition
+import { StarIcon } from './icons/StarIcon';
 
 const MapNode = ({ type, label, avatarUrl, state }: { type: 'opponent' | 'powerup' | 'boss', label: string, avatarUrl?: string, state: 'completed' | 'current' | 'future' }) => {
     return (
         <div className={`map-node ${type} ${state}`}>
             <div className="map-node-icon">
                 {type === 'powerup' ? (
-                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                    </svg>
+                     <StarIcon />
                 ) : (
                     <CachedImage imageUrl={avatarUrl || ''} alt={label} />
                 )}
